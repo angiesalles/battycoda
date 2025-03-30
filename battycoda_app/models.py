@@ -10,7 +10,7 @@ from battycoda_app.models.recording import Recording, Segment, Segmentation, Seg
 from battycoda_app.models.task import Task, TaskBatch
 
 # Re-export all models from the models package
-from battycoda_app.models.user import Group, GroupInvitation, GroupMembership, UserProfile
+from battycoda_app.models.user import Group, GroupInvitation, GroupMembership, LoginCode, UserProfile
 
 # For backwards compatibility, if any code directly imports from this file
 __all__ = [
@@ -18,6 +18,7 @@ __all__ = [
     "Group",
     "GroupInvitation",
     "GroupMembership",
+    "LoginCode",
     "UserProfile",
     # Organization models
     "Project",

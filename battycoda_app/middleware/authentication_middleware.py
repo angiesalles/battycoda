@@ -28,6 +28,11 @@ class AuthenticationMiddleware:
             "/accounts/register/",
             "/register/",
             "/invitation/",
+            "/accounts/request-login-code/",
+            "/accounts/enter-login-code/",
+            "/accounts/login-with-token/",
+            "/accounts/password-reset/",
+            "/accounts/reset-password/",
         ]
 
         # Skip for Let's Encrypt ACME challenges

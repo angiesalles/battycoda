@@ -10,6 +10,12 @@ class UserRegisterForm(UserCreationForm):
     class Meta:
         model = User
         fields = ["username", "email", "password1", "password2"]
+        
+    def clean_username(self):
+        username = self.cleaned_data.get('username')
+        if '@' in username:
+            raise forms.ValidationError("Username cannot contain the @ symbol. Please choose a different username.")
+        return username
 
 class UserLoginForm(AuthenticationForm):
     username = forms.CharField(label="Username")
