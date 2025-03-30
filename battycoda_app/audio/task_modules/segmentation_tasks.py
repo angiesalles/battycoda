@@ -9,7 +9,6 @@ from celery import shared_task
 
 from .base import logger
 
-
 @shared_task(bind=True, name="battycoda_app.audio.task_modules.segmentation_tasks.auto_segment_recording_task")
 def auto_segment_recording_task(
     self, recording_id, min_duration_ms=10, smooth_window=3, threshold_factor=0.5, debug_visualization=False
@@ -36,8 +35,6 @@ def auto_segment_recording_task(
 
     from ...models import Recording, Segment, Segmentation
 
-    logger.info(f"Starting automated segmentation for recording {recording_id}")
-
     try:
         # Get the recording
         recording = Recording.objects.get(id=recording_id)
@@ -45,7 +42,7 @@ def auto_segment_recording_task(
         # Check if recording file exists
         if not recording.wav_file or not os.path.exists(recording.wav_file.path):
             error_msg = f"WAV file not found for recording {recording_id}"
-            logger.error(error_msg)
+
             return {"status": "error", "message": error_msg}
 
         # Run the automated segmentation
@@ -61,13 +58,11 @@ def auto_segment_recording_task(
             if algorithm and hasattr(algorithm, "algorithm_type"):
                 algorithm_type = algorithm.algorithm_type
 
-            logger.info(f"Using algorithm type: {algorithm_type} for segmentation")
-
             debug_path = None
             if debug_visualization:
                 # Run with debug visualization using the appropriate algorithm
                 if algorithm_type == "energy":
-                    logger.info("Using energy-based segmentation algorithm")
+
                     from ..utils import energy_based_segment_audio
 
                     onsets, offsets, debug_path = energy_based_segment_audio(
@@ -79,7 +74,7 @@ def auto_segment_recording_task(
                     )
                 else:
                     # Default to threshold-based
-                    logger.info("Using threshold-based segmentation algorithm")
+
                     from ..utils import auto_segment_audio
 
                     onsets, offsets, debug_path = auto_segment_audio(
@@ -119,11 +114,10 @@ def auto_segment_recording_task(
 
                     debug_url = permanent_debug_path.replace(settings.MEDIA_ROOT, "").lstrip("/")
 
-                    logger.info(f"Saved segmentation debug visualization to {permanent_debug_path}")
             else:
                 # Run without debug visualization using the appropriate algorithm
                 if algorithm_type == "energy":
-                    logger.info("Using energy-based segmentation algorithm")
+
                     from ..utils import energy_based_segment_audio
 
                     onsets, offsets = energy_based_segment_audio(
@@ -134,7 +128,7 @@ def auto_segment_recording_task(
                     )
                 else:
                     # Default to threshold-based
-                    logger.info("Using threshold-based segmentation algorithm")
+
                     from ..utils import auto_segment_audio
 
                     onsets, offsets = auto_segment_audio(
@@ -145,8 +139,7 @@ def auto_segment_recording_task(
                     )
         except Exception as e:
             error_msg = f"Error during auto-segmentation: {str(e)}"
-            logger.error(error_msg)
-            logger.error(traceback.format_exc())
+
             return {"status": "error", "message": error_msg}
 
         # Create database segments from the detected onsets/offsets
@@ -155,11 +148,9 @@ def auto_segment_recording_task(
         with transaction.atomic():
             # Find the segmentation record created by the view using task_id
             task_id = self.request.id
-            logger.info(f"Looking for segmentation with task_id: {task_id}")
 
             # Get the existing segmentation created by the view
             segmentation = Segmentation.objects.get(task_id=task_id)
-            logger.info(f"Found existing segmentation: {segmentation.id} - {segmentation.name}")
 
             # Update the segmentation status to completed
             segmentation.status = "completed"
@@ -185,11 +176,11 @@ def auto_segment_recording_task(
                     segment.save(manual_edit=False)  # Don't mark as manually edited for automated segmentation
                     segments_created += 1
                 except Exception as e:
-                    logger.error(f"Error creating segment {i}: {str(e)}")
+
                     # Continue with other segments
 
         # Return success result
-        logger.info(f"Successfully created {segments_created} segments from automated detection")
+
         result = {
             "status": "success",
             "recording_id": recording_id,
@@ -213,6 +204,5 @@ def auto_segment_recording_task(
         return result
 
     except Exception as e:
-        logger.error(f"Error in auto_segment_recording_task: {str(e)}")
-        logger.error(traceback.format_exc())
+
         return {"status": "error", "message": str(e)}

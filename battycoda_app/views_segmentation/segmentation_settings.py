@@ -3,7 +3,6 @@ Views for managing segmentation configuration settings.
 """
 from .views_common import *
 
-
 @login_required
 def activate_segmentation_view(request, segmentation_id):
     """Activate a segmentation and deactivate all others for the same recording"""

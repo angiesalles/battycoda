@@ -1,4 +1,3 @@
-import logging
 
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
@@ -11,8 +10,6 @@ from .forms import GroupForm
 from .models import Group, GroupMembership, Project, Species, TaskBatch, UserProfile
 
 # Set up logging
-logger = logging.getLogger("battycoda.views_group")
-
 
 @login_required
 def group_list_view(request):
@@ -34,7 +31,6 @@ def group_list_view(request):
     }
 
     return render(request, "groups/group_list.html", context)
-
 
 @login_required
 def group_detail_view(request, group_id):
@@ -80,7 +76,6 @@ def group_detail_view(request, group_id):
         messages.error(request, "You do not have permission to view this group.")
         return redirect("battycoda_app:group_list")
 
-
 @login_required
 def create_group_view(request):
     """Handle creation of a group"""
@@ -122,7 +117,6 @@ def create_group_view(request):
 
     return render(request, "groups/create_group.html", context)
 
-
 @login_required
 def edit_group_view(request, group_id):
     """Handle editing of a group (group admin only)"""
@@ -150,7 +144,6 @@ def edit_group_view(request, group_id):
     }
 
     return render(request, "groups/edit_group.html", context)
-
 
 @login_required
 def manage_group_members_view(request, group_id):
@@ -252,7 +245,6 @@ def manage_group_members_view(request, group_id):
     }
 
     return render(request, "groups/manage_members.html", context)
-
 
 @login_required
 def switch_group_view(request, group_id):

@@ -47,7 +47,6 @@ def create_default_segmentation_algorithms(apps, schema_editor):
         group=None  # Available to all groups
     )
 
-
 def remove_default_segmentation_algorithms(apps, schema_editor):
     """Remove all default segmentation algorithms."""
     SegmentationAlgorithm = apps.get_model('battycoda_app', 'SegmentationAlgorithm')
@@ -58,7 +57,6 @@ def remove_default_segmentation_algorithms(apps, schema_editor):
             "ML-based Detection (Beta)"
         ]
     ).delete()
-
 
 class Migration(migrations.Migration):
 

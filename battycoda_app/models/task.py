@@ -1,7 +1,7 @@
 """Task models for BattyCoda application."""
 
 import hashlib
-import logging
+
 import os
 
 from django.conf import settings
@@ -11,9 +11,6 @@ from django.utils import timezone
 
 from .organization import Project, Species
 from .user import Group
-
-logger = logging.getLogger("battycoda.models")
-
 
 class TaskBatch(models.Model):
     """Task Batch for grouping tasks that were created together."""
@@ -38,7 +35,6 @@ class TaskBatch(models.Model):
 
     def __str__(self):
         return self.name
-
 
 class Task(models.Model):
     """Task model for storing bat vocalization analysis tasks."""
@@ -152,7 +148,6 @@ class Task(models.Model):
                     )
 
         except Exception as e:
-            logger.error(f"Error pre-generating spectrograms: {str(e)}")
+
             import traceback
 
-            logger.error(traceback.format_exc())

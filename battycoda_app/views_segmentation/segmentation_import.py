@@ -5,7 +5,6 @@ from battycoda_app.audio.utils import process_pickle_file
 
 from .views_common import *
 
-
 @login_required
 def upload_pickle_segments_view(request, recording_id):
     """Upload a pickle file to create segments for a recording"""
@@ -58,7 +57,7 @@ def upload_pickle_segments_view(request, recording_id):
                 # Just counting for logging purposes
                 existing_count = Segment.objects.filter(recording=recording).count()
                 if existing_count > 0:
-                    logger.info(
+
                         f"Recording {recording.id} already has {existing_count} segments from previous segmentations"
                     )
 
@@ -80,8 +79,7 @@ def upload_pickle_segments_view(request, recording_id):
                         segment.save(manual_edit=False)  # Don't mark as manually edited for pickle uploads
                         segments_created += 1
                     except Exception as e:
-                        logger.error(f"Error creating segment {i}: {str(e)}")
-                        logger.error(traceback.format_exc())
+
                         raise  # Re-raise to trigger transaction rollback
 
             # Return appropriate response based on request type
@@ -100,7 +98,6 @@ def upload_pickle_segments_view(request, recording_id):
             return redirect("battycoda_app:segment_recording", recording_id=recording.id)
 
         except Exception as e:
-            logger.error(f"Error processing pickle file: {str(e)}")
 
             # Return appropriate error response
             if request.headers.get("x-requested-with") == "XMLHttpRequest":

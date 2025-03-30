@@ -2,14 +2,11 @@
 Utility functions for working with recordings.
 """
 
-import logging
 import traceback
 
 from django.db import transaction
 
 # Set up logging
-logger = logging.getLogger("battycoda.utils")
-
 
 def create_recording_from_batch(batch, onsets=None, offsets=None, pickle_file=None):
     """Create a recording and segments from a task batch
@@ -27,11 +24,9 @@ def create_recording_from_batch(batch, onsets=None, offsets=None, pickle_file=No
     from battycoda_app.audio.utils import process_pickle_file
     from battycoda_app.models import Recording, Segment, Segmentation
 
-    logger.info(f"Creating recording from task batch {batch.name}")
-
     # Ensure we have a valid batch with a WAV file
     if not batch.wav_file:
-        logger.error(f"Task batch {batch.name} has no WAV file")
+
         return None, 0
 
     try:
@@ -45,8 +40,7 @@ def create_recording_from_batch(batch, onsets=None, offsets=None, pickle_file=No
                 # Process the pickle file to get onsets and offsets
                 onsets, offsets = process_pickle_file(pickle_file)
             except Exception as e:
-                logger.error(f"Error processing pickle file: {str(e)}")
-                logger.error(traceback.format_exc())
+
                 return recording, segments_created
 
         # Create segments if we have onset/offset data
@@ -56,10 +50,8 @@ def create_recording_from_batch(batch, onsets=None, offsets=None, pickle_file=No
         return recording, segments_created
 
     except Exception as e:
-        logger.error(f"Error creating recording from task batch: {str(e)}")
-        logger.error(traceback.format_exc())
-        return None, 0
 
+        return None, 0
 
 def _create_recording_from_batch(batch):
     """Create a Recording object from a TaskBatch
@@ -84,7 +76,6 @@ def _create_recording_from_batch(batch):
     )
     recording.save()
     return recording
-
 
 def _create_segments_for_recording(recording, onsets, offsets, user):
     """Create segments for a recording
@@ -132,9 +123,6 @@ def _create_segments_for_recording(recording, onsets, offsets, user):
                 segment.save()
                 segments_created += 1
 
-        logger.info(f"Created segmentation with {segments_created} segments for recording {recording.name}")
     except Exception as e:
-        logger.error(f"Error creating segments: {str(e)}")
-        logger.error(traceback.format_exc())
 
     return segments_created

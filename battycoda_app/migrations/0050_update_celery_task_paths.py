@@ -4,7 +4,6 @@ Migration to update Celery task paths from legacy battycoda_app.audio.tasks to s
 
 from django.db import migrations
 
-
 def update_classifier_task_paths(apps, schema_editor):
     """Update task paths for Classifier model."""
     Classifier = apps.get_model("battycoda_app", "Classifier")
@@ -21,7 +20,6 @@ def update_classifier_task_paths(apps, schema_editor):
             print(f"Updating Classifier task path: {classifier.celery_task} -> {path_mapping[classifier.celery_task]}")
             classifier.celery_task = path_mapping[classifier.celery_task]
             classifier.save()
-
 
 def update_segmentation_algorithm_task_paths(apps, schema_editor):
     """Update task paths for SegmentationAlgorithm model."""
@@ -40,7 +38,6 @@ def update_segmentation_algorithm_task_paths(apps, schema_editor):
             algorithm.celery_task = path_mapping[algorithm.celery_task]
             algorithm.save()
 
-
 def reverse_update_classifier_task_paths(apps, schema_editor):
     """Reverse task path updates for Classifier model."""
     Classifier = apps.get_model("battycoda_app", "Classifier")
@@ -57,7 +54,6 @@ def reverse_update_classifier_task_paths(apps, schema_editor):
             classifier.celery_task = reverse_mapping[classifier.celery_task]
             classifier.save()
 
-
 def reverse_update_segmentation_algorithm_task_paths(apps, schema_editor):
     """Reverse task path updates for SegmentationAlgorithm model."""
     SegmentationAlgorithm = apps.get_model("battycoda_app", "SegmentationAlgorithm")
@@ -73,7 +69,6 @@ def reverse_update_segmentation_algorithm_task_paths(apps, schema_editor):
         if algorithm.celery_task in reverse_mapping:
             algorithm.celery_task = reverse_mapping[algorithm.celery_task]
             algorithm.save()
-
 
 class Migration(migrations.Migration):
 

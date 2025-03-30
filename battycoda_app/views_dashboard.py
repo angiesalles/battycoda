@@ -1,13 +1,10 @@
 """
 Dashboard view for the BattyCoda application.
 """
-import logging
 
 from django.shortcuts import redirect, render
 
 # Set up logging
-logger = logging.getLogger("battycoda.views_dashboard")
-
 
 def index(request):
     """Root URL - show dashboard if logged in, or login page if not"""

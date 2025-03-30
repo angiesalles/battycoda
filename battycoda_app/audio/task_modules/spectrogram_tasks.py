@@ -17,7 +17,6 @@ from .base import log_performance, logger
 
 # Import soundfile in the functions where needed
 
-
 @shared_task(
     bind=True,
     name="battycoda_app.audio.task_modules.spectrogram_tasks.generate_spectrogram_task",
@@ -61,7 +60,6 @@ def generate_spectrogram_task(self, path, args, output_path=None):
 
         # Only log results for failures
         if not success:
-            logger.error(f"{task_id} FAILED: {error}")
 
         if success:
             return {"status": "success", "file_path": output_file, "original_path": path, "args": args}
@@ -74,14 +72,12 @@ def generate_spectrogram_task(self, path, args, output_path=None):
 
     except Exception as e:
         # Only log full errors for catastrophic failures
-        logger.error(f"{task_id} CATASTROPHIC ERROR: {str(e)}")
 
         # Retry the task if appropriate
         if self.request.retries < self.max_retries:
             raise self.retry(exc=e, countdown=2**self.request.retries)
 
         return {"status": "error", "error": str(e), "path": path, "args": args}
-
 
 @shared_task(bind=True, name="audio.prefetch_spectrograms")
 def prefetch_spectrograms(self, path, base_args, call_range):
@@ -97,11 +93,9 @@ def prefetch_spectrograms(self, path, base_args, call_range):
     Returns:
         dict: Status indicating the function is disabled
     """
-    logger.info("Prefetching is disabled for performance reasons")
 
     # Return a summary indicating prefetch is disabled
     return {"status": "disabled", "message": "Prefetching is disabled for performance reasons"}
-
 
 @shared_task(bind=True, name="battycoda_app.audio.task_modules.spectrogram_tasks.generate_recording_spectrogram")
 def generate_recording_spectrogram(self, recording_id):
@@ -130,8 +124,6 @@ def generate_recording_spectrogram(self, recording_id):
 
     from ...models import Recording
 
-    logger.info(f"Generating full spectrogram for recording {recording_id}")
-
     try:
         # Get the recording
         recording = Recording.objects.get(id=recording_id)
@@ -149,7 +141,7 @@ def generate_recording_spectrogram(self, recording_id):
 
         # Check if file already exists
         if os.path.exists(output_path) and os.path.getsize(output_path) > 0:
-            logger.info(f"Spectrogram already exists at {output_path}")
+
             return {"status": "success", "file_path": output_path, "recording_id": recording_id, "cached": True}
 
         # Load the audio file
@@ -162,7 +154,7 @@ def generate_recording_spectrogram(self, recording_id):
             downsample_factor = int(len(audio_data) / max_duration_samples) + 1
             audio_data = audio_data[::downsample_factor]
             effective_sample_rate = sample_rate / downsample_factor
-            logger.info(f"Downsampled recording from {len(audio_data)*downsample_factor} to {len(audio_data)} samples")
+
         else:
             effective_sample_rate = sample_rate
 
@@ -192,14 +184,11 @@ def generate_recording_spectrogram(self, recording_id):
         # Clean up temporary file
         os.unlink(temp_path)
 
-        logger.info(f"Generated spectrogram at {output_path}")
         return {"status": "success", "file_path": output_path, "recording_id": recording_id, "cached": False}
 
     except Exception as e:
-        logger.error(f"Error generating recording spectrogram: {str(e)}")
-        logger.error(traceback.format_exc())
-        return {"status": "error", "message": str(e), "recording_id": recording_id}
 
+        return {"status": "error", "message": str(e), "recording_id": recording_id}
 
 def generate_spectrogram(path, args, output_path=None):
     """
@@ -301,7 +290,7 @@ def generate_spectrogram(path, args, output_path=None):
 
         # Check if this spectrogram is generated on-the-fly - if so, use inverted colors
         if args.get("generated_on_fly") == "1":
-            logger.info("Generating on-the-fly spectrogram with inverted colors")
+
             # Inverted colormap (yellow-green instead of purple-blue)
             # R channel - more for brighter areas
             rgb_data[:, :, 0] = np.clip(img_data * 0.9, 0, 255).astype(np.uint8)
@@ -339,10 +328,10 @@ def generate_spectrogram(path, args, output_path=None):
             log_performance(start_time, f"{task_id}: TOTAL SPECTROGRAM GENERATION")
             return True, output_path, None
         else:
-            logger.error(f"ERROR: Output file not created properly: {output_path}")
+
             return False, output_path, "Failed to create output file"
 
     except Exception as e:
-        logger.error(f"Error generating spectrogram: {str(e)}")
+
         # Simply return the error, no attempt to create error image
         return False, output_path, str(e)

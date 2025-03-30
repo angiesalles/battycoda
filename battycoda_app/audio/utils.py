@@ -4,10 +4,8 @@ Utility functions for audio processing in BattyCoda.
 This module re-exports functions from the specialized audio modules
 to maintain backward compatibility with existing code.
 """
-import logging
 
 # Configure logging
-logger = logging.getLogger("battycoda.audio")
 
 from .modules.audio_processing import get_audio_bit, normal_hwin, overview_hwin
 

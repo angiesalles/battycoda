@@ -1,6 +1,5 @@
 from django.db import migrations
 
-
 def create_dummy_classifier(apps, schema_editor):
     """Create a dummy classifier that assigns equal probability to all call types"""
     Classifier = apps.get_model('battycoda_app', 'Classifier')
@@ -19,12 +18,10 @@ def create_dummy_classifier(apps, schema_editor):
             endpoint='/dummy'
         )
 
-
 def remove_dummy_classifier(apps, schema_editor):
     """Remove the dummy classifier"""
     Classifier = apps.get_model('battycoda_app', 'Classifier')
     Classifier.objects.filter(name='Dummy Classifier').delete()
-
 
 class Migration(migrations.Migration):
 

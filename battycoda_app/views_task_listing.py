@@ -1,4 +1,3 @@
-import logging
 
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
@@ -8,8 +7,6 @@ from .forms import TaskForm, TaskUpdateForm
 from .models import Task, UserProfile
 
 # Set up logging
-logger = logging.getLogger("battycoda.views_task_listing")
-
 
 @login_required
 def task_list_view(request):
@@ -34,7 +31,6 @@ def task_list_view(request):
     }
 
     return render(request, "tasks/task_list.html", context)
-
 
 @login_required
 def task_detail_view(request, task_id):
@@ -64,7 +60,6 @@ def task_detail_view(request, task_id):
     context = {"task": task, "form": form, "can_edit": can_edit}
 
     return render(request, "tasks/task_detail.html", context)
-
 
 @login_required
 def create_task_view(request):

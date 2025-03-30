@@ -1,4 +1,4 @@
-import logging
+
 import uuid
 from datetime import timedelta
 
@@ -13,9 +13,6 @@ from django.utils import timezone
 from .email_utils import send_invitation_email
 from .forms import GroupInvitationForm
 from .models import Group, GroupInvitation, GroupMembership, UserProfile
-
-logger = logging.getLogger("battycoda.invitations")
-
 
 @login_required
 def group_users_view(request):
@@ -43,7 +40,6 @@ def group_users_view(request):
     }
 
     return render(request, "groups/group_users.html", context)
-
 
 @login_required
 def invite_user_view(request):
@@ -110,11 +106,11 @@ def invite_user_view(request):
 
             if email_sent:
                 messages.success(request, f"Invitation sent successfully to {email}.")
-                logger.info(f"Invitation sent to {email} for group {group.name} by {request.user.username}")
+
             else:
                 # If email sending fails, delete the invitation and show error
                 invitation.delete()
-                logger.error(f"Failed to send invitation email to {email}")
+
                 messages.error(request, "Failed to send invitation email. Check the email settings.")
 
             return redirect("battycoda_app:group_users")
@@ -127,7 +123,6 @@ def invite_user_view(request):
     }
 
     return render(request, "groups/invite_user.html", context)
-
 
 def accept_invitation_view(request, token):
     """Accept a group invitation using the token from the email"""

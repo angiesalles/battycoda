@@ -1,16 +1,11 @@
 """Recording models for BattyCoda application."""
 
-import logging
-
 from django.contrib.auth.models import User
 from django.db import models
 from django.utils import timezone
 
 from .organization import Project, Species
 from .user import Group
-
-logger = logging.getLogger("battycoda.models")
-
 
 class Recording(models.Model):
     """Recording model for storing full audio recordings."""
@@ -67,7 +62,6 @@ class Recording(models.Model):
         """Get all segments for this recording, sorted by onset time"""
         return Segment.objects.filter(recording=self).order_by("onset")
 
-
 class SegmentationAlgorithm(models.Model):
     """Model for storing different segmentation algorithms."""
 
@@ -120,7 +114,6 @@ class SegmentationAlgorithm(models.Model):
 
     class Meta:
         ordering = ["name"]
-
 
 class Segmentation(models.Model):
     """Track segmentation for a recording. Each recording can have multiple segmentations."""
@@ -186,7 +179,6 @@ class Segmentation(models.Model):
     def is_processing(self):
         """Return True if the segmentation is currently being processed."""
         return self.status in ("pending", "in_progress")
-
 
 class Segment(models.Model):
     """Segment model for marking regions in recordings."""
@@ -268,7 +260,6 @@ class Segment(models.Model):
                 # Assign this segmentation to the segment
                 self.segmentation = segmentation
             except Exception as e:
-                logger.error(f"Error handling segmentation for segment: {str(e)}")
 
         # Call the original save method
         super().save(*args, **kwargs)
@@ -279,7 +270,6 @@ class Segment(models.Model):
                 self.segmentation.manually_edited = True
                 self.segmentation.save()
             except Exception as e:
-                logger.error(f"Error marking segmentation as manually edited: {str(e)}")
 
     def delete(self, *args, **kwargs):
         """Override delete to mark segmentation as manually edited before deletion"""
@@ -289,7 +279,6 @@ class Segment(models.Model):
                 self.segmentation.manually_edited = True
                 self.segmentation.save()
             except Exception as e:
-                logger.error(f"Error marking segmentation as manually edited: {str(e)}")
 
         # Call the original delete method
         super().delete(*args, **kwargs)

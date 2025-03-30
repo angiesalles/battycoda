@@ -1,12 +1,10 @@
 """
 Functions for audio segmentation and event detection in BattyCoda.
 """
-import logging
+
 import traceback
 
 # Configure logging
-logger = logging.getLogger("battycoda.audio.segmentation")
-
 
 def auto_segment_audio(
     audio_path, min_duration_ms=10, smooth_window=3, threshold_factor=0.5, debug_visualization=False
@@ -44,13 +42,10 @@ def auto_segment_audio(
 
         # Load the audio file
         audio_data, sample_rate = sf.read(audio_path)
-        logger.info(f"Loaded audio file for automated segmentation: {audio_path}")
-        logger.info(f"Audio shape: {audio_data.shape}, sample rate: {sample_rate}")
 
         # For stereo files, use the first channel for detection
         if len(audio_data.shape) > 1 and audio_data.shape[1] > 1:
             audio_data = audio_data[:, 0]
-            logger.info(f"Using first channel from stereo recording for detection")
 
         # Step 1: Take absolute value of the signal
         abs_signal = np.abs(audio_data)
@@ -68,7 +63,6 @@ def auto_segment_audio(
         signal_std = np.std(smoothed_signal)
         threshold = signal_mean + (threshold_factor * signal_std)
 
-        logger.info(
             f"Auto-segmentation thresholds - Mean: {signal_mean:.6f}, Std: {signal_std:.6f}, Threshold: {threshold:.6f}"
         )
 
@@ -116,9 +110,6 @@ def auto_segment_audio(
         filtered_onsets = [onsets[i] for i in valid_segments]
         filtered_offsets = [offsets[i] for i in valid_segments]
 
-        logger.info(f"Automated segmentation found {len(onsets)} potential segments")
-        logger.info(f"After minimum duration filtering: {len(filtered_onsets)} segments")
-
         # Generate debug visualization if requested
         if debug_visualization:
             debug_path = None
@@ -151,7 +142,7 @@ def auto_segment_audio(
                 # 4. Plot the binary mask with detected segments
                 # Make sure binary_mask and time_axis have the same length for plotting
                 if len(binary_mask) != len(time_axis):
-                    logger.info(f"Fixing binary mask length for threshold plot: {len(binary_mask)} vs {len(time_axis)}")
+
                     if len(binary_mask) < len(time_axis):
                         # Pad binary mask if it's too short
                         padding = np.zeros(len(time_axis) - len(binary_mask))
@@ -191,11 +182,9 @@ def auto_segment_audio(
                     plt.close()
 
                 # Log the debug file location
-                logger.info(f"Created segmentation debug visualization at {debug_path}")
 
             except Exception as viz_error:
-                logger.error(f"Error creating debug visualization: {str(viz_error)}")
-                logger.error(traceback.format_exc())
+
                 # If there's an error with visualization, still return the segments
 
             return filtered_onsets, filtered_offsets, debug_path
@@ -204,10 +193,8 @@ def auto_segment_audio(
         return filtered_onsets, filtered_offsets
 
     except Exception as e:
-        logger.error(f"Error in auto_segment_audio: {str(e)}")
-        logger.error(traceback.format_exc())
-        raise
 
+        raise
 
 def energy_based_segment_audio(
     audio_path, min_duration_ms=10, smooth_window=3, threshold_factor=0.5, debug_visualization=False
@@ -245,13 +232,10 @@ def energy_based_segment_audio(
 
         # Load the audio file
         audio_data, sample_rate = sf.read(audio_path)
-        logger.info(f"Loaded audio file for energy-based segmentation: {audio_path}")
-        logger.info(f"Audio shape: {audio_data.shape}, sample rate: {sample_rate}")
 
         # For stereo files, use the first channel for detection
         if len(audio_data.shape) > 1 and audio_data.shape[1] > 1:
             audio_data = audio_data[:, 0]
-            logger.info(f"Using first channel from stereo recording for detection")
 
         # Step 1: Calculate short-time energy
         # Set the frame size for energy calculation (adjust based on expected call frequency)
@@ -282,7 +266,6 @@ def energy_based_segment_audio(
         energy_std = np.std(smoothed_energy)
         threshold = energy_mean + (threshold_factor * energy_std)
 
-        logger.info(
             f"Energy segmentation thresholds - Mean: {energy_mean:.6f}, Std: {energy_std:.6f}, Threshold: {threshold:.6f}"
         )
 
@@ -328,9 +311,6 @@ def energy_based_segment_audio(
         filtered_onsets = [onsets[i] for i in valid_segments]
         filtered_offsets = [offsets[i] for i in valid_segments]
 
-        logger.info(f"Energy-based segmentation found {len(onsets)} potential segments")
-        logger.info(f"After minimum duration filtering: {len(filtered_onsets)} segments")
-
         # Generate debug visualization if requested
         if debug_visualization:
             debug_path = None
@@ -363,7 +343,7 @@ def energy_based_segment_audio(
                 # 4. Plot the binary mask with detected segments
                 # Make sure binary_mask and time_axis have the same length for plotting
                 if len(binary_mask) != len(time_axis):
-                    logger.info(f"Fixing binary mask length for energy plot: {len(binary_mask)} vs {len(time_axis)}")
+
                     if len(binary_mask) < len(time_axis):
                         # Pad binary mask if it's too short
                         padding = np.zeros(len(time_axis) - len(binary_mask))
@@ -403,11 +383,9 @@ def energy_based_segment_audio(
                     plt.close()
 
                 # Log the debug file location
-                logger.info(f"Created energy segmentation debug visualization at {debug_path}")
 
             except Exception as viz_error:
-                logger.error(f"Error creating debug visualization: {str(viz_error)}")
-                logger.error(traceback.format_exc())
+
                 # If there's an error with visualization, still return the segments
 
             return filtered_onsets, filtered_offsets, debug_path
@@ -416,6 +394,5 @@ def energy_based_segment_audio(
         return filtered_onsets, filtered_offsets
 
     except Exception as e:
-        logger.error(f"Error in energy_based_segment_audio: {str(e)}")
-        logger.error(traceback.format_exc())
+
         raise

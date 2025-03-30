@@ -4,7 +4,6 @@ Merge migration for potentially conflicting migrations.
 
 from django.db import migrations
 
-
 class Migration(migrations.Migration):
 
     dependencies = [

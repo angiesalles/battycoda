@@ -1,7 +1,7 @@
 """
 Utility functions for batch audio processing in BattyCoda.
 """
-import logging
+
 import os
 import tempfile
 import traceback
@@ -15,8 +15,6 @@ from django.utils import timezone
 from .utils import process_pickle_file
 
 # Configure logging
-logger = logging.getLogger("battycoda.audio.batch")
-
 
 def process_batch_upload(wav_zip, pickle_zip, form_data, user, group):
     """
@@ -48,8 +46,6 @@ def process_batch_upload(wav_zip, pickle_zip, form_data, user, group):
     equipment = form_data.get("equipment")
     environmental_conditions = form_data.get("environmental_conditions")
 
-    logger.info(f"Starting batch upload processing - metadata: species={species}, project={project}")
-
     # Create temporary directories for extracted files
     with tempfile.TemporaryDirectory() as wav_temp_dir, tempfile.TemporaryDirectory() as pickle_temp_dir:
         # Extract WAV files from zip
@@ -62,10 +58,8 @@ def process_batch_upload(wav_zip, pickle_zip, form_data, user, group):
                         zip_ref.extract(file_info, wav_temp_dir)
                         wav_files.append(os.path.join(wav_temp_dir, file_info.filename))
 
-            logger.info(f"Extracted {len(wav_files)} WAV files from ZIP")
         except Exception as e:
-            logger.error(f"ZIP extraction error: {str(e)}")
-            logger.error(traceback.format_exc())
+
             return {
                 "success_count": 0,
                 "error_count": 1,
@@ -86,10 +80,8 @@ def process_batch_upload(wav_zip, pickle_zip, form_data, user, group):
                             # Store with basename as key for matching
                             pickle_files_dict[os.path.basename(file_info.filename)] = pickle_path
 
-                logger.info(f"Extracted {len(pickle_files_dict)} pickle files from ZIP")
             except Exception as e:
-                logger.error(f"Pickle ZIP extraction error: {str(e)}")
-                logger.error(traceback.format_exc())
+
                 # Continue with WAV files even if pickle extraction fails
 
         # Process each WAV file
@@ -102,7 +94,6 @@ def process_batch_upload(wav_zip, pickle_zip, form_data, user, group):
                     wav_file = SimpleUploadedFile(wav_file_name, wav_file_obj.read(), content_type="audio/wav")
 
                     with transaction.atomic():
-                        logger.info(f"Processing WAV file: {wav_file_name}")
 
                         # Create a Recording object for this file
                         file_name = Path(wav_file_name).stem  # Get file name without extension
@@ -122,7 +113,6 @@ def process_batch_upload(wav_zip, pickle_zip, form_data, user, group):
 
                         # Save the recording
                         recording.save()
-                        logger.info(f"Created recording: {recording.name} (ID: {recording.id})")
 
                         # Check if there's a matching pickle file
                         pickle_filename = f"{wav_file_name}.pickle"
@@ -131,7 +121,7 @@ def process_batch_upload(wav_zip, pickle_zip, form_data, user, group):
                         # Process pickle file if found
                         if pickle_path:
                             try:
-                                logger.info(f"Found matching pickle file: {pickle_filename}")
+
                                 # Open and process the pickle file
                                 with open(pickle_path, "rb") as pickle_file_obj:
                                     # Create a Django file object
@@ -141,7 +131,6 @@ def process_batch_upload(wav_zip, pickle_zip, form_data, user, group):
 
                                     # Process the pickle file
                                     onsets, offsets = process_pickle_file(pickle_file)
-                                    logger.info(f"Processed pickle file. Found {len(onsets)} segments")
 
                                     # Mark all existing segmentations as inactive first
                                     Segmentation.objects.filter(recording=recording, is_active=True).update(
@@ -181,8 +170,6 @@ def process_batch_upload(wav_zip, pickle_zip, form_data, user, group):
                                             )  # Don't mark as manually edited for automated uploads
                                             segments_created += 1
                                         except Exception as e:
-                                            logger.error(f"Error creating segment {i} for {recording.name}: {str(e)}")
-                                            logger.error(traceback.format_exc())
 
                                     # Update segment count on the segmentation
                                     segmentation.segments_created = segments_created
@@ -190,21 +177,17 @@ def process_batch_upload(wav_zip, pickle_zip, form_data, user, group):
 
                                     if segments_created > 0:
                                         segmented_count += 1
-                                        logger.info(
+
                                             f"Created {segments_created} segments for recording {recording.name}"
                                         )
                             except Exception as e:
-                                logger.error(f"Error processing pickle file for {recording.name}: {str(e)}")
-                                logger.error(traceback.format_exc())
 
                         success_count += 1
             except Exception as e:
-                logger.error(f"Error creating recording from {wav_path}: {str(e)}")
-                logger.error(traceback.format_exc())
+
                 error_count += 1
 
     # Return the results
     result = {"success_count": success_count, "error_count": error_count, "segmented_count": segmented_count}
 
-    logger.info(f"Batch upload complete. Results: {result}")
     return result

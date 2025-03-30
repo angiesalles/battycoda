@@ -1,11 +1,8 @@
 """
 Functions for generating tick marks for spectrograms in BattyCoda.
 """
-import logging
 
 # Configure logging
-logger = logging.getLogger("battycoda.audio.tick_generation")
-
 
 def get_spectrogram_ticks(task, sample_rate=None, normal_window_size=None, overview_window_size=None):
     """Generate tick mark data for spectrograms.

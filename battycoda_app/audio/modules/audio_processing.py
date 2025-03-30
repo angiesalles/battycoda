@@ -1,22 +1,18 @@
 """
 Core audio processing functions for BattyCoda.
 """
-import logging
+
 import traceback
 
 # Configure logging
-logger = logging.getLogger("battycoda.audio.processing")
-
 
 def normal_hwin():
     """Returns the window padding as (pre_window, post_window) in milliseconds."""
     return (8, 8)
 
-
 def overview_hwin():
     """Returns the window padding as (pre_window, post_window) in milliseconds."""
     return (150, 350)
-
 
 def get_audio_bit(audio_path, call_number, window_size, extra_params=None):
     """
@@ -44,7 +40,7 @@ def get_audio_bit(audio_path, call_number, window_size, extra_params=None):
 
         # Check if audio file exists - no alternative paths, just fail if not found
         if not os.path.exists(audio_path):
-            logger.error(f"Audio file not found: {audio_path}")
+
             raise FileNotFoundError(f"Audio file not found: {audio_path}")
 
         # If we have onset/offset data, use extract_audio_segment
@@ -80,7 +76,6 @@ def get_audio_bit(audio_path, call_number, window_size, extra_params=None):
             return segment, sample_rate, file_hash
         else:
             # Legacy path for cases without onset/offset (should be rare)
-            logger.warning("No onset/offset provided, falling back to reading entire file (inefficient)")
 
             # Import the extract_audio_segment function
             from ..task_modules.base import extract_audio_segment
@@ -99,10 +94,8 @@ def get_audio_bit(audio_path, call_number, window_size, extra_params=None):
 
             return audiodata, sample_rate, file_hash
     except Exception as e:
-        logger.error(f"Error in get_audio_bit: {str(e)}")
-        logger.debug(traceback.format_exc())
-        return None, 0, ""
 
+        return None, 0, ""
 
 # Missing imports
 import os

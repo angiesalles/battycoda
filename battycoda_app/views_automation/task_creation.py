@@ -20,7 +20,6 @@ from .common_imports import (  # Python standard library; Django imports; Models
     transaction,
 )
 
-
 @login_required
 def create_task_batch_from_detection_run(request, run_id):
     """Create a task batch from a detection run's results for manual review and correction."""
@@ -113,8 +112,7 @@ def create_task_batch_from_detection_run(request, run_id):
                 return redirect("battycoda_app:task_batch_detail", batch_id=batch.id)
 
         except Exception as e:
-            logger.error(f"Error creating task batch from detection run: {str(e)}")
-            logger.error(traceback.format_exc())
+
             messages.error(request, f"Error creating task batch: {str(e)}")
             return redirect("battycoda_app:detection_run_detail", run_id=run_id)
 

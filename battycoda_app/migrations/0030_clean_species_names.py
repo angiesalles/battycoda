@@ -3,7 +3,6 @@
 from django.db import migrations, models
 import re
 
-
 def clean_species_names(apps, schema_editor):
     """
     Clean up species names by removing group suffixes.
@@ -29,7 +28,6 @@ def clean_species_names(apps, schema_editor):
                 species.name = base_name
             
             species.save()
-
 
 class Migration(migrations.Migration):
 

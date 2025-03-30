@@ -2,7 +2,6 @@
 
 from django.db import migrations, models
 
-
 class Migration(migrations.Migration):
     dependencies = [
         ("battycoda_app", "0036_add_recording_name_uniqueness"),

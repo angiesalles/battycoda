@@ -14,7 +14,6 @@ from .common_imports import (  # Django imports; Models
     redirect,
 )
 
-
 @login_required
 def apply_detection_results_view(request, run_id, segment_id=None):
     """Apply classification results to segments."""

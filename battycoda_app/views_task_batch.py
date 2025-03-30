@@ -1,5 +1,5 @@
 import csv
-import logging
+
 import pickle
 import traceback
 from datetime import datetime
@@ -18,8 +18,6 @@ from .forms import TaskBatchForm
 from .models import Recording, Segment, Task, TaskBatch, UserProfile
 
 # Set up logging
-logger = logging.getLogger("battycoda.views_task_batch")
-
 
 @login_required
 def task_batch_list_view(request):
@@ -45,7 +43,6 @@ def task_batch_list_view(request):
 
     return render(request, "tasks/batch_list.html", context)
 
-
 @login_required
 def task_batch_detail_view(request, batch_id):
     """Display details of a specific task batch"""
@@ -68,7 +65,6 @@ def task_batch_detail_view(request, batch_id):
     }
 
     return render(request, "tasks/batch_detail.html", context)
-
 
 @login_required
 def export_task_batch_view(request, batch_id):
@@ -139,7 +135,6 @@ def export_task_batch_view(request, batch_id):
         )
 
     return response
-
 
 @login_required
 def create_task_batch_view(request):

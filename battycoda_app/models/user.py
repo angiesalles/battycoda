@@ -6,7 +6,6 @@ from django.db.models.signals import post_save
 from django.dispatch import receiver
 from django.utils import timezone
 
-
 class Group(models.Model):
     """Group model for user grouping and permissions."""
 
@@ -16,7 +15,6 @@ class Group(models.Model):
 
     def __str__(self):
         return self.name
-
 
 class GroupInvitation(models.Model):
     """Group invitation model for inviting users via email."""
@@ -38,7 +36,6 @@ class GroupInvitation(models.Model):
 
         return self.expires_at < timezone.now()
 
-
 class GroupMembership(models.Model):
     """Model for user membership in groups."""
 
@@ -52,7 +49,6 @@ class GroupMembership(models.Model):
 
     def __str__(self):
         return f"{self.user.username} in {self.group.name} ({'Admin' if self.is_admin else 'Member'})"
-
 
 class UserProfile(models.Model):
     """User profile extension model."""
@@ -105,7 +101,6 @@ class UserProfile(models.Model):
         """Check if user is admin of the specified group"""
         return GroupMembership.objects.filter(user=self.user, group_id=group_id, is_admin=True).exists()
 
-
 # Create user profile when user is created
 @receiver(post_save, sender=User)
 def create_user_profile(sender, instance, created, **kwargs):
@@ -143,18 +138,16 @@ def create_user_profile(sender, instance, created, **kwargs):
                 created_by=instance,
                 group=group,
             )
-            logger.info(f"Created demo project '{project_name}' for user {instance.username}")
+
         except Exception as e:
-            logger.error(f"Error creating demo project for user {instance.username}: {str(e)}")
 
         # Import default species in a separate try block
         try:
             from ..utils import import_default_species
 
             created_species = import_default_species(instance)
-            logger.info(f"Created {len(created_species)} default species for user {instance.username}")
+
         except Exception as e:
-            logger.error(f"Error importing default species for user {instance.username}: {str(e)}")
 
         # Create a demo task batch with sample bat calls
         try:
@@ -162,12 +155,10 @@ def create_user_profile(sender, instance, created, **kwargs):
 
             batch = create_demo_task_batch(instance)
             if batch:
-                logger.info(f"Created demo task batch '{batch.name}' for user {instance.username}")
-            else:
-                logger.warning(f"Failed to create demo task batch for user {instance.username}")
-        except Exception as e:
-            logger.error(f"Error creating demo task batch for user {instance.username}: {str(e)}")
 
+            else:
+
+        except Exception as e:
 
 @receiver(post_save, sender=User)
 def save_user_profile(sender, instance, **kwargs):

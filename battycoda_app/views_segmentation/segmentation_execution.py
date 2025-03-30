@@ -3,7 +3,6 @@ Views for executing automated segmentation tasks on recordings.
 """
 from .views_common import *
 
-
 @login_required
 def auto_segment_recording_view(request, recording_id, algorithm_id=None):
     """Run automated segmentation on a recording"""
@@ -43,24 +42,23 @@ def auto_segment_recording_view(request, recording_id, algorithm_id=None):
     if algorithm_id:
         # Use filter().first() instead of get() to avoid MultipleObjectsReturned error
         try:
-            logger.info(f"GET: Auto-segment with algorithm_id={algorithm_id}, type={type(algorithm_id)}")
+
             algorithm = SegmentationAlgorithm.objects.filter(id=int(algorithm_id), is_active=True).first()
             if not algorithm:
                 # Fallback to the first algorithm if specified one not found
                 algorithm = algorithms.first()
-                logger.warning(
+
                     f"Algorithm with ID {algorithm_id} not found, using first available: {algorithm.id} - {algorithm.name}"
                 )
             else:
-                logger.info(f"Selected algorithm: {algorithm.id} - {algorithm.name}")
+
         except Exception as e:
-            logger.error(f"Error getting algorithm by ID: {str(e)}")
+
             algorithm = algorithms.first()
     else:
         # Use the first available algorithm (usually Standard Threshold)
         algorithm = algorithms.first()
         if algorithm:
-            logger.info(f"Using default algorithm: {algorithm.id} - {algorithm.name}")
 
     # Check for existing segmentations, but we no longer need to warn since we support multiple segmentations
     try:
@@ -73,11 +71,10 @@ def auto_segment_recording_view(request, recording_id, algorithm_id=None):
 
     if request.method == "POST":
         # Log the POST data for debugging
-        logger.info(f"POST data: {dict(request.POST.items())}")
 
         # Get parameters from request
         algorithm_id = request.POST.get("algorithm")
-        logger.info(f"Algorithm ID from POST: {algorithm_id!r}")
+
         min_duration_ms = request.POST.get("min_duration_ms", 10)
         smooth_window = request.POST.get("smooth_window", 3)
         threshold_factor = request.POST.get("threshold_factor", 0.5)
@@ -86,15 +83,15 @@ def auto_segment_recording_view(request, recording_id, algorithm_id=None):
         if algorithm_id:
             try:
                 # Debug logs
-                logger.info(f"Auto-segment with algorithm_id={algorithm_id}, type={type(algorithm_id)}")
+
                 # Use filter().first() instead of get() to avoid MultipleObjectsReturned error
                 algorithm = SegmentationAlgorithm.objects.filter(id=int(algorithm_id), is_active=True).first()
                 if not algorithm:
                     messages.error(request, f"Segmentation algorithm with ID {algorithm_id} not found.")
                     return redirect("battycoda_app:auto_segment_recording", recording_id=recording_id)
-                logger.info(f"Selected algorithm: {algorithm.id} - {algorithm.name}")
+
             except Exception as e:
-                logger.error(f"Error getting algorithm: {str(e)}")
+
                 messages.error(request, f"Error selecting algorithm: {str(e)}")
                 return redirect("battycoda_app:auto_segment_recording", recording_id=recording_id)
 
@@ -106,7 +103,7 @@ def auto_segment_recording_view(request, recording_id, algorithm_id=None):
             # No algorithm selected - select the first algorithm as default
             algorithm = algorithms.first()
             if algorithm:
-                logger.info(f"No algorithm explicitly selected, defaulting to: {algorithm.id} - {algorithm.name}")
+
             else:
                 messages.error(request, "No segmentation algorithm was selected and no default algorithm is available.")
                 return redirect("battycoda_app:auto_segment_recording", recording_id=recording_id)
@@ -149,7 +146,7 @@ def auto_segment_recording_view(request, recording_id, algorithm_id=None):
                 # Delete existing segments
                 existing_count = Segment.objects.filter(recording=recording).count()
                 if existing_count > 0:
-                    logger.info(f"Deleting {existing_count} existing segments for recording {recording.id}")
+
                     Segment.objects.filter(recording=recording).delete()
 
                 # Mark all existing segmentations as inactive
@@ -178,8 +175,6 @@ def auto_segment_recording_view(request, recording_id, algorithm_id=None):
             return redirect("battycoda_app:batch_segmentation")
 
         except Exception as e:
-            logger.error(f"Error starting auto segmentation task: {str(e)}")
-            logger.error(traceback.format_exc())
 
             # Set error message
             messages.error(request, f"Error starting segmentation: {str(e)}")
@@ -218,7 +213,6 @@ def auto_segment_recording_view(request, recording_id, algorithm_id=None):
     }
 
     return render(request, "recordings/auto_segment.html", context)
-
 
 @login_required
 def auto_segment_status_view(request, recording_id):
@@ -334,7 +328,5 @@ def auto_segment_status_view(request, recording_id):
             )
 
     except Exception as e:
-        logger.error(f"Error checking segmentation task status: {str(e)}")
-        logger.error(traceback.format_exc())
 
         return JsonResponse({"success": False, "status": "error", "message": f"Error checking task status: {str(e)}"})

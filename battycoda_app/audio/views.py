@@ -2,7 +2,7 @@
 Views for audio file processing and visualization in BattyCoda.
 """
 import json
-import logging
+
 import os
 import traceback
 
@@ -21,8 +21,6 @@ from ..utils_modules.path_utils import convert_path_to_os_specific
 from .utils import appropriate_file, get_audio_bit, normal_hwin, overview_hwin
 
 # Configure logging
-logger = logging.getLogger("battycoda.audio")
-
 
 @login_required
 def handle_spectrogram(request):
@@ -42,13 +40,12 @@ def handle_spectrogram(request):
         Django response with the spectrogram image or task status
     """
     # Log request for debugging
-    logger.info(f"Spectrogram request with parameters: {request.GET}")
 
     # Validate required parameters
     required_args = ["wav_path", "channel", "call", "numcalls", "hash", "overview"]
     for arg in required_args:
         if arg not in request.GET:
-            logger.error(f"Missing required argument: {arg}")
+
             return HttpResponse(f"Error: Missing required argument: {arg}", content_type="text/plain", status=400)
 
     # Extract path and args
@@ -60,8 +57,6 @@ def handle_spectrogram(request):
     async_mode = request.GET.get("async", "false").lower() == "true"
 
     # Log the request details for debugging
-    logger.info(f"Spectrogram request received: {path} (async={async_mode})")
-    logger.debug(f"Original path: {path}, Modified path: {mod_path}")
 
     try:
         # Create unique file paths for caching based on the parameters
@@ -76,7 +71,7 @@ def handle_spectrogram(request):
         paths_to_check = [file_path, alt_file_path]
         for check_path in paths_to_check:
             if os.path.exists(check_path) and os.path.getsize(check_path) > 0:
-                logger.info(f"Cache hit! Using existing image: {check_path}")
+
                 return FileResponse(open(check_path, "rb"), content_type="image/png")
 
         # Create directories if needed
@@ -84,7 +79,6 @@ def handle_spectrogram(request):
         os.makedirs(folder_path, exist_ok=True)
 
         # Image doesn't exist, need to generate it
-        logger.info(f"Cache miss. Generating image: {file_path}")
 
         # Add a flag to indicate this is dynamically generated
         args_dict["generated_on_fly"] = "1"
@@ -116,7 +110,7 @@ def handle_spectrogram(request):
                 # Check both possible file paths
                 for check_path in paths_to_check:
                     if os.path.exists(check_path) and os.path.getsize(check_path) > 0:
-                        logger.info(f"Successfully generated image: {check_path}")
+
                         return FileResponse(open(check_path, "rb"), content_type="image/png")
 
                 # Task reported success but file not found
@@ -126,23 +120,21 @@ def handle_spectrogram(request):
             else:
                 # Task failed
                 error_msg = result.get("error", "Unknown error")
-                logger.error(f"Task failed to generate image: {error_msg}")
+
                 return HttpResponse(
                     f"Error: Failed to generate image: {error_msg}", content_type="text/plain", status=500
                 )
 
         except Exception as e:
             # If we hit a timeout, return an error message
-            logger.error(f"Timeout or error waiting for task: {str(e)}")
+
             return HttpResponse(
                 f"Error: Timeout generating image. Try refreshing.", content_type="text/plain", status=504
             )
 
     except Exception as e:
-        logger.error(f"Error in handle_spectrogram: {str(e)}")
-        logger.debug(traceback.format_exc())
-        return HttpResponse(f"Error: Server error: {str(e)}", content_type="text/plain", status=500)
 
+        return HttpResponse(f"Error: Server error: {str(e)}", content_type="text/plain", status=500)
 
 @login_required
 def task_status(request, task_id):
@@ -156,15 +148,13 @@ def task_status(request, task_id):
     Returns:
         JSON response with task status
     """
-    logger.info(f"Checking status for task: {task_id}")
+
     task_result = AsyncResult(task_id)
 
     # Log the raw task state for debugging
-    logger.info(f"Task {task_id} state: {task_result.state}")
 
     # Check for ready but forgotten task
     if task_result.ready():
-        logger.info(f"Task {task_id} is ready with result: {task_result.result}")
 
     # Simple status responses
     if task_result.state == "PENDING":
@@ -210,7 +200,7 @@ def task_status(request, task_id):
                     }
                 else:
                     # File not found or empty
-                    logger.error(f"Task completed but usable file not found: {file_path}")
+
                     response = {"status": "error", "message": "Task completed but image file not found"}
             else:
                 # Task reported error
@@ -223,7 +213,6 @@ def task_status(request, task_id):
         response = {"status": "processing", "message": f"Task is {task_result.state.lower()}", "task_id": task_id}
 
     return JsonResponse(response)
-
 
 @login_required
 def handle_audio_snippet(request):
@@ -249,7 +238,7 @@ def handle_audio_snippet(request):
     required_args = ["wav_path", "channel", "call", "hash", "overview", "loudness"]
     for arg in required_args:
         if arg not in request.GET:
-            logger.error(f"Missing required argument: {arg}")
+
             return HttpResponse(f"Missing required parameter: {arg}", status=400)
 
     # Extract and convert path
@@ -262,9 +251,6 @@ def handle_audio_snippet(request):
     mod_path = convert_path_to_os_specific(path)
 
     # Log the request details for debugging
-    logger.info(f"Audio snippet request received: {path}")
-    logger.debug(f"Original path: {path}, Modified path: {mod_path}")
-    logger.debug(f"Arguments: {request.GET}")
 
     try:
         # Create unique file paths for caching based on the parameters
@@ -278,10 +264,10 @@ def handle_audio_snippet(request):
 
         # Check if file already exists
         if os.path.exists(file_path) and os.path.getsize(file_path) > 0:
-            logger.info(f"Using existing audio file: {file_path}")
+
             return FileResponse(open(file_path, "rb"), content_type="audio/wav")
         elif os.path.exists(alt_file_path) and os.path.getsize(alt_file_path) > 0:
-            logger.info(f"Using existing audio file (alt path): {alt_file_path}")
+
             return FileResponse(open(alt_file_path, "rb"), content_type="audio/wav")
 
         # Create directory if needed for generation
@@ -289,7 +275,7 @@ def handle_audio_snippet(request):
 
         # Create directories if needed
         folder_path = appropriate_file(mod_path, file_args, folder_only=True)
-        logger.info(f"Creating cache directory: {folder_path}")
+
         os.makedirs(folder_path, exist_ok=True)
 
         # Process audio
@@ -301,7 +287,6 @@ def handle_audio_snippet(request):
         extra_params = None
         if "onset" in request.GET and "offset" in request.GET:
             extra_params = {"onset": request.GET["onset"], "offset": request.GET["offset"]}
-            logger.info(f"Using direct onset/offset from request: {extra_params}")
 
         # Get audio data
         # Check if the path is already in media directory
@@ -315,19 +300,18 @@ def handle_audio_snippet(request):
             if not os.path.exists(audio_path) and "task_batches" in audio_path:
                 audio_path = os.path.join("/app/media", audio_path.lstrip("/"))
 
-        logger.info(f"Final audio path for processing: {audio_path}")
         thr_x1, fs, hashof = get_audio_bit(audio_path, call_to_do, hwin(), extra_params)
 
         # Validate hash
         if request.GET["hash"] != hashof:
-            logger.error(f"Hash mismatch: {request.GET['hash']} != {hashof}")
+
             # For now, we'll skip the hash validation since we're having path issues
-            logger.warning(f"Skipping hash validation due to path issues")
+
             # return HttpResponse("Hash validation failed", status=400)
 
         # Check for valid audio data
         if thr_x1 is None or len(thr_x1) == 0:
-            logger.error("No audio data returned")
+
             return HttpResponse("Failed to extract audio data", status=500)
 
         # Extract the specific channel with error handling
@@ -339,7 +323,7 @@ def handle_audio_snippet(request):
             else:
                 # Single channel or invalid channel index
                 if len(thr_x1.shape) > 1:
-                    logger.warning(
+
                         f"Invalid channel index {channel_idx} for audio with {thr_x1.shape[1]} channels. Using first channel."
                     )
                 thr_x1 = thr_x1 if len(thr_x1.shape) == 1 else thr_x1[:, 0]
@@ -352,7 +336,7 @@ def handle_audio_snippet(request):
             try:
                 loudness = float(request.GET["loudness"])
             except (ValueError, TypeError):
-                logger.warning(f"Invalid loudness value: {request.GET['loudness']}, using 1.0")
+
                 loudness = 1.0
 
             # Write audio file with error handling
@@ -364,19 +348,18 @@ def handle_audio_snippet(request):
                 sample_rate = fs // slowdown if fs > 0 else abs(fs) // slowdown
                 if sample_rate <= 0:
                     sample_rate = 44100 // slowdown
-                    logger.warning(f"Invalid sample rate detected, using default: {sample_rate}")
 
                 # Ensure we have valid audio data
                 audio_data = thr_x1.astype("float32")
 
                 # Log audio data details for debugging
-                logger.info(
+
                     f"Writing audio with shape: {audio_data.shape}, sample rate: {sample_rate}, min: {audio_data.min()}, max: {audio_data.max()}"
                 )
 
                 # Adjust and ensure proper range for audio data
                 if np.isnan(audio_data).any() or np.isinf(audio_data).any():
-                    logger.warning("Invalid values in audio data, replacing with zeros")
+
                     audio_data = np.nan_to_num(audio_data)
 
                 # Scale audio data to be between -1 and 1
@@ -389,7 +372,7 @@ def handle_audio_snippet(request):
 
                 # Ensure the data has at least a few samples
                 if len(audio_data) < 100:
-                    logger.warning(f"Audio segment too short ({len(audio_data)} samples), padding")
+
                     # Check dimensions to create appropriate padding
                     if len(audio_data.shape) > 1:
                         # Multi-channel data
@@ -403,27 +386,22 @@ def handle_audio_snippet(request):
                 import soundfile as sf
 
                 sf.write(file_path, audio_data, sample_rate)
-                logger.info(f"Successfully wrote audio file using soundfile: {file_path}")
 
                 # Verify the file was created correctly
                 if not os.path.exists(file_path) or os.path.getsize(file_path) == 0:
-                    logger.error(f"Failed to create audio file at {file_path}")
+
                     return HttpResponse("Failed to create audio file", status=500)
 
             except Exception as e:
-                logger.error(f"Error writing audio file: {str(e)}")
-                logger.debug(traceback.format_exc())
+
                 return HttpResponse(f"Error writing audio file: {str(e)}", status=500)
 
         except Exception as e:
-            logger.error(f"Error processing audio data: {str(e)}")
-            logger.debug(traceback.format_exc())
+
             return HttpResponse(f"Error processing audio: {str(e)}", status=500)
 
-        logger.info(f"Generated audio snippet: {file_path}")
         return FileResponse(open(file_path, "rb"), content_type="audio/wav")
 
     except Exception as e:
-        logger.error(f"Error in handle_audio_snippet: {str(e)}")
-        logger.debug(traceback.format_exc())
+
         return HttpResponse(str(e), status=500)

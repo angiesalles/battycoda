@@ -1,4 +1,3 @@
-import logging
 
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
@@ -8,8 +7,6 @@ from .forms import ProjectForm
 from .models import Project, Task, TaskBatch
 
 # Set up logging
-logger = logging.getLogger("battycoda.views_project")
-
 
 @login_required
 def project_list_view(request):
@@ -35,7 +32,6 @@ def project_list_view(request):
 
     return render(request, "projects/project_list.html", context)
 
-
 @login_required
 def project_detail_view(request, project_id):
     """Display detail of a project"""
@@ -54,7 +50,6 @@ def project_detail_view(request, project_id):
     }
 
     return render(request, "projects/project_detail.html", context)
-
 
 @login_required
 def create_project_view(request):
@@ -79,7 +74,6 @@ def create_project_view(request):
     }
 
     return render(request, "projects/create_project.html", context)
-
 
 @login_required
 def edit_project_view(request, project_id):
@@ -107,7 +101,6 @@ def edit_project_view(request, project_id):
     else:
         messages.error(request, "You do not have permission to edit this project.")
         return redirect("battycoda_app:project_list")
-
 
 @login_required
 def delete_project_view(request, project_id):
@@ -145,10 +138,9 @@ def delete_project_view(request, project_id):
                     messages.success(request, f"Successfully deleted project: {project_name}")
                     return redirect("battycoda_app:project_list")
             except Exception as e:
-                logger.error(f"Error deleting project {project.id}: {str(e)}")
+
                 import traceback
 
-                logger.error(traceback.format_exc())
                 messages.error(request, f"Failed to delete project: {str(e)}")
 
         context = {

@@ -2,7 +2,6 @@
 
 from django.db import migrations, models
 
-
 class Migration(migrations.Migration):
     dependencies = [
         ("battycoda_app", "0031_fix_species_image_storage"),

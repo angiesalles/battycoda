@@ -3,7 +3,6 @@ from django.db import transaction
 
 from battycoda_app.models import GroupMembership, UserProfile
 
-
 class Command(BaseCommand):
     help = "Populate the GroupMembership model with existing user-group relationships"
 

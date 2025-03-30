@@ -1,4 +1,3 @@
-import logging
 
 from django.contrib import messages
 from django.contrib.auth import authenticate, login, logout
@@ -12,8 +11,6 @@ from .forms import UserLoginForm, UserProfileForm, UserRegisterForm
 from .models import GroupInvitation, GroupMembership, UserProfile
 
 # Set up logging
-logger = logging.getLogger("battycoda.views_auth")
-
 
 def login_view(request):
     """Handle user login"""
@@ -79,7 +76,6 @@ def login_view(request):
 
     return render(request, "auth/login.html", {"form": form})
 
-
 def register_view(request):
     """Handle user registration"""
     if request.user.is_authenticated:
@@ -103,7 +99,6 @@ def register_view(request):
         form = UserRegisterForm(request.POST)
         if form.is_valid():
             user = form.save()
-            logger.info(f"Registered new user {user.username}")
 
             # If there's a valid invitation, process it
             if invitation and not invitation.is_expired and not invitation.accepted:
@@ -145,14 +140,12 @@ def register_view(request):
 
     return render(request, "auth/register.html", {"form": form})
 
-
 @login_required
 def logout_view(request):
     """Handle user logout"""
     logout(request)
     messages.success(request, "You have been logged out successfully.")
     return redirect("battycoda_app:login")
-
 
 @login_required
 def profile_view(request):
@@ -170,7 +163,6 @@ def profile_view(request):
     }
 
     return render(request, "auth/profile.html", context)
-
 
 @login_required
 def edit_profile_view(request):
@@ -201,7 +193,6 @@ def edit_profile_view(request):
 
     return render(request, "auth/edit_profile.html", context)
 
-
 def password_reset_request(request):
     """Handle password reset request"""
     if request.method == "POST":
@@ -219,7 +210,6 @@ def password_reset_request(request):
         return redirect("battycoda_app:login")
 
     return render(request, "auth/forgot_password.html")
-
 
 def password_reset(request, token):
     """Reset password with token"""
@@ -239,7 +229,6 @@ def password_reset(request, token):
         return redirect("battycoda_app:login")
 
     return render(request, "auth/reset_password.html", {"token": token})
-
 
 def request_login_code(request):
     """Request one-time login code"""

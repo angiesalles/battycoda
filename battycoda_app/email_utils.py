@@ -1,11 +1,7 @@
-import logging
 
 from django.conf import settings
 from django.core.mail import send_mail as django_send_mail
 from django.template.loader import render_to_string
-
-logger = logging.getLogger("battycoda.email")
-
 
 def send_mail(subject, message, recipient_list, html_message=None, from_email=None):
     """
@@ -24,8 +20,6 @@ def send_mail(subject, message, recipient_list, html_message=None, from_email=No
     if from_email is None:
         from_email = settings.DEFAULT_FROM_EMAIL
 
-    logger.info(f"Sending email to {recipient_list} with subject: {subject}")
-
     try:
         # Send email using Django's send_mail which will use AWS SES backend
         django_send_mail(
@@ -36,12 +30,11 @@ def send_mail(subject, message, recipient_list, html_message=None, from_email=No
             html_message=html_message,
             fail_silently=False,
         )
-        logger.info(f"Successfully sent email to {recipient_list}")
+
         return True
     except Exception as e:
-        logger.error(f"Failed to send email to {recipient_list}: {str(e)}")
-        return False
 
+        return False
 
 def send_invitation_email(group_name, inviter_name, recipient_email, invitation_link, expires_at):
     """

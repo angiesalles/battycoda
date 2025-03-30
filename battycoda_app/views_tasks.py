@@ -4,8 +4,6 @@ Views for handling tasks and spectrograms.
 from .views_common import *
 
 # Set up logging
-logger = logging.getLogger("battycoda.views_tasks")
-
 
 @login_required
 def create_tasks_from_segments_view(request, recording_id):
@@ -38,7 +36,7 @@ def create_tasks_from_segments_view(request, recording_id):
                 task = segment.create_task()
                 tasks_created += 1
             except Exception as e:
-                logger.error(f"Error creating task from segment {segment.id}: {str(e)}")
+
                 messages.error(request, f"Error creating task for segment {segment.id}: {str(e)}")
                 # Continue with other segments
 
@@ -48,7 +46,6 @@ def create_tasks_from_segments_view(request, recording_id):
         messages.info(request, "No new tasks were created. All segments may already have associated tasks.")
 
     return redirect("battycoda_app:recording_detail", recording_id=recording.id)
-
 
 @login_required
 def recording_spectrogram_status_view(request, recording_id):
@@ -116,6 +113,5 @@ def recording_spectrogram_status_view(request, recording_id):
 
             return JsonResponse({"success": True, "status": "started", "task_id": task.id})
     except Exception as e:
-        logger.error(f"Error checking spectrogram status: {str(e)}")
-        logger.error(traceback.format_exc())
+
         return JsonResponse({"success": False, "status": "error", "message": str(e)})

@@ -7,7 +7,6 @@ with a single import.
 import os
 import sys
 
-
 def activate_debugger(port=12345):
     """
     Activates the PyCharm debugger.

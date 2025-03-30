@@ -4,10 +4,8 @@ Visualization and spectrogram generation functions for BattyCoda.
 This module re-exports functions from specialized visualization modules
 to maintain backward compatibility for imports.
 """
-import logging
 
 # Configure logging
-logger = logging.getLogger("battycoda.audio.visualization")
 
 from .segmentation import auto_segment_audio, energy_based_segment_audio
 

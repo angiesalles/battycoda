@@ -3,7 +3,6 @@
 import django.db.models.deletion
 from django.db import migrations, models
 
-
 class Migration(migrations.Migration):
     dependencies = [
         ("battycoda_app", "0026_alter_classifier_group_alter_groupmembership_group_and_more"),

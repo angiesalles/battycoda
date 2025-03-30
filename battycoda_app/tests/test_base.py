@@ -6,7 +6,6 @@ from django.test import TestCase
 
 from battycoda_app.tests.test_settings import all_patches
 
-
 class BattycodaTestCase(TestCase):
     """Base test case that applies all necessary patches for testing"""
 
