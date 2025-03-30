@@ -15,33 +15,32 @@ def create_source_segments_for_tasks(apps, schema_editor):
     # Get all tasks without source segments
     tasks_without_segments = Task.objects.filter(source_segment__isnull=True)
     total_tasks = tasks_without_segments.count()
-
     
     # Default sample rate to use for all recordings
     default_sample_rate = 250000  # 250kHz - Typical high-quality bat recording rate
     
     updated_count = 0
     for task in tasks_without_segments:
-        try:
-            # First, check if this task's wav file corresponds to an existing recording
-            # Use the batch wav_file if available
-            wav_file_path = None
-            if task.batch and task.batch.wav_file:
-                wav_file_path = task.batch.wav_file.name
-            else:
-                wav_file_path = f"recordings/{task.wav_file_name}"
-            
-            # Look for a matching recording
-            matching_recordings = Recording.objects.filter(wav_file=wav_file_path)
-            
-            recording = None
-            if matching_recordings.exists():
-                # Use the existing recording
-                recording = matching_recordings.first()
+        # First, check if this task's wav file corresponds to an existing recording
+        # Use the batch wav_file if available
+        wav_file_path = None
+        if task.batch and task.batch.wav_file:
+            wav_file_path = task.batch.wav_file.name
+        else:
+            wav_file_path = f"recordings/{task.wav_file_name}"
+        
+        # Look for a matching recording
+        matching_recordings = Recording.objects.filter(wav_file=wav_file_path)
+        
+        recording = None
+        if matching_recordings.exists():
+            # Use the existing recording
+            recording = matching_recordings.first()
 
-            else:
-                # Create a new recording with this wav file
-                if task.batch and task.batch.wav_file:
+        else:
+            # Create a new recording with this wav file
+            if task.batch and task.batch.wav_file:
+                try:
                     recording_name = f"Recording for {task.batch.name}"
                     recording = Recording.objects.create(
                         name=recording_name,
@@ -53,25 +52,26 @@ def create_source_segments_for_tasks(apps, schema_editor):
                         created_by=task.created_by,
                         sample_rate=default_sample_rate  # Use the default high sample rate
                     )
+                except Exception:
+                    pass
 
             
             if recording:
                 # Create a segmentation for this recording if needed
-                try:
-                    segmentation = Segmentation.objects.filter(recording=recording, is_active=True).first()
-                    if not segmentation:
-                        # Create new active segmentation
-                        segmentation = Segmentation.objects.create(
-                            recording=recording,
-                            name=f"Auto Segmentation for {recording.name}",
-                            is_active=True,
-                            status="completed",
-                            progress=100,
-                            created_by=recording.created_by
-                        )
-
+                segmentation = Segmentation.objects.filter(recording=recording, is_active=True).first()
+                if not segmentation:
+                    # Create new active segmentation
+                    segmentation = Segmentation.objects.create(
+                        recording=recording,
+                        name=f"Auto Segmentation for {recording.name}",
+                        is_active=True,
+                        status="completed",
+                        progress=100,
+                        created_by=recording.created_by
+                    )
                 
-                    # Create a segment for this task
+                # Create a segment for this task
+                try:
                     segment = Segment.objects.create(
                         recording=recording,
                         segmentation=segmentation,
@@ -89,13 +89,8 @@ def create_source_segments_for_tasks(apps, schema_editor):
                     # Add this segment to the count
                     segmentation.segments_created = segmentation.segments_created + 1
                     segmentation.save()
-                    
-                except Exception as seg_error:
-
-            else:
-
-                
-        except Exception as e:
+                except Exception:
+                    pass
 
 def reverse_source_segments(apps, schema_editor):
     """

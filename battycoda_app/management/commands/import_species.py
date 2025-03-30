@@ -24,7 +24,7 @@ class Command(BaseCommand):
         else:
             logging.basicConfig(level=logging.WARNING)
 
-        logger = logging.getLogger("import_species")
+        # logger removed
 
         self.stdout.write("Starting default species import...")
 

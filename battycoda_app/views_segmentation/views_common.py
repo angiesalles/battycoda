@@ -3,7 +3,7 @@ Common imports and utilities for segmentation views.
 """
 import fnmatch
 import hashlib
-import logging
+# import logging
 import os
 import traceback
 
@@ -22,4 +22,4 @@ from battycoda_app.forms import SegmentForm
 from battycoda_app.models import Recording, Segment, Segmentation
 
 # Set up logging
-logger = logging.getLogger("battycoda.views_segmentation")
+# logger removed

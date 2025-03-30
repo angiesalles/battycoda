@@ -131,16 +131,25 @@ def accept_invitation_view(request, token):
 
     # Check if invitation is already accepted
     if invitation.accepted:
-        messages.info(request, "This invitation has already been accepted.")
-        if request.user.is_authenticated:
-            return redirect("battycoda_app:index")
-        else:
-            return redirect("battycoda_app:login")
+        context = {
+            "invitation": invitation,
+            "status": "already_accepted",
+            "message": "This invitation has already been accepted.",
+            "action_url": reverse("battycoda_app:login") if not request.user.is_authenticated else reverse("battycoda_app:index"),
+            "action_text": "Log in" if not request.user.is_authenticated else "Go to Dashboard"
+        }
+        return render(request, "groups/invitation_status.html", context)
 
     # Check if invitation is expired
     if invitation.is_expired:
-        messages.error(request, "This invitation has expired.")
-        return redirect("battycoda_app:index")
+        context = {
+            "invitation": invitation,
+            "status": "expired",
+            "message": "This invitation has expired.",
+            "action_url": reverse("battycoda_app:index"),
+            "action_text": "Go to Dashboard"
+        }
+        return render(request, "groups/invitation_status.html", context)
 
     # If user is logged in
     if request.user.is_authenticated:

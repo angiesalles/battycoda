@@ -7,7 +7,7 @@ import traceback
 
 from celery import shared_task
 
-from .base import logger
+# logger import removed
 
 @shared_task(bind=True, name="battycoda_app.audio.task_modules.segmentation_tasks.auto_segment_recording_task")
 def auto_segment_recording_task(
@@ -159,28 +159,23 @@ def auto_segment_recording_task(
 
             # Create segments for each onset/offset pair
             for i in range(len(onsets)):
-                try:
-                    # Generate segment name
-                    segment_name = f"Auto Segment {i+1}"
+                # Generate segment name
+                segment_name = f"Auto Segment {i+1}"
 
-                    # Create segment and associate with the new segmentation
-                    segment = Segment(
-                        recording=recording,
-                        segmentation=segmentation,
-                        name=segment_name,
-                        onset=onsets[i],
-                        offset=offsets[i],
-                        created_by=recording.created_by,  # Use recording's creator
-                        notes="Created by automated segmentation",
-                    )
-                    segment.save(manual_edit=False)  # Don't mark as manually edited for automated segmentation
-                    segments_created += 1
-                except Exception as e:
+                # Create segment and associate with the new segmentation
+                segment = Segment(
+                    recording=recording,
+                    segmentation=segmentation,
+                    name=segment_name,
+                    onset=onsets[i],
+                    offset=offsets[i],
+                    created_by=recording.created_by,  # Use recording's creator
+                    notes="Created by automated segmentation",
+                )
+                segment.save(manual_edit=False)  # Don't mark as manually edited for automated segmentation
+                segments_created += 1
 
-                    # Continue with other segments
-
-        # Return success result
-
+        # Return success result with details
         result = {
             "status": "success",
             "recording_id": recording_id,

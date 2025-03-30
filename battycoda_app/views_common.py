@@ -3,7 +3,7 @@ Common imports and utilities for views modules.
 """
 import fnmatch
 import hashlib
-import logging
+# import logging
 import mimetypes
 import os
 import re
@@ -27,4 +27,4 @@ from .models import Group, Recording, Segment, Segmentation, UserProfile
 CHUNK_SIZE = 1024 * 1024
 
 # Set up logging
-logger = logging.getLogger("battycoda.views_common")
+# logger removed

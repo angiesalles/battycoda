@@ -3,14 +3,13 @@
 Provides functionality to convert detection run results into manual tasks for review.
 """
 
-from .common_imports import (  # Python standard library; Django imports; Models; Logging
+from .common_imports import (  # Python standard library; Django imports; Models
     CallProbability,
     DetectionResult,
     DetectionRun,
     Task,
     TaskBatch,
     get_object_or_404,
-    logger,
     login_required,
     messages,
     redirect,

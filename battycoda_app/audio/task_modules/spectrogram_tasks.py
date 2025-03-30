@@ -11,9 +11,9 @@ import numpy as np
 from celery import shared_task
 from PIL import Image
 
-from ...utils import convert_path_to_os_specific
+from ...utils_modules import convert_path_to_os_specific
 from ..utils import appropriate_file, get_audio_bit, normal_hwin, overview_hwin
-from .base import log_performance, logger
+from .base import log_performance
 
 # Import soundfile in the functions where needed
 
@@ -59,8 +59,8 @@ def generate_spectrogram_task(self, path, args, output_path=None):
         success, output_file, error = generate_spectrogram(os_path, args, output_path)
 
         # Only log results for failures
-        if not success:
-
+        # Skip failure logging
+        
         if success:
             return {"status": "success", "file_path": output_file, "original_path": path, "args": args}
         else:

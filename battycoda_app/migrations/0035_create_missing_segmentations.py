@@ -19,28 +19,20 @@ def create_missing_segmentations(apps, schema_editor):
     
     # Count how many we need to create
     count = len(recordings_needing_segmentation)
-    logger = logging.getLogger('django.db.migrations')
-
     
     # Create segmentation records for these recordings
     for recording_id in recordings_needing_segmentation:
-        try:
-            # Get the recording
-            recording = Recording.objects.get(id=recording_id)
-            
-            # Create a new segmentation
-            segmentation = Segmentation(
-                recording=recording,
-                status='completed',  # Already completed since segments exist
-                progress=100,
-                created_by=recording.created_by
-            )
-            segmentation.save()
-            
-            # Log success
-
-        except Exception as e:
-            # Log error but continue with other recordings
+        # Get the recording
+        recording = Recording.objects.get(id=recording_id)
+        
+        # Create a new segmentation
+        segmentation = Segmentation(
+            recording=recording,
+            status='completed',  # Already completed since segments exist
+            progress=100,
+            created_by=recording.created_by
+        )
+        segmentation.save()
 
 def reverse_migration(apps, schema_editor):
     """No need to reverse this migration."""

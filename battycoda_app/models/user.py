@@ -105,9 +105,7 @@ class UserProfile(models.Model):
 @receiver(post_save, sender=User)
 def create_user_profile(sender, instance, created, **kwargs):
     if created:
-        import logging
-
-        logger = logging.getLogger("battycoda.models")
+        # Logger removed
 
         # First create the profile
         profile = UserProfile.objects.create(user=instance)
@@ -125,40 +123,26 @@ def create_user_profile(sender, instance, created, **kwargs):
         GroupMembership.objects.create(user=instance, group=group, is_admin=True)
 
         # Create a demo project for the user
-        try:
-            # Import here to avoid circular imports
-            Project = sender.objects.model._meta.apps.get_model("battycoda_app", "Project")
+        # Import here to avoid circular imports
+        Project = sender.objects.model._meta.apps.get_model("battycoda_app", "Project")
 
-            # Create a standard demo project
-            project_name = "Demo Project"
+        # Create a standard demo project
+        project_name = "Demo Project"
 
-            Project.objects.create(
-                name=project_name,
-                description="Sample project for demonstration and practice",
-                created_by=instance,
-                group=group,
-            )
+        Project.objects.create(
+            name=project_name,
+            description="Sample project for demonstration and practice",
+            created_by=instance,
+            group=group,
+        )
 
-        except Exception as e:
-
-        # Import default species in a separate try block
-        try:
-            from ..utils import import_default_species
-
-            created_species = import_default_species(instance)
-
-        except Exception as e:
+        # Import default species
+        from ..utils_modules import import_default_species
+        created_species = import_default_species(instance)
 
         # Create a demo task batch with sample bat calls
-        try:
-            from ..utils import create_demo_task_batch
-
-            batch = create_demo_task_batch(instance)
-            if batch:
-
-            else:
-
-        except Exception as e:
+        from ..utils_modules import create_demo_task_batch
+        batch = create_demo_task_batch(instance)
 
 @receiver(post_save, sender=User)
 def save_user_profile(sender, instance, **kwargs):

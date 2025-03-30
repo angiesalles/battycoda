@@ -80,13 +80,10 @@ def create_species_view(request):
             # Process call types from JSON
             call_types_json = request.POST.get("call_types_json", "[]")
 
-            try:
-                # If the JSON is empty or whitespace, use an empty list
-                call_types_json = call_types_json.strip()
-                if not call_types_json or call_types_json == "[]":
-                    call_types = []
-                else:
-                    call_types = json.loads(call_types_json)
+            # If the JSON is empty or whitespace, use an empty list
+            call_types_json = call_types_json.strip()
+            if call_types_json and call_types_json != "[]":
+                call_types = json.loads(call_types_json)
 
                 for call_data in call_types:
                     # Create the call
@@ -100,9 +97,6 @@ def create_species_view(request):
                             call.save()
                         # Skip duplicates silently
                     # Skip calls with empty short_name silently
-            except json.JSONDecodeError as e:
-
-                # Continue with species creation even if call types can't be parsed
 
             messages.success(request, "Species created successfully.")
             return redirect("battycoda_app:species_detail", species_id=species.id)

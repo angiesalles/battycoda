@@ -22,12 +22,9 @@ from battycoda_app.models import (
     TaskBatch,
 )
 
-# Set up logging
-
 # Export all common imports
 __all__ = [
     # Python standard library
-    "logging",
     "traceback",
     # Django imports
     "messages",
@@ -49,6 +46,4 @@ __all__ = [
     "Segmentation",
     "Task",
     "TaskBatch",
-    # Logging
-    "logger",
 ]

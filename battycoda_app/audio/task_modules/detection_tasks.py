@@ -11,7 +11,7 @@ import requests
 import soundfile as sf
 from celery import shared_task
 
-from .base import extract_audio_segment, logger
+from .base import extract_audio_segment
 
 @shared_task(bind=True, name="battycoda_app.audio.task_modules.detection_tasks.run_call_detection")
 def run_call_detection(self, detection_run_id):
@@ -147,10 +147,6 @@ def run_call_detection(self, detection_run_id):
                 files["file"][1].close()
                 os.unlink(temp_path)
 
-                # Log response information
-
-                if response.headers.get("Content-Type", "").startswith("application/json"):
-
                 # Process response
                 if response.status_code == 200:
                     try:
@@ -274,15 +270,12 @@ def run_call_detection(self, detection_run_id):
         }
 
     except Exception as e:
-
         # Update run status
-        try:
-            detection_run = DetectionRun.objects.get(id=detection_run_id)
-            detection_run.status = "failed"
-            detection_run.error_message = str(e)
-            detection_run.save()
-        except Exception as update_error:
-
+        detection_run = DetectionRun.objects.get(id=detection_run_id)
+        detection_run.status = "failed"
+        detection_run.error_message = str(e)
+        detection_run.save()
+        
         return {"status": "error", "message": str(e)}
 
 @shared_task(bind=True, name="battycoda_app.audio.task_modules.detection_tasks.run_dummy_classifier")
@@ -379,11 +372,9 @@ def run_dummy_classifier(self, detection_run_id):
     except Exception as e:
 
         # Update run status
-        try:
-            detection_run = DetectionRun.objects.get(id=detection_run_id)
-            detection_run.status = "failed"
-            detection_run.error_message = str(e)
-            detection_run.save()
-        except Exception as update_error:
+        detection_run = DetectionRun.objects.get(id=detection_run_id)
+        detection_run.status = "failed"
+        detection_run.error_message = str(e)
+        detection_run.save()
 
         return {"status": "error", "message": str(e)}

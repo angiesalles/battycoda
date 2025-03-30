@@ -238,47 +238,41 @@ class Segment(models.Model):
         # Check if we need a segmentation for this segment
         if not hasattr(self, "segmentation") or self.segmentation is None:
             # Find active segmentation for this recording or create a new one
+            # Get the Segmentation model through the apps registry to avoid circular imports
+            Segmentation = self.__class__._meta.apps.get_model("battycoda_app", "Segmentation")
+
+            # Look for an active segmentation
             try:
-                # Get the Segmentation model through the apps registry to avoid circular imports
-                Segmentation = self.__class__._meta.apps.get_model("battycoda_app", "Segmentation")
+                segmentation = Segmentation.objects.get(recording=self.recording, is_active=True)
+            except Segmentation.DoesNotExist:
+                # No active segmentation, create a new one
+                segmentation = Segmentation.objects.create(
+                    recording=self.recording,
+                    name=f"Manual Segmentation {timezone.now().strftime('%Y-%m-%d %H:%M:%S')}",
+                    created_by=self.created_by,
+                    status="completed",
+                    progress=100,
+                    is_active=True,
+                    manually_edited=manual_edit,  # Only mark as manually edited if it's a manual save
+                )
 
-                # Look for an active segmentation
-                try:
-                    segmentation = Segmentation.objects.get(recording=self.recording, is_active=True)
-                except Segmentation.DoesNotExist:
-                    # No active segmentation, create a new one
-                    segmentation = Segmentation.objects.create(
-                        recording=self.recording,
-                        name=f"Manual Segmentation {timezone.now().strftime('%Y-%m-%d %H:%M:%S')}",
-                        created_by=self.created_by,
-                        status="completed",
-                        progress=100,
-                        is_active=True,
-                        manually_edited=manual_edit,  # Only mark as manually edited if it's a manual save
-                    )
-
-                # Assign this segmentation to the segment
-                self.segmentation = segmentation
-            except Exception as e:
+            # Assign this segmentation to the segment
+            self.segmentation = segmentation
 
         # Call the original save method
         super().save(*args, **kwargs)
 
         # Mark the segment's segmentation as manually edited ONLY if this is a manual edit
         if manual_edit and hasattr(self, "segmentation") and self.segmentation:
-            try:
-                self.segmentation.manually_edited = True
-                self.segmentation.save()
-            except Exception as e:
+            self.segmentation.manually_edited = True
+            self.segmentation.save()
 
     def delete(self, *args, **kwargs):
         """Override delete to mark segmentation as manually edited before deletion"""
         # Mark the segmentation as manually edited if it exists
         if hasattr(self, "segmentation") and self.segmentation:
-            try:
-                self.segmentation.manually_edited = True
-                self.segmentation.save()
-            except Exception as e:
+            self.segmentation.manually_edited = True
+            self.segmentation.save()
 
         # Call the original delete method
         super().delete(*args, **kwargs)

@@ -80,25 +80,20 @@ def task_annotation_view(request, task_id):
         call_descriptions[task.label] = "Automatic classification result"
 
     # Get call types from the species
-    try:
-        # Get calls from the database
-        calls = species_obj.calls.all()
-        if calls.exists():
-            for call in calls:
-                # Skip if this call type was already added from the task label
-                if call.short_name in call_types:
-                    continue
+    # Get calls from the database
+    calls = species_obj.calls.all()
+    if calls.exists():
+        for call in calls:
+            # Skip if this call type was already added from the task label
+            if call.short_name in call_types:
+                continue
 
-                call_types.append(call.short_name)
-                # Use long_name as the description if available
-                description = call.long_name if call.long_name else ""
-                call_descriptions[call.short_name] = description
+            call_types.append(call.short_name)
+            # Use long_name as the description if available
+            description = call.long_name if call.long_name else ""
+            call_descriptions[call.short_name] = description
 
-        else:
-
-    except Exception as e:
-
-    # If no call types were loaded from the database, log a warning
+    # If no call types were loaded from the database
     if not call_types:
 
         # Add a default "Unknown" call type to ensure the interface has at least one option
@@ -153,15 +148,9 @@ def task_annotation_view(request, task_id):
 
     # Try to get sample rate from the source if this task has a source segment with a recording
     sample_rate = None
-    try:
-        # First, try to get from source segment if it exists
-        if hasattr(task, "source_segment") and task.source_segment and task.source_segment.recording:
-            sample_rate = task.source_segment.recording.sample_rate
-
-    except Exception as e:
-
-    # If we couldn't get the sample rate from the source segment, use a default
-    if not sample_rate:
+    # First, try to get from source segment if it exists
+    if hasattr(task, "source_segment") and task.source_segment and task.source_segment.recording:
+        sample_rate = task.source_segment.recording.sample_rate
 
     # Generate tick marks for the spectrogram using our utility function
     tick_data = get_spectrogram_ticks(
