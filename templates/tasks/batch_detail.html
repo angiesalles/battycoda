@@ -25,7 +25,7 @@
                     <p><strong>Project:</strong> {{ batch.project }}</p>
                 </div>
                 <div class="col-md-6">
-                    <p><strong>Created:</strong> {{ batch.created_at|date:"M d, Y H:i" }}</p>
+                    <p><strong>Created:</strong> <span data-utc-date="{{ batch.created_at|date:'c' }}" data-date-format="datetime">{{ batch.created_at|date:"M d, Y H:i" }}</span></p>
                     <p><strong>Created By:</strong> {{ batch.created_by.username }}</p>
                     <p><strong>Total Tasks:</strong> {{ tasks.count }}</p>
                     

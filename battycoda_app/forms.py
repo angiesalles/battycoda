@@ -292,25 +292,8 @@ class RecordingForm(forms.ModelForm):
                 self.fields["project"].queryset = self.fields["project"].queryset.filter(group=self.profile.group)
 
     def clean_name(self):
-        """Validate that recording name is unique within the group"""
+        """Name validation"""
         name = self.cleaned_data.get("name")
-
-        # If we have a profile with a group, check for uniqueness
-        if self.profile and self.profile.group:
-            # Get the instance ID (if editing) or None (if creating)
-            instance_id = self.instance.id if self.instance else None
-
-            # Check if a recording with this name already exists in the group
-            # Exclude the current instance if editing
-            existing_query = Recording.objects.filter(name=name, group=self.profile.group)
-            if instance_id:
-                existing_query = existing_query.exclude(id=instance_id)
-
-            if existing_query.exists():
-                raise forms.ValidationError(
-                    "A recording with this name already exists in your group. " "Please choose a different name."
-                )
-
         return name
 
 

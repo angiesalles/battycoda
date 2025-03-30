@@ -79,7 +79,7 @@
                                 </tr>
                                 <tr>
                                     <th>Created</th>
-                                    <td>{{ run.created_at }}</td>
+                                    <td data-utc-date="{{ run.created_at|date:'c' }}" data-date-format="datetime">{{ run.created_at }}</td>
                                 </tr>
                                 <tr>
                                     <th>Created By</th>
