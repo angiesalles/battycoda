@@ -49,8 +49,8 @@
                     <p><strong>Label:</strong> {{ task.label|default:"Not labeled" }}</p>
                     <p><strong>Classification:</strong> {{ task.classification_result|default:"Not classified" }}</p>
                     <p><strong>Confidence:</strong> {{ task.confidence|default:"-"|floatformat:2 }}</p>
-                    <p><strong>Created:</strong> {{ task.created_at|date:"M d, Y H:i" }}</p>
-                    <p><strong>Last Updated:</strong> {{ task.updated_at|date:"M d, Y H:i" }}</p>
+                    <p><strong>Created:</strong> <span data-utc-date="{{ task.created_at|date:'c' }}" data-date-format="datetime">{{ task.created_at|date:"M d, Y H:i" }}</span></p>
+                    <p><strong>Last Updated:</strong> <span data-utc-date="{{ task.updated_at|date:'c' }}" data-date-format="datetime">{{ task.updated_at|date:"M d, Y H:i" }}</span></p>
                 </div>
             </div>
             

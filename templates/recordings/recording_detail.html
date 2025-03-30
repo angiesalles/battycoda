@@ -74,7 +74,7 @@
                     
                     <div>
                         <div class="fw-bold text-muted small mb-1">Created By</div>
-                        <p class="mb-0">{{ recording.created_by.username }} on {{ recording.created_at|date:"M d, Y" }}</p>
+                        <p class="mb-0">{{ recording.created_by.username }} on <span data-utc-date="{{ recording.created_at|date:'c' }}" data-date-format="date">{{ recording.created_at|date:"M d, Y" }}</span></p>
                     </div>
                 </div>
                 <div class="card-footer d-grid gap-2">

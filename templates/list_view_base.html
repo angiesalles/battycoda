@@ -65,7 +65,7 @@
                             
                             {% block item_fields %}
                             <!-- Additional fields go here -->
-                            <td>{{ item.created_at|date:"M d, Y" }}</td>
+                            <td data-utc-date="{{ item.created_at|date:'c' }}" data-date-format="date">{{ item.created_at|date:"M d, Y" }}</td>
                             {% endblock %}
                             
                             <td>
