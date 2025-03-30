@@ -1,15 +1,13 @@
 """
 Utility functions for file handling and caching in BattyCoda audio processing.
 """
-import logging
+
 import os
 import pickle
 
 from django.conf import settings
 
 # Configure logging
-logger = logging.getLogger("battycoda.audio.file_utils")
-
 
 def appropriate_file(path, args, folder_only=False):
     """
@@ -64,7 +62,6 @@ def appropriate_file(path, args, folder_only=False):
 
     return os.path.join(cache_dir, filename)
 
-
 def process_pickle_file(pickle_file):
     """Process a pickle file that contains onset and offset data.
 
@@ -98,7 +95,7 @@ def process_pickle_file(pickle_file):
             offsets = pickle_data[1]
         else:
             # Unrecognized format
-            logger.error(f"Pickle file format not recognized: {type(pickle_data)}")
+
             raise ValueError(
                 "Pickle file format not recognized. Expected a dictionary with 'onsets' and 'offsets' keys, or a list/tuple with at least 2 elements."
             )
@@ -129,8 +126,7 @@ def process_pickle_file(pickle_file):
         return onsets, offsets
 
     except Exception as e:
-        logger.error(f"Error processing pickle file: {str(e)}")
+
         import traceback
 
-        logger.error(traceback.format_exc())
         raise

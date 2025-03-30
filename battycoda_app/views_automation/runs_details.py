@@ -16,7 +16,6 @@ from .common_imports import (  # Django imports; Models
     render,
 )
 
-
 @login_required
 def detection_run_detail_view(request, run_id):
     """Display details of a specific classification run."""
@@ -59,7 +58,6 @@ def detection_run_detail_view(request, run_id):
     }
 
     return render(request, "automation/run_detail.html", context)
-
 
 @login_required
 def detection_run_status_view(request, run_id):

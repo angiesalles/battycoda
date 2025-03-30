@@ -4,7 +4,6 @@ import django.db.models.deletion
 from django.conf import settings
 from django.db import migrations, models
 
-
 class Migration(migrations.Migration):
     dependencies = [
         ("battycoda_app", "0025_rename_team_to_group"),

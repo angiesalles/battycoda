@@ -1,7 +1,7 @@
 """
 Base utilities for BattyCoda audio processing tasks.
 """
-import logging
+
 import os
 import time
 import traceback
@@ -9,16 +9,12 @@ import traceback
 from django.conf import settings
 
 # Configure logging
-logger = logging.getLogger("battycoda.tasks")
-
 
 def log_performance(start_time, message):
     """Log performance with elapsed time - only for total task time"""
     # Only log total task completions to reduce log volume
     if "TOTAL" in message:
         elapsed = time.time() - start_time
-        logger.info(f"PERF: {message} - {elapsed:.3f}s")
-
 
 def extract_audio_segment(wav_path, onset, offset=None):
     """
@@ -46,7 +42,6 @@ def extract_audio_segment(wav_path, onset, offset=None):
         n_channels = info.channels
 
         # Brief log of file details
-        logger.info(f"Audio file: {os.path.basename(wav_path)}, duration: {duration:.2f}s, sample rate: {sample_rate}Hz")
 
         # Handle case where offset is None (read to the end)
         if offset is None:
@@ -71,7 +66,7 @@ def extract_audio_segment(wav_path, onset, offset=None):
             if valid_num_samples <= 0:
                 # Entire request is outside file bounds - return zeros
                 segment = np.zeros((req_num_samples, n_channels), dtype=np.float32)
-                logger.info(f"Segment entirely outside bounds ({onset:.3f}s to {offset:.3f}s), returning zeros")
+
             else:
                 # Read valid portion and add padding
                 with sf.SoundFile(wav_path) as f:
@@ -88,8 +83,7 @@ def extract_audio_segment(wav_path, onset, offset=None):
                 # Insert valid data at the correct position
                 insert_pos = max(0, -req_start_sample)
                 segment[insert_pos : insert_pos + valid_segment.shape[0]] = valid_segment
-                
-                logger.info(f"Created padded segment from {onset:.3f}s to {offset:.3f}s")
+
         else:
             # No padding needed, just read the segment efficiently
             with sf.SoundFile(wav_path) as f:
@@ -99,12 +93,8 @@ def extract_audio_segment(wav_path, onset, offset=None):
             # Handle mono audio consistently
             if len(segment.shape) == 1 and segment.size > 0:
                 segment = segment.reshape(-1, 1)
-                
-            logger.info(f"Read segment directly from {onset:.3f}s to {offset:.3f}s")
 
         return segment, sample_rate
     except Exception as e:
-        logger.error(f"Error extracting audio segment: {str(e)}")
-        logger.error(f"File: {wav_path}, Onset: {onset}, Offset: {offset}")
-        logger.error(traceback.format_exc())
+
         raise

@@ -3,7 +3,6 @@ Views for managing batch segmentation operations.
 """
 from .views_common import *
 
-
 @login_required
 def batch_segmentation_view(request):
     """Display a page for batch segmentation operations"""
@@ -29,7 +28,6 @@ def batch_segmentation_view(request):
     }
 
     return render(request, "recordings/batch_segmentation.html", context)
-
 
 @login_required
 def segmentation_jobs_status_view(request):
@@ -83,7 +81,7 @@ def segmentation_jobs_status_view(request):
                         segmentation.status = "failed"
                         segmentation.save()
             except Exception as e:
-                logger.error(f"Error updating segmentation status for segmentation {segmentation.id}: {str(e)}")
+
                 # Don't update the status in case of error
 
     # Format the segmentations for the response

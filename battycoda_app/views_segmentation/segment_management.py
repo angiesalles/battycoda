@@ -5,7 +5,6 @@ import json
 
 from .views_common import *
 
-
 @login_required
 def segment_recording_view(request, recording_id):
     """View for segmenting a recording (marking regions)"""
@@ -67,7 +66,7 @@ def segment_recording_view(request, recording_id):
             # Use a placeholder until it's generated
             spectrogram_url = None
     except Exception as e:
-        logger.error(f"Error checking/generating spectrogram: {str(e)}")
+
         spectrogram_url = None
 
     # Convert segments to JSON
@@ -88,7 +87,6 @@ def segment_recording_view(request, recording_id):
     }
 
     return render(request, "recordings/segment_recording.html", context)
-
 
 @login_required
 def add_segment_view(request, recording_id):
@@ -126,7 +124,6 @@ def add_segment_view(request, recording_id):
 
     return JsonResponse({"success": False, "error": "Invalid request method"}, status=405)
 
-
 @login_required
 def edit_segment_view(request, segment_id):
     """Edit a segment via AJAX"""
@@ -161,7 +158,6 @@ def edit_segment_view(request, segment_id):
             return JsonResponse({"success": False, "errors": form.errors}, status=400)
 
     return JsonResponse({"success": False, "error": "Invalid request method"}, status=405)
-
 
 @login_required
 def delete_segment_view(request, segment_id):

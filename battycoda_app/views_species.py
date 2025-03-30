@@ -1,5 +1,5 @@
 import json
-import logging
+
 import traceback
 
 from django.contrib import messages
@@ -14,8 +14,6 @@ from .forms import CallFormSetFactory, SpeciesEditForm, SpeciesForm
 from .models import Call, Recording, Species, Task, TaskBatch
 
 # Set up logging
-logger = logging.getLogger("battycoda.views_species")
-
 
 @login_required
 def species_list_view(request):
@@ -41,7 +39,6 @@ def species_list_view(request):
 
     return render(request, "species/species_list.html", context)
 
-
 @login_required
 def species_detail_view(request, species_id):
     """Display detail of a species"""
@@ -64,7 +61,6 @@ def species_detail_view(request, species_id):
     }
 
     return render(request, "species/species_detail.html", context)
-
 
 @login_required
 def create_species_view(request):
@@ -105,7 +101,7 @@ def create_species_view(request):
                         # Skip duplicates silently
                     # Skip calls with empty short_name silently
             except json.JSONDecodeError as e:
-                logger.error(f"Error parsing call_types_json '{call_types_json}': {str(e)}")
+
                 # Continue with species creation even if call types can't be parsed
 
             messages.success(request, "Species created successfully.")
@@ -126,7 +122,6 @@ def create_species_view(request):
     }
 
     return render(request, "species/create_species.html", context)
-
 
 @login_required
 def edit_species_view(request, species_id):
@@ -163,7 +158,6 @@ def edit_species_view(request, species_id):
     }
 
     return render(request, "species/edit_species.html", context)
-
 
 @login_required
 def delete_species_view(request, species_id):
@@ -206,8 +200,7 @@ def delete_species_view(request, species_id):
                 messages.success(request, f"Successfully deleted species: {species_name}")
                 return redirect("battycoda_app:species_list")
         except Exception as e:
-            logger.error(f"Error deleting species {species.id}: {str(e)}")
-            logger.error(traceback.format_exc())
+
             messages.error(request, f"Failed to delete species: {str(e)}")
 
     context = {
@@ -219,7 +212,6 @@ def delete_species_view(request, species_id):
     }
 
     return render(request, "species/delete_species.html", context)
-
 
 @login_required
 @require_POST
@@ -260,10 +252,8 @@ def add_call_view(request, species_id):
         )
 
     except Exception as e:
-        logger.error(f"Error adding call: {str(e)}")
-        logger.error(traceback.format_exc())
-        return JsonResponse({"success": False, "error": str(e)})
 
+        return JsonResponse({"success": False, "error": str(e)})
 
 @login_required
 @require_POST
@@ -293,10 +283,8 @@ def delete_call_view(request, species_id, call_id):
         )
 
     except Exception as e:
-        logger.error(f"Error deleting call: {str(e)}")
-        logger.error(traceback.format_exc())
-        return JsonResponse({"success": False, "error": str(e)})
 
+        return JsonResponse({"success": False, "error": str(e)})
 
 @login_required
 @require_POST
@@ -346,6 +334,5 @@ def parse_calls_file_view(request):
         return JsonResponse({"success": True, "calls": calls})
 
     except Exception as e:
-        logger.error(f"Error parsing calls file: {str(e)}")
-        logger.error(traceback.format_exc())
+
         return JsonResponse({"success": False, "error": str(e)})

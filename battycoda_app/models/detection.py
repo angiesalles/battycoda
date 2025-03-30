@@ -6,7 +6,6 @@ from django.db import models
 from .organization import Call
 from .user import Group
 
-
 class Classifier(models.Model):
     """Classifier model for storing algorithm information."""
 
@@ -52,7 +51,6 @@ class Classifier(models.Model):
 
     class Meta:
         ordering = ["name"]
-
 
 class DetectionRun(models.Model):
     """Detection run model for tracking automated detection jobs."""
@@ -103,7 +101,6 @@ class DetectionRun(models.Model):
     def __str__(self):
         return f"{self.name} - {self.segmentation.recording.name}"
 
-
 class DetectionResult(models.Model):
     """Detection Result model for storing individual call detection probabilities."""
 
@@ -116,7 +113,6 @@ class DetectionResult(models.Model):
 
     def __str__(self):
         return f"Detection for {self.segment}"
-
 
 class CallProbability(models.Model):
     """Call probability model for storing probability for each call type."""

@@ -6,7 +6,6 @@ import os
 
 from django.conf import settings
 
-
 def convert_path_to_os_specific(path):
     """
     Convert a web path to an OS-specific path

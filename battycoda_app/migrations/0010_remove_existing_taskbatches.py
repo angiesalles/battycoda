@@ -2,7 +2,6 @@
 
 from django.db import migrations
 
-
 def remove_taskbatches(apps, schema_editor):
     # Get models
     TaskBatch = apps.get_model('battycoda_app', 'TaskBatch')
@@ -14,11 +13,9 @@ def remove_taskbatches(apps, schema_editor):
     # Delete all TaskBatches
     TaskBatch.objects.all().delete()
 
-
 def reverse_migration(apps, schema_editor):
     # This is a destructive migration that cannot be reversed
     pass
-
 
 class Migration(migrations.Migration):
 

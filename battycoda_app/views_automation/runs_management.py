@@ -19,7 +19,6 @@ from .common_imports import (  # Django imports; Models; Logging
     render,
 )
 
-
 @login_required
 def automation_home_view(request):
     """Display a list of classification runs with a button to start a new one."""
@@ -44,7 +43,7 @@ def automation_home_view(request):
                 valid_runs.append(run)
             except (AttributeError, Exception):
                 # Skip this run if it causes errors
-                logger.error(f"Skipping invalid run {run.id}: missing segmentation or recording")
+
                 continue
 
         context = {
@@ -53,18 +52,16 @@ def automation_home_view(request):
 
         return render(request, "automation/dashboard.html", context)
     except Exception as e:
-        logger.error(f"Error in automation_home_view: {str(e)}")
+
         messages.error(request, f"An error occurred: {str(e)}")
         # Provide a fallback response
         return render(request, "automation/dashboard.html", {"runs": []})
-
 
 @login_required
 def detection_run_list_view(request):
     """Display list of all detection runs - redirects to main automation view."""
     # We've combined this view with the main automation view
     return redirect("battycoda_app:automation_home")
-
 
 @login_required
 def create_detection_run_view(request, segmentation_id=None):
@@ -98,7 +95,7 @@ def create_detection_run_view(request, segmentation_id=None):
             # Try to get the default R-direct classifier
             try:
                 classifier = Classifier.objects.get(name="R-direct Classifier")
-                logger.info("Using default R-direct classifier")
+
             except Classifier.DoesNotExist:
                 messages.error(request, "Default classifier not found. Please select a classifier.")
                 return redirect("battycoda_app:create_detection_run", segmentation_id=segmentation_id)
@@ -136,7 +133,6 @@ def create_detection_run_view(request, segmentation_id=None):
             return redirect("battycoda_app:detection_run_detail", run_id=run.id)
 
         except Exception as e:
-            logger.error(f"Error creating classification run: {str(e)}")
 
             # If AJAX request
             if request.headers.get("x-requested-with") == "XMLHttpRequest":
@@ -167,7 +163,6 @@ def create_detection_run_view(request, segmentation_id=None):
         else:
             classifiers = Classifier.objects.filter(is_active=True, group__isnull=True).order_by("name")
 
-        logger.info(
             f"Found {classifiers.count()} classifiers for user {request.user.username} with group {profile.group}"
         )
 
@@ -208,7 +203,6 @@ def create_detection_run_view(request, segmentation_id=None):
     }
 
     return render(request, "automation/select_segmentation.html", context)
-
 
 @login_required
 def delete_detection_run_view(request, run_id):

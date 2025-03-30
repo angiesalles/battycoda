@@ -4,7 +4,6 @@ from django.urls import resolve, reverse
 from battycoda_app import views, views_auth, views_group, views_task
 from battycoda_app.tests.test_base import BattycodaTestCase
 
-
 class UrlsTest(BattycodaTestCase):
     def setUp(self):
         self.user = User.objects.create_user(username="testuser", email="test@example.com", password="password123")

@@ -2,7 +2,6 @@
 Utility functions for species management.
 """
 
-import logging
 import os
 import time
 import traceback
@@ -10,8 +9,6 @@ import traceback
 from django.core.files import File
 
 # Set up logging
-logger = logging.getLogger("battycoda.utils")
-
 
 def available_species():
     """
@@ -26,9 +23,8 @@ def available_species():
 
         return [species["name"] for species in DEFAULT_SPECIES]
     except Exception as e:
-        logger.error(f"Error getting available species: {str(e)}")
-        return []
 
+        return []
 
 def import_default_species(user):
     """Import default species for a new user's group
@@ -45,12 +41,10 @@ def import_default_species(user):
     # Add a delay to ensure user creation transaction is complete
     time.sleep(1)
 
-    logger.info(f"Importing default species for user {user.username}")
-
     # Get the user's group
     group = user.profile.group
     if not group:
-        logger.warning(f"User {user.username} has no group, skipping species import")
+
         return []
 
     created_species = []
@@ -65,7 +59,7 @@ def import_default_species(user):
 
         # Skip if species already exists for this group
         if Species.objects.filter(name=species_name, group=group).exists():
-            logger.info(f"Species {species_name} already exists for group {group.name}")
+
             continue
 
         try:
@@ -73,26 +67,20 @@ def import_default_species(user):
             species = Species.objects.create(
                 name=species_name, description=species_data["description"], created_by=user, group=group
             )
-            logger.info(f"Created species {species.name} for group {group.name}")
 
             # Add the image if it exists
             image_found = _add_species_image(species, species_data)
             if not image_found:
-                logger.warning(f"Image file not found for {species_data['name']}")
 
             # Parse call types from the text file
             call_file_found = _add_species_calls(species, species_data, user)
             if not call_file_found:
-                logger.warning(f"Call file not found for {species_data['name']}")
 
             created_species.append(species)
 
         except Exception as e:
-            logger.error(f"Error importing species {species_data['name']}: {str(e)}")
-            logger.error(traceback.format_exc())
 
     return created_species
-
 
 def _add_species_image(species, species_data):
     """Helper function to add an image to a species
@@ -111,17 +99,16 @@ def _add_species_image(species, species_data):
 
     image_found = False
     for image_path in image_paths:
-        logger.info(f"Looking for image at {image_path}")
+
         if os.path.exists(image_path):
-            logger.info(f"Found image at {image_path}")
+
             with open(image_path, "rb") as img_file:
                 species.image.save(species_data["image_file"], File(img_file), save=True)
-            logger.info(f"Saved image for {species.name}")
+
             image_found = True
             break
 
     return image_found
-
 
 def _add_species_calls(species, species_data, user):
     """Helper function to add calls to a species
@@ -143,14 +130,13 @@ def _add_species_calls(species, species_data, user):
 
     call_file_found = False
     for call_path in call_paths:
-        logger.info(f"Looking for call file at {call_path}")
+
         if os.path.exists(call_path):
-            logger.info(f"Found call file at {call_path}")
+
             call_count = 0
 
             with open(call_path, "r", encoding="utf-8") as f:
                 file_content = f.read()
-                logger.info(f"Read {len(file_content)} bytes from {call_path}")
 
                 # Process each line
                 for line in file_content.splitlines():
@@ -178,7 +164,6 @@ def _add_species_calls(species, species_data, user):
                     )
                     call_count += 1
 
-            logger.info(f"Created {call_count} calls for species {species.name}")
             call_file_found = True
             break
 

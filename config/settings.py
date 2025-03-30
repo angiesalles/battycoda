@@ -23,7 +23,6 @@ env_file = BASE_DIR / ".env"
 if env_file.exists():
     dotenv.load_dotenv(env_file)
 
-
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.1/howto/deployment/checklist/
 
@@ -60,7 +59,6 @@ SECURE_HSTS_SECONDS = 31536000  # Commented out until HTTPS is fully configured
 SECURE_HSTS_INCLUDE_SUBDOMAINS = True
 SECURE_HSTS_PRELOAD = True
 
-
 # Application definition
 
 INSTALLED_APPS = [
@@ -86,7 +84,6 @@ MIDDLEWARE = [
     "battycoda_app.middleware.authentication_middleware.AuthenticationMiddleware",
 ]
 
-
 ROOT_URLCONF = "config.urls"
 
 TEMPLATES = [
@@ -107,7 +104,6 @@ TEMPLATES = [
 
 WSGI_APPLICATION = "config.wsgi.application"
 
-
 # Database
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases
 
@@ -117,7 +113,6 @@ DATABASES = {
         "NAME": BASE_DIR / "db.sqlite3",
     }
 }
-
 
 # Password validation
 # https://docs.djangoproject.com/en/5.1/ref/settings/#auth-password-validators
@@ -137,7 +132,6 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
-
 # Internationalization
 # https://docs.djangoproject.com/en/5.1/topics/i18n/
 
@@ -148,7 +142,6 @@ TIME_ZONE = "UTC"
 USE_I18N = True
 
 USE_TZ = True
-
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.1/howto/static-files/
@@ -211,7 +204,7 @@ LOGGING = {
     },
     "handlers": {
         "console": {
-            "level": "DEBUG",
+            "level": "WARNING",
             "class": "logging.StreamHandler",
             "formatter": "verbose",
         },
@@ -219,32 +212,32 @@ LOGGING = {
     "loggers": {
         "battycoda.auth": {
             "handlers": ["console"],
-            "level": "DEBUG",
+            "level": "WARNING",
             "propagate": True,
         },
         "battycoda.audio": {
             "handlers": ["console"],
-            "level": "DEBUG",
+            "level": "WARNING",
             "propagate": True,
         },
         "battycoda.tasks": {
             "handlers": ["console"],
-            "level": "DEBUG",
+            "level": "WARNING",
             "propagate": True,
         },
         "battycoda.email": {
             "handlers": ["console"],
-            "level": "DEBUG",
+            "level": "INFO",
             "propagate": True,
         },
         "battycoda.views_species": {
             "handlers": ["console"],
-            "level": "DEBUG",
+            "level": "WARNING",
             "propagate": True,
         },
         "django.request": {
             "handlers": ["console"],
-            "level": "DEBUG",
+            "level": "WARNING",
             "propagate": True,
         },
     },

@@ -1,6 +1,5 @@
 """Common imports for automation views."""
 
-import logging
 import traceback
 
 from django.contrib import messages
@@ -24,7 +23,6 @@ from battycoda_app.models import (
 )
 
 # Set up logging
-logger = logging.getLogger("battycoda.views_automation")
 
 # Export all common imports
 __all__ = [

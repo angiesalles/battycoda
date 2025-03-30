@@ -1,5 +1,5 @@
 import hashlib
-import logging
+
 import os
 
 from django.conf import settings
@@ -11,8 +11,6 @@ from .models import Species, Task
 from .utils_modules.path_utils import convert_path_to_os_specific
 
 # Set up logging
-logger = logging.getLogger("battycoda.views_task_annotation")
-
 
 @login_required
 def task_annotation_view(request, task_id):
@@ -64,7 +62,6 @@ def task_annotation_view(request, task_id):
 
     # Create hash
     file_hash = hashlib.md5(os_path.encode()).hexdigest()
-    logger.info(f"Generated hash {file_hash} for path {os_path}")
 
     # Set up onset and offset as a "call"
     # In our case, we'll treat each task as one "call"
@@ -81,7 +78,6 @@ def task_annotation_view(request, task_id):
     if task.label:
         call_types.append(task.label)
         call_descriptions[task.label] = "Automatic classification result"
-        logger.info(f"Using pre-classified label: {task.label}")
 
     # Get call types from the species
     try:
@@ -98,15 +94,13 @@ def task_annotation_view(request, task_id):
                 description = call.long_name if call.long_name else ""
                 call_descriptions[call.short_name] = description
 
-            logger.info(f"Loaded {len(call_types)} call types from database for species {species_obj.name}")
         else:
-            logger.warning(f"No call types found for species {species_obj.name}")
+
     except Exception as e:
-        logger.error(f"Error loading call types from database: {str(e)}")
 
     # If no call types were loaded from the database, log a warning
     if not call_types:
-        logger.warning(f"No call types found in database for species {species}")
+
         # Add a default "Unknown" call type to ensure the interface has at least one option
         call_types.append("Unknown")
         call_descriptions["Unknown"] = "Unspecified call type"
@@ -138,7 +132,7 @@ def task_annotation_view(request, task_id):
             # Check if the file exists, if not, trigger generation
             if not os.path.exists(cache_path):
                 # Trigger spectrogram generation
-                logger.info(f"Pre-generating spectrogram: channel={channel}, overview={is_overview}")
+
                 task.generate_spectrograms()
 
             # Create a URL for the spectrogram (that will be handled by spectrogram_view)
@@ -163,13 +157,11 @@ def task_annotation_view(request, task_id):
         # First, try to get from source segment if it exists
         if hasattr(task, "source_segment") and task.source_segment and task.source_segment.recording:
             sample_rate = task.source_segment.recording.sample_rate
-            logger.info(f"Using sample rate from source segment's recording: {sample_rate}Hz")
+
     except Exception as e:
-        logger.debug(f"No sample rate from source segment: {str(e)}")
 
     # If we couldn't get the sample rate from the source segment, use a default
     if not sample_rate:
-        logger.debug("Using default sample rate for spectrograms")
 
     # Generate tick marks for the spectrogram using our utility function
     tick_data = get_spectrogram_ticks(

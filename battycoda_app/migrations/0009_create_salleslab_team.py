@@ -2,7 +2,6 @@
 
 from django.db import migrations
 
-
 def create_salleslab_team_and_assign_users(apps, schema_editor):
     # Get the Team model
     Team = apps.get_model('battycoda_app', 'Team')
@@ -45,7 +44,6 @@ def create_salleslab_team_and_assign_users(apps, schema_editor):
     # Update all projects
     Project.objects.all().update(team=salleslab_team)
 
-
 def reverse_salleslab_team_assignment(apps, schema_editor):
     # Get the models
     UserProfile = apps.get_model('battycoda_app', 'UserProfile')
@@ -56,7 +54,6 @@ def reverse_salleslab_team_assignment(apps, schema_editor):
     UserProfile.objects.all().update(team=None, is_admin=False)
     Species.objects.all().update(team=None)
     Project.objects.all().update(team=None)
-
 
 class Migration(migrations.Migration):
 

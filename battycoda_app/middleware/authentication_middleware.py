@@ -4,14 +4,10 @@ Standard authentication middleware for BattyCoda Django application
 This middleware ensures users are authenticated and handles redirects to login page.
 """
 
-import logging
-
 from django.http import HttpResponseRedirect
 from django.urls import reverse
 
 # Set up logging
-logger = logging.getLogger("battycoda.auth")
-
 
 class AuthenticationMiddleware:
     """
@@ -43,7 +39,6 @@ class AuthenticationMiddleware:
 
         # Check if the user is authenticated
         if not request.user.is_authenticated:
-            logger.info(f"Redirecting unauthenticated user from {request.path} to login page")
 
             # Redirect to login page
             try:

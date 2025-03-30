@@ -1,4 +1,3 @@
-import logging
 
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
@@ -7,8 +6,6 @@ from django.shortcuts import get_object_or_404, redirect
 from .models import Task, TaskBatch
 
 # Set up logging
-logger = logging.getLogger("battycoda.views_task_navigation")
-
 
 @login_required
 def get_next_task_from_batch_view(request, batch_id):
@@ -35,14 +32,13 @@ def get_next_task_from_batch_view(request, batch_id):
     next_task = Task.objects.filter(batch=batch, is_done=False).order_by("created_at").first()
 
     if next_task:
-        logger.info(f"Selected next task #{next_task.id} from batch #{batch.id}")
+
         # Redirect to the annotation interface with the task ID
         return redirect("battycoda_app:annotate_task", task_id=next_task.id)
     else:
         # No undone tasks found in this batch
         messages.info(request, f'No undone tasks found in batch "{batch.name}". All tasks in this batch are completed.')
         return redirect("battycoda_app:task_batch_detail", batch_id=batch.id)
-
 
 @login_required
 def get_next_task_view(request):
@@ -76,23 +72,21 @@ def get_next_task_view(request):
 
     # If we found a recent task and it has a batch, preferentially get tasks from that batch
     if recent_task and recent_task.batch:
-        logger.info(f"Looking for next task from same batch as recently completed task #{recent_task.id}")
 
         # Look for undone tasks from the same batch
         same_batch_tasks = tasks_query.filter(batch=recent_task.batch)
         next_task = same_batch_tasks.order_by("created_at").first()
 
         if next_task:
-            logger.info(f"Found task #{next_task.id} from the same batch #{recent_task.batch.id}")
+
             return redirect("battycoda_app:annotate_task", task_id=next_task.id)
         else:
-            logger.info(f"No more undone tasks in batch #{recent_task.batch.id}")
 
     # Fall back to the regular selection if no suitable task found from the same batch
     task = tasks_query.order_by("created_at").first()
 
     if task:
-        logger.info(
+
             f"Selected next task #{task.id}" + (f" from batch #{task.batch.id}" if task.batch else " (no batch)")
         )
         # Redirect to the annotation interface with the task ID
@@ -101,7 +95,6 @@ def get_next_task_view(request):
         # No undone tasks found
         messages.info(request, "No undone tasks found. Please create new tasks or task batches.")
         return redirect("battycoda_app:task_list")
-
 
 @login_required
 def get_last_task_view(request):

@@ -4,7 +4,6 @@ from django.db.utils import IntegrityError
 
 from battycoda_app.models import Call, Project, Species
 
-
 class Command(BaseCommand):
     help = "Initialize default data for BattyCoda"
 

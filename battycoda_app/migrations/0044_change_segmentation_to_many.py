@@ -1,7 +1,6 @@
 from django.db import migrations, models
 import django.db.models.deletion
 
-
 def migrate_segmentations(apps, schema_editor):
     """
     For each recording with a segmentation, we need to:
@@ -41,7 +40,6 @@ def migrate_segmentations(apps, schema_editor):
             # The segmentation_id is maintained during the migration
             # No need to change DetectionRun references
             pass
-
 
 class Migration(migrations.Migration):
 

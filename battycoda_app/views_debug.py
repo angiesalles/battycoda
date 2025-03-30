@@ -1,12 +1,10 @@
-import logging
+
 import os
 
 from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse
 
 # Set up logging
-logger = logging.getLogger("battycoda.views_debug")
-
 
 @login_required
 def debug_env_view(request):

@@ -2,7 +2,6 @@
 
 from django.db import migrations
 
-
 class Migration(migrations.Migration):
     dependencies = [
         ('battycoda_app', '0046_create_source_segments_for_tasks'),

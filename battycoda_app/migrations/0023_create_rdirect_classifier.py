@@ -3,7 +3,6 @@
 from django.db import migrations
 import os
 
-
 def create_rdirect_classifier(apps, schema_editor):
     # Get the Classifier model
     Classifier = apps.get_model('battycoda_app', 'Classifier')
@@ -22,7 +21,6 @@ def create_rdirect_classifier(apps, schema_editor):
         is_active=True,
         team=None  # Available to all teams
     )
-
 
 class Migration(migrations.Migration):
     dependencies = [

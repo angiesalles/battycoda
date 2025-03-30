@@ -6,7 +6,6 @@ from django.test import TestCase
 from battycoda_app.models import Group, Species
 from battycoda_app.utils_modules.species_utils import import_default_species
 
-
 class UtilsTest(TestCase):
     @patch("django.core.files.File")
     @patch("builtins.open", new_callable=MagicMock)

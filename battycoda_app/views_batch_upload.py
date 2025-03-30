@@ -1,7 +1,7 @@
 """
 Views for handling batch uploads of recordings.
 """
-import logging
+
 import os
 import tempfile
 import traceback
@@ -20,10 +20,8 @@ from .forms import RecordingForm
 from .models import Recording, Segment, Segmentation, UserProfile
 
 # Set up logging
-logger = logging.getLogger("battycoda.views_batch_upload")
 
 # Placeholder for future upload progress functionality
-
 
 @login_required
 def batch_upload_recordings_view(request):
@@ -39,16 +37,12 @@ def batch_upload_recordings_view(request):
 
     if request.method == "POST":
         # Log the POST request
-        logger.info("POST request received for batch upload")
-        logger.info(f"POST data keys: {list(request.POST.keys())}")
-        logger.info(f"FILES data keys: {list(request.FILES.keys())}")
 
         # Create a form instance with submitted data
         form = RecordingForm(request.POST, request.FILES, user=request.user)
 
         # Process form for common metadata
         if form.is_valid():
-            logger.info("Form is valid, processing upload")
 
             # Get common fields from the form but don't save yet
             species = form.cleaned_data.get("species")
@@ -64,7 +58,7 @@ def batch_upload_recordings_view(request):
             pickle_zip = request.FILES.get("pickle_zip")
 
             # Debug logging
-            logger.info(
+
                 f"Form is valid. WAV zip present: {wav_zip is not None}, Pickle zip present: {pickle_zip is not None}"
             )
 
@@ -88,9 +82,8 @@ def batch_upload_recordings_view(request):
                         processed_files = set()  # Track files to avoid duplicates
 
                         # Debug: print contents of the ZIP
-                        logger.info(f"ZIP file contains {len(zip_ref.namelist())} items:")
+
                         for filename in zip_ref.namelist():
-                            logger.info(f"  - {filename} {'[DIR]' if filename.endswith('/') else ''}")
 
                         for file_info in zip_ref.infolist():
                             # Skip directories, already processed files, and macOS metadata files
@@ -99,24 +92,21 @@ def batch_upload_recordings_view(request):
                                 or file_info.filename in processed_files
                                 or os.path.basename(file_info.filename).startswith("._")
                             ):
-                                logger.info(
+
                                     f"Skipping {file_info.filename} - directory, duplicate, or macOS metadata file"
                                 )
                                 continue
 
                             if file_info.filename.lower().endswith(".wav"):
-                                logger.info(f"Processing WAV file from ZIP: {file_info.filename}")
+
                                 zip_ref.extract(file_info, wav_temp_dir)
                                 extracted_path = os.path.join(wav_temp_dir, file_info.filename)
                                 wav_files.append(extracted_path)
                                 processed_files.add(file_info.filename)
-                                logger.info(f"Extracted to: {extracted_path}")
 
-                    logger.info(f"Extracted {len(wav_files)} WAV files from ZIP")
                 except Exception as e:
                     messages.error(request, f"Failed to extract WAV ZIP file: {str(e)}")
-                    logger.error(f"ZIP extraction error: {str(e)}")
-                    logger.error(traceback.format_exc())
+
                     return redirect("battycoda_app:batch_upload_recordings")
 
                 # Extract pickle files if available
@@ -143,17 +133,15 @@ def batch_upload_recordings_view(request):
                                     pickle_files_dict[os.path.basename(file_info.filename)] = pickle_path
                                     processed_files.add(file_info.filename)
 
-                        logger.info(f"Extracted {len(pickle_files_dict)} pickle files from ZIP")
                     except Exception as e:
                         messages.error(request, f"Failed to extract pickle ZIP file: {str(e)}")
-                        logger.error(f"Pickle ZIP extraction error: {str(e)}")
-                        logger.error(traceback.format_exc())
+
                         # Continue with WAV files even if pickle extraction fails
 
                 # Process each WAV file
                 for wav_path in wav_files:
                     try:
-                        logger.info(f"Processing WAV file: {wav_path}")
+
                         # Open the file for Django to save
                         with open(wav_path, "rb") as wav_file_obj:
                             # Create a Django file object
@@ -184,7 +172,6 @@ def batch_upload_recordings_view(request):
 
                                 # Save the recording
                                 recording.save()
-                                logger.info(f"Created recording: {recording.name} (ID: {recording.id})")
 
                                 # Check if there's a matching pickle file
                                 pickle_filename = f"{wav_file_name}.pickle"
@@ -193,7 +180,7 @@ def batch_upload_recordings_view(request):
                                 # Process pickle file if found
                                 if pickle_path:
                                     try:
-                                        logger.info(f"Found matching pickle file: {pickle_filename}")
+
                                         # Open and process the pickle file
                                         with open(pickle_path, "rb") as pickle_file_obj:
                                             # Create a Django file object
@@ -205,7 +192,6 @@ def batch_upload_recordings_view(request):
 
                                             # Process the pickle file
                                             onsets, offsets = process_pickle_file(pickle_file)
-                                            logger.info(f"Processed pickle file. Found {len(onsets)} segments")
 
                                             # Mark all existing segmentations as inactive first
                                             Segmentation.objects.filter(recording=recording, is_active=True).update(
@@ -245,10 +231,9 @@ def batch_upload_recordings_view(request):
                                                     )  # Don't mark as manually edited for automated uploads
                                                     segments_created += 1
                                                 except Exception as e:
-                                                    logger.error(
+
                                                         f"Error creating segment {i} for {recording.name}: {str(e)}"
                                                     )
-                                                    logger.error(traceback.format_exc())
 
                                             # Update segment count on the segmentation
                                             segmentation.segments_created = segments_created
@@ -256,17 +241,14 @@ def batch_upload_recordings_view(request):
 
                                             if segments_created > 0:
                                                 segmented_count += 1
-                                                logger.info(
+
                                                     f"Created {segments_created} segments for recording {recording.name}"
                                                 )
                                     except Exception as e:
-                                        logger.error(f"Error processing pickle file for {recording.name}: {str(e)}")
-                                        logger.error(traceback.format_exc())
 
                                 success_count += 1
                     except Exception as e:
-                        logger.error(f"Error creating recording from {wav_path}: {str(e)}")
-                        logger.error(traceback.format_exc())
+
                         error_count += 1
 
             # Upload complete
@@ -277,18 +259,16 @@ def batch_upload_recordings_view(request):
                 if segmented_count > 0:
                     success_msg += f" with {segmented_count} segmented automatically from pickle files"
                 messages.success(request, success_msg)
-                logger.info(success_msg)
 
             # Error message
             if error_count > 0:
                 error_msg = f"Failed to upload {error_count} recordings. See logs for details."
                 messages.error(request, error_msg)
-                logger.error(error_msg)
 
             # Redirect to the recordings list
             return redirect("battycoda_app:recording_list")
         else:
-            logger.error(f"Form validation errors: {form.errors}")
+
             for field, errors in form.errors.items():
                 for error in errors:
                     messages.error(request, f"Error in {field}: {error}")

@@ -4,7 +4,6 @@ from django.contrib.auth.models import User
 
 from .models import Call, Group, Project, Recording, Segment, Species, Task, TaskBatch, UserProfile
 
-
 class UserRegisterForm(UserCreationForm):
     email = forms.EmailField(required=True)
 
@@ -12,11 +11,9 @@ class UserRegisterForm(UserCreationForm):
         model = User
         fields = ["username", "email", "password1", "password2"]
 
-
 class UserLoginForm(AuthenticationForm):
     username = forms.CharField(label="Username")
     password = forms.CharField(label="Password", widget=forms.PasswordInput)
-
 
 class UserProfileForm(forms.ModelForm):
     class Meta:
@@ -39,7 +36,6 @@ class UserProfileForm(forms.ModelForm):
             self.fields["theme"].widget.attrs.update(
                 {"class": "form-control bg-dark text-light", "onchange": "updatePreviewColors(this.value)"}
             )
-
 
 class TaskBatchForm(forms.ModelForm):
     wav_file = forms.FileField(
@@ -109,7 +105,6 @@ class TaskBatchForm(forms.ModelForm):
 
         return name
 
-
 class TaskForm(forms.ModelForm):
     class Meta:
         model = Task
@@ -153,7 +148,6 @@ class TaskForm(forms.ModelForm):
                 self.fields["species"].queryset = self.fields["species"].queryset.filter(group=profile.group)
                 self.fields["project"].queryset = self.fields["project"].queryset.filter(group=profile.group)
 
-
 class TaskUpdateForm(forms.ModelForm):
     """Form for updating task status and labels"""
 
@@ -164,7 +158,6 @@ class TaskUpdateForm(forms.ModelForm):
             "notes": forms.Textarea(attrs={"rows": 3}),
         }
 
-
 class SpeciesForm(forms.ModelForm):
     class Meta:
         model = Species
@@ -174,7 +167,6 @@ class SpeciesForm(forms.ModelForm):
             "description": forms.Textarea(attrs={"rows": 3, "class": "form-control"}),
             "image": forms.FileInput(attrs={"class": "form-control"}),
         }
-
 
 class SpeciesEditForm(forms.ModelForm):
     """Form for editing species without calls file upload"""
@@ -188,7 +180,6 @@ class SpeciesEditForm(forms.ModelForm):
             "image": forms.FileInput(attrs={"class": "form-control"}),
         }
 
-
 class CallForm(forms.ModelForm):
     class Meta:
         model = Call
@@ -199,7 +190,6 @@ class CallForm(forms.ModelForm):
             "DELETE": forms.CheckboxInput(attrs={"class": "form-check-input"}),
         }
 
-
 class CallFormSet(forms.BaseModelFormSet):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -207,12 +197,10 @@ class CallFormSet(forms.BaseModelFormSet):
         if not self.queryset:
             self.queryset = Call.objects.none()
 
-
 # Use extra=1 to add a single empty form by default
 CallFormSetFactory = forms.modelformset_factory(
     Call, form=CallForm, formset=CallFormSet, extra=1, can_delete=True  # Add one empty form
 )
-
 
 class ProjectForm(forms.ModelForm):
     class Meta:
@@ -222,7 +210,6 @@ class ProjectForm(forms.ModelForm):
             "description": forms.Textarea(attrs={"rows": 3}),
         }
 
-
 class GroupForm(forms.ModelForm):
     class Meta:
         model = Group
@@ -231,12 +218,10 @@ class GroupForm(forms.ModelForm):
             "description": forms.Textarea(attrs={"rows": 3}),
         }
 
-
 class GroupInvitationForm(forms.Form):
     email = forms.EmailField(
         label="Email Address", help_text="Enter the email address of the person you want to invite to your group"
     )
-
 
 class RecordingForm(forms.ModelForm):
     """Form for creating and editing recordings"""
@@ -296,7 +281,6 @@ class RecordingForm(forms.ModelForm):
         name = self.cleaned_data.get("name")
         return name
 
-
 class SegmentForm(forms.ModelForm):
     """Form for creating and editing segments in recordings"""
 
@@ -324,7 +308,6 @@ class SegmentForm(forms.ModelForm):
                 raise forms.ValidationError("Offset time must be greater than onset time")
 
         return cleaned_data
-
 
 class SegmentFormSet(forms.BaseModelFormSet):
     """Formset for managing multiple segments"""
@@ -354,7 +337,6 @@ class SegmentFormSet(forms.BaseModelFormSet):
                         raise forms.ValidationError("Segments cannot overlap")
 
                 segments.append((onset, offset))
-
 
 # Create formset factory for segments
 SegmentFormSetFactory = forms.modelformset_factory(

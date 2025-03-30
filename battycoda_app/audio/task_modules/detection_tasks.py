@@ -13,7 +13,6 @@ from celery import shared_task
 
 from .base import extract_audio_segment, logger
 
-
 @shared_task(bind=True, name="battycoda_app.audio.task_modules.detection_tasks.run_call_detection")
 def run_call_detection(self, detection_run_id):
     """
@@ -38,8 +37,6 @@ def run_call_detection(self, detection_run_id):
 
     from ...models import Call, CallProbability, Classifier, DetectionResult, DetectionRun, Segment, Segmentation
 
-    logger.info(f"Starting call classification for run {detection_run_id}")
-
     try:
         # Get the detection run
         detection_run = DetectionRun.objects.get(id=detection_run_id)
@@ -51,10 +48,10 @@ def run_call_detection(self, detection_run_id):
         if not classifier:
             try:
                 classifier = Classifier.objects.get(name="R-direct Classifier")
-                logger.info(f"Using default R-direct classifier for classification run {detection_run_id}")
+
             except Classifier.DoesNotExist:
                 error_msg = "No classifier specified and default R-direct classifier not found"
-                logger.error(error_msg)
+
                 detection_run.status = "failed"
                 detection_run.error_message = error_msg
                 detection_run.save()
@@ -63,9 +60,6 @@ def run_call_detection(self, detection_run_id):
         # Configure the service URL and endpoint
         service_url = classifier.service_url
         endpoint = f"{service_url}{classifier.endpoint}"
-
-        logger.info(f"Using classifier: {classifier.name} ({classifier.id})")
-        logger.info(f"Service URL: {service_url}, Endpoint: {endpoint}")
 
         # Update status
         detection_run.status = "in_progress"
@@ -96,7 +90,6 @@ def run_call_detection(self, detection_run_id):
 
         if recording.wav_file:
             wav_file_path = recording.wav_file.path
-            logger.info(f"Using WAV file from recording: {wav_file_path}")
 
         if not wav_file_path or not os.path.exists(wav_file_path):
             detection_run.status = "failed"
@@ -109,16 +102,15 @@ def run_call_detection(self, detection_run_id):
             ping_response = requests.get(f"{service_url}/ping", timeout=5)
             if ping_response.status_code != 200:
                 error_msg = f"Classifier service unavailable. Status: {ping_response.status_code}"
-                logger.error(error_msg)
+
                 detection_run.status = "failed"
                 detection_run.error_message = error_msg
                 detection_run.save()
                 return {"status": "error", "message": error_msg}
 
-            logger.info(f"Classifier service is available: {ping_response.text}")
         except requests.RequestException as e:
             error_msg = f"Cannot connect to classifier service: {str(e)}"
-            logger.error(error_msg)
+
             detection_run.status = "failed"
             detection_run.error_message = error_msg
             detection_run.save()
@@ -136,8 +128,6 @@ def run_call_detection(self, detection_run_id):
                     sf.write(temp_path, segment_data, samplerate=sample_rate)
 
                 # Log segment info for debugging
-                logger.info(f"Created temporary file for segment {segment.id}: {temp_path}")
-                logger.info(f"Segment duration: {len(segment_data)/sample_rate:.4f}s, sample rate: {sample_rate}Hz")
 
                 # Prepare files for upload
                 files = {"file": (f"segment_{segment.id}.wav", open(temp_path, "rb"), "audio/wav")}
@@ -149,7 +139,6 @@ def run_call_detection(self, detection_run_id):
                 }
 
                 # Log request details
-                logger.info(f"Sending request to {endpoint} with params: {params}")
 
                 # Make request to classifier service
                 response = requests.post(endpoint, files=files, params=params, timeout=30)  # 30 second timeout
@@ -159,16 +148,13 @@ def run_call_detection(self, detection_run_id):
                 os.unlink(temp_path)
 
                 # Log response information
-                logger.info(f"R-direct response status: {response.status_code}")
-                logger.info(f"R-direct response headers: {response.headers}")
+
                 if response.headers.get("Content-Type", "").startswith("application/json"):
-                    logger.info(f"R-direct response content (first 500 chars): {response.text[:500]}")
 
                 # Process response
                 if response.status_code == 200:
                     try:
                         prediction_data = response.json()
-                        logger.info(f"Parsed prediction data: {prediction_data}")
 
                         with transaction.atomic():
                             # Create detection result
@@ -206,14 +192,14 @@ def run_call_detection(self, detection_run_id):
                                         error_msg = (
                                             f"Predicted call '{predicted_call_name}' not found in available calls"
                                         )
-                                        logger.error(error_msg)
+
                                         raise ValueError(error_msg)
                                 else:
                                     # Missing required fields for highest-only algorithm
                                     error_msg = (
                                         f"Missing required fields in highest-only algorithm response: {prediction_data}"
                                     )
-                                    logger.error(error_msg)
+
                                     raise ValueError(error_msg)
                             else:
                                 # For full probability distribution algorithm type
@@ -232,7 +218,7 @@ def run_call_detection(self, detection_run_id):
                                             prob_value = probabilities[call_index]
                                         else:
                                             # Cannot determine probability, log error and set to 0
-                                            logger.error(f"Unexpected probability format: {type(probabilities)}")
+
                                             prob_value = 0
 
                                         # Ensure probability is within valid range
@@ -247,24 +233,21 @@ def run_call_detection(self, detection_run_id):
                                     error_msg = (
                                         f"Missing probabilities in full distribution response: {prediction_data}"
                                     )
-                                    logger.error(error_msg)
+
                                     raise ValueError(error_msg)
                     except (ValueError, json.JSONDecodeError) as parse_error:
                         # Failed to parse response
                         error_msg = f"Failed to parse classifier response: {str(parse_error)}"
-                        logger.error(error_msg)
-                        logger.error(f"Response content: {response.text[:1000]}")
+
                         raise ValueError(error_msg)
                 else:
                     # Service returned an error status
                     error_msg = f"Classifier service error: {response.status_code} - {response.text}"
-                    logger.error(error_msg)
+
                     raise ValueError(error_msg)
 
             except Exception as segment_error:
                 # If an error occurs, don't use fallback values - we want to know about the error
-                logger.error(f"Error processing segment {segment.id}: {str(segment_error)}")
-                logger.error(traceback.format_exc())
 
                 # Mark the detection run as failed
                 detection_run.status = "failed"
@@ -291,8 +274,6 @@ def run_call_detection(self, detection_run_id):
         }
 
     except Exception as e:
-        logger.error(f"Error in call detection: {str(e)}")
-        logger.error(traceback.format_exc())
 
         # Update run status
         try:
@@ -301,10 +282,8 @@ def run_call_detection(self, detection_run_id):
             detection_run.error_message = str(e)
             detection_run.save()
         except Exception as update_error:
-            logger.error(f"Failed to update detection run status: {str(update_error)}")
 
         return {"status": "error", "message": str(e)}
-
 
 @shared_task(bind=True, name="battycoda_app.audio.task_modules.detection_tasks.run_dummy_classifier")
 def run_dummy_classifier(self, detection_run_id):
@@ -324,8 +303,6 @@ def run_dummy_classifier(self, detection_run_id):
     from django.db import transaction
 
     from ...models import Call, CallProbability, DetectionResult, DetectionRun, Segment
-
-    logger.info(f"Starting dummy classification for run {detection_run_id}")
 
     try:
         # Get the detection run
@@ -356,7 +333,6 @@ def run_dummy_classifier(self, detection_run_id):
 
         # Calculate equal probability for each call type
         equal_probability = 1.0 / calls.count()
-        logger.info(f"Using equal probability of {equal_probability:.4f} for {calls.count()} call types")
 
         # Process each segment, assigning equal probability to all call types
         for i, segment in enumerate(segments):
@@ -380,8 +356,6 @@ def run_dummy_classifier(self, detection_run_id):
                 detection_run.save()
 
             except Exception as segment_error:
-                logger.error(f"Error processing segment {segment.id}: {str(segment_error)}")
-                logger.error(traceback.format_exc())
 
                 # Mark the detection run as failed
                 detection_run.status = "failed"
@@ -403,8 +377,6 @@ def run_dummy_classifier(self, detection_run_id):
         }
 
     except Exception as e:
-        logger.error(f"Error in dummy classifier: {str(e)}")
-        logger.error(traceback.format_exc())
 
         # Update run status
         try:
@@ -413,6 +385,5 @@ def run_dummy_classifier(self, detection_run_id):
             detection_run.error_message = str(e)
             detection_run.save()
         except Exception as update_error:
-            logger.error(f"Failed to update detection run status: {str(update_error)}")
 
         return {"status": "error", "message": str(e)}

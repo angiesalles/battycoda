@@ -8,7 +8,6 @@ from django.db import models
 
 from .user import Group
 
-
 def get_species_image_path(instance, filename):
     """
     Generate a unique path for species images.
@@ -36,7 +35,6 @@ def get_species_image_path(instance, filename):
     # Format: user_<id>/species_<id>/<timestamp>_<clean_filename><ext>
     return f"species_images/user_{user_id}/species_{species_id}/{timestamp}_{clean_filename}{ext}"
 
-
 class Project(models.Model):
     """Project model for research projects."""
 
@@ -52,7 +50,6 @@ class Project(models.Model):
 
     def __str__(self):
         return self.name
-
 
 class Species(models.Model):
     """Species model for bat species."""
@@ -71,7 +68,6 @@ class Species(models.Model):
 
     def __str__(self):
         return self.name
-
 
 class Call(models.Model):
     """Call types for species."""

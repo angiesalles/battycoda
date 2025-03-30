@@ -2,7 +2,6 @@
 Utility functions for creating demo data.
 """
 
-import logging
 import os
 import traceback
 
@@ -11,8 +10,6 @@ from django.db import transaction
 from django.utils import timezone
 
 # Set up logging
-logger = logging.getLogger("battycoda.utils")
-
 
 def create_demo_task_batch(user):
     """Create a demo task batch for a new user using sample files.
@@ -39,13 +36,11 @@ def create_demo_task_batch(user):
         TaskBatch,
     )
 
-    logger.info(f"Creating demo task batch for user {user.username}")
-
     # Get the user's group and profile
     profile = user.profile
     group = profile.group
     if not group:
-        logger.warning(f"User {user.username} has no group, skipping task batch creation")
+
         return None
 
     # Prerequisites: check for required resources
@@ -77,14 +72,12 @@ def create_demo_task_batch(user):
         batch = _create_task_batch_from_detection(user, group, project, species, recording, detection_run)
 
         if batch:
-            logger.info(f"Successfully created demo task batch '{batch.name}' for user {user.username}")
+
             return batch
 
     except Exception as e:
-        logger.error(f"Error creating demo task batch: {str(e)}")
-        logger.error(traceback.format_exc())
-        return None
 
+        return None
 
 def _check_demo_prerequisites(user, group):
     """Check prerequisites for creating a demo task batch
@@ -101,13 +94,13 @@ def _check_demo_prerequisites(user, group):
     # Find the user's demo project
     project = Project.objects.filter(group=group, name__contains="Demo Project").first()
     if not project:
-        logger.warning(f"No demo project found for {user.username}, skipping task batch creation")
+
         return None, None, None
 
     # Find the Carollia species
     species = Species.objects.filter(group=group, name="Carollia").first()
     if not species:
-        logger.warning(f"No Carollia species found for {user.username}, skipping task batch creation")
+
         return None, None, None
 
     # Define the paths to the sample files
@@ -126,7 +119,7 @@ def _check_demo_prerequisites(user, group):
             break
 
     if not wav_path:
-        logger.warning("Sample WAV file not found, skipping task batch creation")
+
         return None, None, None
 
     # Find the sample pickle file
@@ -137,11 +130,10 @@ def _check_demo_prerequisites(user, group):
             break
 
     if not pickle_path:
-        logger.warning("Sample pickle file not found, skipping task batch creation")
+
         return None, None, None
 
     return project, species, (wav_path, pickle_path)
-
 
 def _create_demo_recording(user, group, project, species, wav_path):
     """Create a demo recording for a user
@@ -174,12 +166,10 @@ def _create_demo_recording(user, group, project, species, wav_path):
         with open(wav_path, "rb") as wav_file:
             recording.wav_file.save("bat1_angie_19.wav", File(wav_file), save=True)
 
-        logger.info(f"Created demo recording for user {user.username}")
         return recording
     except Exception as e:
-        logger.error(f"Error creating demo recording: {str(e)}")
-        return None
 
+        return None
 
 def _create_demo_segmentation(user, recording, pickle_path):
     """Create demo segmentation for a recording
@@ -234,13 +224,10 @@ def _create_demo_segmentation(user, recording, pickle_path):
                 segment.save()
                 segments_created += 1
 
-        logger.info(f"Created segmentation with {segments_created} segments for demo recording")
         return segmentation
     except Exception as e:
-        logger.error(f"Error creating demo segmentation: {str(e)}")
-        logger.error(traceback.format_exc())
-        return None
 
+        return None
 
 def _run_demo_classification(user, group, segmentation):
     """Run the dummy classifier on demo segments
@@ -282,15 +269,13 @@ def _run_demo_classification(user, group, segmentation):
             detection_run.progress = 100
             detection_run.save()
 
-        logger.info(f"Completed dummy classification for demo recording")
         return detection_run
     except Classifier.DoesNotExist:
-        logger.error("Dummy classifier not found. Make sure the Dummy Classifier exists in the database.")
+
         return None
     except Exception as e:
-        logger.error(f"Error running demo classification: {str(e)}")
-        return None
 
+        return None
 
 def _create_task_batch_from_detection(user, group, project, species, recording, detection_run):
     """Create a task batch from a detection run
@@ -360,9 +345,7 @@ def _create_task_batch_from_detection(user, group, project, species, recording, 
 
                 tasks_created += 1
 
-        logger.info(f"Created {tasks_created} tasks for demo batch {batch.name}")
         return batch
     except Exception as e:
-        logger.error(f"Error creating task batch from detection run: {str(e)}")
-        logger.error(traceback.format_exc())
+
         return None

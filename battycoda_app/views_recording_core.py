@@ -4,8 +4,6 @@ Core views for handling recording CRUD operations.
 from .views_common import *
 
 # Set up logging
-logger = logging.getLogger("battycoda.views_recording_core")
-
 
 @login_required
 def recording_list_view(request):
@@ -31,7 +29,6 @@ def recording_list_view(request):
 
     return render(request, "recordings/recording_list.html", context)
 
-
 @login_required
 def recording_detail_view(request, recording_id):
     """Display details of a specific recording and its segments"""
@@ -52,7 +49,6 @@ def recording_detail_view(request, recording_id):
     }
 
     return render(request, "recordings/recording_detail.html", context)
-
 
 @login_required
 def create_recording_view(request):
@@ -106,7 +102,6 @@ def create_recording_view(request):
 
     return render(request, "recordings/create_recording.html", context)
 
-
 @login_required
 def edit_recording_view(request, recording_id):
     """Edit an existing recording"""
@@ -135,7 +130,6 @@ def edit_recording_view(request, recording_id):
     }
 
     return render(request, "recordings/edit_recording.html", context)
-
 
 @login_required
 def delete_recording_view(request, recording_id):

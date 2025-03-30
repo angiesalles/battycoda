@@ -18,14 +18,12 @@ from battycoda_app.models import (
 )
 from battycoda_app.tests.test_base import BattycodaTestCase
 
-
 class GroupModelTest(BattycodaTestCase):
     def setUp(self):
         self.group = Group.objects.create(name="Test Group", description="A test group")
 
     def test_group_str_method(self):
         self.assertEqual(str(self.group), "Test Group")
-
 
 class UserProfileModelTest(BattycodaTestCase):
     def setUp(self):
@@ -68,7 +66,6 @@ class UserProfileModelTest(BattycodaTestCase):
         # Verify demo project was created
         self.assertTrue(Project.objects.filter(created_by=new_user).exists())
 
-
 class GroupInvitationModelTest(BattycodaTestCase):
     def setUp(self):
         self.user = User.objects.create_user(username="testuser", email="test@example.com", password="password123")
@@ -98,7 +95,6 @@ class GroupInvitationModelTest(BattycodaTestCase):
     def test_is_expired_property(self):
         self.assertFalse(self.invitation.is_expired)
         self.assertTrue(self.expired_invitation.is_expired)
-
 
 class SpeciesModelTest(BattycodaTestCase):
     def setUp(self):
@@ -133,7 +129,6 @@ class SpeciesModelTest(BattycodaTestCase):
                 name="Test Species", description="Duplicate in same group", created_by=self.user, group=self.group
             )
 
-
 class CallModelTest(BattycodaTestCase):
     def setUp(self):
         self.user = User.objects.create_user(username="testuser", email="test@example.com", password="password123")
@@ -151,7 +146,6 @@ class CallModelTest(BattycodaTestCase):
     def test_call_meta_options(self):
         self.assertEqual(Call._meta.ordering, ["short_name"])
 
-
 class ProjectModelTest(BattycodaTestCase):
     def setUp(self):
         self.user = User.objects.create_user(username="testuser", email="test@example.com", password="password123")
@@ -163,7 +157,6 @@ class ProjectModelTest(BattycodaTestCase):
 
     def test_project_str_method(self):
         self.assertEqual(str(self.project), "Test Project")
-
 
 class TaskBatchModelTest(BattycodaTestCase):
     def setUp(self):
@@ -190,7 +183,6 @@ class TaskBatchModelTest(BattycodaTestCase):
 
     def test_batch_str_method(self):
         self.assertEqual(str(self.batch), "Test Batch")
-
 
 class TaskModelTest(BattycodaTestCase):
     def setUp(self):
