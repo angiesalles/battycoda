@@ -248,7 +248,6 @@ class RecordingForm(forms.ModelForm):
         model = Recording
         fields = [
             "name",
-            "description",
             "wav_file",
             "recorded_date",
             "location",
@@ -258,7 +257,6 @@ class RecordingForm(forms.ModelForm):
             "project",
         ]
         widgets = {
-            "description": forms.Textarea(attrs={"rows": 3}),
             "environmental_conditions": forms.Textarea(attrs={"rows": 3}),
         }
 

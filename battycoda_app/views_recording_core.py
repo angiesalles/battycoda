@@ -2,6 +2,7 @@
 Core views for handling recording CRUD operations.
 """
 from .views_common import *
+from .tasks import calculate_audio_duration
 
 # Set up logging
 
@@ -157,3 +158,29 @@ def delete_recording_view(request, recording_id):
     }
 
     return render(request, "recordings/delete_recording.html", context)
+
+
+@login_required
+def recalculate_audio_info_view(request, recording_id):
+    """Recalculate audio duration and sample rate for a recording"""
+    # Get the recording by ID
+    recording = get_object_or_404(Recording, id=recording_id)
+
+    # Check if the user has permission to edit this recording
+    profile = request.user.profile
+    if recording.created_by != request.user and (
+        not profile.group or recording.group != profile.group or not profile.is_admin
+    ):
+        messages.error(request, "You don't have permission to perform this action.")
+        return redirect("battycoda_app:recording_list")
+
+    # Reset audio info fields
+    recording.duration = None
+    recording.sample_rate = None
+    recording.save(update_fields=["duration", "sample_rate"])
+
+    # Trigger the Celery task to recalculate
+    calculate_audio_duration.delay(recording.id)
+
+    messages.success(request, "Audio information recalculation has been scheduled.")
+    return redirect("battycoda_app:recording_detail", recording_id=recording.id)

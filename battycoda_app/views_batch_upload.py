@@ -47,7 +47,6 @@ def batch_upload_recordings_view(request):
             # Get common fields from the form but don't save yet
             species = form.cleaned_data.get("species")
             project = form.cleaned_data.get("project")
-            description = form.cleaned_data.get("description")
             recorded_date = form.cleaned_data.get("recorded_date")
             location = form.cleaned_data.get("location")
             equipment = form.cleaned_data.get("equipment")
@@ -150,7 +149,6 @@ def batch_upload_recordings_view(request):
                             # Create the recording model instance
                             recording = Recording(
                                 name=recording_name,  # Use file name as recording name
-                                description=description,
                                 wav_file=wav_file,
                                 recorded_date=recorded_date,
                                 location=location,

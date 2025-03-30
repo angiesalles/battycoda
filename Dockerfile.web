@@ -33,4 +33,4 @@ RUN mkdir -p media/home logs static/tempdata
 EXPOSE 8060
 
 # Default command - gunicorn for production
-CMD ["gunicorn", "--workers=3", "--bind=0.0.0.0:8060", "--timeout=120", "--log-level=debug", "config.wsgi:application"]
+CMD ["gunicorn", "--workers=3", "--bind=0.0.0.0:8060", "--timeout=600", "--log-level=debug", "config.wsgi:application"]
