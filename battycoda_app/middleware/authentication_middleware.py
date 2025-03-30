@@ -27,6 +27,7 @@ class AuthenticationMiddleware:
             "/media/",
             "/accounts/register/",
             "/register/",
+            "/invitation/",
         ]
 
         # Skip for Let's Encrypt ACME challenges

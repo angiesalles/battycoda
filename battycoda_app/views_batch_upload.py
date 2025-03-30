@@ -57,10 +57,8 @@ def batch_upload_recordings_view(request):
             wav_zip = request.FILES.get("wav_zip")
             pickle_zip = request.FILES.get("pickle_zip")
 
-            # Debug logging
-
-                f"Form is valid. WAV zip present: {wav_zip is not None}, Pickle zip present: {pickle_zip is not None}"
-            )
+            # Debug log information
+            # WAV zip present: {wav_zip is not None}, Pickle zip present: {pickle_zip is not None}
 
             if not wav_zip:
                 messages.error(request, "Please select a ZIP file with WAV recordings to upload")
@@ -82,9 +80,7 @@ def batch_upload_recordings_view(request):
                         processed_files = set()  # Track files to avoid duplicates
 
                         # Debug: print contents of the ZIP
-
-                        for filename in zip_ref.namelist():
-
+                        
                         for file_info in zip_ref.infolist():
                             # Skip directories, already processed files, and macOS metadata files
                             if (
@@ -92,9 +88,7 @@ def batch_upload_recordings_view(request):
                                 or file_info.filename in processed_files
                                 or os.path.basename(file_info.filename).startswith("._")
                             ):
-
-                                    f"Skipping {file_info.filename} - directory, duplicate, or macOS metadata file"
-                                )
+                                # Skipping directory, duplicate, or macOS metadata file
                                 continue
 
                             if file_info.filename.lower().endswith(".wav"):
@@ -140,116 +134,100 @@ def batch_upload_recordings_view(request):
 
                 # Process each WAV file
                 for wav_path in wav_files:
-                    try:
+                    # Open the file for Django to save
+                    with open(wav_path, "rb") as wav_file_obj:
+                        # Create a Django file object
+                        wav_file_name = os.path.basename(wav_path)
+                        wav_file = SimpleUploadedFile(wav_file_name, wav_file_obj.read(), content_type="audio/wav")
 
-                        # Open the file for Django to save
-                        with open(wav_path, "rb") as wav_file_obj:
-                            # Create a Django file object
-                            wav_file_name = os.path.basename(wav_path)
-                            wav_file = SimpleUploadedFile(wav_file_name, wav_file_obj.read(), content_type="audio/wav")
+                        with transaction.atomic():
+                            # Create a Recording object for this file
+                            file_name = Path(wav_file_name).stem  # Get file name without extension
 
-                            with transaction.atomic():
-                                # Create a Recording object for this file
-                                file_name = Path(wav_file_name).stem  # Get file name without extension
+                            # Use the file name directly as the recording name
+                            recording_name = file_name
 
-                                # Use the file name directly as the recording name
-                                recording_name = file_name
+                            # Create the recording model instance
+                            recording = Recording(
+                                name=recording_name,  # Use file name as recording name
+                                description=description,
+                                wav_file=wav_file,
+                                recorded_date=recorded_date,
+                                location=location,
+                                equipment=equipment,
+                                environmental_conditions=environmental_conditions,
+                                species=species,
+                                project=project,
+                                group=profile.group,
+                                created_by=request.user,
+                            )
 
-                                # Create the recording model instance
-                                recording = Recording(
-                                    name=recording_name,  # Use file name as recording name
-                                    description=description,
-                                    wav_file=wav_file,
-                                    recorded_date=recorded_date,
-                                    location=location,
-                                    equipment=equipment,
-                                    environmental_conditions=environmental_conditions,
-                                    species=species,
-                                    project=project,
-                                    group=profile.group,
-                                    created_by=request.user,
-                                )
+                            # Save the recording
+                            recording.save()
 
-                                # Save the recording
-                                recording.save()
+                            # Check if there's a matching pickle file
+                            pickle_filename = f"{wav_file_name}.pickle"
+                            pickle_path = pickle_files_dict.get(pickle_filename)
 
-                                # Check if there's a matching pickle file
-                                pickle_filename = f"{wav_file_name}.pickle"
-                                pickle_path = pickle_files_dict.get(pickle_filename)
+                            # Process pickle file if found
+                            if pickle_path:
+                                # Open and process the pickle file
+                                with open(pickle_path, "rb") as pickle_file_obj:
+                                    # Create a Django file object
+                                    pickle_file = SimpleUploadedFile(
+                                        pickle_filename,
+                                        pickle_file_obj.read(),
+                                        content_type="application/octet-stream",
+                                    )
 
-                                # Process pickle file if found
-                                if pickle_path:
-                                    try:
+                                    # Process the pickle file
+                                    onsets, offsets = process_pickle_file(pickle_file)
 
-                                        # Open and process the pickle file
-                                        with open(pickle_path, "rb") as pickle_file_obj:
-                                            # Create a Django file object
-                                            pickle_file = SimpleUploadedFile(
-                                                pickle_filename,
-                                                pickle_file_obj.read(),
-                                                content_type="application/octet-stream",
-                                            )
+                                    # Mark all existing segmentations as inactive first
+                                    Segmentation.objects.filter(recording=recording, is_active=True).update(
+                                        is_active=False
+                                    )
 
-                                            # Process the pickle file
-                                            onsets, offsets = process_pickle_file(pickle_file)
+                                    # Create a new segmentation for this batch of segments
+                                    segmentation = Segmentation.objects.create(
+                                        recording=recording,
+                                        name=f"Batch Upload {timezone.now().strftime('%Y-%m-%d %H:%M:%S')}",
+                                        algorithm=None,  # No algorithm for uploaded pickles
+                                        status="completed",
+                                        progress=100,
+                                        is_active=True,
+                                        manually_edited=False,
+                                        created_by=request.user,
+                                    )
 
-                                            # Mark all existing segmentations as inactive first
-                                            Segmentation.objects.filter(recording=recording, is_active=True).update(
-                                                is_active=False
-                                            )
+                                    # Create segments from the onset/offset pairs
+                                    segments_created = 0
+                                    for i in range(len(onsets)):
+                                        # Create segment name
+                                        segment_name = f"Segment {i+1}"
 
-                                            # Create a new segmentation for this batch of segments
-                                            segmentation = Segmentation.objects.create(
-                                                recording=recording,
-                                                name=f"Batch Upload {timezone.now().strftime('%Y-%m-%d %H:%M:%S')}",
-                                                algorithm=None,  # No algorithm for uploaded pickles
-                                                status="completed",
-                                                progress=100,
-                                                is_active=True,
-                                                manually_edited=False,
-                                                created_by=request.user,
-                                            )
+                                        # Create and save the segment - linked to the new segmentation
+                                        segment = Segment(
+                                            recording=recording,
+                                            segmentation=segmentation,
+                                            name=segment_name,
+                                            onset=onsets[i],
+                                            offset=offsets[i],
+                                            created_by=request.user,
+                                        )
+                                        segment.save(
+                                            manual_edit=False
+                                        )  # Don't mark as manually edited for automated uploads
+                                        segments_created += 1
 
-                                            # Create segments from the onset/offset pairs
-                                            segments_created = 0
-                                            for i in range(len(onsets)):
-                                                try:
-                                                    # Create segment name
-                                                    segment_name = f"Segment {i+1}"
+                                    # Update segment count on the segmentation
+                                    segmentation.segments_created = segments_created
+                                    segmentation.save()
 
-                                                    # Create and save the segment - linked to the new segmentation
-                                                    segment = Segment(
-                                                        recording=recording,
-                                                        segmentation=segmentation,
-                                                        name=segment_name,
-                                                        onset=onsets[i],
-                                                        offset=offsets[i],
-                                                        created_by=request.user,
-                                                    )
-                                                    segment.save(
-                                                        manual_edit=False
-                                                    )  # Don't mark as manually edited for automated uploads
-                                                    segments_created += 1
-                                                except Exception as e:
-
-                                                        f"Error creating segment {i} for {recording.name}: {str(e)}"
-                                                    )
-
-                                            # Update segment count on the segmentation
-                                            segmentation.segments_created = segments_created
-                                            segmentation.save()
-
-                                            if segments_created > 0:
-                                                segmented_count += 1
-
-                                                    f"Created {segments_created} segments for recording {recording.name}"
-                                                )
-                                    except Exception as e:
-
-                                success_count += 1
-                    except Exception as e:
-
-                        error_count += 1
+                                    if segments_created > 0:
+                                        segmented_count += 1
+                            
+                            success_count += 1
 
             # Upload complete
 

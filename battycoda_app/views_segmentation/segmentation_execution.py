@@ -41,33 +41,18 @@ def auto_segment_recording_view(request, recording_id, algorithm_id=None):
     # Get the selected algorithm
     if algorithm_id:
         # Use filter().first() instead of get() to avoid MultipleObjectsReturned error
-        try:
-
-            algorithm = SegmentationAlgorithm.objects.filter(id=int(algorithm_id), is_active=True).first()
-            if not algorithm:
-                # Fallback to the first algorithm if specified one not found
-                algorithm = algorithms.first()
-
-                    f"Algorithm with ID {algorithm_id} not found, using first available: {algorithm.id} - {algorithm.name}"
-                )
-            else:
-
-        except Exception as e:
-
+        algorithm = SegmentationAlgorithm.objects.filter(id=int(algorithm_id), is_active=True).first()
+        if not algorithm:
+            # Fallback to the first algorithm if specified one not found
             algorithm = algorithms.first()
     else:
         # Use the first available algorithm (usually Standard Threshold)
         algorithm = algorithms.first()
-        if algorithm:
 
     # Check for existing segmentations, but we no longer need to warn since we support multiple segmentations
-    try:
-        # Get the count of existing segmentations for information purposes
-        existing_segmentations_count = Segmentation.objects.filter(recording=recording).count()
-        existing_segmentation = None
-    except Exception:
-        existing_segmentations_count = 0
-        existing_segmentation = None
+    # Get the count of existing segmentations for information purposes
+    existing_segmentations_count = Segmentation.objects.filter(recording=recording).count()
+    existing_segmentation = None
 
     if request.method == "POST":
         # Log the POST data for debugging
@@ -102,9 +87,7 @@ def auto_segment_recording_view(request, recording_id, algorithm_id=None):
         else:
             # No algorithm selected - select the first algorithm as default
             algorithm = algorithms.first()
-            if algorithm:
-
-            else:
+            if not algorithm:
                 messages.error(request, "No segmentation algorithm was selected and no default algorithm is available.")
                 return redirect("battycoda_app:auto_segment_recording", recording_id=recording_id)
 

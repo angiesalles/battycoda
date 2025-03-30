@@ -55,34 +55,30 @@ def segmentation_jobs_status_view(request):
             if not segmentation.task_id:
                 continue
 
-            try:
-                # Get task result
-                result = AsyncResult(segmentation.task_id)
+            # Get task result
+            result = AsyncResult(segmentation.task_id)
 
-                if result.ready():
-                    if result.successful():
-                        # Get result data
-                        task_result = result.get()
+            if result.ready():
+                if result.successful():
+                    # Get result data
+                    task_result = result.get()
 
-                        # Success with segments
-                        if task_result.get("status") == "success":
-                            segments_created = task_result.get("segments_created", 0)
-                            segmentation.status = "completed"
-                            segmentation.progress = 100
-                            segmentation.save()
-                        else:
-                            # Task returned error status
-                            error_message = task_result.get("message", "Unknown error in segmentation task")
-                            segmentation.status = "failed"
-                            segmentation.save()
+                    # Success with segments
+                    if task_result.get("status") == "success":
+                        segments_created = task_result.get("segments_created", 0)
+                        segmentation.status = "completed"
+                        segmentation.progress = 100
+                        segmentation.save()
                     else:
-                        # Task failed with exception
-                        error_info = str(result.result)
+                        # Task returned error status
+                        error_message = task_result.get("message", "Unknown error in segmentation task")
                         segmentation.status = "failed"
                         segmentation.save()
-            except Exception as e:
-
-                # Don't update the status in case of error
+                else:
+                    # Task failed with exception
+                    error_info = str(result.result)
+                    segmentation.status = "failed"
+                    segmentation.save()
 
     # Format the segmentations for the response
     formatted_jobs = []

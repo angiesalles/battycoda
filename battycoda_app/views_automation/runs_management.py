@@ -3,7 +3,7 @@
 Provides views for creating, listing, and managing detection runs.
 """
 
-from .common_imports import (  # Django imports; Models; Logging
+from .common_imports import (  # Django imports; Models
     CallProbability,
     Classifier,
     DetectionResult,
@@ -11,7 +11,6 @@ from .common_imports import (  # Django imports; Models; Logging
     JsonResponse,
     Segmentation,
     get_object_or_404,
-    logger,
     login_required,
     messages,
     models,
@@ -162,9 +161,6 @@ def create_detection_run_view(request, segmentation_id=None):
             )
         else:
             classifiers = Classifier.objects.filter(is_active=True, group__isnull=True).order_by("name")
-
-            f"Found {classifiers.count()} classifiers for user {request.user.username} with group {profile.group}"
-        )
 
         # If no classifiers are available, show a message and redirect
         if not classifiers.exists():

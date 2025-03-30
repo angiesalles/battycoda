@@ -59,26 +59,20 @@ def import_default_species(user):
 
         # Skip if species already exists for this group
         if Species.objects.filter(name=species_name, group=group).exists():
-
             continue
 
-        try:
-            # Create the species with its normal name
-            species = Species.objects.create(
-                name=species_name, description=species_data["description"], created_by=user, group=group
-            )
+        # Create the species with its normal name
+        species = Species.objects.create(
+            name=species_name, description=species_data["description"], created_by=user, group=group
+        )
 
-            # Add the image if it exists
-            image_found = _add_species_image(species, species_data)
-            if not image_found:
-
-            # Parse call types from the text file
-            call_file_found = _add_species_calls(species, species_data, user)
-            if not call_file_found:
-
-            created_species.append(species)
-
-        except Exception as e:
+        # Add the image if it exists
+        _add_species_image(species, species_data)
+        
+        # Parse call types from the text file
+        _add_species_calls(species, species_data, user)
+        
+        created_species.append(species)
 
     return created_species
 

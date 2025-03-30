@@ -154,8 +154,8 @@ def task_status(request, task_id):
     # Log the raw task state for debugging
 
     # Check for ready but forgotten task
-    if task_result.ready():
-
+    # Skip forgotten task check
+    
     # Simple status responses
     if task_result.state == "PENDING":
         response = {"status": "pending", "message": "Task is pending", "task_id": task_id}
@@ -302,16 +302,12 @@ def handle_audio_snippet(request):
 
         thr_x1, fs, hashof = get_audio_bit(audio_path, call_to_do, hwin(), extra_params)
 
-        # Validate hash
-        if request.GET["hash"] != hashof:
-
-            # For now, we'll skip the hash validation since we're having path issues
-
-            # return HttpResponse("Hash validation failed", status=400)
-
+        # Validate hash - skipping for now 
+        # if request.GET["hash"] != hashof:
+        #    return HttpResponse("Hash validation failed", status=400)
+        
         # Check for valid audio data
         if thr_x1 is None or len(thr_x1) == 0:
-
             return HttpResponse("Failed to extract audio data", status=500)
 
         # Extract the specific channel with error handling
@@ -322,10 +318,6 @@ def handle_audio_snippet(request):
                 thr_x1 = thr_x1[:, channel_idx]
             else:
                 # Single channel or invalid channel index
-                if len(thr_x1.shape) > 1:
-
-                        f"Invalid channel index {channel_idx} for audio with {thr_x1.shape[1]} channels. Using first channel."
-                    )
                 thr_x1 = thr_x1 if len(thr_x1.shape) == 1 else thr_x1[:, 0]
 
             # Ensure audio data is 1D
@@ -352,10 +344,7 @@ def handle_audio_snippet(request):
                 # Ensure we have valid audio data
                 audio_data = thr_x1.astype("float32")
 
-                # Log audio data details for debugging
-
-                    f"Writing audio with shape: {audio_data.shape}, sample rate: {sample_rate}, min: {audio_data.min()}, max: {audio_data.max()}"
-                )
+                # Audio data details for debugging
 
                 # Adjust and ensure proper range for audio data
                 if np.isnan(audio_data).any() or np.isinf(audio_data).any():

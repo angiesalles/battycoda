@@ -1,4 +1,3 @@
-
 from celery import shared_task
 
 @shared_task
@@ -32,14 +31,12 @@ def calculate_audio_duration(recording_id):
 
         # Skip if both duration and sample rate are already set
         if recording.duration and recording.sample_rate:
-
-                f"Recording {recording_id} already has duration: {recording.duration}s, sample rate: {recording.sample_rate}Hz"
-            )
+            # Recording already has duration and sample rate
             return True
 
         # Check if file exists
         if not os.path.exists(recording.wav_file.path):
-
+            # Recording file doesn't exist
             return False
 
         # Extract audio information from file
@@ -63,17 +60,15 @@ def calculate_audio_duration(recording_id):
         # Use update_fields to avoid triggering save signal again (if any fields were updated)
         if update_fields:
             recording.save(update_fields=update_fields)
-
-                f"Successfully updated recording {recording_id}: duration={duration}s, sample_rate={sample_rate}Hz"
-            )
+            # Successfully updated recording with duration and sample rate
 
         return True
 
     except Recording.DoesNotExist:
-
+        # Recording doesn't exist
         return False
-    except Exception as e:
-
+    except Exception:
+        # Other error occurred
         return False
 
 @shared_task

@@ -78,17 +78,12 @@ def get_next_task_view(request):
         next_task = same_batch_tasks.order_by("created_at").first()
 
         if next_task:
-
             return redirect("battycoda_app:annotate_task", task_id=next_task.id)
-        else:
-
+            
     # Fall back to the regular selection if no suitable task found from the same batch
     task = tasks_query.order_by("created_at").first()
 
     if task:
-
-            f"Selected next task #{task.id}" + (f" from batch #{task.batch.id}" if task.batch else " (no batch)")
-        )
         # Redirect to the annotation interface with the task ID
         return redirect("battycoda_app:annotate_task", task_id=task.id)
     else:

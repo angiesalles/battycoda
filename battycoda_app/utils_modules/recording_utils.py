@@ -26,32 +26,26 @@ def create_recording_from_batch(batch, onsets=None, offsets=None, pickle_file=No
 
     # Ensure we have a valid batch with a WAV file
     if not batch.wav_file:
-
         return None, 0
 
-    try:
-        # Create a new recording using the same WAV file
-        recording = _create_recording_from_batch(batch)
-        segments_created = 0
+    # Create a new recording using the same WAV file
+    recording = _create_recording_from_batch(batch)
+    segments_created = 0
 
-        # Process the pickle file if provided
-        if pickle_file:
-            try:
-                # Process the pickle file to get onsets and offsets
-                onsets, offsets = process_pickle_file(pickle_file)
-            except Exception as e:
+    # Process the pickle file if provided
+    if pickle_file:
+        # Process the pickle file to get onsets and offsets
+        try:
+            onsets, offsets = process_pickle_file(pickle_file)
+        except Exception:
+            # If processing the pickle file fails, just return the recording with no segments
+            return recording, segments_created
 
-                return recording, segments_created
+    # Create segments if we have onset/offset data
+    if onsets and offsets and len(onsets) == len(offsets):
+        segments_created = _create_segments_for_recording(recording, onsets, offsets, batch.created_by)
 
-        # Create segments if we have onset/offset data
-        if onsets and offsets and len(onsets) == len(offsets):
-            segments_created = _create_segments_for_recording(recording, onsets, offsets, batch.created_by)
-
-        return recording, segments_created
-
-    except Exception as e:
-
-        return None, 0
+    return recording, segments_created
 
 def _create_recording_from_batch(batch):
     """Create a Recording object from a TaskBatch
@@ -92,37 +86,34 @@ def _create_segments_for_recording(recording, onsets, offsets, user):
     from battycoda_app.models import Segment, Segmentation
 
     segments_created = 0
-    try:
-        with transaction.atomic():
-            # First, create the segmentation object
-            segmentation = Segmentation(
+    with transaction.atomic():
+        # First, create the segmentation object
+        segmentation = Segmentation(
+            recording=recording,
+            status="completed",  # Already completed since we have the data
+            progress=100,
+            created_by=user,
+        )
+        segmentation.save()
+
+        # Now create the segments
+        for i in range(len(onsets)):
+            # Create segment name
+            segment_name = f"Segment {i+1}"
+
+            # Convert numpy types to Python native types if needed
+            onset_value = float(onsets[i])
+            offset_value = float(offsets[i])
+
+            # Create and save the segment
+            segment = Segment(
                 recording=recording,
-                status="completed",  # Already completed since we have the data
-                progress=100,
+                name=segment_name,
+                onset=onset_value,
+                offset=offset_value,
                 created_by=user,
             )
-            segmentation.save()
-
-            # Now create the segments
-            for i in range(len(onsets)):
-                # Create segment name
-                segment_name = f"Segment {i+1}"
-
-                # Convert numpy types to Python native types if needed
-                onset_value = float(onsets[i])
-                offset_value = float(offsets[i])
-
-                # Create and save the segment
-                segment = Segment(
-                    recording=recording,
-                    name=segment_name,
-                    onset=onset_value,
-                    offset=offset_value,
-                    created_by=user,
-                )
-                segment.save()
-                segments_created += 1
-
-    except Exception as e:
+            segment.save()
+            segments_created += 1
 
     return segments_created

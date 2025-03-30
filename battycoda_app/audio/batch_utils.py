@@ -70,19 +70,14 @@ def process_batch_upload(wav_zip, pickle_zip, form_data, user, group):
         # Extract pickle files if available
         pickle_files_dict = {}
         if pickle_zip:
-            try:
-                with zipfile.ZipFile(pickle_zip, "r") as zip_ref:
-                    # Extract all pickle files
-                    for file_info in zip_ref.infolist():
-                        if file_info.filename.lower().endswith(".pickle"):
-                            zip_ref.extract(file_info, pickle_temp_dir)
-                            pickle_path = os.path.join(pickle_temp_dir, file_info.filename)
-                            # Store with basename as key for matching
-                            pickle_files_dict[os.path.basename(file_info.filename)] = pickle_path
-
-            except Exception as e:
-
-                # Continue with WAV files even if pickle extraction fails
+            with zipfile.ZipFile(pickle_zip, "r") as zip_ref:
+                # Extract all pickle files
+                for file_info in zip_ref.infolist():
+                    if file_info.filename.lower().endswith(".pickle"):
+                        zip_ref.extract(file_info, pickle_temp_dir)
+                        pickle_path = os.path.join(pickle_temp_dir, file_info.filename)
+                        # Store with basename as key for matching
+                        pickle_files_dict[os.path.basename(file_info.filename)] = pickle_path
 
         # Process each WAV file
         for wav_path in wav_files:
@@ -152,24 +147,22 @@ def process_batch_upload(wav_zip, pickle_zip, form_data, user, group):
                                     # Create segments from the onset/offset pairs
                                     segments_created = 0
                                     for i in range(len(onsets)):
-                                        try:
-                                            # Create segment name
-                                            segment_name = f"Segment {i+1}"
+                                        # Create segment name
+                                        segment_name = f"Segment {i+1}"
 
-                                            # Create and save the segment - linked to the new segmentation
-                                            segment = Segment(
-                                                recording=recording,
-                                                segmentation=segmentation,
-                                                name=segment_name,
-                                                onset=onsets[i],
-                                                offset=offsets[i],
-                                                created_by=user,
-                                            )
-                                            segment.save(
-                                                manual_edit=False
-                                            )  # Don't mark as manually edited for automated uploads
-                                            segments_created += 1
-                                        except Exception as e:
+                                        # Create and save the segment - linked to the new segmentation
+                                        segment = Segment(
+                                            recording=recording,
+                                            segmentation=segmentation,
+                                            name=segment_name,
+                                            onset=onsets[i],
+                                            offset=offsets[i],
+                                            created_by=user,
+                                        )
+                                        segment.save(
+                                            manual_edit=False
+                                        )  # Don't mark as manually edited for automated uploads
+                                        segments_created += 1
 
                                     # Update segment count on the segmentation
                                     segmentation.segments_created = segments_created
@@ -177,14 +170,14 @@ def process_batch_upload(wav_zip, pickle_zip, form_data, user, group):
 
                                     if segments_created > 0:
                                         segmented_count += 1
-
-                                            f"Created {segments_created} segments for recording {recording.name}"
-                                        )
-                            except Exception as e:
+                                        # Created segments for recording
+                            except Exception:
+                                # Exception during pickle processing or segment creation
+                                segmented_count = segmented_count
 
                         success_count += 1
-            except Exception as e:
-
+            except Exception:
+                # Exception during WAV processing
                 error_count += 1
 
     # Return the results

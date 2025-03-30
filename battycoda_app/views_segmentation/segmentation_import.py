@@ -56,10 +56,6 @@ def upload_pickle_segments_view(request, recording_id):
                 # We no longer need to delete existing segments since we support multiple segmentations
                 # Just counting for logging purposes
                 existing_count = Segment.objects.filter(recording=recording).count()
-                if existing_count > 0:
-
-                        f"Recording {recording.id} already has {existing_count} segments from previous segmentations"
-                    )
 
                 # Create new segments
                 for i in range(len(onsets)):
