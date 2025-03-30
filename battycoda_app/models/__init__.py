@@ -23,4 +23,4 @@ from .recording import Recording, Segment, Segmentation, SegmentationAlgorithm
 from .task import Task, TaskBatch
 
 # User models
-from .user import Group, GroupInvitation, GroupMembership, UserProfile
+from .user import Group, GroupInvitation, GroupMembership, LoginCode, UserProfile

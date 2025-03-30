@@ -1,0 +1,29 @@
+{% extends 'base.html' %}
+
+{% block title %}Enter Login Code | BattyCoda{% endblock %}
+
+{% block content %}
+<div class="section">
+    <h2>Enter Login Code</h2>
+    <p>A one-time login code has been sent to your email. Enter it below to login.</p>
+    
+    <form method="post" action="{% url 'battycoda_app:enter_login_code' username=username %}">
+        {% csrf_token %}
+        
+        <div style="margin-bottom: 15px;">
+            <label for="id_username" style="display: block; margin-bottom: 5px;">Username or Email:</label>
+            <input type="text" name="username" id="id_username" value="{{ username }}" readonly class="input-field" style="width: 100%; padding: 8px; border: 1px solid #333; background-color: #2a2a2a; color: #fff; border-radius: 3px;">
+        </div>
+
+        <div style="margin-bottom: 15px;">
+            <label for="id_login_code" style="display: block; margin-bottom: 5px;">Login Code:</label>
+            <input type="text" name="login_code" id="id_login_code" required autofocus class="input-field" style="width: 100%; padding: 12px; border: 1px solid #333; background-color: #2a2a2a; color: #fff; border-radius: 3px; font-size: 1.1em; letter-spacing: 2px; text-align: center;" placeholder="Enter code from email">
+        </div>
+        
+        <div style="margin-top: 20px;">
+            <button type="submit" class="button" style="width: 100%; padding: 10px 0; font-size: 1.1em;">Login</button>
+        </div>
+    </form>
+    
+</div>
+{% endblock %}

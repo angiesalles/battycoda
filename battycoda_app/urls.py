@@ -34,6 +34,9 @@ urlpatterns = [
     path("accounts/password-reset/", views_auth.password_reset_request, name="password_reset_request"),
     path("accounts/reset-password/<str:token>/", views_auth.password_reset, name="password_reset"),
     path("accounts/request-login-code/", views_auth.request_login_code, name="request_login_code"),
+    path("accounts/enter-login-code/<str:username>/", views_auth.enter_login_code, name="enter_login_code"),
+    path("accounts/login-with-token/<str:token>/", views_auth.login_with_token, name="login_with_token"),
+    path("accounts/check-username/", views_auth.check_username, name="check_username"),
     # Routes for task functionality only
     # Directory and file browsing functionality removed
     # Spectrogram routes
