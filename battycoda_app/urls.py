@@ -124,6 +124,7 @@ urlpatterns = [
     path("recordings/create/", views_recording_core.create_recording_view, name="create_recording"),
     path("recordings/<int:recording_id>/edit/", views_recording_core.edit_recording_view, name="edit_recording"),
     path("recordings/<int:recording_id>/delete/", views_recording_core.delete_recording_view, name="delete_recording"),
+    path("recordings/<int:recording_id>/recalculate-audio-info/", views_recording_core.recalculate_audio_info_view, name="recalculate_audio_info"),
     # Batch Upload
     path("recordings/batch-upload/", views_batch_upload.batch_upload_recordings_view, name="batch_upload_recordings"),
     # Segmentation related views

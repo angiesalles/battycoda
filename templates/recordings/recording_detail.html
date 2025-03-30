@@ -48,6 +48,9 @@
                         <div class="fw-bold text-muted small mb-1">File Details</div>
                         <p class="mb-0"><strong>Duration:</strong> {{ recording.duration|default:"Unknown"|floatformat:2 }} seconds</p>
                         <p class="mb-0"><strong>Sample Rate:</strong> {{ recording.sample_rate|default:"Unknown" }} Hz</p>
+                        <a href="{% url 'battycoda_app:recalculate_audio_info' recording_id=recording.id %}" class="btn btn-sm btn-outline-secondary mt-2">
+                            <i class="fas fa-sync-alt"></i> Recalculate Audio Info
+                        </a>
                     </div>
                     
                     <div class="mb-3">
