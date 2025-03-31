@@ -1,70 +1,68 @@
 /* 
  * BattyKoda Theme CSS
- * Color definitions for themes - ONLY color variables, no styles
+ * Based on Maisonnette Theme
  */
 
-/* Dark Theme (Red) */
-body.theme-dark {
-    /* Core colors */
-    --primary: #e57373;         /* Red accent color */
-    --primary-hover: #ef5350;   /* Brighter red for hover states */
-    --secondary: #607d8b;       /* Subdued blue-grey for secondary elements */
-    --background: #121212;      /* Very dark grey for page background */
-    --surface: #1e1e1e;         /* Dark grey for containers/cards */
-    --text: #ffffff;            /* White for main text */
-    --text-on-primary: #000000; /* Black text on primary color elements */
-    
-    /* Supporting colors */
-    --text-secondary: #aaaaaa;  /* Lighter grey for secondary text */
-    --text-muted: #666666;      /* Dark grey for less important text */
-    --border: #333333;          /* Border color for elements */
-    --input-bg: #2a2a2a;        /* Slightly lighter than surface for inputs */
-    --success: #4caf50;         /* Green for success messages/indicators */
-    --warning: #ff9800;         /* Orange for warning messages */
-    --error: #f44336;           /* Red for error messages */
-    --info: #03a9f4;            /* Blue for info messages/indicators */
+/* Theme selector dropdown */
+.theme-selector {
+    display: inline-block;
+    margin-left: 15px;
 }
 
-/* Light Theme (Blue) */
-body.theme-light {
-    /* Core colors */
-    --primary: #3056b5;         /* Darker blue accent color */
-    --primary-hover: #254497;   /* Deeper blue for hover states */
-    --secondary: #64748b;       /* Slate for secondary elements */
-    --background: #e8ecf2;      /* Slightly darker off-white for page background */
-    --surface: #f4f6f9;         /* Off-white for containers/cards */
-    --text: #333333;            /* Dark grey for main text */
-    --text-on-primary: #ffffff; /* White text on primary color elements */
-    
-    /* Supporting colors */
-    --text-secondary: #4b5563;  /* Medium grey for secondary text */
-    --text-muted: #9ca3af;      /* Light grey for less important text */
-    --border: #e5e7eb;          /* Light grey for borders */
-    --input-bg: #f0f2f5;        /* Off-white for input backgrounds, slightly darker */
-    --success: #34a87d;         /* Softer green for success messages/indicators */
-    --warning: #f0a035;         /* Softer orange for warning messages */
-    --error: #e05252;           /* Softer red for error messages */
-    --info: #4c85c5;            /* Darker blue for info messages/indicators */
+.theme-selector .dropdown-menu {
+    min-width: 200px;
+    padding: 1rem;
 }
 
-/* Blue Theme */
-body.theme-blue {
-    /* Core colors */
-    --primary: #38bdf8;         /* Blue accent color */
-    --primary-hover: #0ea5e9;   /* Darker blue for hover states */
-    --secondary: #818cf8;       /* Purple-blue for secondary elements */
-    --background: #0f172a;      /* Very dark blue for page background */
-    --surface: #1e293b;         /* Dark blue-grey for containers/cards */
-    --text: #ffffff;            /* White for main text */
-    --text-on-primary: #000000; /* Black text on primary color elements */
-    
-    /* Supporting colors */
-    --text-secondary: #94a3b8;  /* Blue-grey for secondary text */
-    --text-muted: #64748b;      /* Darker blue-grey for less important text */
-    --border: #334155;          /* Medium blue-grey for borders */
-    --input-bg: #1e293b;        /* Same as surface for inputs */
-    --success: #22c55e;         /* Green for success messages/indicators */
-    --warning: #fb923c;         /* Orange for warning messages */
-    --error: #ef4444;           /* Red for error messages */
-    --info: #60a5fa;            /* Blue for info messages/indicators */
+.theme-selector .dropdown-item {
+    padding: 0.25rem 1rem;
+    border-radius: 3px;
+    margin-bottom: 0.25rem;
+}
+
+.theme-selector .dropdown-item:hover {
+    background-color: rgba(0, 0, 0, 0.05);
+}
+
+.theme-selector .dropdown-item.active {
+    background-color: var(--primary);
+    color: var(--text-on-primary);
+}
+
+.theme-color-preview {
+    display: inline-block;
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    margin-right: 8px;
+    border: 1px solid rgba(0, 0, 0, 0.2);
+}
+
+/* Theme colors - will be superseded by Maisonnette themes */
+body.theme-default .theme-color-preview {
+    background-color: #4ad69e;  /* Default Maisonnette green color */
+}
+
+body.theme-blue-sky .theme-color-preview {
+    background-color: #59c2e6;
+}
+
+body.theme-little-fox .theme-color-preview {
+    background-color: #ffbf69;
+}
+
+body.theme-night-city .theme-color-preview {
+    background-color: #2c3e50;
+}
+
+body.theme-orange-juice .theme-color-preview {
+    background-color: #ff7f45;
+}
+
+body.theme-passion .theme-color-preview {
+    background-color: #e74c3c;
+}
+
+body.theme-pink-love .theme-color-preview {
+    background-color: #f48fb1;
 }

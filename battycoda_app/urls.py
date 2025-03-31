@@ -53,6 +53,7 @@ urlpatterns = [
     path("accounts/enter-login-code/<str:username>/", views_auth.enter_login_code, name="enter_login_code"),
     path("accounts/login-with-token/<str:token>/", views_auth.login_with_token, name="login_with_token"),
     path("accounts/check-username/", views_auth.check_username, name="check_username"),
+    path("update_theme_preference/", views_auth.update_theme_preference, name="update_theme_preference"),
     # Routes for task functionality only
     # Directory and file browsing functionality removed
     # Spectrogram routes
