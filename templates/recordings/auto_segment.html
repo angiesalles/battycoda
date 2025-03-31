@@ -1,6 +1,12 @@
 {% extends "list_view_base.html" %}
 {% load static %}
 
+{% block extra_css %}
+{{ block.super }}
+<link rel="stylesheet" href="{% static 'css/audio.css' %}">
+<link rel="stylesheet" href="{% static 'css/waveform_viewer.css' %}">
+{% endblock %}
+
 {% block page_title %}Auto Segment{% endblock %}
 {% block list_title %}Automated Segmentation{% endblock %}
 {% block card_title %}{{ recording.name }}{% endblock %}

@@ -111,4 +111,4 @@ def index(request):
 
         return render(request, "dashboard.html", context)
     else:
-        return redirect("battycoda_app:login")
+        return redirect("battycoda_app:landing")

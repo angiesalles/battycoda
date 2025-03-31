@@ -1,6 +1,11 @@
 {% extends 'list_view_base.html' %}
 {% load static %}
 
+{% block extra_css %}
+{{ block.super }}
+<link rel="stylesheet" href="{% static 'css/audio.css' %}">
+{% endblock %}
+
 {% block page_title %}{{ title }}{% endblock %}
 {% block list_title %}{{ title }}{% endblock %}
 {% block card_title %}{{ title }}{% endblock %}

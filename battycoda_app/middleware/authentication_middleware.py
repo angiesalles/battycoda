@@ -33,6 +33,7 @@ class AuthenticationMiddleware:
             "/accounts/login-with-token/",
             "/accounts/password-reset/",
             "/accounts/reset-password/",
+            "/welcome/",  # Allow access to the landing page
         ]
 
         # Skip for Let's Encrypt ACME challenges
@@ -45,8 +46,15 @@ class AuthenticationMiddleware:
 
         # Check if the user is authenticated
         if not request.user.is_authenticated:
-
-            # Redirect to login page
+            # If this is the root URL, redirect to landing page instead of login
+            if request.path == '/' or request.path == '':
+                try:
+                    landing_url = reverse("battycoda_app:landing")
+                    return HttpResponseRedirect(landing_url)
+                except:
+                    pass
+                    
+            # Otherwise redirect to login page
             try:
                 login_url = reverse("battycoda_app:login")
             except:
