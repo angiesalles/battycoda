@@ -1,115 +1,70 @@
 /* 
  * BattyKoda Theme CSS
- * Theme styles for the BattyCoda application 
+ * Color definitions for themes - ONLY color variables, no styles
  */
 
-/* Default theme (red) is in main.css */
+/* Dark Theme (Red) */
+body.theme-dark {
+    /* Core colors */
+    --primary: #e57373;         /* Red accent color */
+    --primary-hover: #ef5350;   /* Brighter red for hover states */
+    --secondary: #607d8b;       /* Subdued blue-grey for secondary elements */
+    --background: #121212;      /* Very dark grey for page background */
+    --surface: #1e1e1e;         /* Dark grey for containers/cards */
+    --text: #ffffff;            /* White for main text */
+    --text-on-primary: #000000; /* Black text on primary color elements */
+    
+    /* Supporting colors */
+    --text-secondary: #aaaaaa;  /* Lighter grey for secondary text */
+    --text-muted: #666666;      /* Dark grey for less important text */
+    --border: #333333;          /* Border color for elements */
+    --input-bg: #2a2a2a;        /* Slightly lighter than surface for inputs */
+    --success: #4caf50;         /* Green for success messages/indicators */
+    --warning: #ff9800;         /* Orange for warning messages */
+    --error: #f44336;           /* Red for error messages */
+    --info: #03a9f4;            /* Blue for info messages/indicators */
+}
 
-/* Blue/Green Theme */
+/* Light Theme (Blue) */
+body.theme-light {
+    /* Core colors */
+    --primary: #3056b5;         /* Darker blue accent color */
+    --primary-hover: #254497;   /* Deeper blue for hover states */
+    --secondary: #64748b;       /* Slate for secondary elements */
+    --background: #e8ecf2;      /* Slightly darker off-white for page background */
+    --surface: #f4f6f9;         /* Off-white for containers/cards */
+    --text: #333333;            /* Dark grey for main text */
+    --text-on-primary: #ffffff; /* White text on primary color elements */
+    
+    /* Supporting colors */
+    --text-secondary: #4b5563;  /* Medium grey for secondary text */
+    --text-muted: #9ca3af;      /* Light grey for less important text */
+    --border: #e5e7eb;          /* Light grey for borders */
+    --input-bg: #f0f2f5;        /* Off-white for input backgrounds, slightly darker */
+    --success: #34a87d;         /* Softer green for success messages/indicators */
+    --warning: #f0a035;         /* Softer orange for warning messages */
+    --error: #e05252;           /* Softer red for error messages */
+    --info: #4c85c5;            /* Darker blue for info messages/indicators */
+}
+
+/* Blue Theme */
 body.theme-blue {
-    background-color: #0f172a;
-    color: white;
-}
-
-body.theme-blue h1, 
-body.theme-blue h2, 
-body.theme-blue h3, 
-body.theme-blue h4, 
-body.theme-blue h5, 
-body.theme-blue h6 {
-    color: #38bdf8;
-}
-
-body.theme-blue a {
-    color: #38bdf8;
-}
-
-body.theme-blue a:hover {
-    text-decoration: underline;
-    color: #0ea5e9;
-}
-
-body.theme-blue .header {
-    background-color: #38bdf8;
-    color: black;
-}
-
-/* Fix for header headings color - overriding the default heading colors */
-body.theme-blue .header h1,
-body.theme-blue .header h2 {
-    color: black;
-}
-
-body.theme-blue .container,
-body.theme-blue .content-container, 
-body.theme-blue .section, 
-body.theme-blue .nav-container {
-    background-color: #1e293b;
-}
-
-body.theme-blue .nav-links a {
-    color: #38bdf8;
-}
-
-body.theme-blue .btn,
-body.theme-blue button.btn-primary,
-body.theme-blue input[type="submit"] {
-    background-color: #38bdf8;
-    color: black;
-}
-
-body.theme-blue .btn:hover,
-body.theme-blue button.btn-primary:hover,
-body.theme-blue input[type="submit"]:hover {
-    background-color: #0ea5e9;
-}
-
-body.theme-blue .flash-message {
-    background-color: #38bdf8;
-}
-
-/* For theme preview in profile editor */
-.theme-preview {
-    padding: 20px;
-    border-radius: 5px;
-    margin-top: 15px;
-    transition: all 0.3s ease;
-}
-
-.theme-preview h3 {
-    margin-top: 0;
-}
-
-.theme-default {
-    background-color: #1e1e1e;
-}
-
-.theme-default h3 {
-    color: #e57373;
-}
-
-.theme-default .preview-button {
-    background-color: #e57373;
-    color: black;
-    border: none;
-    padding: 8px 15px;
-    border-radius: 4px;
-    cursor: pointer;
-}
-
-.theme-blue {
-    background-color: #1e293b;
-}
-
-.theme-blue h3 {
-    color: #38bdf8;
-}
-
-.theme-blue .preview-button {
-    background-color: #38bdf8;
-    color: black;
-    border: none;
-    padding: 8px 15px;
-    border-radius: 4px;
-    cursor: pointer;
+    /* Core colors */
+    --primary: #38bdf8;         /* Blue accent color */
+    --primary-hover: #0ea5e9;   /* Darker blue for hover states */
+    --secondary: #818cf8;       /* Purple-blue for secondary elements */
+    --background: #0f172a;      /* Very dark blue for page background */
+    --surface: #1e293b;         /* Dark blue-grey for containers/cards */
+    --text: #ffffff;            /* White for main text */
+    --text-on-primary: #000000; /* Black text on primary color elements */
+    
+    /* Supporting colors */
+    --text-secondary: #94a3b8;  /* Blue-grey for secondary text */
+    --text-muted: #64748b;      /* Darker blue-grey for less important text */
+    --border: #334155;          /* Medium blue-grey for borders */
+    --input-bg: #1e293b;        /* Same as surface for inputs */
+    --success: #22c55e;         /* Green for success messages/indicators */
+    --warning: #fb923c;         /* Orange for warning messages */
+    --error: #ef4444;           /* Red for error messages */
+    --info: #60a5fa;            /* Blue for info messages/indicators */
 }

@@ -188,11 +188,36 @@ def create_detection_run_view(request, segmentation_id=None):
         # Fallback to showing only user's segmentations if no group is assigned
         segmentations = Segmentation.objects.filter(created_by=request.user, status="completed").order_by("-created_at")
 
+    # Format data for the select_entity template
+    items = []
+    for segmentation in segmentations:
+        items.append({
+            "name": f"{segmentation.recording.name} - {segmentation.algorithm.name if segmentation.algorithm else 'Custom'}",
+            "type_name": "Segmentation",
+            "count": segmentation.segments.count(),
+            "created_at": segmentation.created_at,
+            "detail_url": f"/recordings/{segmentation.recording.id}/",
+            "action_url": f"/automation/runs/create/{segmentation.id}/",
+        })
+
     context = {
-        "segmentations": segmentations,
+        "title": "Create Detection Run",
+        "list_title": "Available Segmentations",
+        "action_text": "Create Run",
+        "action_icon": "bolt",
+        "parent_url": "battycoda_app:automation_home",
+        "parent_name": "Automation",
+        "th1": "Recording",
+        "th2": "Algorithm",
+        "th3": "Segments",
+        "show_count": True,
+        "info_message": "Select a segmentation to create a detection run for.",
+        "empty_message": "No segmentations available. You need to create segmentations first.",
+        "create_url": "battycoda_app:batch_segmentation",
+        "items": items,
     }
 
-    return render(request, "automation/select_segmentation.html", context)
+    return render(request, "automation/select_entity.html", context)
 
 @login_required
 def delete_detection_run_view(request, run_id):

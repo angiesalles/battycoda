@@ -57,7 +57,7 @@
 
 .axis-label {
     font-weight: bold;
-    color: white;
+    color: var(--text);
     margin-bottom: 5px;
 }
 
@@ -82,18 +82,18 @@
 }
 
 .y-tick, .x-tick {
-    color: #cccccc;
+    color: var(--text);
     font-size: 12px;
     display: inline-block !important; /* Force display */
     padding: 2px;
-    background-color: rgba(30, 30, 30, 0.7); /* Semi-transparent background */
+    background-color: rgba(0, 0, 0, 0.1); /* Semi-transparent background */
     border-radius: 2px;
 }
 
 /* Make sure the spectrogram container fits properly */
 .spectrogram-container {
-    border: 1px solid #444;
-    background-color: #1a1a1a;
+    border: 1px solid var(--border);
+    background-color: var(--input-bg);
     padding: 5px;
     border-radius: 5px;
 }
@@ -104,10 +104,10 @@
     height: auto;
 }
 
-/* Dark theme for waveform viewer */
+/* Theme for waveform viewer */
 .waveform-viewer {
-    background-color: #121212;
-    color: #e0e0e0;
+    background-color: var(--background);
+    color: var(--text);
 }
 
 /* Improved grid layout for better spacing */
@@ -186,7 +186,7 @@
 .waveform-viewer h3 {
     font-size: 1.25rem;
     margin-bottom: 0.75rem;
-    color: #fff;
+    color: var(--primary);
 }
 
 /* Other styling */
@@ -206,39 +206,39 @@
     max-width: 350px;
 }
 
-/* Dark card-like appearance for sections */
+/* Card-like appearance for sections */
 .spectrogram-small, .controls, .call-type, 
 .spectrogram-large, .confidence, .audio-section, .others {
-    background-color: #1e1e1e;
+    background-color: var(--surface);
     border-radius: 4px;
     padding: 15px;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
 }
 
-/* Override Bootstrap form control styles for dark theme */
+/* Override Bootstrap form control styles for theme */
 .waveform-viewer .form-control, .waveform-viewer .form-select {
-    background-color: #2d2d2d;
-    border: 1px solid #444;
-    color: #e0e0e0;
+    background-color: var(--input-bg);
+    border: 1px solid var(--border);
+    color: var(--text);
 }
 
 .waveform-viewer .form-control:focus, .waveform-viewer .form-select:focus {
-    background-color: #333;
-    color: #fff;
-    border-color: #007bff;
+    background-color: var(--input-bg);
+    color: var(--text);
+    border-color: var(--primary);
 }
 
 /* Override Bootstrap button styles */
 .waveform-viewer .btn-outline-secondary {
-    color: #adb5bd;
-    border-color: #495057;
+    color: var(--secondary);
+    border-color: var(--border);
 }
 
 .waveform-viewer .btn-outline-secondary:hover,
 .waveform-viewer .btn-outline-secondary.active {
-    color: #fff;
-    background-color: #495057;
-    border-color: #6c757d;
+    color: var(--text-on-primary);
+    background-color: var(--secondary);
+    border-color: var(--secondary);
 }
 
 /* Mobile responsiveness */

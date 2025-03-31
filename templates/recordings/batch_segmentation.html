@@ -16,21 +16,21 @@
 <!-- Debug Visualization Modal -->
 <div class="modal fade" id="vizModal" tabindex="-1" aria-labelledby="vizModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-xl">
-        <div class="modal-content bg-dark">
-            <div class="modal-header">
+        <div class="modal-content bg-dark" id="viz-modal-content">
+            <div class="modal-header" id="viz-modal-header">
                 <h5 class="modal-title" id="vizModalLabel">Segmentation Debug Visualization</h5>
-                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close" id="viz-modal-close"></button>
             </div>
-            <div class="modal-body text-center">
+            <div class="modal-body text-center" id="viz-modal-body">
                 <img id="vizImage" src="" alt="Debug Visualization" class="img-fluid">
-                <p class="text-muted mt-3">
+                <p class="text-muted mt-3" id="viz-description">
                     This visualization shows the segmentation process steps: 
                     original signal, absolute signal, smoothed signal with threshold, 
                     and binary mask with detected segments.
                 </p>
             </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            <div class="modal-footer" id="viz-modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" id="viz-modal-close-btn">Close</button>
                 <a id="vizDownloadLink" href="" download class="btn btn-primary">
                     <i class="fas fa-download"></i> Download Image
                 </a>
@@ -41,23 +41,24 @@
 
 <div id="segmentation-jobs-container">
     <div class="text-center py-4" id="loading-jobs">
-        <div class="spinner-border text-primary" role="status">
+        <div class="spinner-border text-primary" role="status" id="loading-spinner">
             <span class="visually-hidden">Loading...</span>
         </div>
-        <p class="mt-2">Loading segmentations...</p>
+        <p class="mt-2" id="loading-message">Loading segmentations...</p>
     </div>
     
     <div id="jobs-content" style="display: none;">
         <div class="table-responsive" id="jobs-table" style="display: none;">
-            <table class="table table-dark table-hover table-striped mb-0">
-                <thead>
-                    <tr>
-                        <th>Recording</th>
-                        <th>Segmentation</th>
-                        <th>Started</th>
-                        <th>Status</th>
-                        <th>Progress</th>
-                        <th>Actions</th>
+            <table class="table table-dark table-hover table-striped mb-0" id="segmentation-table">
+                <thead id="segmentation-table-head">
+                    <tr id="segmentation-table-header-row">
+                        <th id="header-recording">Recording</th>
+                        <th id="header-segmentation">Segmentation</th>
+                        <th id="header-started">Started</th>
+                        <th id="header-status">Status</th>
+                        <th id="header-segments">Segments</th>
+                        <th id="header-progress">Progress</th>
+                        <th id="header-actions">Actions</th>
                     </tr>
                 </thead>
                 <tbody id="jobs-list">
@@ -67,11 +68,11 @@
         </div>
         
         <div id="no-jobs-message" style="display: none;">
-            <div class="text-center p-5">
-                <i class="fas fa-tasks fa-4x mb-3 text-muted"></i>
-                <h4>No Segmentations</h4>
-                <p class="text-muted">You haven't created any segmentations yet.</p>
-                <a href="{% url 'battycoda_app:select_recording_for_segmentation' %}" class="btn btn-primary mt-2">
+            <div class="text-center p-5" id="empty-state-container">
+                <i class="fas fa-tasks fa-4x mb-3 text-muted" id="empty-state-icon"></i>
+                <h4 id="empty-state-heading">No Segmentations</h4>
+                <p class="text-muted" id="empty-state-message">You haven't created any segmentations yet.</p>
+                <a href="{% url 'battycoda_app:select_recording_for_segmentation' %}" class="btn btn-primary mt-2" id="empty-state-action">
                     <i class="fas fa-plus"></i> New Segmentation Run
                 </a>
             </div>
@@ -120,198 +121,11 @@
                 return response.json();
             })
             .then(data => {
-                // Hide loading indicator and show content area
-                if (loadingElement) {
-                    loadingElement.style.display = 'none';
-                }
+                // Update UI with the new data
+                updateJobsDisplay(data);
                 
-                if (jobsContentElement) {
-                    jobsContentElement.style.display = 'block';
-                }
-                
-                // Get all container elements
-                const jobsTableElement = document.getElementById('jobs-table');
-                const noJobsMessageElement = document.getElementById('no-jobs-message');
-                const errorMessageElement = document.getElementById('error-message');
-                
-                // Hide all content containers initially (safely)
-                if (jobsTableElement) {
-                    jobsTableElement.style.display = 'none';
-                }
-                
-                if (noJobsMessageElement) {
-                    noJobsMessageElement.style.display = 'none';
-                }
-                
-                if (errorMessageElement) {
-                    errorMessageElement.style.display = 'none';
-                }
-                
-                if (data.jobs && data.jobs.length > 0) {
-                    // Show the table if it exists
-                    if (jobsTableElement) {
-                        jobsTableElement.style.display = 'block';
-                    
-                        // Get the jobs list element
-                        const jobsList = document.getElementById('jobs-list');
-                        
-                        if (jobsList) {
-                            // Clear previous jobs
-                            jobsList.innerHTML = '';
-                            
-                            // Add each job to the table
-                            data.jobs.forEach(job => {
-                                const row = document.createElement('tr');
-                                
-                                // Set row class based on status
-                                if (job.status === 'completed') {
-                                    row.classList.add('table-success');
-                                } else if (job.status === 'failed') {
-                                    row.classList.add('table-danger');
-                                } else if (job.status === 'in_progress') {
-                                    row.classList.add('table-info');
-                                }
-                                
-                                // Format progress bar
-                                const progressBar = `
-                                    <div class="progress" style="height: 20px;">
-                                        <div class="progress-bar ${job.status === 'completed' ? 'bg-success' : job.status === 'failed' ? 'bg-danger' : 'bg-info'}" 
-                                             role="progressbar" 
-                                             style="width: ${job.progress}%;" 
-                                             aria-valuenow="${job.progress}" 
-                                             aria-valuemin="0" 
-                                             aria-valuemax="100">
-                                            ${job.progress}%
-                                        </div>
-                                    </div>
-                                `;
-                                
-                                // Format status badge
-                                let statusBadge;
-                                if (job.status === 'completed') {
-                                    statusBadge = '<span class="badge bg-success">Completed</span>';
-                                } else if (job.status === 'failed') {
-                                    statusBadge = '<span class="badge bg-danger">Failed</span>';
-                                } else if (job.status === 'in_progress') {
-                                    statusBadge = '<span class="badge bg-info">In Progress</span>';
-                                } else {
-                                    statusBadge = '<span class="badge bg-secondary">Unknown</span>';
-                                }
-                                
-                                // Add active badge if this is the active segmentation
-                                if (job.is_active) {
-                                    statusBadge += '<br><span class="badge bg-primary mt-1" data-bs-toggle="tooltip" title="Current active segmentation">Active</span>';
-                                }
-                                
-                                // Add algorithm badge if available
-                                if (job.algorithm_name) {
-                                    statusBadge += `
-                                        <br><span class="badge bg-secondary mt-1" data-bs-toggle="tooltip" 
-                                        title="${job.algorithm_type}">
-                                            <i class="fas fa-cogs"></i> ${job.algorithm_name}
-                                        </span>
-                                    `;
-                                }
-                                
-                                // Add manually edited badge if applicable
-                                if (job.manually_edited) {
-                                    statusBadge += `
-                                        <br><span class="badge bg-warning mt-1" data-bs-toggle="tooltip" 
-                                        title="This segmentation has been manually edited">
-                                            <i class="fas fa-edit"></i> Manually Edited
-                                        </span>
-                                    `;
-                                }
-                                
-                                // Add debug visualization badge if available
-                                if (job.debug_visualization && job.debug_visualization.url) {
-                                    statusBadge += `
-                                        <br><span class="badge bg-info mt-1 viz-badge" data-bs-toggle="tooltip" 
-                                        title="Debug visualization available" 
-                                        data-viz-url="${job.debug_visualization.url}">
-                                            <i class="fas fa-chart-line"></i> Debug Viz
-                                        </span>
-                                    `;
-                                }
-                                
-                                // Build actions buttons
-                                let actionsHtml = '';
-                                if (job.status === 'completed') {
-                                    actionsHtml = `
-                                        <a href="${job.view_url}" class="btn btn-sm btn-outline-primary" data-bs-toggle="tooltip" data-bs-placement="top" title="View Segments">
-                                            <i class="fas fa-eye"></i>
-                                        </a>
-                                    `;
-                                } else if (job.status === 'in_progress') {
-                                    actionsHtml = `
-                                        <a href="${job.view_url}" class="btn btn-sm btn-outline-info" data-bs-toggle="tooltip" data-bs-placement="top" title="View Details">
-                                            <i class="fas fa-info-circle"></i>
-                                        </a>
-                                    `;
-                                } else if (job.status === 'failed') {
-                                    actionsHtml = `
-                                        <a href="${job.retry_url}" class="btn btn-sm btn-outline-warning" data-bs-toggle="tooltip" data-bs-placement="top" title="Retry">
-                                            <i class="fas fa-redo"></i>
-                                        </a>
-                                    `;
-                                }
-                                
-                                // Populate row cells
-                                row.innerHTML = `
-                                    <td><a href="${job.view_url}" class="text-decoration-none">${job.recording_name}</a></td>
-                                    <td>${job.name || "Unnamed Segmentation"}</td>
-                                    <td><span data-utc-date="${job.start_time}" data-date-format="datetime">${new Date(job.start_time).toLocaleString()}</span></td>
-                                    <td>${statusBadge}</td>
-                                    <td>${progressBar}</td>
-                                    <td>
-                                        <div class="btn-group btn-group-sm">
-                                            ${actionsHtml}
-                                        </div>
-                                    </td>
-                                `;
-                                
-                                jobsList.appendChild(row);
-                            });
-                            
-                            // Initialize tooltips
-                            var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
-                            var tooltipList = tooltipTriggerList.map(function(tooltipTriggerEl) {
-                                return new bootstrap.Tooltip(tooltipTriggerEl);
-                            });
-                            
-                            // Add click handlers for visualization badges
-                            document.querySelectorAll('.viz-badge').forEach(function(badge) {
-                                badge.addEventListener('click', function(e) {
-                                    e.preventDefault();
-                                    
-                                    // Get the visualization URL from the data attribute
-                                    const vizUrl = this.getAttribute('data-viz-url');
-                                    
-                                    // Set the image source in the modal
-                                    document.getElementById('vizImage').src = vizUrl;
-                                    
-                                    // Set the download link
-                                    document.getElementById('vizDownloadLink').href = vizUrl;
-                                    
-                                    // Show the modal
-                                    const vizModal = new bootstrap.Modal(document.getElementById('vizModal'));
-                                    vizModal.show();
-                                });
-                            });
-                            
-                            // Update item count
-                            const itemCountElement = document.querySelector('.item-count');
-                            if (itemCountElement) {
-                                itemCountElement.textContent = data.jobs.length;
-                            }
-                        }
-                    }
-                } else {
-                    // Show empty state if it exists
-                    if (noJobsMessageElement) {
-                        noJobsMessageElement.style.display = 'block';
-                    }
-                }
+                // Also update the polling frequency (if the page was just loaded)
+                updatePollingFrequency(data.jobs);
             })
             .catch(error => {
                 console.error('Error fetching segmentations:', error);
@@ -351,12 +165,267 @@
             });
     }
 
+    // Variables to control refresh rate
+    let refreshInterval;
+    let activePollingInterval = 5000; // 5 seconds when active jobs are running
+    let idlePollingInterval = 30000;  // 30 seconds when no active jobs
+    
+    // Function to check if there are any in-progress jobs and adjust polling interval
+    function updatePollingFrequency(jobs) {
+        // Clear existing interval
+        if (refreshInterval) {
+            clearInterval(refreshInterval);
+        }
+        
+        // Check if there are any in-progress jobs
+        const hasInProgressJobs = jobs && jobs.some(job => job.status === 'in_progress');
+        
+        // Set appropriate interval based on whether there are in-progress jobs
+        const interval = hasInProgressJobs ? activePollingInterval : idlePollingInterval;
+        
+        // Create new interval with the callback function that only does the fetch
+        refreshInterval = setInterval(function() {
+            // Fetch jobs without recursively setting intervals
+            fetch('{% url "battycoda_app:segmentation_jobs_status" %}')
+                .then(response => response.json())
+                .then(data => {
+                    // Update UI with the new data
+                    updateJobsDisplay(data);
+                    
+                    // Check if polling frequency needs to change
+                    const currentlyHasActiveJobs = data.jobs && data.jobs.some(job => job.status === 'in_progress');
+                    const currentInterval = currentlyHasActiveJobs ? activePollingInterval : idlePollingInterval;
+                    
+                    // If the polling frequency needs to change, update it
+                    if ((hasInProgressJobs && !currentlyHasActiveJobs) || (!hasInProgressJobs && currentlyHasActiveJobs)) {
+                        updatePollingFrequency(data.jobs);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error in auto-refresh:', error);
+                });
+        }, interval);
+        
+        // Log polling status for debugging (will only show in console)
+        console.log(`Polling frequency set to ${interval}ms (${hasInProgressJobs ? 'active' : 'idle'} mode)`);
+    }
+    
     // Fetch jobs when page loads
     document.addEventListener('DOMContentLoaded', function() {
+        // Initial jobs fetch, which will also set up the right polling interval
         fetchSegmentationJobs();
         
-        // Auto-refresh every 30 seconds
-        setInterval(fetchSegmentationJobs, 30000);
+        // Add visibility change detection to refresh when tab becomes visible again
+        document.addEventListener('visibilitychange', function() {
+            if (document.visibilityState === 'visible') {
+                // Immediately fetch when tab becomes visible again
+                fetchSegmentationJobs();
+            }
+        });
     });
+    
+    // Extract the UI update portion of fetchSegmentationJobs into a separate function
+    function updateJobsDisplay(data) {
+        // Hide loading indicator and show content area
+        const loadingElement = document.getElementById('loading-jobs');
+        const jobsContentElement = document.getElementById('jobs-content');
+        
+        if (loadingElement) {
+            loadingElement.style.display = 'none';
+        }
+        
+        if (jobsContentElement) {
+            jobsContentElement.style.display = 'block';
+        }
+        
+        // Get all container elements
+        const jobsTableElement = document.getElementById('jobs-table');
+        const noJobsMessageElement = document.getElementById('no-jobs-message');
+        const errorMessageElement = document.getElementById('error-message');
+        
+        // Hide all content containers initially (safely)
+        if (jobsTableElement) {
+            jobsTableElement.style.display = 'none';
+        }
+        
+        if (noJobsMessageElement) {
+            noJobsMessageElement.style.display = 'none';
+        }
+        
+        if (errorMessageElement) {
+            errorMessageElement.style.display = 'none';
+        }
+        
+        if (data.jobs && data.jobs.length > 0) {
+            // Show the table if it exists
+            if (jobsTableElement) {
+                jobsTableElement.style.display = 'block';
+            
+                // Get the jobs list element
+                const jobsList = document.getElementById('jobs-list');
+                
+                if (jobsList) {
+                    // Clear previous jobs
+                    jobsList.innerHTML = '';
+                    
+                    // Add each job to the table
+                    data.jobs.forEach(job => {
+                        const row = document.createElement('tr');
+                        
+                        // Set row class based on status
+                        if (job.status === 'completed') {
+                            row.classList.add('table-success');
+                        } else if (job.status === 'failed') {
+                            row.classList.add('table-danger');
+                        } else if (job.status === 'in_progress') {
+                            row.classList.add('table-info');
+                        }
+                        
+                        // Format progress bar
+                        const progressBar = `
+                            <div class="progress" style="height: 20px;" id="job-${job.id}-progress-container">
+                                <div class="progress-bar ${job.status === 'completed' ? 'bg-success' : job.status === 'failed' ? 'bg-danger' : 'bg-info'}" 
+                                     id="job-${job.id}-progress-bar"
+                                     role="progressbar" 
+                                     style="width: ${job.progress}%;" 
+                                     aria-valuenow="${job.progress}" 
+                                     aria-valuemin="0" 
+                                     aria-valuemax="100">
+                                    ${job.progress}%
+                                </div>
+                            </div>
+                        `;
+                        
+                        // Format status badge
+                        let statusBadge;
+                        if (job.status === 'completed') {
+                            statusBadge = `<span class="badge bg-success" id="job-${job.id}-status-badge">Completed</span>`;
+                        } else if (job.status === 'failed') {
+                            statusBadge = `<span class="badge bg-danger" id="job-${job.id}-status-badge">Failed</span>`;
+                        } else if (job.status === 'in_progress') {
+                            statusBadge = `<span class="badge bg-info" id="job-${job.id}-status-badge">In Progress</span>`;
+                        } else {
+                            statusBadge = `<span class="badge bg-secondary" id="job-${job.id}-status-badge">Unknown</span>`;
+                        }
+                        
+                        // Add active badge if this is the active segmentation
+                        if (job.is_active) {
+                            statusBadge += `<br><span class="badge bg-primary mt-1" id="job-${job.id}-active-badge" data-bs-toggle="tooltip" title="Current active segmentation">Active</span>`;
+                        }
+                        
+                        // Add algorithm badge if available and it's not "Manual Import"
+                        if (job.algorithm_name && job.algorithm_name !== "Manual Import") {
+                            statusBadge += `
+                                <br><span class="badge bg-secondary mt-1" id="job-${job.id}-algorithm-badge" data-bs-toggle="tooltip" 
+                                title="${job.algorithm_type}">
+                                    <i class="fas fa-cogs"></i> ${job.algorithm_name}
+                                </span>
+                            `;
+                        }
+                        
+                        // Add manually edited badge if applicable
+                        if (job.manually_edited) {
+                            statusBadge += `
+                                <br><span class="badge bg-warning mt-1" id="job-${job.id}-edited-badge" data-bs-toggle="tooltip" 
+                                title="This segmentation has been manually edited">
+                                    <i class="fas fa-edit"></i> Manually Edited
+                                </span>
+                            `;
+                        }
+                        
+                        // Add debug visualization badge if available
+                        if (job.debug_visualization && job.debug_visualization.url) {
+                            statusBadge += `
+                                <br><span class="badge bg-info mt-1 viz-badge" id="job-${job.id}-viz-badge" data-bs-toggle="tooltip" 
+                                title="Debug visualization available" 
+                                data-viz-url="${job.debug_visualization.url}">
+                                    <i class="fas fa-chart-line"></i> Debug Viz
+                                </span>
+                            `;
+                        }
+                        
+                        // Build actions buttons
+                        let actionsHtml = '';
+                        if (job.status === 'completed') {
+                            actionsHtml = `
+                                <a href="${job.view_url}" id="job-${job.id}-view-btn" class="btn btn-sm btn-outline-primary" data-bs-toggle="tooltip" data-bs-placement="top" title="View Segments">
+                                    <i class="fas fa-eye" id="job-${job.id}-view-icon"></i>
+                                </a>
+                            `;
+                        } else if (job.status === 'in_progress') {
+                            actionsHtml = `
+                                <a href="${job.view_url}" id="job-${job.id}-details-btn" class="btn btn-sm btn-outline-info" data-bs-toggle="tooltip" data-bs-placement="top" title="View Details">
+                                    <i class="fas fa-info-circle" id="job-${job.id}-details-icon"></i>
+                                </a>
+                            `;
+                        } else if (job.status === 'failed') {
+                            actionsHtml = `
+                                <a href="${job.retry_url}" id="job-${job.id}-retry-btn" class="btn btn-sm btn-outline-warning" data-bs-toggle="tooltip" data-bs-placement="top" title="Retry">
+                                    <i class="fas fa-redo" id="job-${job.id}-retry-icon"></i>
+                                </a>
+                            `;
+                        }
+                        
+                        // Set unique row ID
+                        row.id = `job-row-${job.id}`;
+                        
+                        // Populate row cells
+                        row.innerHTML = `
+                            <td id="job-${job.id}-recording"><a href="${job.view_url}" class="text-decoration-none" id="job-${job.id}-recording-link">${job.recording_name}</a></td>
+                            <td id="job-${job.id}-name">${job.name || "Unnamed Segmentation"}</td>
+                            <td id="job-${job.id}-time"><span data-utc-date="${job.start_time}" data-date-format="datetime" id="job-${job.id}-timestamp">${new Date(job.start_time).toLocaleString()}</span></td>
+                            <td id="job-${job.id}-status">${statusBadge}</td>
+                            <td id="job-${job.id}-segments"><span class="badge bg-info" id="job-${job.id}-segment-count">${job.segments_created || 0}</span></td>
+                            <td id="job-${job.id}-progress">${progressBar}</td>
+                            <td id="job-${job.id}-actions">
+                                <div class="btn-group btn-group-sm" id="job-${job.id}-action-group">
+                                    ${actionsHtml}
+                                </div>
+                            </td>
+                        `;
+                        
+                        jobsList.appendChild(row);
+                    });
+                    
+                    // Initialize tooltips
+                    var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+                    var tooltipList = tooltipTriggerList.map(function(tooltipTriggerEl) {
+                        return new bootstrap.Tooltip(tooltipTriggerEl);
+                    });
+                    
+                    // Add click handlers for visualization badges
+                    document.querySelectorAll('.viz-badge').forEach(function(badge) {
+                        badge.addEventListener('click', function(e) {
+                            e.preventDefault();
+                            
+                            // Get the visualization URL from the data attribute
+                            const vizUrl = this.getAttribute('data-viz-url');
+                            
+                            // Set the image source in the modal
+                            document.getElementById('vizImage').src = vizUrl;
+                            
+                            // Set the download link
+                            document.getElementById('vizDownloadLink').href = vizUrl;
+                            
+                            // Show the modal
+                            const vizModal = new bootstrap.Modal(document.getElementById('vizModal'));
+                            vizModal.show();
+                        });
+                    });
+                    
+                    // Update item count
+                    const itemCountElement = document.querySelector('.item-count');
+                    if (itemCountElement) {
+                        itemCountElement.textContent = data.jobs.length;
+                    }
+                }
+            }
+        } else {
+            // Show empty state if it exists
+            if (noJobsMessageElement) {
+                noJobsMessageElement.style.display = 'block';
+            }
+        }
+    }
 </script>
 {% endblock %}

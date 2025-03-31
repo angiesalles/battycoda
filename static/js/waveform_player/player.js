@@ -272,11 +272,67 @@ export class WaveformPlayer {
     }
     
     /**
+     * Check if a time position overlaps with any existing segment
+     * @param {number} time - The time position to check
+     * @returns {boolean} True if position overlaps with any segment
+     */
+    isTimeInSegment(time) {
+        if (!this.segments || !this.segments.length) return false;
+        
+        return this.segments.some(segment => {
+            const start = segment.start || segment.onset;
+            const end = segment.end || segment.offset;
+            return time >= start && time <= end;
+        });
+    }
+    
+    /**
+     * Find the nearest segment boundary (start or end) to a given time position
+     * @param {number} time - The time position to check from
+     * @param {string} direction - Either 'forward' or 'backward'
+     * @returns {number|null} The nearest boundary time or null if none found
+     */
+    findNearestSegmentBoundary(time, direction = 'forward') {
+        if (!this.segments || !this.segments.length) return null;
+        
+        // Collect all boundary points
+        let boundaries = [];
+        this.segments.forEach(segment => {
+            const start = segment.start || segment.onset;
+            const end = segment.end || segment.offset;
+            boundaries.push(start, end);
+        });
+        
+        // Sort boundaries
+        boundaries.sort((a, b) => a - b);
+        
+        if (direction === 'forward') {
+            // Find the first boundary point after the given time
+            const nextBoundary = boundaries.find(b => b > time);
+            return nextBoundary !== undefined ? nextBoundary : null;
+        } else {
+            // Find the last boundary point before the given time
+            boundaries.reverse();
+            const prevBoundary = boundaries.find(b => b < time);
+            return prevBoundary !== undefined ? prevBoundary : null;
+        }
+    }
+    
+    /**
      * Set segments for the waveform
      * @param {Array} newSegments - Array of segment objects
      */
     setSegments(newSegments) {
         this.segments = newSegments || [];
+        this.drawWaveform();
+        this.drawTimeline();
+    }
+    
+    /**
+     * Redraw segments on the waveform
+     * Called when a new segment is added
+     */
+    redrawSegments() {
         this.drawWaveform();
         this.drawTimeline();
     }
@@ -300,11 +356,38 @@ export class WaveformPlayer {
         
         let lastScrollUpdateTime = 0;
         
+        // Flag to track if this is the first timeupdate after a manual seek
+        let isFirstUpdate = true;
+        let lastClickTime = 0;
+        
         this.audioPlayer.addEventListener('timeupdate', () => {
             this.currentTime = this.audioPlayer.currentTime;
             this.updateTimeDisplay();
             
-            // If zoomed in, continuously update the view to keep the cursor in the center
+            const now = performance.now();
+            const timeSinceLastClick = now - lastClickTime;
+            const isAfterManualSeek = timeSinceLastClick < 500; // Within 0.5 seconds of a click
+            
+            // Check if we're in a recording selection process
+            if (this.allowSelection && this.selectionStart !== null && this.selectionEnd === null) {
+                // If we're playing through segments while making a selection, handle segment collisions
+                if (this.isPlaying) {
+                    // Check if current position is inside any existing segment
+                    if (this.isTimeInSegment(this.currentTime)) {
+                        // Stop the selection at the segment boundary we just entered
+                        this.selectionEnd = this.findNearestSegmentBoundary(this.currentTime, 'backward');
+                        this.updateSelectionDisplay();
+                        this.drawWaveform();
+                        
+                        // Reset selection buttons state
+                        if (this.setStartBtn) this.setStartBtn.disabled = false;
+                        if (this.setEndBtn) this.setEndBtn.disabled = true;
+                    }
+                }
+            }
+            
+            // For more reliable playback following, start recentering sooner
+            // Also track if the cursor is near the edge of the visible area
             if (this.zoomLevel > 1 && this.isPlaying) {
                 const visibleDuration = this.duration / this.zoomLevel;
                 
@@ -320,15 +403,14 @@ export class WaveformPlayer {
                 ));
                 
                 // Only update if significant change or enough time has passed
-                const now = performance.now();
                 if (Math.abs(this.targetZoomOffset - this.zoomOffset) > 0.01 || (now - lastScrollUpdateTime > 250)) {
-                    // Handle animation or immediate update
-                    if (!this.animationFrameId) {
-                        // Don't animate during continuous playback, just set position directly
-                        this.zoomOffset = this.targetZoomOffset;
-                        this.drawWaveform();
-                        this.drawTimeline();
-                    }
+                    // Move gradually toward the target position to create a smooth scrolling effect
+                    // Apply a step toward the target position (easing)
+                    const step = 0.3; // Adjusted for faster centering during playback
+                    this.zoomOffset += (this.targetZoomOffset - this.zoomOffset) * step;
+                    
+                    this.drawWaveform();
+                    this.drawTimeline();
                     lastScrollUpdateTime = now;
                     return; // Skip the drawWaveform below to avoid double draws
                 }
@@ -336,6 +418,11 @@ export class WaveformPlayer {
             
             // Just update waveform (for cursor) if we didn't do a full redraw above
             this.drawWaveform();
+        });
+        
+        // Track clicks to avoid recentering right after a manual seek
+        this.audioPlayer.addEventListener('seeking', () => {
+            lastClickTime = performance.now();
         });
         
         this.audioPlayer.addEventListener('play', () => {
@@ -394,20 +481,8 @@ export class WaveformPlayer {
                 this.currentTime = clickPosition * this.duration;
                 this.audioPlayer.currentTime = this.currentTime;
                 
-                // If zoomed in, adjust view to center on clicked position
-                if (this.zoomLevel > 1) {
-                    const visibleDuration = this.duration / this.zoomLevel;
-                    this.targetZoomOffset = Math.max(0, Math.min(
-                        this.currentTime / this.duration - (visibleDuration / this.duration) * 0.5,
-                        1 - visibleDuration / this.duration
-                    ));
-                    
-                    // Use animation for click navigation
-                    if (Math.abs(this.targetZoomOffset - this.zoomOffset) > 0.01) {
-                        this.animateScroll();
-                        return; // Animation will handle update
-                    }
-                }
+                // We no longer immediately center on clicked position
+                // Let the timeupdate handler handle this gradually during playback
                 
                 this.updateTimeDisplay();
                 this.drawWaveform();
@@ -502,6 +577,12 @@ export class WaveformPlayer {
         // Set start button
         if (this.setStartBtn) {
             this.setStartBtn.addEventListener('click', () => {
+                // Check if current position overlaps with any existing segments
+                if (this.isTimeInSegment(this.currentTime)) {
+                    console.log('Cannot start selection inside an existing segment');
+                    return; // Don't allow setting start point inside existing segment
+                }
+                
                 // Start a new selection - clear any existing selection
                 this.selectionStart = this.currentTime;
                 this.selectionEnd = null;
@@ -511,6 +592,13 @@ export class WaveformPlayer {
                 // Update button states
                 this.setStartBtn.disabled = false;  // Allow changing start point
             });
+            
+            // Regularly check if we're inside a segment and update button state
+            setInterval(() => {
+                if (this.setStartBtn) {
+                    this.setStartBtn.disabled = this.isTimeInSegment(this.currentTime);
+                }
+            }, 200);
         }
         
         // Set end button
@@ -521,12 +609,36 @@ export class WaveformPlayer {
             this.setEndBtn.addEventListener('click', () => {
                 // Only set end if there's a start point and current time is after it
                 if (this.selectionStart !== null && this.currentTime > this.selectionStart) {
-                    this.selectionEnd = this.currentTime;
+                    // Check if there's an existing segment between start and current time
+                    const segmentBetween = this.segments.some(segment => {
+                        const segStart = segment.start || segment.onset;
+                        const segEnd = segment.end || segment.offset;
+                        
+                        // Check if any segment overlaps with our selection
+                        return (segStart <= this.currentTime && segEnd >= this.selectionStart) ||
+                               (segStart >= this.selectionStart && segStart <= this.currentTime);
+                    });
+                    
+                    if (segmentBetween) {
+                        // Find nearest segment boundary before current position
+                        const boundaryTime = this.findNearestSegmentBoundary(this.currentTime, 'backward');
+                        if (boundaryTime !== null && boundaryTime > this.selectionStart) {
+                            // Use the segment boundary as our end point
+                            this.selectionEnd = boundaryTime;
+                        } else {
+                            console.log('Cannot end selection - overlaps with existing segment');
+                            return;
+                        }
+                    } else {
+                        // Normal case - no overlap
+                        this.selectionEnd = this.currentTime;
+                    }
+                    
                     this.updateSelectionDisplay();
                     this.drawWaveform();
                     
                     // Reset button states after completing a selection
-                    this.setStartBtn.disabled = false;
+                    this.setStartBtn.disabled = this.isTimeInSegment(this.currentTime);
                     this.setEndBtn.disabled = true;
                 }
             });
@@ -534,8 +646,22 @@ export class WaveformPlayer {
             // We need to regularly update end button state based on playhead position
             this.audioPlayer.addEventListener('timeupdate', () => {
                 if (this.selectionStart !== null && this.selectionEnd === null) {
-                    // Only enable end button if we're to the right of start point
-                    this.setEndBtn.disabled = this.currentTime <= this.selectionStart;
+                    // Check two conditions:
+                    // 1. If we're to the right of the start point
+                    // 2. If current position is inside any existing segment
+                    const afterStart = this.currentTime > this.selectionStart;
+                    const insideSegment = this.isTimeInSegment(this.currentTime);
+                    
+                    // Check if there's an overlap between our selection start and current time
+                    const hasOverlap = this.segments.some(segment => {
+                        const segStart = segment.start || segment.onset;
+                        const segEnd = segment.end || segment.offset;
+                        return (segStart <= this.currentTime && segEnd >= this.selectionStart) ||
+                               (segStart >= this.selectionStart && segStart <= this.currentTime);
+                    });
+                    
+                    // Only enable if we're after start, not inside a segment, and no segment overlap
+                    this.setEndBtn.disabled = !afterStart || insideSegment || hasOverlap;
                 } else {
                     // Disable end button if no start point or already have end point
                     this.setEndBtn.disabled = true;

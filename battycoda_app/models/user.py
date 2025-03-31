@@ -56,8 +56,9 @@ class UserProfile(models.Model):
 
     # Theme choices
     THEME_CHOICES = (
-        ("default", "Default - Red"),
-        ("blue", "Blue/Green"),
+        ("dark", "Dark - Red"),
+        ("blue", "Dark - Blue/Green"),
+        ("light", "Light - Modern Business"),
     )
 
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name="profile")
@@ -67,7 +68,7 @@ class UserProfile(models.Model):
     )
     # User preferences
     theme = models.CharField(
-        max_length=20, choices=THEME_CHOICES, default="default", help_text="Color theme preference"
+        max_length=20, choices=THEME_CHOICES, default="light", help_text="Color theme preference"
     )
     # Authentication fields (previously Cloudflare fields, kept for data compatibility)
     cloudflare_id = models.CharField(
@@ -138,11 +139,11 @@ def create_user_profile(sender, instance, created, **kwargs):
         )
 
         # Import default species
-        from ..utils_modules import import_default_species
+        from ..utils_modules.species_utils import import_default_species
         created_species = import_default_species(instance)
 
         # Create a demo task batch with sample bat calls
-        from ..utils_modules import create_demo_task_batch
+        from ..utils_modules.demo_utils import create_demo_task_batch
         batch = create_demo_task_batch(instance)
 
 @receiver(post_save, sender=User)

@@ -189,23 +189,33 @@ export class WaveformRenderer {
                     ctx.fillRect(visibleStartX, 0, visibleEndX - visibleStartX, height);
                     
                     // Draw selection boundaries if visible
-                    ctx.beginPath();
-                    ctx.strokeStyle = '#ffc107';
-                    ctx.lineWidth = 2;
-                    
                     // Start boundary
                     if (startX >= 0 && startX <= width) {
+                        ctx.beginPath();
+                        ctx.strokeStyle = '#ffc107'; // Amber color 
+                        ctx.lineWidth = 3; // Thicker line
                         ctx.moveTo(startX, 0);
                         ctx.lineTo(startX, height);
+                        ctx.stroke();
+                        
+                        // Add a small highlight area
+                        ctx.fillStyle = 'rgba(255, 193, 7, 0.2)'; // Semi-transparent amber
+                        ctx.fillRect(startX-2, 0, 4, height);
                     }
                     
                     // End boundary
                     if (endX >= 0 && endX <= width) {
+                        ctx.beginPath();
+                        ctx.strokeStyle = '#dc3545'; // Bootstrap danger red
+                        ctx.lineWidth = 3; // Thicker line
                         ctx.moveTo(endX, 0);
                         ctx.lineTo(endX, height);
+                        ctx.stroke();
+                        
+                        // Add a small highlight area
+                        ctx.fillStyle = 'rgba(220, 53, 69, 0.2)'; // Semi-transparent red
+                        ctx.fillRect(endX-2, 0, 4, height);
                     }
-                    
-                    ctx.stroke();
                 }
             }
         } 
@@ -215,13 +225,17 @@ export class WaveformRenderer {
             
             // Check if the start point is visible
             if (startX >= 0 && startX <= width) {
-                // Draw only the start boundary
+                // Draw a more prominent start boundary
                 ctx.beginPath();
-                ctx.strokeStyle = '#ffc107';
-                ctx.lineWidth = 2;
+                ctx.strokeStyle = '#ffc107'; // Amber color
+                ctx.lineWidth = 3; // Thicker line
                 ctx.moveTo(startX, 0);
                 ctx.lineTo(startX, height);
                 ctx.stroke();
+                
+                // Add a small highlight area
+                ctx.fillStyle = 'rgba(255, 193, 7, 0.2)'; // Semi-transparent amber
+                ctx.fillRect(startX-2, 0, 4, height);
             }
         }
         // Handle case where only end is set
@@ -230,13 +244,17 @@ export class WaveformRenderer {
             
             // Check if the end point is visible
             if (endX >= 0 && endX <= width) {
-                // Draw only the end boundary
+                // Draw a more prominent end boundary
                 ctx.beginPath();
-                ctx.strokeStyle = '#ffc107';
-                ctx.lineWidth = 2;
+                ctx.strokeStyle = '#dc3545'; // Bootstrap danger red 
+                ctx.lineWidth = 3; // Thicker line
                 ctx.moveTo(endX, 0);
                 ctx.lineTo(endX, height);
                 ctx.stroke();
+                
+                // Add a small highlight area
+                ctx.fillStyle = 'rgba(220, 53, 69, 0.2)'; // Semi-transparent red
+                ctx.fillRect(endX-2, 0, 4, height);
             }
         }
     }
@@ -260,14 +278,15 @@ export class WaveformRenderer {
     }
     
     /**
-     * Add click handler to the waveform canvas for seeking
+     * Add click and mousedown handlers to the waveform canvas for seeking
      */
     addCanvasClickHandler(canvas, width, visibleStartTime, visibleDuration) {
         const player = this.player;
         
-        canvas.addEventListener('click', (e) => {
+        // Function to update the player position based on mouse position
+        const updatePlayerPosition = (e) => {
             const rect = canvas.getBoundingClientRect();
-            const x = e.clientX - rect.left;
+            const x = Math.max(0, Math.min(width, e.clientX - rect.left));
             
             // Calculate time position considering zoom
             const visibleProportion = x / width;
@@ -275,11 +294,46 @@ export class WaveformRenderer {
             // Calculate the actual time position
             const timePos = visibleStartTime + (visibleProportion * visibleDuration);
             
+            // Store current visible window before changing position
+            const currentVisibleStart = visibleStartTime;
+            const currentVisibleEnd = visibleStartTime + visibleDuration;
+            
+            // Check if the new position is outside the current visible area
+            const positionOutsideView = timePos < currentVisibleStart || timePos > currentVisibleEnd;
+            
             // Set current time
             player.currentTime = Math.max(0, Math.min(player.duration, timePos));
             player.audioPlayer.currentTime = player.currentTime;
             player.updateTimeDisplay();
+            
+            // Only adjust the view if the position is completely outside visible area
+            if (positionOutsideView && player.zoomLevel > 1) {
+                // Calculate new offset to make the position barely visible
+                // but without centering it
+                const visibleDurationRatio = visibleDuration / player.duration;
+                
+                if (timePos < currentVisibleStart) {
+                    // If clicking to the left of visible area, show position at 25% from left edge
+                    player.zoomOffset = Math.max(0, timePos / player.duration - 0.25 * visibleDurationRatio);
+                } else if (timePos > currentVisibleEnd) {
+                    // If clicking to the right of visible area, show position at 25% from right edge
+                    player.zoomOffset = Math.min(
+                        1 - visibleDurationRatio,
+                        timePos / player.duration - 0.75 * visibleDurationRatio
+                    );
+                }
+            }
+            
+            // Update the view
             player.drawWaveform();
-        });
+            player.drawTimeline();
+        };
+        
+        // Both click and mousedown do the same thing: immediately update position
+        canvas.addEventListener('click', updatePlayerPosition);
+        canvas.addEventListener('mousedown', updatePlayerPosition);
+        
+        // Set cursor to indicate it's clickable
+        canvas.style.cursor = 'pointer';
     }
 }

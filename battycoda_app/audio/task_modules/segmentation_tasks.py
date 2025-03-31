@@ -11,7 +11,7 @@ from celery import shared_task
 
 @shared_task(bind=True, name="battycoda_app.audio.task_modules.segmentation_tasks.auto_segment_recording_task")
 def auto_segment_recording_task(
-    self, recording_id, min_duration_ms=10, smooth_window=3, threshold_factor=0.5, debug_visualization=False
+    self, recording_id, segmentation_id, min_duration_ms=10, smooth_window=3, threshold_factor=0.5, debug_visualization=False
 ):
     """
     Automatically segment a recording using the steps:
@@ -22,6 +22,7 @@ def auto_segment_recording_task(
 
     Args:
         recording_id: ID of the Recording model to segment
+        segmentation_id: ID of the Segmentation model tracking this task
         min_duration_ms: Minimum segment duration in milliseconds
         smooth_window: Window size for smoothing filter (number of samples)
         threshold_factor: Threshold factor (between 0-1) relative to signal statistics
@@ -47,9 +48,13 @@ def auto_segment_recording_task(
 
         # Run the automated segmentation
         try:
-            # Find the segmentation record created by the view using task_id
-            task_id = self.request.id
-            segmentation = Segmentation.objects.get(task_id=task_id)
+            # Find the segmentation record by ID - more reliable than using task_id
+            segmentation = Segmentation.objects.get(id=segmentation_id)
+            
+            # Update task_id in the segmentation record to match what the worker sees
+            if segmentation.task_id != self.request.id:
+                segmentation.task_id = self.request.id
+                segmentation.save(update_fields=['task_id'])
 
             # Determine which algorithm to use based on the segmentation's algorithm type
             algorithm = segmentation.algorithm
@@ -146,11 +151,8 @@ def auto_segment_recording_task(
         segments_created = 0
 
         with transaction.atomic():
-            # Find the segmentation record created by the view using task_id
-            task_id = self.request.id
-
-            # Get the existing segmentation created by the view
-            segmentation = Segmentation.objects.get(task_id=task_id)
+            # The segmentation has already been retrieved by ID
+            # No need to look it up again by task_id
 
             # Update the segmentation status to completed
             segmentation.status = "completed"

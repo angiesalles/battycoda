@@ -122,7 +122,7 @@ def add_segment_view(request, recording_id):
                         "name": segment.name or f"Segment {segment.id}",
                         "onset": segment.onset,
                         "offset": segment.offset,
-                        "duration": segment.duration,
+                        "duration": segment.duration(),  # Call the method instead of using it as a property
                         "notes": segment.notes or "",
                     },
                 }
@@ -157,7 +157,7 @@ def edit_segment_view(request, segment_id):
                         "name": segment.name or f"Segment {segment.id}",
                         "onset": segment.onset,
                         "offset": segment.offset,
-                        "duration": segment.duration,
+                        "duration": segment.duration(),  # Call the method instead of using it as a property
                         "notes": segment.notes or "",
                     },
                 }

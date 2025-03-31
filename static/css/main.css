@@ -6,6 +6,12 @@
 /* Import base styles */
 @import url('base.css');
 
+/* Import theme color variables */
+@import url('themes.css');
+
+/* Import themed elements */
+@import url('color-elements.css');
+
 /* Import components */
 @import url('components.css');
 

@@ -36,7 +36,8 @@ def import_default_species(user):
         list: List of created Species objects
     """
     from battycoda_app.default_species import DEFAULT_SPECIES
-    from battycoda_app.models import Call, Species
+    from battycoda_app.models.organization import Species
+    from battycoda_app.models.organization import Call
 
     # Add a delay to ensure user creation transaction is complete
     time.sleep(1)
@@ -115,7 +116,7 @@ def _add_species_calls(species, species_data, user):
     Returns:
         bool: True if calls were added successfully, False otherwise
     """
-    from battycoda_app.models import Call
+    from battycoda_app.models.organization import Call
 
     # Parse call types from the text file
     call_paths = [

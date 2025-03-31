@@ -5,8 +5,6 @@
 
 /* Base styles */
 body {
-    background-color: #121212;
-    color: white;
     font-family: Helvetica, Arial, sans-serif;
     margin: 0;
     padding: 0;
@@ -21,16 +19,6 @@ title {
 /* Typography */
 h1, h2, h3, h4, h5, h6 {
     margin-top: 0;
-    color: #e57373;
-}
-
-a {
-    color: #e57373;
-    text-decoration: none;
-}
-
-a:hover {
-    text-decoration: underline;
 }
 
 p {
@@ -39,16 +27,9 @@ p {
 
 /* Layout components */
 .header {
-    background-color: #e57373;
-    color: black;
     padding: 8px;
     text-align: center;
     margin-bottom: 10px;
-}
-
-/* Fix for header headings color - ensuring they're always black in header regardless of theme */
-.header h1, .header h2 {
-    color: black;
 }
 
 .container {
@@ -61,26 +42,34 @@ p {
     max-width: 800px;
     margin: 0 auto;
     padding: 20px;
-    background-color: #1e1e1e;
     border-radius: 5px;
-    box-shadow: 0 0 10px rgba(0,0,0,0.5);
+    box-shadow: 0 0 10px rgba(0,0,0,0.1);
 }
 
 .section {
-    background-color: #1e1e1e;
     padding: 20px;
     margin-bottom: 20px;
     border-radius: 5px;
 }
 
 /* Navigation */
+.navbar-padding {
+    padding-top: 0.6rem;
+    padding-bottom: 0.6rem;
+}
+
+.navbar .nav-link {
+    font-weight: 500;
+    font-size: 0.95rem;
+    padding-left: 0.8rem !important;
+    padding-right: 0.8rem !important;
+}
+
 .nav-container {
     display: flex;
     justify-content: space-between;
     width: 100%;
     padding: 5px 15px;
-    background-color: #1e1e1e;
-    border-bottom: 1px solid #333;
 }
 
 .nav-links {
@@ -90,14 +79,8 @@ p {
 }
 
 .nav-links a {
-    color: #e57373;
-    text-decoration: none;
     margin-right: 15px;
     font-size: 0.9rem;
-}
-
-.nav-links a:hover {
-    text-decoration: underline;
 }
 
 .user-info {

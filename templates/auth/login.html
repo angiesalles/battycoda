@@ -11,7 +11,7 @@
         <div style="margin-bottom: 15px;">
             <label for="id_username" style="display: block; margin-bottom: 5px;">Username or Email:</label>
             {% if username_or_email %}
-                <input type="text" name="username" id="id_username" value="{{ username_or_email }}" required class="input-field" style="width: 100%; padding: 8px; border: 1px solid #333; background-color: #2a2a2a; color: #fff; border-radius: 3px;">
+                <input type="text" name="username" id="id_username" value="{{ username_or_email }}" required class="input-field">
             {% else %}
                 {{ form.username }}
             {% endif %}
@@ -40,7 +40,7 @@
         
         <div style="margin-top: 20px; display: flex; gap: 10px;">
             <button type="submit" class="button" style="flex: 1; padding: 10px 0;">Login with Password</button>
-            <a href="{% url 'battycoda_app:request_login_code' %}" id="codeLoginBtn" class="button" style="flex: 1; padding: 10px 0; text-align: center; text-decoration: none; background-color: #444; color: white; border-radius: 3px;">Login with Code</a>
+            <a href="{% url 'battycoda_app:request_login_code' %}" id="codeLoginBtn" class="button btn-outline-secondary" style="flex: 1; padding: 10px 0; text-align: center; text-decoration: none; border-radius: 3px;">Login with Code</a>
         </div>
         
         <script>

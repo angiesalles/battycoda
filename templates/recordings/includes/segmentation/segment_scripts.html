@@ -1,7 +1,8 @@
 <!-- Segmentation JavaScript -->
 <script>
     // Global variables
-    let wavesurfer = window.wavesurfer; // This is set by the waveform_player.html include
+    // With the new player architecture, we don't have a direct wavesurfer reference anymore
+    // Instead we access the player through the waveformPlayers global object
     let currentSelection = null;
     let isEditing = false;
     
@@ -19,65 +20,13 @@
     const segmentNotes = document.getElementById('segment-notes');
     
     // Buttons
-    const addSegmentBtn = document.getElementById('add-segment-btn');
-    const selectNewBtn = document.getElementById('select-new-btn');
-    const playSelectionBtn = document.getElementById('play-selection-btn');
-    const clearSelectionBtn = document.getElementById('clear-selection-btn');
-    const saveSegmentsBtn = document.getElementById('save-segments-btn');
     const cancelSegmentBtn = document.getElementById('cancel-segment-btn');
     
     // Initialize segments from JSON data
-    const segments = {{ segments_json|safe }};
+    let segments = {{ segments_json|safe }};
+    console.log("Initial segments data:", segments);
     
     // Event listeners for buttons
-    addSegmentBtn.addEventListener('click', () => {
-        if (currentSelection) {
-            showSegmentForm('add', {
-                onset: currentSelection.start,
-                offset: currentSelection.end
-            });
-        } else {
-            showSegmentForm('add', {
-                onset: wavesurfer.getCurrentTime(),
-                offset: wavesurfer.getCurrentTime() + 0.1
-            });
-        }
-    });
-    
-    selectNewBtn.addEventListener('click', () => {
-        wavesurfer.enableDragSelection({
-            color: 'rgba(0, 123, 255, 0.3)'
-        });
-    });
-    
-    playSelectionBtn.addEventListener('click', () => {
-        if (currentSelection) {
-            wavesurfer.play(currentSelection.start, currentSelection.end);
-        }
-    });
-    
-    clearSelectionBtn.addEventListener('click', () => {
-        wavesurfer.clearRegions();
-        currentSelection = null;
-    });
-    
-    saveSegmentsBtn.addEventListener('click', () => {
-        // Submit the form for all segments
-        const form = document.createElement('form');
-        form.method = 'POST';
-        form.action = window.location.href;
-        
-        // Add CSRF token
-        const csrfToken = document.querySelector('input[name="csrfmiddlewaretoken"]').value;
-        const csrfInput = document.createElement('input');
-        csrfInput.type = 'hidden';
-        csrfInput.name = 'csrfmiddlewaretoken';
-        csrfInput.value = csrfToken;
-        form.appendChild(csrfInput);
-        
-        document.body.appendChild(form);
-        form.submit();
-    });
     
     cancelSegmentBtn.addEventListener('click', () => {
         hideSegmentForm();
@@ -86,9 +35,16 @@
     // Form submission handler
     segmentForm.addEventListener('submit', async (e) => {
         e.preventDefault();
+        console.log("Form submitted", e);
         
         const formData = new FormData(segmentForm);
         const segmentIdValue = segmentId.value;
+        
+        // Debug - log all form data
+        console.log("Form ID:", segmentIdValue);
+        for (let [key, value] of formData.entries()) {
+            console.log(`${key}: ${value}`);
+        }
         
         try {
             let url, method;
@@ -103,6 +59,11 @@
                 method = 'POST';
             }
             
+            // Add CSRF token
+            if (!formData.has('csrfmiddlewaretoken')) {
+                formData.append('csrfmiddlewaretoken', document.querySelector('input[name="csrfmiddlewaretoken"]').value);
+            }
+            
             const response = await fetch(url, {
                 method: method,
                 body: formData,
@@ -115,12 +76,20 @@
             
             if (data.success) {
                 if (!segmentIdValue) {
-                    // Add new segment to the list
-                    addSegmentToList(data.segment);
+                    // Add new segment to our data array
+                    segments.push(data.segment);
                 } else {
-                    // Update existing segment in the list
-                    updateSegmentInList(data.segment);
+                    // Update existing segment in our data array
+                    const index = segments.findIndex(s => s.id == data.segment.id);
+                    if (index !== -1) {
+                        segments[index] = data.segment;
+                    }
                 }
+                
+                console.log("Form submission successful, updating UI");
+                
+                // Update the entire UI
+                refreshSegmentDisplay();
                 
                 // Hide the form
                 hideSegmentForm();
@@ -138,13 +107,8 @@
     
     // Initialize event handlers for all segments
     document.addEventListener('DOMContentLoaded', () => {
-        // Add event listeners to all segment buttons
-        if (segmentsList) {
-            const rows = segmentsList.querySelectorAll('tr');
-            rows.forEach(row => {
-                addSegmentButtonListeners(row);
-            });
-        }
+        // Initialize segments display from the beginning
+        refreshSegmentDisplay();
         
         // Create tasks button handler
         const createTasksBtn = document.getElementById('create-tasks-btn');
@@ -154,21 +118,103 @@
             });
         }
         
-        // Waveform region selection handler
-        wavesurfer.on('region-created', (region) => {
-            // Clear all other regions
-            Object.keys(wavesurfer.regions.list).forEach(id => {
-                if (id !== region.id) {
-                    wavesurfer.regions.list[id].remove();
+        // Get selection from waveform player and create segment automatically
+        // The new waveform player exposes selection via the waveformPlayers global object
+        let lastSelection = null;
+        let endButtonClicked = false;
+        
+        // Function to check and process a complete selection
+        const processCompleteSelection = (selection) => {
+            // Only proceed if we have a complete selection and it's new (to avoid duplicates)
+            if (selection.start !== null && selection.end !== null) {
+                const selectionString = `${selection.start}-${selection.end}`;
+                if (lastSelection !== selectionString || endButtonClicked) {
+                    currentSelection = {
+                        start: selection.start,
+                        end: selection.end
+                    };
+                    
+                    // Store the last selection to avoid duplicates
+                    lastSelection = selectionString;
+                    endButtonClicked = false;
+                    
+                    // Automatically create the segment
+                    createSegmentFromSelection(selection.start, selection.end);
                 }
+            }
+        };
+        
+        // Monitor "Set End" button clicks
+        const setEndBtn = document.getElementById('segment-waveform-set-end-btn');
+        if (setEndBtn) {
+            setEndBtn.addEventListener('click', () => {
+                // Flag that the end button was clicked to ensure we create a segment
+                endButtonClicked = true;
+            });
+        }
+        
+        // Periodically check for complete selections
+        const checkSelection = () => {
+            if (window.waveformPlayers && window.waveformPlayers['segment-waveform']) {
+                const selection = window.waveformPlayers['segment-waveform'].getSelection();
+                processCompleteSelection(selection);
+            }
+        };
+        
+        // Function to automatically create a segment from selection
+        function createSegmentFromSelection(start, end) {
+            // Create a segment with default values
+            const segmentName = `Segment ${new Date().toISOString().slice(11, 19)}`;
+            
+            // Create form data
+            const formData = new FormData();
+            formData.append('csrfmiddlewaretoken', document.querySelector('input[name="csrfmiddlewaretoken"]').value);
+            formData.append('name', segmentName);
+            formData.append('onset', start.toFixed(6));
+            formData.append('offset', end.toFixed(6));
+            formData.append('notes', '');
+            
+            console.log('Creating segment with:', {
+                name: segmentName,
+                onset: start.toFixed(6),
+                offset: end.toFixed(6)
             });
             
-            // Store the current selection
-            currentSelection = {
-                start: region.start,
-                end: region.end
-            };
-        });
+            // Send the request to create a segment
+            fetch(`/segments/{{ recording.id }}/add/`, {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            })
+            .then(response => {
+                console.log('Server response status:', response.status);
+                return response.json();
+            })
+            .then(data => {
+                console.log('Server response data:', data);
+                if (data.success) {
+                    // Add the new segment to our segments array
+                    segments.push(data.segment);
+                    
+                    // Update the entire UI
+                    refreshSegmentDisplay();
+                    
+                    // Show success message
+                    showMessage('success', 'Segment added automatically.');
+                } else {
+                    showMessage('danger', data.error || 'An error occurred.');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                showMessage('danger', 'An error occurred while saving the segment.');
+            });
+        }
+        
+        // Check for selection periodically
+        setInterval(checkSelection, 500);
         
         // Update segments display initially
         updateSegmentsDisplay();
@@ -231,14 +277,11 @@
                         const data = await response.json();
                         
                         if (data.success) {
-                            // Remove the segment from the list
-                            const row = document.getElementById(`segment-row-${segmentId}`);
-                            if (row) {
-                                row.remove();
-                            }
+                            // Remove the segment from our data array
+                            segments = segments.filter(segment => segment.id != segmentId);
                             
-                            // Update segments display
-                            updateSegmentsDisplay();
+                            // Update the entire UI
+                            refreshSegmentDisplay();
                             
                             // Show success message
                             showMessage('success', 'Segment deleted successfully.');
@@ -278,88 +321,84 @@
     
     // Function to hide the segment form
     function hideSegmentForm() {
+        console.log("Hiding segment form");
         segmentFormCard.style.display = 'none';
         segmentForm.reset();
         isEditing = false;
     }
     
-    // Function to add a segment to the list
-    function addSegmentToList(segment) {
-        // Add row to table if table exists
+    /**
+     * Central function to refresh all segment displays
+     * This updates both the segments list and the waveform player visualization
+     */
+    function refreshSegmentDisplay() {
+        console.log("Refreshing segment display with", segments.length, "segments");
+        
+        // 1. Update segments list in the UI
         if (segmentsList) {
-            const row = document.createElement('tr');
-            row.id = `segment-row-${segment.id}`;
-            row.dataset.segmentId = segment.id;
-            row.innerHTML = `
-                <td>${segment.id}</td>
-                <td>${segment.onset.toFixed(2)}s - ${segment.offset.toFixed(2)}s</td>
-                <td>${(segment.offset - segment.onset).toFixed(2)}s</td>
-                <td>
-                    <div class="btn-group btn-group-sm">
-                        <button class="btn btn-outline-primary play-segment-btn" 
-                                data-onset="${segment.onset}" 
-                                data-offset="${segment.offset}">
-                            <i class="fas fa-play"></i>
-                        </button>
-                        <button class="btn btn-outline-warning edit-segment-btn" 
-                                data-segment-id="${segment.id}"
-                                data-segment-name="${segment.name || ''}"
-                                data-segment-onset="${segment.onset}"
-                                data-segment-offset="${segment.offset}"
-                                data-segment-notes="${segment.notes || ''}">
-                            <i class="fas fa-edit"></i>
-                        </button>
-                        <button class="btn btn-outline-danger delete-segment-btn" 
-                                data-segment-id="${segment.id}">
-                            <i class="fas fa-trash-alt"></i>
-                        </button>
-                    </div>
-                </td>
-            `;
-            segmentsList.appendChild(row);
+            // Clear existing list
+            segmentsList.innerHTML = '';
             
-            // Add event listeners to buttons
-            addSegmentButtonListeners(row);
+            // Add each segment to the list
+            segments.forEach(segment => {
+                const row = document.createElement('tr');
+                row.id = `segment-row-${segment.id}`;
+                row.dataset.segmentId = segment.id;
+                row.innerHTML = `
+                    <td>${segment.id}</td>
+                    <td>${segment.onset.toFixed(2)}s - ${segment.offset.toFixed(2)}s</td>
+                    <td>${(segment.offset - segment.onset).toFixed(2)}s</td>
+                    <td>
+                        <div class="btn-group btn-group-sm">
+                            <button class="btn btn-outline-primary play-segment-btn" 
+                                    data-onset="${segment.onset}" 
+                                    data-offset="${segment.offset}">
+                                <i class="fas fa-play"></i>
+                            </button>
+                            <button class="btn btn-outline-warning edit-segment-btn" 
+                                    data-segment-id="${segment.id}"
+                                    data-segment-name="${segment.name || ''}"
+                                    data-segment-onset="${segment.onset}"
+                                    data-segment-offset="${segment.offset}"
+                                    data-segment-notes="${segment.notes || ''}">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            <button class="btn btn-outline-danger delete-segment-btn" 
+                                    data-segment-id="${segment.id}">
+                                <i class="fas fa-trash-alt"></i>
+                            </button>
+                        </div>
+                    </td>
+                `;
+                segmentsList.appendChild(row);
+                
+                // Add event listeners to buttons
+                addSegmentButtonListeners(row);
+            });
         }
         
-        // Update display
+        // 2. Update segments count and visibility
         updateSegmentsDisplay();
-    }
-    
-    // Function to update a segment in the list
-    function updateSegmentInList(segment) {
-        const row = document.getElementById(`segment-row-${segment.id}`);
-        if (row) {
-            // Update row content
-            row.innerHTML = `
-                <td>${segment.id}</td>
-                <td>${segment.onset.toFixed(2)}s - ${segment.offset.toFixed(2)}s</td>
-                <td>${(segment.offset - segment.onset).toFixed(2)}s</td>
-                <td>
-                    <div class="btn-group btn-group-sm">
-                        <button class="btn btn-outline-primary play-segment-btn" 
-                                data-onset="${segment.onset}" 
-                                data-offset="${segment.offset}">
-                            <i class="fas fa-play"></i>
-                        </button>
-                        <button class="btn btn-outline-warning edit-segment-btn" 
-                                data-segment-id="${segment.id}"
-                                data-segment-name="${segment.name || ''}"
-                                data-segment-onset="${segment.onset}"
-                                data-segment-offset="${segment.offset}"
-                                data-segment-notes="${segment.notes || ''}">
-                            <i class="fas fa-edit"></i>
-                        </button>
-                        <button class="btn btn-outline-danger delete-segment-btn" 
-                                data-segment-id="${segment.id}">
-                            <i class="fas fa-trash-alt"></i>
-                        </button>
-                    </div>
-                </td>
-            `;
+        
+        // 3. Update waveform player with current segments
+        if (window.waveformPlayers && window.waveformPlayers['segment-waveform']) {
+            console.log("Found waveform player");
+            const player = window.waveformPlayers['segment-waveform'];
+            console.log("Player object:", player);
             
-            // Re-add event listeners
-            addSegmentButtonListeners(row);
+            // Keep the original segment format with onset/offset
+            // The player needs these property names for timeline rendering
+            const playerSegments = segments.map(segment => ({
+                id: segment.id,
+                onset: segment.onset,
+                offset: segment.offset
+            }));
+            console.log("Player segments to set:", playerSegments);
+            
+            // Update player segments and redraw
+            player.setSegments(playerSegments);
+        } else {
+            console.error("Waveform player not found in window.waveformPlayers");
         }
     }
     

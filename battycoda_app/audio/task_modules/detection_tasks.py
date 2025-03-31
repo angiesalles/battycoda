@@ -296,7 +296,9 @@ def run_dummy_classifier(self, detection_run_id):
 
     from django.db import transaction
 
-    from ...models import Call, CallProbability, DetectionResult, DetectionRun, Segment
+    from ...models.organization import Call
+    from ...models.detection import CallProbability, DetectionResult, DetectionRun
+    from ...models.recording import Segment
 
     try:
         # Get the detection run

@@ -162,7 +162,7 @@ def delete_recording_view(request, recording_id):
 
 @login_required
 def recalculate_audio_info_view(request, recording_id):
-    """Recalculate audio duration and sample rate for a recording"""
+    """Recalculate audio duration and sample rate for a recording (synchronously)"""
     # Get the recording by ID
     recording = get_object_or_404(Recording, id=recording_id)
 
@@ -179,8 +179,26 @@ def recalculate_audio_info_view(request, recording_id):
     recording.sample_rate = None
     recording.save(update_fields=["duration", "sample_rate"])
 
-    # Trigger the Celery task to recalculate
-    calculate_audio_duration.delay(recording.id)
+    # Import the task function and run it synchronously
+    import os
+    import soundfile as sf
+    
+    try:
+        # Check if file exists
+        if not os.path.exists(recording.wav_file.path):
+            messages.error(request, "Recording file not found.")
+            return redirect("battycoda_app:recording_detail", recording_id=recording.id)
 
-    messages.success(request, "Audio information recalculation has been scheduled.")
+        # Extract audio information from file
+        info = sf.info(recording.wav_file.path)
+        
+        # Update the recording
+        recording.duration = info.duration
+        recording.sample_rate = info.samplerate
+        recording.save(update_fields=["duration", "sample_rate"])
+        
+        messages.success(request, "Audio information has been recalculated successfully.")
+    except Exception as e:
+        messages.error(request, f"Failed to recalculate audio information: {str(e)}")
+    
     return redirect("battycoda_app:recording_detail", recording_id=recording.id)

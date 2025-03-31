@@ -27,23 +27,17 @@ class UserLoginForm(AuthenticationForm):
 class UserProfileForm(forms.ModelForm):
     class Meta:
         model = UserProfile
-        fields = ["group", "is_admin", "theme"]  # Added theme option
+        fields = ["theme"]  # Only theme
 
     def __init__(self, *args, **kwargs):
         # Get the user making the request
         user = kwargs.pop("user", None)
         super().__init__(*args, **kwargs)
 
-        # If user is not provided or not an admin, hide the is_admin field
-        if not user or not user.profile.is_admin:
-            self.fields.pop("is_admin", None)
-            if "group" in self.fields:
-                self.fields["group"].disabled = True
-
         # Add styling to the theme select field
         if "theme" in self.fields:
             self.fields["theme"].widget.attrs.update(
-                {"class": "form-control bg-dark text-light", "onchange": "updatePreviewColors(this.value)"}
+                {"class": "form-control"}
             )
 
 class TaskBatchForm(forms.ModelForm):

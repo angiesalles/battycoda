@@ -4,76 +4,76 @@
 {% block title %}BattyCoda - Dashboard{% endblock %}
 
 {% block content %}
-<div class="container py-4">
-    <h1 class="mb-4">Dashboard</h1>
+<div class="container py-4" id="dashboard-container">
+    <h1 class="mb-4" id="dashboard-title">Dashboard</h1>
     
     <!-- Stats overview section -->
-    <div class="row mb-4">
-        <div class="col-md-3 col-sm-6 mb-4">
-            <div class="card bg-dark h-100">
-                <div class="card-body text-center">
-                    <h1 class="display-4 text-primary mb-2">{{ total_recordings }}</h1>
-                    <h5>Recordings</h5>
-                    <a href="{% url 'battycoda_app:recording_list' %}" class="btn btn-sm btn-outline-primary mt-2">View All</a>
+    <div class="row mb-4" id="stats-overview-section">
+        <div class="col-md-3 col-sm-6 mb-4" id="recordings-stat-container">
+            <div class="card bg-dark h-100" id="recordings-stat-card">
+                <div class="card-body text-center" id="recordings-stat-body">
+                    <h1 class="display-4 text-primary mb-2" id="recordings-count">{{ total_recordings }}</h1>
+                    <h5 id="recordings-label">Recordings</h5>
+                    <a href="{% url 'battycoda_app:recording_list' %}" class="btn btn-sm btn-outline-primary mt-2" id="recordings-view-all">View All</a>
                 </div>
             </div>
         </div>
         
-        <div class="col-md-3 col-sm-6 mb-4">
-            <div class="card bg-dark h-100">
-                <div class="card-body text-center">
-                    <h1 class="display-4 text-success mb-2">{{ total_batches }}</h1>
-                    <h5>Task Batches</h5>
-                    <a href="{% url 'battycoda_app:task_batch_list' %}" class="btn btn-sm btn-outline-success mt-2">View All</a>
+        <div class="col-md-3 col-sm-6 mb-4" id="batches-stat-container">
+            <div class="card bg-dark h-100" id="batches-stat-card">
+                <div class="card-body text-center" id="batches-stat-body">
+                    <h1 class="display-4 text-success mb-2" id="batches-count">{{ total_batches }}</h1>
+                    <h5 id="batches-label">Task Batches</h5>
+                    <a href="{% url 'battycoda_app:task_batch_list' %}" class="btn btn-sm btn-outline-success mt-2" id="batches-view-all">View All</a>
                 </div>
             </div>
         </div>
         
-        <div class="col-md-3 col-sm-6 mb-4">
-            <div class="card bg-dark h-100">
-                <div class="card-body text-center">
-                    <h1 class="display-4 text-info mb-2">{{ total_species }}</h1>
-                    <h5>Species</h5>
-                    <a href="{% url 'battycoda_app:species_list' %}" class="btn btn-sm btn-outline-info mt-2">View All</a>
+        <div class="col-md-3 col-sm-6 mb-4" id="species-stat-container">
+            <div class="card bg-dark h-100" id="species-stat-card">
+                <div class="card-body text-center" id="species-stat-body">
+                    <h1 class="display-4 text-info mb-2" id="species-count">{{ total_species }}</h1>
+                    <h5 id="species-label">Species</h5>
+                    <a href="{% url 'battycoda_app:species_list' %}" class="btn btn-sm btn-outline-info mt-2" id="species-view-all">View All</a>
                 </div>
             </div>
         </div>
         
-        <div class="col-md-3 col-sm-6 mb-4">
-            <div class="card bg-dark h-100">
-                <div class="card-body text-center">
-                    <h1 class="display-4 text-warning mb-2">{{ total_projects }}</h1>
-                    <h5>Projects</h5>
-                    <a href="{% url 'battycoda_app:project_list' %}" class="btn btn-sm btn-outline-warning mt-2">View All</a>
+        <div class="col-md-3 col-sm-6 mb-4" id="projects-stat-container">
+            <div class="card bg-dark h-100" id="projects-stat-card">
+                <div class="card-body text-center" id="projects-stat-body">
+                    <h1 class="display-4 text-warning mb-2" id="projects-count">{{ total_projects }}</h1>
+                    <h5 id="projects-label">Projects</h5>
+                    <a href="{% url 'battycoda_app:project_list' %}" class="btn btn-sm btn-outline-warning mt-2" id="projects-view-all">View All</a>
                 </div>
             </div>
         </div>
     </div>
     
     <!-- Active Jobs -->
-    <div class="row mb-4">
-        <div class="col-md-6">
-            <div class="card bg-dark mb-4">
-                <div class="card-header bg-primary bg-opacity-25">
-                    <h4 class="mb-0"><i class="fas fa-tasks me-2"></i>Active Jobs</h4>
+    <div class="row mb-4" id="active-jobs-section">
+        <div class="col-md-6" id="active-jobs-col">
+            <div class="card bg-dark mb-4" id="active-jobs-card">
+                <div class="card-header bg-primary bg-opacity-25" id="active-jobs-header">
+                    <h4 class="mb-0" id="active-jobs-title"><i class="fas fa-tasks me-2" id="active-jobs-icon"></i>Active Jobs</h4>
                 </div>
-                <div class="card-body">
-                    <div class="row">
-                        <div class="col-md-6">
-                            <div class="text-center p-3 border border-secondary rounded mb-3">
-                                <h4 class="text-primary-emphasis">{{ active_segmentations }}</h4>
-                                <p class="mb-1">Segmentations in Progress</p>
+                <div class="card-body" id="active-jobs-body">
+                    <div class="row" id="active-jobs-content">
+                        <div class="col-md-6" id="active-segmentations-col">
+                            <div class="text-center p-3 border border-secondary rounded mb-3" id="active-segmentations-box">
+                                <h4 class="text-primary-emphasis" id="active-segmentations-count">{{ active_segmentations }}</h4>
+                                <p class="mb-1" id="active-segmentations-label">Segmentations in Progress</p>
                                 {% if active_segmentations > 0 %}
-                                <a href="{% url 'battycoda_app:batch_segmentation' %}" class="btn btn-sm btn-outline-primary">View</a>
+                                <a href="{% url 'battycoda_app:batch_segmentation' %}" class="btn btn-sm btn-outline-primary" id="active-segmentations-view">View</a>
                                 {% endif %}
                             </div>
                         </div>
-                        <div class="col-md-6">
-                            <div class="text-center p-3 border border-secondary rounded mb-3">
-                                <h4 class="text-info-emphasis">{{ active_classifications }}</h4>
-                                <p class="mb-1">Classifications in Progress</p>
+                        <div class="col-md-6" id="active-classifications-col">
+                            <div class="text-center p-3 border border-secondary rounded mb-3" id="active-classifications-box">
+                                <h4 class="text-info-emphasis" id="active-classifications-count">{{ active_classifications }}</h4>
+                                <p class="mb-1" id="active-classifications-label">Classifications in Progress</p>
                                 {% if active_classifications > 0 %}
-                                <a href="{% url 'battycoda_app:automation_home' %}" class="btn btn-sm btn-outline-info">View</a>
+                                <a href="{% url 'battycoda_app:automation_home' %}" class="btn btn-sm btn-outline-info" id="active-classifications-view">View</a>
                                 {% endif %}
                             </div>
                         </div>
@@ -83,24 +83,24 @@
         </div>
         
         <!-- Quick Actions -->
-        <div class="col-md-6">
-            <div class="card bg-dark mb-4">
-                <div class="card-header bg-success bg-opacity-25">
-                    <h4 class="mb-0"><i class="fas fa-bolt me-2"></i>Quick Actions</h4>
+        <div class="col-md-6" id="quick-actions-col">
+            <div class="card bg-dark mb-4" id="quick-actions-card">
+                <div class="card-header bg-success bg-opacity-25" id="quick-actions-header">
+                    <h4 class="mb-0" id="quick-actions-title"><i class="fas fa-bolt me-2" id="quick-actions-icon"></i>Quick Actions</h4>
                 </div>
-                <div class="card-body">
-                    <div class="d-grid gap-3">
-                        <a href="{% url 'battycoda_app:recording_list' %}" class="btn btn-lg btn-outline-primary">
-                            <i class="fas fa-file-audio me-2"></i>Manage Recordings
+                <div class="card-body" id="quick-actions-body">
+                    <div class="d-grid gap-3" id="quick-actions-grid">
+                        <a href="{% url 'battycoda_app:recording_list' %}" class="btn btn-lg btn-outline-primary" id="action-manage-recordings">
+                            <i class="fas fa-file-audio me-2" id="action-recordings-icon"></i>Manage Recordings
                         </a>
-                        <a href="{% url 'battycoda_app:batch_segmentation' %}" class="btn btn-lg btn-outline-secondary">
-                            <i class="fas fa-cut me-2"></i>Segmentation
+                        <a href="{% url 'battycoda_app:batch_segmentation' %}" class="btn btn-lg btn-outline-secondary" id="action-segmentation">
+                            <i class="fas fa-cut me-2" id="action-segmentation-icon"></i>Segmentation
                         </a>
-                        <a href="{% url 'battycoda_app:automation_home' %}" class="btn btn-lg btn-outline-info">
-                            <i class="fas fa-robot me-2"></i>Run Classification
+                        <a href="{% url 'battycoda_app:automation_home' %}" class="btn btn-lg btn-outline-info" id="action-classification">
+                            <i class="fas fa-robot me-2" id="action-classification-icon"></i>Run Classification
                         </a>
-                        <a href="{% url 'battycoda_app:get_next_task' %}" class="btn btn-lg btn-success">
-                            <i class="fas fa-tasks me-2"></i>Get Next Task
+                        <a href="{% url 'battycoda_app:get_next_task' %}" class="btn btn-lg btn-success" id="action-next-task">
+                            <i class="fas fa-tasks me-2" id="action-next-task-icon"></i>Get Next Task
                         </a>
                     </div>
                 </div>
@@ -109,28 +109,28 @@
     </div>
     
     <!-- Recent Items -->
-    <div class="row">
+    <div class="row" id="recent-items-section">
         <!-- Recent Recordings -->
-        <div class="col-lg-6 mb-4">
-            <div class="card bg-dark h-100">
-                <div class="card-header bg-primary bg-opacity-25 d-flex justify-content-between align-items-center">
-                    <h4 class="mb-0"><i class="fas fa-file-audio me-2"></i>Recent Recordings</h4>
-                    <a href="{% url 'battycoda_app:recording_list' %}" class="btn btn-sm btn-outline-light">View All</a>
+        <div class="col-lg-6 mb-4" id="recent-recordings-col">
+            <div class="card bg-dark h-100" id="recent-recordings-card">
+                <div class="card-header bg-primary bg-opacity-25 d-flex justify-content-between align-items-center" id="recent-recordings-header">
+                    <h4 class="mb-0" id="recent-recordings-title"><i class="fas fa-file-audio me-2" id="recent-recordings-icon"></i>Recent Recordings</h4>
+                    <a href="{% url 'battycoda_app:recording_list' %}" class="btn btn-sm btn-outline-light" id="recordings-view-all-btn">View All</a>
                 </div>
-                <div class="card-body p-0">
-                    <div class="list-group list-group-flush bg-dark">
+                <div class="card-body p-0" id="recent-recordings-body">
+                    <div class="list-group list-group-flush bg-dark" id="recent-recordings-list">
                         {% for recording in recent_recordings %}
-                        <a href="{% url 'battycoda_app:recording_detail' recording.id %}" class="list-group-item list-group-item-action bg-dark text-light border-secondary">
-                            <div class="d-flex w-100 justify-content-between">
-                                <h5 class="mb-1">{{ recording.name }}</h5>
-                                <small class="text-muted">{{ recording.created_at|date:"M d, Y" }}</small>
+                        <a href="{% url 'battycoda_app:recording_detail' recording.id %}" class="list-group-item list-group-item-action bg-dark text-light border-secondary" id="recording-item-{{ recording.id }}">
+                            <div class="d-flex w-100 justify-content-between" id="recording-header-{{ recording.id }}">
+                                <h5 class="mb-1" id="recording-name-{{ recording.id }}">{{ recording.name }}</h5>
+                                <small class="text-muted" id="recording-date-{{ recording.id }}">{{ recording.created_at|date:"M d, Y" }}</small>
                             </div>
-                            <p class="mb-1 text-truncate">{% if recording.description %}{{ recording.description }}{% else %}No description{% endif %}</p>
-                            <small class="text-muted">{{ recording.species.name }} - {{ recording.segments.count }} segments</small>
+                            <p class="mb-1 text-truncate" id="recording-desc-{{ recording.id }}">{% if recording.description %}{{ recording.description }}{% else %}No description{% endif %}</p>
+                            <small class="text-muted" id="recording-meta-{{ recording.id }}">{{ recording.species.name }} - {{ recording.segments.count }} segments</small>
                         </a>
                         {% empty %}
-                        <div class="list-group-item bg-dark text-light border-secondary">
-                            <p class="mb-0 text-center">No recordings yet</p>
+                        <div class="list-group-item bg-dark text-light border-secondary" id="recordings-empty-state">
+                            <p class="mb-0 text-center" id="recordings-empty-message">No recordings yet</p>
                         </div>
                         {% endfor %}
                     </div>
@@ -139,26 +139,26 @@
         </div>
         
         <!-- Recent Task Batches -->
-        <div class="col-lg-6 mb-4">
-            <div class="card bg-dark h-100">
-                <div class="card-header bg-success bg-opacity-25 d-flex justify-content-between align-items-center">
-                    <h4 class="mb-0"><i class="fas fa-layer-group me-2"></i>Recent Task Batches</h4>
-                    <a href="{% url 'battycoda_app:task_batch_list' %}" class="btn btn-sm btn-outline-light">View All</a>
+        <div class="col-lg-6 mb-4" id="recent-batches-col">
+            <div class="card bg-dark h-100" id="recent-batches-card">
+                <div class="card-header bg-success bg-opacity-25 d-flex justify-content-between align-items-center" id="recent-batches-header">
+                    <h4 class="mb-0" id="recent-batches-title"><i class="fas fa-layer-group me-2" id="recent-batches-icon"></i>Recent Task Batches</h4>
+                    <a href="{% url 'battycoda_app:task_batch_list' %}" class="btn btn-sm btn-outline-light" id="batches-view-all-btn">View All</a>
                 </div>
-                <div class="card-body p-0">
-                    <div class="list-group list-group-flush bg-dark">
+                <div class="card-body p-0" id="recent-batches-body">
+                    <div class="list-group list-group-flush bg-dark" id="recent-batches-list">
                         {% for batch in recent_batches %}
-                        <a href="{% url 'battycoda_app:task_batch_detail' batch.id %}" class="list-group-item list-group-item-action bg-dark text-light border-secondary">
-                            <div class="d-flex w-100 justify-content-between">
-                                <h5 class="mb-1">{{ batch.name }}</h5>
-                                <small class="text-muted">{{ batch.created_at|date:"M d, Y" }}</small>
+                        <a href="{% url 'battycoda_app:task_batch_detail' batch.id %}" class="list-group-item list-group-item-action bg-dark text-light border-secondary" id="batch-item-{{ batch.id }}">
+                            <div class="d-flex w-100 justify-content-between" id="batch-header-{{ batch.id }}">
+                                <h5 class="mb-1" id="batch-name-{{ batch.id }}">{{ batch.name }}</h5>
+                                <small class="text-muted" id="batch-date-{{ batch.id }}">{{ batch.created_at|date:"M d, Y" }}</small>
                             </div>
-                            <p class="mb-1 text-truncate">{% if batch.description %}{{ batch.description }}{% else %}No description{% endif %}</p>
-                            <small class="text-muted">{{ batch.species.name }} - {{ batch.tasks.count }} tasks</small>
+                            <p class="mb-1 text-truncate" id="batch-desc-{{ batch.id }}">{% if batch.description %}{{ batch.description }}{% else %}No description{% endif %}</p>
+                            <small class="text-muted" id="batch-meta-{{ batch.id }}">{{ batch.species.name }} - {{ batch.tasks.count }} tasks</small>
                         </a>
                         {% empty %}
-                        <div class="list-group-item bg-dark text-light border-secondary">
-                            <p class="mb-0 text-center">No task batches yet</p>
+                        <div class="list-group-item bg-dark text-light border-secondary" id="batches-empty-state">
+                            <p class="mb-0 text-center" id="batches-empty-message">No task batches yet</p>
                         </div>
                         {% endfor %}
                     </div>
@@ -167,32 +167,32 @@
         </div>
     </div>
     
-    <div class="row">
+    <div class="row" id="recent-detail-section">
         <!-- Recent Classifications -->
-        <div class="col-lg-6 mb-4">
-            <div class="card bg-dark h-100">
-                <div class="card-header bg-info bg-opacity-25 d-flex justify-content-between align-items-center">
-                    <h4 class="mb-0"><i class="fas fa-robot me-2"></i>Recent Classifications</h4>
-                    <a href="{% url 'battycoda_app:automation_home' %}" class="btn btn-sm btn-outline-light">View All</a>
+        <div class="col-lg-6 mb-4" id="recent-classifications-col">
+            <div class="card bg-dark h-100" id="recent-classifications-card">
+                <div class="card-header bg-info bg-opacity-25 d-flex justify-content-between align-items-center" id="recent-classifications-header">
+                    <h4 class="mb-0" id="recent-classifications-title"><i class="fas fa-robot me-2" id="recent-classifications-icon"></i>Recent Classifications</h4>
+                    <a href="{% url 'battycoda_app:automation_home' %}" class="btn btn-sm btn-outline-light" id="classifications-view-all-btn">View All</a>
                 </div>
-                <div class="card-body p-0">
-                    <div class="list-group list-group-flush bg-dark">
+                <div class="card-body p-0" id="recent-classifications-body">
+                    <div class="list-group list-group-flush bg-dark" id="recent-classifications-list">
                         {% for run in recent_runs %}
-                        <a href="{% url 'battycoda_app:detection_run_detail' run.id %}" class="list-group-item list-group-item-action bg-dark text-light border-secondary">
-                            <div class="d-flex w-100 justify-content-between">
-                                <h5 class="mb-1">{{ run.name }}</h5>
-                                <small class="text-muted">{{ run.created_at|date:"M d, Y" }}</small>
+                        <a href="{% url 'battycoda_app:detection_run_detail' run.id %}" class="list-group-item list-group-item-action bg-dark text-light border-secondary" id="run-item-{{ run.id }}">
+                            <div class="d-flex w-100 justify-content-between" id="run-header-{{ run.id }}">
+                                <h5 class="mb-1" id="run-name-{{ run.id }}">{{ run.name }}</h5>
+                                <small class="text-muted" id="run-date-{{ run.id }}">{{ run.created_at|date:"M d, Y" }}</small>
                             </div>
-                            <div class="d-flex justify-content-between align-items-center">
-                                <small class="text-muted">{{ run.classifier.name }}</small>
-                                <span class="badge {% if run.status == 'completed' %}bg-success{% elif run.status == 'failed' %}bg-danger{% else %}bg-warning{% endif %}">
+                            <div class="d-flex justify-content-between align-items-center" id="run-meta-{{ run.id }}">
+                                <small class="text-muted" id="run-classifier-{{ run.id }}">{{ run.classifier.name }}</small>
+                                <span class="badge {% if run.status == 'completed' %}bg-success{% elif run.status == 'failed' %}bg-danger{% else %}bg-warning{% endif %}" id="run-status-{{ run.id }}">
                                     {{ run.status|title }}
                                 </span>
                             </div>
                         </a>
                         {% empty %}
-                        <div class="list-group-item bg-dark text-light border-secondary">
-                            <p class="mb-0 text-center">No classification runs yet</p>
+                        <div class="list-group-item bg-dark text-light border-secondary" id="classifications-empty-state">
+                            <p class="mb-0 text-center" id="classifications-empty-message">No classification runs yet</p>
                         </div>
                         {% endfor %}
                     </div>
@@ -201,27 +201,27 @@
         </div>
         
         <!-- Recent Species & Projects -->
-        <div class="col-lg-6 mb-4">
-            <div class="row">
+        <div class="col-lg-6 mb-4" id="recent-sp-proj-col">
+            <div class="row" id="species-projects-row">
                 <!-- Recent Species -->
-                <div class="col-12 mb-4">
-                    <div class="card bg-dark">
-                        <div class="card-header bg-warning bg-opacity-25 d-flex justify-content-between align-items-center">
-                            <h4 class="mb-0"><i class="fas fa-paw me-2"></i>Recent Species</h4>
-                            <a href="{% url 'battycoda_app:species_list' %}" class="btn btn-sm btn-outline-light">View All</a>
+                <div class="col-12 mb-4" id="recent-species-container">
+                    <div class="card bg-dark" id="recent-species-card">
+                        <div class="card-header bg-warning bg-opacity-25 d-flex justify-content-between align-items-center" id="recent-species-header">
+                            <h4 class="mb-0" id="recent-species-title"><i class="fas fa-paw me-2" id="recent-species-icon"></i>Recent Species</h4>
+                            <a href="{% url 'battycoda_app:species_list' %}" class="btn btn-sm btn-outline-light" id="species-view-all-btn">View All</a>
                         </div>
-                        <div class="card-body p-0">
-                            <div class="list-group list-group-flush bg-dark">
+                        <div class="card-body p-0" id="recent-species-body">
+                            <div class="list-group list-group-flush bg-dark" id="recent-species-list">
                                 {% for species in recent_species %}
-                                <a href="{% url 'battycoda_app:species_detail' species.id %}" class="list-group-item list-group-item-action bg-dark text-light border-secondary py-2">
-                                    <div class="d-flex w-100 justify-content-between align-items-center">
-                                        <h6 class="mb-0">{{ species.name }}</h6>
-                                        <small class="text-muted">{{ species.calls.count }} call types</small>
+                                <a href="{% url 'battycoda_app:species_detail' species.id %}" class="list-group-item list-group-item-action bg-dark text-light border-secondary py-2" id="species-item-{{ species.id }}">
+                                    <div class="d-flex w-100 justify-content-between align-items-center" id="species-content-{{ species.id }}">
+                                        <h6 class="mb-0" id="species-name-{{ species.id }}">{{ species.name }}</h6>
+                                        <small class="text-muted" id="species-calls-{{ species.id }}">{{ species.calls.count }} call types</small>
                                     </div>
                                 </a>
                                 {% empty %}
-                                <div class="list-group-item bg-dark text-light border-secondary">
-                                    <p class="mb-0 text-center">No species yet</p>
+                                <div class="list-group-item bg-dark text-light border-secondary" id="species-empty-state">
+                                    <p class="mb-0 text-center" id="species-empty-message">No species yet</p>
                                 </div>
                                 {% endfor %}
                             </div>
@@ -230,24 +230,24 @@
                 </div>
                 
                 <!-- Recent Projects -->
-                <div class="col-12">
-                    <div class="card bg-dark">
-                        <div class="card-header bg-danger bg-opacity-25 d-flex justify-content-between align-items-center">
-                            <h4 class="mb-0"><i class="fas fa-folder me-2"></i>Recent Projects</h4>
-                            <a href="{% url 'battycoda_app:project_list' %}" class="btn btn-sm btn-outline-light">View All</a>
+                <div class="col-12" id="recent-projects-container">
+                    <div class="card bg-dark" id="recent-projects-card">
+                        <div class="card-header bg-danger bg-opacity-25 d-flex justify-content-between align-items-center" id="recent-projects-header">
+                            <h4 class="mb-0" id="recent-projects-title"><i class="fas fa-folder me-2" id="recent-projects-icon"></i>Recent Projects</h4>
+                            <a href="{% url 'battycoda_app:project_list' %}" class="btn btn-sm btn-outline-light" id="projects-view-all-btn">View All</a>
                         </div>
-                        <div class="card-body p-0">
-                            <div class="list-group list-group-flush bg-dark">
+                        <div class="card-body p-0" id="recent-projects-body">
+                            <div class="list-group list-group-flush bg-dark" id="recent-projects-list">
                                 {% for project in recent_projects %}
-                                <a href="{% url 'battycoda_app:project_detail' project.id %}" class="list-group-item list-group-item-action bg-dark text-light border-secondary py-2">
-                                    <div class="d-flex w-100 justify-content-between align-items-center">
-                                        <h6 class="mb-0">{{ project.name }}</h6>
-                                        <small class="text-muted">{{ project.recordings.count }} recordings</small>
+                                <a href="{% url 'battycoda_app:project_detail' project.id %}" class="list-group-item list-group-item-action bg-dark text-light border-secondary py-2" id="project-item-{{ project.id }}">
+                                    <div class="d-flex w-100 justify-content-between align-items-center" id="project-content-{{ project.id }}">
+                                        <h6 class="mb-0" id="project-name-{{ project.id }}">{{ project.name }}</h6>
+                                        <small class="text-muted" id="project-recordings-{{ project.id }}">{{ project.recordings.count }} recordings</small>
                                     </div>
                                 </a>
                                 {% empty %}
-                                <div class="list-group-item bg-dark text-light border-secondary">
-                                    <p class="mb-0 text-center">No projects yet</p>
+                                <div class="list-group-item bg-dark text-light border-secondary" id="projects-empty-state">
+                                    <p class="mb-0 text-center" id="projects-empty-message">No projects yet</p>
                                 </div>
                                 {% endfor %}
                             </div>
