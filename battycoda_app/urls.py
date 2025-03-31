@@ -1,11 +1,27 @@
 from django.urls import path
 
-from . import views_segmentation  # This now imports from the package
+from .views_segmentation.segment_management import (
+    add_segment_view, delete_segment_view, edit_segment_view, segment_recording_view
+)
+from .views_segmentation.segmentation_batches import batch_segmentation_view, segmentation_jobs_status_view
+from .views_segmentation.segmentation_execution import (
+    auto_segment_recording_view, auto_segment_status_view, select_recording_for_segmentation_view
+)
+from .views_segmentation.segmentation_import import upload_pickle_segments_view
+from .views_segmentation.segmentation_settings import activate_segmentation_view
+
+# Direct imports from views_automation
+from .views_automation.results_application import apply_detection_results_view
+from .views_automation.runs_details import detection_run_detail_view, detection_run_status_view
+from .views_automation.runs_management import (
+    automation_home_view, create_detection_run_view, delete_detection_run_view
+)
+from .views_automation.task_creation import create_task_batch_from_detection_run
+
 from . import (
     views_audio,
     views_audio_streaming,
     views_auth,
-    views_automation,
     views_batch_upload,
     views_dashboard,
     views_debug,
@@ -61,34 +77,34 @@ urlpatterns = [
     ),
     path("tasks/annotate/<int:task_id>/", views_task_annotation.task_annotation_view, name="annotate_task"),
     # Automation routes
-    path("automation/", views_automation.automation_home_view, name="automation_home"),
-    path("automation/runs/<int:run_id>/", views_automation.detection_run_detail_view, name="detection_run_detail"),
-    path("automation/runs/create/", views_automation.create_detection_run_view, name="create_detection_run"),
+    path("automation/", automation_home_view, name="automation_home"),
+    path("automation/runs/<int:run_id>/", detection_run_detail_view, name="detection_run_detail"),
+    path("automation/runs/create/", create_detection_run_view, name="create_detection_run"),
     path(
         "automation/runs/create/<int:segmentation_id>/",
-        views_automation.create_detection_run_view,
+        create_detection_run_view,
         name="create_detection_run_for_segmentation",
     ),
     path(
-        "automation/runs/<int:run_id>/status/", views_automation.detection_run_status_view, name="detection_run_status"
+        "automation/runs/<int:run_id>/status/", detection_run_status_view, name="detection_run_status"
     ),
     path(
         "automation/runs/<int:run_id>/apply/",
-        views_automation.apply_detection_results_view,
+        apply_detection_results_view,
         name="apply_detection_results",
     ),
     path(
         "automation/runs/<int:run_id>/apply/<int:segment_id>/",
-        views_automation.apply_detection_results_view,
+        apply_detection_results_view,
         name="apply_detection_result_for_segment",
     ),
     path(
         "automation/runs/<int:run_id>/create-tasks/",
-        views_automation.create_task_batch_from_detection_run,
+        create_task_batch_from_detection_run,
         name="create_task_batch_from_detection_run",
     ),
     path(
-        "automation/runs/<int:run_id>/delete/", views_automation.delete_detection_run_view, name="delete_detection_run"
+        "automation/runs/<int:run_id>/delete/", delete_detection_run_view, name="delete_detection_run"
     ),
     # Species management routes
     path("species/", views_species.species_list_view, name="species_list"),
@@ -128,25 +144,25 @@ urlpatterns = [
     # Batch Upload
     path("recordings/batch-upload/", views_batch_upload.batch_upload_recordings_view, name="batch_upload_recordings"),
     # Segmentation related views
-    path("recordings/<int:recording_id>/segment/", views_segmentation.segment_recording_view, name="segment_recording"),
+    path("recordings/<int:recording_id>/segment/", segment_recording_view, name="segment_recording"),
     path(
         "recordings/<int:recording_id>/auto-segment/",
-        views_segmentation.auto_segment_recording_view,
+        auto_segment_recording_view,
         name="auto_segment_recording",
     ),
     path(
         "recordings/<int:recording_id>/auto-segment/<int:algorithm_id>/",
-        views_segmentation.auto_segment_recording_view,
+        auto_segment_recording_view,
         name="auto_segment_recording_with_algorithm",
     ),
     path(
         "recordings/<int:recording_id>/auto-segment/status/",
-        views_segmentation.auto_segment_status_view,
+        auto_segment_status_view,
         name="auto_segment_status",
     ),
     path(
         "recordings/<int:recording_id>/upload-pickle/",
-        views_segmentation.upload_pickle_segments_view,
+        upload_pickle_segments_view,
         name="upload_pickle_segments",
     ),
     # Audio streaming and data related views
@@ -170,17 +186,18 @@ urlpatterns = [
         name="create_tasks_from_segments",
     ),
     # Segmentation management
-    path("segmentation/", views_segmentation.batch_segmentation_view, name="batch_segmentation"),
+    path("segmentation/", batch_segmentation_view, name="batch_segmentation"),
+    path("segmentation/select-recording/", select_recording_for_segmentation_view, name="select_recording_for_segmentation"),
     path(
-        "segmentation/jobs/status/", views_segmentation.segmentation_jobs_status_view, name="segmentation_jobs_status"
+        "segmentation/jobs/status/", segmentation_jobs_status_view, name="segmentation_jobs_status"
     ),
     path(
         "segmentation/<int:segmentation_id>/activate/",
-        views_segmentation.activate_segmentation_view,
+        activate_segmentation_view,
         name="activate_segmentation",
     ),
     # Segment management
-    path("segments/<int:recording_id>/add/", views_segmentation.add_segment_view, name="add_segment"),
-    path("segments/<int:segment_id>/edit/", views_segmentation.edit_segment_view, name="edit_segment"),
-    path("segments/<int:segment_id>/delete/", views_segmentation.delete_segment_view, name="delete_segment"),
+    path("segments/<int:recording_id>/add/", add_segment_view, name="add_segment"),
+    path("segments/<int:segment_id>/edit/", edit_segment_view, name="edit_segment"),
+    path("segments/<int:segment_id>/delete/", delete_segment_view, name="delete_segment"),
 ]

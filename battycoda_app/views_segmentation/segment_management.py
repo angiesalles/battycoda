@@ -3,7 +3,15 @@ Views for managing individual recording segments (CRUD operations).
 """
 import json
 
-from .views_common import *
+from django.contrib import messages
+from django.contrib.auth.decorators import login_required
+from django.db import transaction
+from django.http import JsonResponse
+from django.shortcuts import get_object_or_404, redirect, render
+from django.utils import timezone
+
+from battycoda_app.forms import SegmentForm
+from battycoda_app.models.recording import Recording, Segment, Segmentation
 
 @login_required
 def segment_recording_view(request, recording_id):

@@ -10,7 +10,7 @@ from django.utils import timezone
 from django.views.decorators.csrf import csrf_exempt
 
 from .forms import UserLoginForm, UserProfileForm, UserRegisterForm
-from .models import GroupInvitation, GroupMembership, UserProfile
+from .models.user import GroupInvitation, GroupMembership, UserProfile
 
 
 def login_view(request):

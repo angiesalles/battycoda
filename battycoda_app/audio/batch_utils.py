@@ -135,7 +135,7 @@ def process_batch_upload(wav_zip, pickle_zip, form_data, user, group):
                                     # Create a new segmentation for this batch of segments
                                     segmentation = Segmentation.objects.create(
                                         recording=recording,
-                                        name=f"Batch Upload {timezone.now().strftime('%Y-%m-%d %H:%M:%S')}",
+                                        name="Batch Upload",
                                         algorithm=None,  # No algorithm for uploaded pickles
                                         status="completed",
                                         progress=100,

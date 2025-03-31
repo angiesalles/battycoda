@@ -3,7 +3,7 @@ from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import get_object_or_404, redirect
 
-from .models import Task, TaskBatch
+from .models.task import Task, TaskBatch
 
 # Set up logging
 

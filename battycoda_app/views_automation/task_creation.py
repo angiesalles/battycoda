@@ -3,21 +3,16 @@
 Provides functionality to convert detection run results into manual tasks for review.
 """
 
-from .common_imports import (  # Python standard library; Django imports; Models
-    CallProbability,
-    DetectionResult,
-    DetectionRun,
-    Task,
-    TaskBatch,
-    get_object_or_404,
-    login_required,
-    messages,
-    redirect,
-    render,
-    timezone,
-    traceback,
-    transaction,
-)
+import traceback
+
+from django.contrib import messages
+from django.contrib.auth.decorators import login_required
+from django.db import transaction
+from django.shortcuts import get_object_or_404, redirect, render
+from django.utils import timezone
+
+from battycoda_app.models.detection import CallProbability, DetectionResult, DetectionRun
+from battycoda_app.models.task import Task, TaskBatch
 
 @login_required
 def create_task_batch_from_detection_run(request, run_id):

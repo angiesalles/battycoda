@@ -3,7 +3,8 @@ from django.contrib.auth.models import User
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 
-from .models import Recording, UserProfile
+from .models.recording import Recording
+from .models.user import UserProfile
 from .tasks import calculate_audio_duration
 
 # NOTE: These signals are commented out because they duplicate functionality in models.py

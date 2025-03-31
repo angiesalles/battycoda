@@ -4,7 +4,8 @@ from django.contrib.auth.decorators import login_required
 from django.shortcuts import get_object_or_404, redirect, render
 
 from .forms import ProjectForm
-from .models import Project, Task, TaskBatch
+from .models.organization import Project
+from .models.task import Task, TaskBatch
 
 # Set up logging
 

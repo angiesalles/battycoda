@@ -7,7 +7,9 @@ from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
 
 from .forms import GroupForm
-from .models import Group, GroupMembership, Project, Species, TaskBatch, UserProfile
+from .models.organization import Project, Species
+from .models.task import TaskBatch
+from .models.user import Group, GroupMembership, UserProfile
 
 # Set up logging
 

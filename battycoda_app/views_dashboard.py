@@ -4,6 +4,11 @@ Dashboard view for the BattyCoda application.
 
 from django.shortcuts import redirect, render
 
+from .models.detection import DetectionRun
+from .models.organization import Project, Species
+from .models.recording import Recording, Segmentation
+from .models.task import TaskBatch
+
 # Set up logging
 
 def index(request):
@@ -14,9 +19,6 @@ def index(request):
 
         # Initialize context dictionary
         context = {}
-
-        # Get recent task batches
-        from .models import TaskBatch
 
         if profile.group:
             if profile.is_admin:
@@ -32,8 +34,6 @@ def index(request):
         context["recent_batches"] = recent_batches
 
         # Get recent recordings
-        from .models import Recording
-
         if profile.group:
             if profile.is_admin:
                 # Admin sees all recordings in their group
@@ -48,8 +48,6 @@ def index(request):
         context["recent_recordings"] = recent_recordings
 
         # Get recent classification runs
-        from .models import DetectionRun
-
         if profile.group:
             if profile.is_admin:
                 # Admin sees all runs in their group
@@ -64,8 +62,6 @@ def index(request):
         context["recent_runs"] = recent_runs
 
         # Get recent species
-        from .models import Species
-
         if profile.group:
             recent_species = Species.objects.filter(group=profile.group).order_by("-created_at")[:5]
         else:
@@ -74,8 +70,6 @@ def index(request):
         context["recent_species"] = recent_species
 
         # Get recent projects
-        from .models import Project
-
         if profile.group:
             recent_projects = Project.objects.filter(group=profile.group).order_by("-created_at")[:5]
         else:
@@ -91,8 +85,6 @@ def index(request):
             context["total_projects"] = Project.objects.filter(group=profile.group).count()
 
             # Get in-progress segmentations
-            from .models import Segmentation
-
             context["active_segmentations"] = Segmentation.objects.filter(
                 recording__group=profile.group, status__in=["pending", "in_progress"]
             ).count()
@@ -108,8 +100,6 @@ def index(request):
             context["total_projects"] = Project.objects.filter(created_by=request.user).count()
 
             # Get in-progress segmentations
-            from .models import Segmentation
-
             context["active_segmentations"] = Segmentation.objects.filter(
                 created_by=request.user, status__in=["pending", "in_progress"]
             ).count()

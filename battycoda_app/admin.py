@@ -1,6 +1,7 @@
 from django.contrib import admin
 
-from .models import Classifier, UserProfile
+from .models.detection import Classifier
+from .models.user import UserProfile
 
 # Register your models here.
 @admin.register(UserProfile)

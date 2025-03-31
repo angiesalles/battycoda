@@ -1,7 +1,17 @@
 """
 Views for managing batch segmentation operations.
 """
-from .views_common import *
+import os
+
+from django.contrib import messages
+from django.contrib.auth.decorators import login_required
+from django.http import JsonResponse
+from django.shortcuts import get_object_or_404, redirect, render
+from django.conf import settings
+from django.urls import reverse
+from django.utils import timezone
+
+from battycoda_app.models.recording import Recording, Segmentation, Segment
 
 @login_required
 def batch_segmentation_view(request):
@@ -23,7 +33,7 @@ def batch_segmentation_view(request):
 
     context = {
         "recordings": recordings,
-        "title": "Batch Segmentation",
+        "title": "Segmentations",
         "page_description": "Apply segmentation strategies to multiple recordings and monitor segmentation jobs.",
     }
 
@@ -34,9 +44,6 @@ def segmentation_jobs_status_view(request):
     """API endpoint to get the status of all segmentation jobs for the user"""
     # Get user profile
     profile = request.user.profile
-
-    # Import the Segmentation model
-    from ..models import Segmentation
 
     # Filter segmentations by user and group permissions
     if profile.group and profile.is_admin:
@@ -94,7 +101,7 @@ def segmentation_jobs_status_view(request):
             "name": segmentation.name,
             "status": segmentation.status,
             "progress": segmentation.progress,
-            "start_time": segmentation.created_at.strftime("%Y-%m-%d %H:%M:%S"),
+            "start_time": segmentation.created_at.isoformat(),
             "segments_created": segments_count,
             "algorithm_name": segmentation.algorithm.name if segmentation.algorithm else "Manual Import",
             "algorithm_type": segmentation.algorithm.get_algorithm_type_display()

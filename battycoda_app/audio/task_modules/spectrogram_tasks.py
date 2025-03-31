@@ -11,7 +11,7 @@ import numpy as np
 from celery import shared_task
 from PIL import Image
 
-from ...utils_modules import convert_path_to_os_specific
+from ...utils_modules.path_utils import convert_path_to_os_specific
 from ..utils import appropriate_file, get_audio_bit, normal_hwin, overview_hwin
 from .base import log_performance
 
@@ -122,7 +122,7 @@ def generate_recording_spectrogram(self, recording_id):
     import soundfile as sf
     from PIL import Image
 
-    from ...models import Recording
+    from ...models.recording import Recording
 
     try:
         # Get the recording

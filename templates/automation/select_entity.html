@@ -1,17 +1,21 @@
 {% extends 'base.html' %}
 
-{% block title %}Select Segmentation for Classification | BattyCoda{% endblock %}
+{% block title %}{{ title }} | BattyCoda{% endblock %}
 
 {% block content %}
 <div class="container mt-4">
     <div class="row mb-4">
         <div class="col-md-12">
-            <h1 class="mb-4">Select Segmentation</h1>
+            <h1 class="mb-4">{{ title }}</h1>
             
             <nav aria-label="breadcrumb">
                 <ol class="breadcrumb">
-                    <li class="breadcrumb-item"><a href="{% url 'battycoda_app:automation_home' %}">Classification</a></li>
-                    <li class="breadcrumb-item active" aria-current="page">Select Segmentation</li>
+                    {% if parent_url %}
+                    <li class="breadcrumb-item"><a href="{% url parent_url %}">{{ parent_name }}</a></li>
+                    {% else %}
+                    <li class="breadcrumb-item"><a href="{% url 'battycoda_app:index' %}">Home</a></li>
+                    {% endif %}
+                    <li class="breadcrumb-item active" aria-current="page">{{ title }}</li>
                 </ol>
             </nav>
         </div>
@@ -21,48 +25,48 @@
         <div class="col-md-12">
             <div class="card bg-dark text-white">
                 <div class="card-header d-flex justify-content-between align-items-center">
-                    <h4 class="mb-0">Available Segmentations</h4>
+                    <h4 class="mb-0">{{ list_title|default:"Available Items" }}</h4>
                     
                     <div class="input-group" style="max-width: 300px;">
                         <span class="input-group-text bg-dark text-white border-secondary">
                             <i class="fas fa-search"></i>
                         </span>
-                        <input type="text" id="segmentationSearch" class="form-control bg-dark text-white border-secondary" 
-                               placeholder="Search segmentations...">
+                        <input type="text" id="entitySearch" class="form-control bg-dark text-white border-secondary" 
+                               placeholder="Search...">
                     </div>
                 </div>
                 <div class="card-body">
-                    {% if segmentations %}
+                    {% if items %}
                     <div class="alert alert-info">
-                        <p class="mb-0">Select a segmentation to run automated call classification on.</p>
+                        <p class="mb-0">{{ info_message|default:"Select an item from the list below." }}</p>
                     </div>
                     
                     <div class="table-responsive">
-                        <table class="table table-dark table-hover" id="segmentationsTable">
+                        <table class="table table-dark table-hover" id="entityTable">
                             <thead>
                                 <tr>
-                                    <th>Recording</th>
-                                    <th>Species</th>
-                                    <th>Segments</th>
+                                    <th>{{ th1|default:"Name" }}</th>
+                                    <th>{{ th2|default:"Type" }}</th>
+                                    {% if show_count %}<th>{{ th3|default:"Count" }}</th>{% endif %}
                                     <th>Created</th>
                                     <th>Actions</th>
                                 </tr>
                             </thead>
                             <tbody>
-                                {% for segmentation in segmentations %}
+                                {% for item in items %}
                                 <tr>
                                     <td>
-                                        <a href="{% url 'battycoda_app:recording_detail' recording_id=segmentation.recording.id %}">
-                                            {{ segmentation.recording.name }}
+                                        <a href="{{ item.detail_url }}">
+                                            {{ item.name }}
                                         </a>
                                     </td>
-                                    <td>{{ segmentation.recording.species.name }}</td>
-                                    <td>{{ segmentation.recording.segments.count }}</td>
-                                    <td>{{ segmentation.created_at|date:"M d, Y" }}</td>
+                                    <td>{{ item.type_name }}</td>
+                                    {% if show_count %}<td>{{ item.count }}</td>{% endif %}
+                                    <td><span data-utc-date="{{ item.created_at|date:'c' }}" data-date-format="datetime"></span></td>
                                     <td>
-                                        <a href="{% url 'battycoda_app:create_detection_run_for_segmentation' segmentation_id=segmentation.id %}" 
+                                        <a href="{{ item.action_url }}" 
                                            class="btn btn-primary btn-sm">
-                                            <i class="fas fa-play me-1"></i> Run Classification
+                                            <i class="fas fa-{{ action_icon|default:'play' }} me-1"></i> {{ action_text }}
                                         </a>
                                     </td>
                                 </tr>
@@ -73,9 +77,10 @@
                     {% else %}
                     <div class="alert alert-warning">
                         <p class="mb-0">
-                            No segmentations available. 
-                            <a href="{% url 'battycoda_app:recording_list' %}" class="alert-link">Create a segmentation</a> 
-                            first to use the automated classification.
+                            {{ empty_message|default:"No items available." }}
+                            {% if create_url %}
+                            <a href="{% url create_url %}" class="alert-link">Create one</a> first.
+                            {% endif %}
                         </p>
                     </div>
                     {% endif %}
@@ -89,14 +94,14 @@
 {% block extra_js %}
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    // Search functionality for segmentations table
-    const searchInput = document.getElementById('segmentationSearch');
-    const segmentationsTable = document.getElementById('segmentationsTable');
+    // Search functionality for entity table
+    const searchInput = document.getElementById('entitySearch');
+    const entityTable = document.getElementById('entityTable');
     
-    if (searchInput && segmentationsTable) {
+    if (searchInput && entityTable) {
         searchInput.addEventListener('keyup', function() {
             const searchTerm = this.value.toLowerCase();
-            const rows = segmentationsTable.querySelectorAll('tbody tr');
+            const rows = entityTable.querySelectorAll('tbody tr');
             
             rows.forEach(function(row) {
                 const text = row.textContent.toLowerCase();

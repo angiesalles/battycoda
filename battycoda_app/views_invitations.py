@@ -12,7 +12,7 @@ from django.utils import timezone
 
 from .email_utils import send_invitation_email
 from .forms import GroupInvitationForm
-from .models import Group, GroupInvitation, GroupMembership, UserProfile
+from .models.user import Group, GroupInvitation, GroupMembership, UserProfile
 
 @login_required
 def group_users_view(request):

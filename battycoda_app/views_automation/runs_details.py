@@ -3,18 +3,13 @@
 Provides views for displaying detailed information about detection runs.
 """
 
-from .common_imports import (  # Django imports; Models
-    Call,
-    CallProbability,
-    DetectionResult,
-    DetectionRun,
-    JsonResponse,
-    get_object_or_404,
-    login_required,
-    messages,
-    redirect,
-    render,
-)
+from django.contrib import messages
+from django.contrib.auth.decorators import login_required
+from django.http import JsonResponse
+from django.shortcuts import get_object_or_404, redirect, render
+
+from battycoda_app.models.detection import CallProbability, DetectionResult, DetectionRun
+from battycoda_app.models.organization import Call
 
 @login_required
 def detection_run_detail_view(request, run_id):
