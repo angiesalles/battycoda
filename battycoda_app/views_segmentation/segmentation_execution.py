@@ -1,7 +1,64 @@
 """
 Views for executing automated segmentation tasks on recordings.
 """
-from .views_common import *
+import traceback
+
+from django.contrib import messages
+from django.contrib.auth.decorators import login_required
+from django.db import transaction
+from django.http import JsonResponse
+from django.shortcuts import get_object_or_404, redirect, render
+from django.urls import reverse
+from django.utils import timezone
+
+from battycoda_app.models.recording import Recording, Segment, Segmentation, SegmentationAlgorithm
+
+@login_required
+def select_recording_for_segmentation_view(request):
+    """Display a page for selecting a recording to segment"""
+    # Get user profile
+    profile = request.user.profile
+
+    # Filter recordings by group if the user is in a group
+    if profile.group:
+        if profile.is_admin:
+            # Admin sees all recordings in their group
+            recordings = Recording.objects.filter(group=profile.group).order_by("-created_at")
+        else:
+            # Regular user only sees their own recordings
+            recordings = Recording.objects.filter(created_by=request.user).order_by("-created_at")
+    else:
+        # Fallback to showing only user's recordings if no group is assigned
+        recordings = Recording.objects.filter(created_by=request.user).order_by("-created_at")
+
+    # Transform recordings to match the generalized template's expected format
+    items = []
+    for recording in recordings:
+        items.append({
+            'id': recording.id,
+            'name': recording.name,
+            'type_name': f"{recording.species.name if recording.species else 'Unknown'} Recording",
+            'created_at': recording.created_at,
+            'detail_url': reverse('battycoda_app:recording_detail', kwargs={'recording_id': recording.id}),
+            'action_url': reverse('battycoda_app:auto_segment_recording', kwargs={'recording_id': recording.id}),
+        })
+
+    context = {
+        'title': "Select Recording for Segmentation",
+        'list_title': "Available Recordings",
+        'info_message': "Select a recording to create a new segmentation.",
+        'items': items,
+        'th1': "Recording Name",
+        'th2': "Species",
+        'action_text': "Segment This Recording",
+        'action_icon': 'cut',
+        'parent_url': 'battycoda_app:batch_segmentation',
+        'parent_name': 'Segmentation Overview',
+        'empty_message': "No recordings available. Upload a recording first.",
+        'create_url': 'battycoda_app:create_recording',
+    }
+
+    return render(request, "automation/select_entity.html", context)
 
 @login_required
 def auto_segment_recording_view(request, recording_id, algorithm_id=None):
@@ -13,8 +70,6 @@ def auto_segment_recording_view(request, recording_id, algorithm_id=None):
     if recording.created_by != request.user and (not profile.group or recording.group != profile.group):
         messages.error(request, "You don't have permission to segment this recording.")
         return redirect("battycoda_app:recording_detail", recording_id=recording_id)
-
-    from ..models import Segmentation, SegmentationAlgorithm
 
     # Get available algorithms
     if profile.group and profile.is_admin:
@@ -138,7 +193,7 @@ def auto_segment_recording_view(request, recording_id, algorithm_id=None):
                 # Create a new Segmentation entry to track this job
                 segmentation = Segmentation.objects.create(
                     recording=recording,
-                    name=f"{algorithm.name} {timezone.now().strftime('%Y-%m-%d %H:%M:%S')}",
+                    name=f"{algorithm.name}",
                     created_by=request.user,
                     algorithm=algorithm,
                     task_id=task.id,

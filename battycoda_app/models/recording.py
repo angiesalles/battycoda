@@ -248,7 +248,7 @@ class Segment(models.Model):
                 # No active segmentation, create a new one
                 segmentation = Segmentation.objects.create(
                     recording=self.recording,
-                    name=f"Manual Segmentation {timezone.now().strftime('%Y-%m-%d %H:%M:%S')}",
+                    name="Manual Segmentation",
                     created_by=self.created_by,
                     status="completed",
                     progress=100,

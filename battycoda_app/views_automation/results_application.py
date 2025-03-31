@@ -3,16 +3,12 @@
 Provides functionality to apply automated detection results to segments.
 """
 
-from .common_imports import (  # Django imports; Models
-    CallProbability,
-    DetectionResult,
-    DetectionRun,
-    Segment,
-    get_object_or_404,
-    login_required,
-    messages,
-    redirect,
-)
+from django.contrib import messages
+from django.contrib.auth.decorators import login_required
+from django.shortcuts import get_object_or_404, redirect
+
+from battycoda_app.models.detection import CallProbability, DetectionResult, DetectionRun
+from battycoda_app.models.recording import Segment
 
 @login_required
 def apply_detection_results_view(request, run_id, segment_id=None):

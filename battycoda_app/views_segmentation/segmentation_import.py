@@ -1,9 +1,18 @@
 """
 Views for importing segments from external data sources.
 """
-from battycoda_app.audio.utils import process_pickle_file
+import os
+import traceback
 
-from .views_common import *
+from django.contrib import messages
+from django.contrib.auth.decorators import login_required
+from django.db import transaction
+from django.http import JsonResponse
+from django.shortcuts import get_object_or_404, redirect, render
+from django.utils import timezone
+
+from battycoda_app.audio.utils import process_pickle_file
+from battycoda_app.models.recording import Recording, Segment, Segmentation
 
 @login_required
 def upload_pickle_segments_view(request, recording_id):
@@ -44,7 +53,7 @@ def upload_pickle_segments_view(request, recording_id):
                 # Create a new Segmentation entry first
                 segmentation = Segmentation.objects.create(
                     recording=recording,
-                    name=f"Pickle Import {timezone.now().strftime('%Y-%m-%d %H:%M:%S')}",
+                    name="Pickle Import",
                     algorithm=None,  # No algorithm for manual upload
                     status="completed",
                     progress=100,

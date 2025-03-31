@@ -35,7 +35,8 @@ def run_call_detection(self, detection_run_id):
     import numpy as np
     import requests
 
-    from ...models import Call, CallProbability, Classifier, DetectionResult, DetectionRun, Segment, Segmentation
+    from ...models.detection import Call, CallProbability, Classifier, DetectionResult, DetectionRun
+    from ...models.recording import Segment, Segmentation
 
     try:
         # Get the detection run

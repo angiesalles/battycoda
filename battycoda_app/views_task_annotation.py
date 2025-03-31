@@ -7,7 +7,8 @@ from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import get_object_or_404, redirect, render
 
-from .models import Species, Task
+from .models.organization import Species
+from .models.task import Task
 from .utils_modules.path_utils import convert_path_to_os_specific
 
 # Set up logging

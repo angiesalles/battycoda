@@ -2,7 +2,10 @@ from django import forms
 from django.contrib.auth.forms import AuthenticationForm, UserCreationForm
 from django.contrib.auth.models import User
 
-from .models import Call, Group, Project, Recording, Segment, Species, Task, TaskBatch, UserProfile
+from .models.organization import Call, Project, Species
+from .models.recording import Recording, Segment
+from .models.task import Task, TaskBatch
+from .models.user import Group, UserProfile
 
 class UserRegisterForm(UserCreationForm):
     email = forms.EmailField(required=True)

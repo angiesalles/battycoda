@@ -1,14 +1,14 @@
 {% extends 'list_view_base.html' %}
 {% load static %}
 
-{% block page_title %}Segmentations{% endblock %}
-{% block list_title %}Segmentations{% endblock %}
-{% block card_title %}Segmentations{% endblock %}
+{% block page_title %}{{ title }}{% endblock %}
+{% block list_title %}{{ title }}{% endblock %}
+{% block card_title %}{{ title }}{% endblock %}
 {% block item_count %}{{ segmentation_jobs|length|default:"0" }}{% endblock %}
 
 {% block action_buttons %}
-<a href="{% url 'battycoda_app:recording_list' %}" class="btn btn-secondary">
-    <i class="fas fa-list"></i> All Recordings
+<a href="{% url 'battycoda_app:select_recording_for_segmentation' %}" class="btn btn-primary">
+    <i class="fas fa-plus"></i> New Segmentation Run
 </a>
 {% endblock %}
 
@@ -71,8 +71,8 @@
                 <i class="fas fa-tasks fa-4x mb-3 text-muted"></i>
                 <h4>No Segmentations</h4>
                 <p class="text-muted">You haven't created any segmentations yet.</p>
-                <a href="{% url 'battycoda_app:recording_list' %}" class="btn btn-primary mt-2">
-                    <i class="fas fa-list"></i> View Recordings
+                <a href="{% url 'battycoda_app:select_recording_for_segmentation' %}" class="btn btn-primary mt-2">
+                    <i class="fas fa-plus"></i> New Segmentation Run
                 </a>
             </div>
         </div>
@@ -89,8 +89,8 @@
     <i class="fas fa-tasks fa-4x mb-3 text-muted"></i>
     <h4>No Segmentations</h4>
     <p class="text-muted">You haven't created any segmentations yet.</p>
-    <a href="{% url 'battycoda_app:recording_list' %}" class="btn btn-primary mt-2">
-        <i class="fas fa-list"></i> View Recordings
+    <a href="{% url 'battycoda_app:select_recording_for_segmentation' %}" class="btn btn-primary mt-2">
+        <i class="fas fa-plus"></i> New Segmentation Run
     </a>
 </div>
 {% endblock %}
@@ -260,7 +260,7 @@
                                 row.innerHTML = `
                                     <td><a href="${job.view_url}" class="text-decoration-none">${job.recording_name}</a></td>
                                     <td>${job.name || "Unnamed Segmentation"}</td>
-                                    <td>${job.start_time}</td>
+                                    <td><span data-utc-date="${job.start_time}" data-date-format="datetime">${new Date(job.start_time).toLocaleString()}</span></td>
                                     <td>${statusBadge}</td>
                                     <td>${progressBar}</td>
                                     <td>

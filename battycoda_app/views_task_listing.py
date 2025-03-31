@@ -4,7 +4,8 @@ from django.contrib.auth.decorators import login_required
 from django.shortcuts import get_object_or_404, redirect, render
 
 from .forms import TaskForm, TaskUpdateForm
-from .models import Task, UserProfile
+from .models.task import Task
+from .models.user import UserProfile
 
 # Set up logging
 

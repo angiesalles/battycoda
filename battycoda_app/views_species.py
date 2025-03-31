@@ -11,7 +11,9 @@ from django.template.loader import render_to_string
 from django.views.decorators.http import require_POST
 
 from .forms import CallFormSetFactory, SpeciesEditForm, SpeciesForm
-from .models import Call, Recording, Species, Task, TaskBatch
+from .models.organization import Call, Species
+from .models.recording import Recording
+from .models.task import Task, TaskBatch
 
 # Set up logging
 

@@ -15,7 +15,9 @@ import numpy as np
 
 from .audio.utils import process_pickle_file
 from .forms import TaskBatchForm
-from .models import Recording, Segment, Task, TaskBatch, UserProfile
+from .models.recording import Recording, Segment
+from .models.task import Task, TaskBatch
+from .models.user import UserProfile
 
 # Set up logging
 

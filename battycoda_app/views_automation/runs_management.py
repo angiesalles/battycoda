@@ -3,20 +3,14 @@
 Provides views for creating, listing, and managing detection runs.
 """
 
-from .common_imports import (  # Django imports; Models
-    CallProbability,
-    Classifier,
-    DetectionResult,
-    DetectionRun,
-    JsonResponse,
-    Segmentation,
-    get_object_or_404,
-    login_required,
-    messages,
-    models,
-    redirect,
-    render,
-)
+from django.contrib import messages
+from django.contrib.auth.decorators import login_required
+from django.db import models
+from django.http import JsonResponse
+from django.shortcuts import get_object_or_404, redirect, render
+
+from battycoda_app.models.detection import CallProbability, Classifier, DetectionResult, DetectionRun
+from battycoda_app.models.recording import Segmentation
 
 @login_required
 def automation_home_view(request):

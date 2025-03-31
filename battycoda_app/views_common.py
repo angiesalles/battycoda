@@ -21,7 +21,8 @@ from django.utils import timezone
 
 from .audio.utils import process_pickle_file
 from .forms import RecordingForm, SegmentForm, SegmentFormSetFactory
-from .models import Group, Recording, Segment, Segmentation, UserProfile
+from .models.recording import Recording, Segment, Segmentation
+from .models.user import Group, UserProfile
 
 # Default chunk size for streaming (1MB)
 CHUNK_SIZE = 1024 * 1024
