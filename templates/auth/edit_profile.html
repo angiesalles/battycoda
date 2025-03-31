@@ -7,77 +7,56 @@
 {% endblock %}
 
 {% block content %}
-<div class="section">
-    <h2>Edit Profile</h2>
+<div class="card shadow-sm">
+    <div class="card-header bg-light">
+        <h2 class="mb-0">Edit Profile</h2>
+    </div>
+    <div class="card-body">
     
     <form method="post" action="{% url 'battycoda_app:edit_profile' %}">
         {% csrf_token %}
         
-        <div style="margin-bottom: 15px;">
-            <label for="id_email" style="display: block; margin-bottom: 5px;">Email:</label>
-            <input type="email" name="email" id="id_email" value="{{ user.email }}" class="input-field" style="width: 100%; padding: 8px; border: 1px solid #333; background-color: #2a2a2a; color: #fff; border-radius: 3px;">
+        <div class="mb-3">
+            <label for="id_email" class="form-label">Email:</label>
+            <input type="email" name="email" id="id_email" value="{{ user.email }}" class="form-control">
         </div>
         
         <!-- Replace the generic form.as_p with specific field rendering for better control -->
         {% for field in form %}
             {% if field.name == 'theme' %}
-                <div style="margin-bottom: 15px;">
-                    <label for="{{ field.id_for_label }}" style="display: block; margin-bottom: 5px;">{{ field.label }}:</label>
+                <div class="mb-3">
+                    <label for="{{ field.id_for_label }}" class="form-label">{{ field.label }}:</label>
                     {{ field }}
                     {% if field.help_text %}
-                        <small>{{ field.help_text }}</small>
+                        <small class="form-text text-muted">{{ field.help_text }}</small>
                     {% endif %}
-                    
-                    <!-- Theme preview area -->
-                    <div id="theme-preview" class="theme-preview theme-{{ user.profile.theme|default:'default' }}">
-                        <h3>Theme Preview</h3>
-                        <p>This is how your selected theme will look.</p>
-                        <button class="preview-button">Sample Button</button>
-                    </div>
                 </div>
             {% else %}
-                <div style="margin-bottom: 15px;">
-                    <label for="{{ field.id_for_label }}" style="display: block; margin-bottom: 5px;">{{ field.label }}:</label>
+                <div class="mb-3">
+                    <label for="{{ field.id_for_label }}" class="form-label">{{ field.label }}:</label>
                     {{ field }}
                     {% if field.help_text %}
-                        <small>{{ field.help_text }}</small>
+                        <small class="form-text text-muted">{{ field.help_text }}</small>
                     {% endif %}
                 </div>
             {% endif %}
         {% endfor %}
         
         {% if form.non_field_errors %}
-        <div style="margin-bottom: 15px; color: #e57373;">
+        <div class="alert alert-danger mb-3">
             {{ form.non_field_errors }}
         </div>
         {% endif %}
         
-        <div style="margin-top: 20px; display: flex; gap: 10px;">
-            <button type="submit" class="button">Save Changes</button>
-            <a href="{% url 'battycoda_app:profile' %}" class="button" style="background-color: #333;">Cancel</a>
+        <div class="mt-4">
+            <button type="submit" class="btn btn-primary">
+                <i class="fas fa-save me-1"></i> Save Changes
+            </button>
         </div>
     </form>
+    </div>
 </div>
 {% endblock %}
 
 {% block extra_js %}
-<script>
-    function updatePreviewColors(theme) {
-        const previewDiv = document.getElementById('theme-preview');
-        
-        // Remove all theme classes
-        previewDiv.classList.remove('theme-default', 'theme-blue');
-        
-        // Add the selected theme class
-        previewDiv.classList.add('theme-' + theme);
-    }
-    
-    // Initialize with current theme
-    document.addEventListener('DOMContentLoaded', function() {
-        const themeSelect = document.getElementById('id_theme');
-        if (themeSelect) {
-            updatePreviewColors(themeSelect.value);
-        }
-    });
-</script>
 {% endblock %}

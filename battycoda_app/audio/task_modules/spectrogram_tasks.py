@@ -13,7 +13,6 @@ from PIL import Image
 
 from ...utils_modules.path_utils import convert_path_to_os_specific
 from ..utils import appropriate_file, get_audio_bit, normal_hwin, overview_hwin
-from .base import log_performance
 
 # Import soundfile in the functions where needed
 
@@ -35,7 +34,7 @@ def generate_spectrogram_task(self, path, args, output_path=None):
     Returns:
         dict: Result information
     """
-    start_time = time.time()
+    # Time tracking removed
 
     # Create minimal task identifier for logging
     call = args.get("call", "?")
@@ -202,8 +201,7 @@ def generate_spectrogram(path, args, output_path=None):
     Returns:
         tuple: (success, output_path, error_message)
     """
-    # Start performance timer
-    start_time = time.time()
+    # Time tracking removed
 
     if output_path is None:
         output_path = appropriate_file(path, args)
@@ -268,7 +266,7 @@ def generate_spectrogram(path, args, output_path=None):
         f, t, sxx = scipy.signal.spectrogram(thr_x1, fs, nperseg=nperseg, noverlap=noverlap, nfft=nfft)
 
         # Process data for image creation - measure time
-        process_start = time.time()
+        # Time tracking removed
 
         # Apply contrast enhancement
         temocontrast = 10**contrast
@@ -307,10 +305,10 @@ def generate_spectrogram(path, args, output_path=None):
             # B channel - more in all areas for blue/indigo base
             rgb_data[:, :, 2] = np.clip(img_data * 0.9, 0, 255).astype(np.uint8)
 
-        log_performance(process_start, f"{task_id}: Process spectrogram data")
+        # Performance logging removed
 
         # Create and save image - measure time
-        img_start = time.time()
+        # Time tracking removed
 
         # Create PIL Image and save
         img = Image.fromarray(rgb_data)
@@ -321,11 +319,11 @@ def generate_spectrogram(path, args, output_path=None):
         # Save with minimal compression for speed
         img.save(output_path, format="PNG", compress_level=1)
 
-        log_performance(img_start, f"{task_id}: Create and save image")
+        # Performance logging removed
 
-        # Verify the file was created and log performance
+        # Verify the file was created
         if os.path.exists(output_path) and os.path.getsize(output_path) > 0:
-            log_performance(start_time, f"{task_id}: TOTAL SPECTROGRAM GENERATION")
+            # Performance logging removed
             return True, output_path, None
         else:
 

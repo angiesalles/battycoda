@@ -23,7 +23,7 @@ def calculate_audio_duration(recording_id):
 
     import soundfile as sf
 
-    from .models import Recording
+    from .models.recording import Recording
 
     try:
         # Get the recording from the database

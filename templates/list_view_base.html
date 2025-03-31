@@ -34,7 +34,7 @@
     </div>
     {% endif %}
 
-    <div class="card bg-dark">
+    <div class="card">
         <div class="card-header d-flex justify-content-between align-items-center">
             <h5 class="mb-0">{% block card_title %}All Items{% endblock %}</h5>
             <span class="badge bg-info">{% block item_count %}0{% endblock %} Total</span>
@@ -43,7 +43,7 @@
             {% block data_table %}
             {% if items %}
             <div class="table-responsive">
-                <table class="table table-dark table-hover table-striped mb-0">
+                <table class="table table-hover table-striped mb-0">
                     <thead>
                         <tr>
                             {% block table_header %}

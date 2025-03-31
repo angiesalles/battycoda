@@ -20,7 +20,7 @@ if (window.waveformPlayers === undefined) {
  * @param {boolean} showZoom - Whether to show zoom controls
  * @param {Array} [segmentsData] - Optional array of segments to display in the waveform
  */
-function initWaveformPlayer(containerId, recordingId, allowSelection, showZoom, segmentsData) {
+export function initWaveformPlayer(containerId, recordingId, allowSelection, showZoom, segmentsData) {
     // Create a new WaveformPlayer instance
     const player = new WaveformPlayer(containerId, recordingId, allowSelection, showZoom, segmentsData);
     
@@ -31,12 +31,13 @@ function initWaveformPlayer(containerId, recordingId, allowSelection, showZoom, 
         },
         setSegments: function(newSegments) {
             player.setSegments(newSegments || []);
-        }
+        },
+        redrawSegments: function() {
+            player.redrawSegments();
+        },
+        player: player // Expose the underlying player directly
     };
     
     // Initialize the player
     player.initialize();
 }
-
-// Export for use in global scope
-window.initWaveformPlayer = initWaveformPlayer;

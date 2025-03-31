@@ -22,19 +22,11 @@ def create_demo_task_batch(user):
     """
     from battycoda_app.audio.task_modules.detection_tasks import run_dummy_classifier
     from battycoda_app.audio.utils import process_pickle_file
-    from battycoda_app.models import (
-        CallProbability,
-        Classifier,
-        DetectionResult,
-        DetectionRun,
-        Project,
-        Recording,
-        Segment,
-        Segmentation,
-        Species,
-        Task,
-        TaskBatch,
-    )
+    # Import from specific model modules
+    from battycoda_app.models.detection import CallProbability, Classifier, DetectionResult, DetectionRun
+    from battycoda_app.models.organization import Project, Species
+    from battycoda_app.models.recording import Recording, Segment, Segmentation
+    from battycoda_app.models.task import Task, TaskBatch
 
     # Get the user's group and profile
     profile = user.profile
@@ -76,7 +68,10 @@ def create_demo_task_batch(user):
             return batch
 
     except Exception as e:
-
+        # Print the exception for debugging
+        print(f"Error creating demo task batch: {str(e)}")
+        import traceback
+        traceback.print_exc()
         return None
 
 def _check_demo_prerequisites(user, group):
@@ -89,7 +84,7 @@ def _check_demo_prerequisites(user, group):
     Returns:
         tuple: (project, species, sample_files) or (None, None, None) if prerequisites not met
     """
-    from battycoda_app.models import Project, Species
+    from battycoda_app.models.organization import Project, Species
 
     # Find the user's demo project
     project = Project.objects.filter(group=group, name__contains="Demo Project").first()
@@ -148,7 +143,7 @@ def _create_demo_recording(user, group, project, species, wav_path):
     Returns:
         Recording: The created Recording object or None if creation failed
     """
-    from battycoda_app.models import Recording
+    from battycoda_app.models.recording import Recording
 
     try:
         # Create the recording
@@ -183,7 +178,7 @@ def _create_demo_segmentation(user, recording, pickle_path):
         Segmentation: The created Segmentation object or None if creation failed
     """
     from battycoda_app.audio.utils import process_pickle_file
-    from battycoda_app.models import Segment, Segmentation
+    from battycoda_app.models.recording import Segment, Segmentation
 
     try:
         # Open and process the pickle file
@@ -241,7 +236,7 @@ def _run_demo_classification(user, group, segmentation):
         DetectionRun: The created DetectionRun object or None if creation failed
     """
     from battycoda_app.audio.task_modules.detection_tasks import run_dummy_classifier
-    from battycoda_app.models import Classifier, DetectionRun
+    from battycoda_app.models.detection import Classifier, DetectionRun
 
     try:
         # Find the dummy classifier
@@ -291,7 +286,8 @@ def _create_task_batch_from_detection(user, group, project, species, recording, 
     Returns:
         TaskBatch: The created TaskBatch object or None if creation failed
     """
-    from battycoda_app.models import CallProbability, DetectionResult, Task, TaskBatch
+    from battycoda_app.models.detection import CallProbability, DetectionResult
+    from battycoda_app.models.task import Task, TaskBatch
 
     try:
         # Create a unique batch name with timestamp

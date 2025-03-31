@@ -170,11 +170,28 @@ def auto_segment_recording_view(request, recording_id, algorithm_id=None):
             # Check if debug visualization is requested
             debug_visualization = request.POST.get("debug_visualization", False) == "on"
 
-            # Launch Celery task with debug visualization if requested
+            # Create a Segmentation entry first to track this job
+            segmentation = Segmentation.objects.create(
+                recording=recording,
+                name=f"{algorithm.name}",
+                created_by=request.user,
+                algorithm=algorithm,
+                task_id="pending",  # Will be updated with actual task ID
+                status="in_progress",
+                progress=0,
+                is_active=True,
+                manually_edited=False,
+            )
+
+            # Launch Celery task with segmentation_id as the first parameter
             task = current_app.send_task(
                 algorithm.celery_task,
-                args=[recording.id, min_duration_ms, smooth_window, threshold_factor, debug_visualization],
+                args=[recording.id, segmentation.id, min_duration_ms, smooth_window, threshold_factor, debug_visualization],
             )
+            
+            # Update the segmentation with the actual task ID
+            segmentation.task_id = task.id
+            segmentation.save(update_fields=['task_id'])
 
             # Store task ID in session for status checking
             request.session[f"auto_segment_task_{recording_id}"] = task.id
@@ -189,19 +206,8 @@ def auto_segment_recording_view(request, recording_id, algorithm_id=None):
 
                 # Mark all existing segmentations as inactive
                 Segmentation.objects.filter(recording=recording, is_active=True).update(is_active=False)
-
-                # Create a new Segmentation entry to track this job
-                segmentation = Segmentation.objects.create(
-                    recording=recording,
-                    name=f"{algorithm.name}",
-                    created_by=request.user,
-                    algorithm=algorithm,
-                    task_id=task.id,
-                    status="in_progress",
-                    progress=0,
-                    is_active=True,
-                    manually_edited=False,
-                )
+                
+                # The segmentation was already created before launching the task
 
             # Set success message
             messages.success(

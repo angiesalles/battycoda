@@ -22,7 +22,7 @@ def create_recording_from_batch(batch, onsets=None, offsets=None, pickle_file=No
                or (None, 0) if creation failed
     """
     from battycoda_app.audio.utils import process_pickle_file
-    from battycoda_app.models import Recording, Segment, Segmentation
+    from battycoda_app.models.recording import Recording, Segment, Segmentation
 
     # Ensure we have a valid batch with a WAV file
     if not batch.wav_file:
