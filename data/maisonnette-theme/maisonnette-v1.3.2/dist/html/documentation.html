@@ -1,0 +1,1487 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="">
+    <meta name="author" content="">
+    <link rel="shortcut icon" href="assets/img/favicon.png">
+    <title>Maisonnette</title>
+    <link rel="stylesheet" type="text/css" href="assets/lib/stroke-7/style.css"/>
+    <link rel="stylesheet" type="text/css" href="assets/lib/perfect-scrollbar/css/perfect-scrollbar.css"/>
+    <link rel="stylesheet" type="text/css" href="assets/lib/jqvmap/jqvmap.min.css"/>
+    <link rel="stylesheet" type="text/css" href="assets/lib/jquery.gritter/css/jquery.gritter.css"/>
+    <link rel="stylesheet" type="text/css" href="assets/lib/font-awesome/css/font-awesome.min.css"/>
+    <link rel="stylesheet" type="text/css" href="assets/lib/select2/css/select2.min.css"/>
+    <link rel="stylesheet" type="text/css" href="assets/lib/bootstrap-slider/css/bootstrap-slider.min.css"/>
+    <link rel="stylesheet" type="text/css" href="assets/lib/jquery.fullcalendar/fullcalendar.min.css"/>
+    <link rel="stylesheet" type="text/css" href="assets/lib/jquery.magnific-popup/magnific-popup.css"/>
+    <link rel="stylesheet" href="assets/css/app.css" type="text/css"/>
+  </head>
+  <body>
+    <nav class="navbar navbar-expand navbar-dark mai-top-header">
+      <div class="container"><a class="navbar-brand" href="#"></a>
+        <ul class="nav navbar-nav mai-top-nav">
+          <li class="nav-item"><a class="nav-link" href="index.html">Home</a></li>
+          <li class="nav-item"><a class="nav-link" href="#">About</a></li>
+          <li class="nav-item dropdown"><a class="nav-link dropdown-toggle" href="#" data-toggle="dropdown" role="button" aria-expanded="false">Services<span class="angle-down s7-angle-down"></span></a>
+            <div class="dropdown-menu" role="menu"><a class="dropdown-item" href="#">Information</a><a class="dropdown-item" href="#">Company</a><a class="dropdown-item" href="#">Documentation</a><a class="dropdown-item" href="#">API Settings</a><a class="dropdown-item" href="#">Export Info</a></div>
+          </li>
+          <li class="nav-item"><a class="nav-link" href="#">Support</a></li>
+        </ul>
+        <ul class="navbar-nav float-lg-right mai-icons-nav">
+          <li class="dropdown nav-item mai-messages"><a class="nav-link dropdown-toggle" href="#" data-toggle="dropdown" role="button" aria-expanded="false"><span class="icon s7-comment"></span></a>
+            <ul class="dropdown-menu">
+              <li>
+                <div class="title">Messages</div>
+                <div class="mai-scroller-messages">
+                  <div class="content">
+                    <ul>
+                      <li><a href="#">
+                          <div class="img"><img src="assets/img/avatars/img1.jpg" alt="avatar"></div>
+                          <div class="content"><span class="date">16 Sept</span><span class="name">Victor Jara</span><span class="desc">The song that has been brave, will always be the new song.</span></div></a></li>
+                      <li><a href="#">
+                          <div class="img"><img src="assets/img/avatars/img2.jpg" alt="Avatar"></div>
+                          <div class="content"><span class="date">4 Sept</span><span class="name">Gustavo Cerati</span><span class="desc">You will see me fly across the city of fury where no one knows of me.</span></div></a></li>
+                      <li><a href="#">
+                          <div class="img"><img src="assets/img/avatars/img3.jpg" alt="Avatar"></div>
+                          <div class="content"><span class="date">13 Aug</span><span class="name">Jaime Garzón</span><span class="desc">Now everything came back to the abnormality.</span></div></a></li>
+                      <li><a href="#">
+                          <div class="img"><img src="assets/img/avatars/img4.jpg" alt="Avatar"></div>
+                          <div class="content"><span class="date">13 Aug</span><span class="name">Allen Collins</span><span class="desc">Things just couldn't even be the same 'Cause I'm as free as a bird now.</span></div></a></li>
+                    </ul>
+                  </div>
+                </div>
+                <div class="footer"><a href="#">View all messages</a></div>
+              </li>
+            </ul>
+          </li>
+          <li class="dropdown nav-item mai-notifications"><a class="nav-link dropdown-toggle" href="#" data-toggle="dropdown" role="button" aria-expanded="false"><span class="icon s7-bell"></span><span class="indicator"></span></a>
+            <ul class="dropdown-menu">
+              <li>
+                <div class="title">Notifications</div>
+                <div class="mai-scroller-notifications">
+                  <div class="content">
+                    <ul>
+                      <li><a href="#">
+                          <div class="icon"><span class="s7-check"></span></div>
+                          <div class="content"><span class="desc">This is a new message for my dear friend <strong>Rob</strong>.</span><span class="date">10 minutes ago</span></div></a></li>
+                      <li><a href="#">
+                          <div class="icon"><span class="s7-add-user"></span></div>
+                          <div class="content"><span class="desc">You have a new fiend request pending from <strong>John Doe</strong>.</span><span class="date">2 days ago</span></div></a></li>
+                      <li><a href="#">
+                          <div class="icon"><span class="s7-graph1"></span></div>
+                          <div class="content"><span class="desc">Your site visits have increased <strong>15.5%</strong> more since the last week.</span><span class="date">2 hours ago</span></div></a></li>
+                      <li><a href="#">
+                          <div class="icon"><span class="s7-check"></span></div>
+                          <div class="content"><span class="desc">This is a new message for my dear friend <strong>Rob</strong>.</span><span class="date">10 minutes ago</span></div></a></li>
+                    </ul>
+                  </div>
+                </div>
+                <div class="footer"><a href="#">View all notifications</a></div>
+              </li>
+            </ul>
+          </li>
+          <li class="dropdown nav-item mai-settings"><a class="nav-link dropdown-toggle" href="#" data-toggle="dropdown" role="button" aria-expanded="false"><span class="icon s7-settings"></span></a>
+            <ul class="dropdown-menu">
+              <li>
+                <div class="title">Settings</div>
+                <div class="content">
+                  <ul>
+                    <li><span>Enable Notifications</span>
+                      <div class="float-right">
+                        <div class="switch-button switch-button-sm">
+                          <input type="checkbox" checked="" name="check" id="switch1"><span>
+                            <label for="switch1"></label></span>
+                        </div>
+                      </div>
+                    </li>
+                    <li><span>Auto Commit</span>
+                      <div class="float-right">
+                        <div class="switch-button switch-button-sm">
+                          <input type="checkbox" checked="" name="check2" id="switch2"><span>
+                            <label for="switch2"></label></span>
+                        </div>
+                      </div>
+                    </li>
+                    <li><span>Sidebar</span>
+                      <div class="float-right">
+                        <div class="switch-button switch-button-sm">
+                          <input type="checkbox" name="check3" id="switch3"><span>
+                            <label for="switch3"></label></span>
+                        </div>
+                      </div>
+                    </li>
+                    <li><span>Full-width Layout</span>
+                      <div class="float-right">
+                        <div class="switch-button switch-button-sm">
+                          <input type="checkbox" checked="" name="check4" id="switch4"><span>
+                            <label for="switch4"></label></span>
+                        </div>
+                      </div>
+                    </li>
+                  </ul>
+                </div>
+              </li>
+            </ul>
+          </li>
+        </ul>
+        <ul class="nav navbar-nav float-lg-right mai-user-nav">
+          <li class="dropdown nav-item"><a class="dropdown-toggle nav-link" href="#" data-toggle="dropdown" role="button" aria-expanded="false"><img src="assets/img/avatar.jpg" alt="Avatar"><span class="user-name">Violeta Parra</span><span class="angle-down s7-angle-down"></span></a>
+            <div class="dropdown-menu" role="menu"><a class="dropdown-item" href="#"><span class="icon s7-home"></span>My Account</a><a class="dropdown-item" href="pages-profile.html"><span class="icon s7-user"></span>Profile</a><a class="dropdown-item" href="#"><span class="icon s7-cash"></span>Billing</a><a class="dropdown-item" href="#"><span class="icon s7-tools"></span>Settings</a><a class="dropdown-item" href="pages-login.html"><span class="icon s7-power"></span>Log Out</a></div>
+          </li>
+        </ul>
+      </div>
+    </nav>
+    <div class="mai-wrapper">
+      <nav class="navbar navbar-expand-lg mai-sub-header">
+        <div class="container">
+                    <nav class="navbar navbar-expand-md">
+                      <button class="navbar-toggler hidden-md-up collapsed" type="button" data-toggle="collapse" data-target="#mai-navbar-collapse" aria-controls="mai-navbar-collapse" aria-expanded="false" aria-label="Toggle navigation">       <span class="icon-bar"><span></span><span></span><span></span></span></button>
+                      <div class="navbar-collapse collapse mai-nav-tabs" id="mai-navbar-collapse">
+                        <ul class="nav navbar-nav">
+                                    <li class="nav-item parent open"><a class="nav-link" href="#" role="button" aria-expanded="false"><span class="icon s7-home"></span><span>Home</span></a>
+                                      <ul class="mai-nav-tabs-sub mai-sub-nav nav">
+                                                  <li class="nav-item"><a class="nav-link" href="index.html"><span class="icon s7-monitor"></span><span class="name">Dashboard</span></a>
+                                                  </li>
+                                                  <li class="nav-item dropdown parent"><a class="nav-link" href="ui-elements.html" data-toggle="dropdown"><span class="icon s7-diamond"></span><span class="name">UI Elements</span></a>
+                                                              <div class="dropdown-menu mai-sub-nav" role="menu"><a class="dropdown-item" href="ui-general.html">General</a><a class="dropdown-item" href="ui-cards.html">Cards</a><a class="dropdown-item" href="ui-buttons.html">Buttons</a><a class="dropdown-item" href="ui-typography.html">Typography</a><a class="dropdown-item" href="ui-grid.html">Grid</a>
+                                                              </div>
+                                                  </li>
+                                                  <li class="nav-item dropdown parent"><a class="nav-link" href="ui-elements.html" data-toggle="dropdown"><span class="icon s7-diamond"></span><span class="name">Components</span></a>
+                                                              <div class="dropdown-menu mai-sub-nav" role="menu"><a class="dropdown-item" href="ui-alerts.html">Alerts</a><a class="dropdown-item" href="ui-icons.html">Icons</a><a class="dropdown-item" href="ui-tabs-accordions.html">Tabs &amp; Accordions</a>
+                                                              </div>
+                                                  </li>
+                                                  <li class="nav-item dropdown parent"><a class="nav-link" href="plugins.html" data-toggle="dropdown"><span class="icon s7-plugin"></span><span class="name">Plugins</span></a>
+                                                              <div class="dropdown-menu mai-sub-nav" role="menu"><a class="dropdown-item" href="ui-modals.html">Modals</a><a class="dropdown-item" href="ui-nestable-lists.html">Nestable Lists</a><a class="dropdown-item" href="ui-notifications.html">Notifications</a><a class="dropdown-item" href="ui-sweetalert2.html">Sweet Alerts2</a>
+                                                              </div>
+                                                  </li>
+                                                  <li class="nav-item"><a class="nav-link active" href="documentation.html"><span class="icon s7-notebook"></span><span class="name">Documentation</span></a>
+                                                  </li>
+                                      </ul>
+                                    </li>
+                                    <li class="nav-item parent"><a class="nav-link" href="#" role="button" aria-expanded="false"><span class="icon s7-rocket"></span><span>Forms</span></a>
+                                      <ul class="mai-nav-tabs-sub mai-sub-nav nav">
+                                                  <li class="nav-item"><a class="nav-link" href="form-elements.html"><span class="name">Elements</span></a>
+                                                  </li>
+                                                  <li class="nav-item"><a class="nav-link" href="form-validation.html"><span class="name">Validation</span></a>
+                                                  </li>
+                                                  <li class="nav-item"><a class="nav-link" href="form-masks.html"><span class="name">Masks</span></a>
+                                                  </li>
+                                                  <li class="nav-item"><a class="nav-link" href="form-multiselect.html"><span class="name">Multiselect</span></a>
+                                                  </li>
+                                                  <li class="nav-item"><a class="nav-link" href="form-wizard.html"><span class="name">Wizard</span></a>
+                                                  </li>
+                                                  <li class="nav-item"><a class="nav-link" href="form-upload.html"><span class="name">Upload</span></a>
+                                                  </li>
+                                      </ul>
+                                    </li>
+                                    <li class="nav-item parent"><a class="nav-link" href="#" role="button" aria-expanded="false"><span class="icon s7-diamond"></span><span>Tables</span></a>
+                                      <ul class="mai-nav-tabs-sub mai-sub-nav nav">
+                                                  <li class="nav-item"><a class="nav-link" href="tables-general.html"><span class="icon s7-box2"></span><span class="name">General</span></a>
+                                                  </li>
+                                                  <li class="nav-item"><a class="nav-link" href="tables-datatables.html"><span class="icon s7-box2"></span><span class="name">Data Tables</span></a>
+                                                  </li>
+                                                  <li class="nav-item"><a class="nav-link" href="tables-filters.html"><span class="icon s7-box2"></span><span class="name">Filters</span></a>
+                                                  </li>
+                                      </ul>
+                                    </li>
+                                    <li class="nav-item parent"><a class="nav-link" href="#" role="button" aria-expanded="false"><span class="icon s7-portfolio"></span><span>Pages</span></a>
+                                      <ul class="mai-nav-tabs-sub mai-sub-nav nav">
+                                                  <li class="nav-item"><a class="nav-link" href="pages-profile.html"><span class="icon s7-user"></span><span class="name">Profile</span></a>
+                                                  </li>
+                                                  <li class="nav-item"><a class="nav-link" href="pages-pricing-tables.html"><span class="icon s7-cash"></span><span class="name">Pricing</span></a>
+                                                  </li>
+                                                  <li class="nav-item"><a class="nav-link" href="pages-invoice.html"><span class="icon s7-wallet"></span><span class="name">Invoice</span></a>
+                                                  </li>
+                                                  <li class="nav-item dropdown parent"><a class="nav-link" href="login.html" data-toggle="dropdown"><span class="icon s7-diamond"></span><span class="name">Login</span></a>
+                                                              <div class="dropdown-menu mai-sub-nav" role="menu"><a class="dropdown-item" href="pages-login.html">Login</a><a class="dropdown-item" href="pages-sign-up.html">Sign Up</a><a class="dropdown-item" href="pages-forgot-password.html">Forgot Password</a>
+                                                              </div>
+                                                  </li>
+                                                  <li class="nav-item dropdown parent"><a class="nav-link" href="mail.html" data-toggle="dropdown"><span class="icon s7-mail"></span><span class="name">Mail</span></a>
+                                                              <div class="dropdown-menu mai-sub-nav" role="menu"><a class="dropdown-item" href="email-inbox.html">Inbox</a><a class="dropdown-item" href="email-detail.html">Detail</a><a class="dropdown-item" href="email-compose.html">Compose</a>
+                                                              </div>
+                                                  </li>
+                                                  <li class="nav-item dropdown parent"><a class="nav-link" href="maps.html" data-toggle="dropdown"><span class="icon s7-map-marker"></span><span class="name">Maps</span></a>
+                                                              <div class="dropdown-menu mai-sub-nav" role="menu"><a class="dropdown-item" href="maps-google.html">Google Maps</a><a class="dropdown-item" href="maps-vector.html">Vector Maps</a>
+                                                              </div>
+                                                  </li>
+                                                  <li class="nav-item dropdown parent"><a class="nav-link" href="extra.html" data-toggle="dropdown"><span class="icon s7-diamond"></span><span class="name">Extra Pages</span></a>
+                                                              <div class="dropdown-menu mai-sub-nav" role="menu"><a class="dropdown-item" href="pages-blank.html">Blank Page</a><a class="dropdown-item" href="pages-blank-header.html">Blank Page Header</a><a class="dropdown-item" href="pages-404.html">404 Page</a><a class="dropdown-item" href="pages-gallery.html">Gallery</a><a class="dropdown-item" href="pages-calendar.html">Calendar</a><a class="dropdown-item" href="pages-timeline.html">Timeline</a><a class="dropdown-item" href="pages-timeline2.html">Timeline v2</a>
+                                                              </div>
+                                                  </li>
+                                      </ul>
+                                    </li>
+                                    <li class="nav-item parent"><a class="nav-link" href="#" role="button" aria-expanded="false"><span class="icon s7-display1"></span><span>Charts</span></a>
+                                      <ul class="mai-nav-tabs-sub mai-sub-nav nav">
+                                                  <li class="nav-item"><a class="nav-link" href="charts-flot.html"><span class="icon s7-graph"></span><span class="name">Flot</span></a>
+                                                  </li>
+                                                  <li class="nav-item"><a class="nav-link" href="charts-sparklines.html"><span class="icon s7-graph1"></span><span class="name">Sparklines</span></a>
+                                                  </li>
+                                                  <li class="nav-item"><a class="nav-link" href="charts-morris.html"><span class="icon s7-graph3"></span><span class="name">Morris.js</span></a>
+                                                  </li>
+                                                  <li class="nav-item"><a class="nav-link" href="charts-chartjs.html"><span class="icon s7-graph2"></span><span class="name">Chart.js</span></a>
+                                                  </li>
+                                      </ul>
+                                    </li>
+                                    <li class="nav-item parent"><a class="nav-link" href="#" role="button" aria-expanded="false"><span class="icon s7-tools"></span><span>Layouts</span></a>
+                                      <ul class="mai-nav-tabs-sub mai-sub-nav nav">
+                                                  <li class="nav-item dropdown parent mega-menu"><a class="nav-link" href="mega-menu.html" data-toggle="dropdown"><span class="icon s7-ribbon"></span><span class="name">Mega Menu</span></a>
+                                                              <div class="dropdown-menu mai-mega-menu mai-sub-nav" role="menu">
+                                                                <div class="mai-mega-menu-row">
+                                                                  <div class="mai-mega-menu-column">
+                                                                              <div class="mai-mega-menu-section parent"><a class="nav-link" href="#"><span class="icon s7-note2"></span><span>Forms</span></a>
+                                                                                <div class="mai-mega-menu-sub-items mai-sub-nav"><a class="dropdown-item" href="form-elements.html">Elements</a><a class="dropdown-item" href="form-validation.html">Validation</a><a class="dropdown-item" href="form-masks.html">Input Masks</a><a class="dropdown-item" href="form-xeditable.html">X Editable</a><a class="dropdown-item" href="form-multiselect.html">Multiselect</a><a class="dropdown-item" href="form-wizard.html">Wizard</a><a class="dropdown-item" href="form-upload.html">Multi Upload</a>
+                                                                                </div>
+                                                                              </div>
+                                                                  </div>
+                                                                  <div class="mai-mega-menu-column">
+                                                                              <div class="mai-mega-menu-section parent"><a class="nav-link" href="#"><span class="icon s7-keypad"></span><span>Tables</span></a>
+                                                                                <div class="mai-mega-menu-sub-items mai-sub-nav"><a class="dropdown-item" href="tables-general.html">General</a><a class="dropdown-item" href="tables-datatables.html">Datatables</a>
+                                                                                </div>
+                                                                              </div>
+                                                                  </div>
+                                                                  <div class="mai-mega-menu-column">
+                                                                              <div class="mai-mega-menu-section parent"><a class="nav-link" href="#"><span class="icon s7-bookmarks"></span><span>Pages</span></a>
+                                                                                <div class="mai-mega-menu-sub-items mai-sub-nav"><a class="dropdown-item" href="pages-login.html">Login</a><a class="dropdown-item" href="pages-sign-up.html">Sign Up</a><a class="dropdown-item" href="pages-forgot-password.html">Forgot Password</a><a class="dropdown-item" href="pages-blank.html">Blank Page</a><a class="dropdown-item" href="pages-calendar.html">Calendar</a><a class="dropdown-item" href="pages-gallery.html">Gallery</a><a class="dropdown-item" href="pages-pricing-tables.html">Pricing Tables</a><a class="dropdown-item" href="pages-invoice.html">Invoice</a><a class="dropdown-item" href="pages-profile.html">Profile</a><a class="dropdown-item" href="pages-404.html">404 Page</a>
+                                                                                </div>
+                                                                              </div>
+                                                                  </div>
+                                                                  <div class="mai-mega-menu-column">
+                                                                              <div class="mai-mega-menu-section parent"><a class="nav-link" href="#"><span class="icon s7-map"></span><span>Maps</span></a>
+                                                                                <div class="mai-mega-menu-sub-items mai-sub-nav"><a class="dropdown-item" href="maps-google.html">Google Maps</a><a class="dropdown-item" href="maps-vector.html">Vector Maps</a>
+                                                                                </div>
+                                                                              </div>
+                                                                              <div class="mai-mega-menu-section parent"><a class="nav-link" href="#"><span class="icon s7-mail"></span><span>Mail</span></a>
+                                                                                <div class="mai-mega-menu-sub-items mai-sub-nav"><a class="dropdown-item" href="email-inbox.html">Inbox</a><a class="dropdown-item" href="email-detail.html">Detail</a><a class="dropdown-item" href="email-compose.html">Compose</a>
+                                                                                </div>
+                                                                              </div>
+                                                                  </div>
+                                                                </div>
+                                                              </div>
+                                                  </li>
+                                                  <li class="nav-item"><a class="nav-link" href="layout-logo-mobile.html"><span class="icon s7-leaf"></span><span class="name">Logo Mobile</span></a>
+                                                  </li>
+                                      </ul>
+                                    </li>
+                        </ul>
+                      </div>
+                    </nav>
+          <div class="search">
+            <input type="text" placeholder="Search..." name="q"><span class="s7-search"></span>
+          </div>
+        </div>
+      </nav>
+      <div class="main-content container">
+        <div class="row docs">
+          <div class="col-md-3 aside-container">
+            <aside class="page-aside">
+              <div class="aside-content" data-spy="affix" data-offset-top="273">
+                <div class="mai-scroller-aside">
+                  <div class="content">
+                    <div class="aside-header navbar-expand-sm">
+                      <button class="navbar-toggler" data-target="#aside-spy" data-toggle="collapse"><span class="icon s7-angle-down"></span></button><span class="title">Documentation</span>
+                      <p class="description">Maisonnette docs</p>
+                    </div>
+                    <div class="aside-nav navbar-collapse collapse" id="aside-spy">
+                      <ul class="navbar-nav">
+                        <li class="nav-item"><a class="nav-link" href="#general">General</a>
+                          <ul class="nav sub-menu">
+                            <li class="nav-item"><a class="nav-link" href="#general_introduction">Introduction</a></li>
+                            <li class="nav-item"><a class="nav-link" href="#general_structure">HTML Structure</a></li>
+                            <li class="nav-item"><a class="nav-link" href="#general_javascript">JavaScript</a></li>
+                          </ul>
+                        </li>
+                        <li class="nav-item"><a class="nav-link" href="#getting_started">Getting Started</a>
+                          <ul class="nav sub-menu">
+                            <li class="nav-item"><a class="nav-link" href="#gs_basic_setup">Basic Setup</a></li>
+                            <li class="nav-item"><a class="nav-link" href="#gs_npm_setup">Using npm</a></li>
+                            <li class="nav-item"><a class="nav-link" href="#gs_npm_install_dependencies">Install dependencies</a></li>
+                            <li class="nav-item"><a class="nav-link" href="#gs_npm_setup_sass">Setup Sass</a></li>
+                            <li class="nav-item"><a class="nav-link" href="#gs_sass_variables">Variables</a></li>
+                            <li class="nav-item"><a class="nav-link" href="#gs_npm_tasks">NPM scripts</a></li>
+                            <li class="nav-item"><a class="nav-link" href="#gs_npm_add_new_dependencies">Add new dependencies</a></li>
+                          </ul>
+                        </li>
+                        <li class="nav-item"><a class="nav-link" href="#plugins">Plugins</a></li>
+                        <li class="nav-item"><a class="nav-link" href="#support">Support</a></li>
+                        <li class="nav-item"><a class="nav-link" href="#changelog">Changelog</a></li>
+                      </ul>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </aside>
+          </div>
+          <div class="col-md-9 page-content">
+            <section id="general">
+              <h1 class="shareable-anchor" id="general_introduction">
+                <div>Introduction <a href="#general_introduction">#</a></div>
+              </h1>
+              <p>Thank you for support our work, <b>Maisonnette</b> is an HTML/CSS/JS admin template based on the famous Bootstrap framework, made it with love in every pixel.</p>
+              <p>In this document you will find a complete guide which covers topics about the product functionality, components, structure, workflow and the initial setup. </p>
+              <h2 class="shareable-anchor" id="folder_structure">
+                <div>Folder Structure <a href="#folder_structure">#</a></div>
+              </h2>
+              <p>Once you've downloaded this product, extract the zip file and you will find these directories:</p>
+              <div class="code-panel">
+                <div class="code-panel__heading"><span>maisonnette.zip</span></div>
+                <div class="code-panel__content">
+                  <pre class="prettyprint">maisonnette
+├── dist
+├──── html
+├──── starter
+├── src
+├── dep-copy.json
+├── package.json
+└── README.md
+</pre>
+                </div>
+              </div>
+              <h3>dist</h3>
+              <p>This folder contains the final production-ready compiled files</p>
+              <h4>html</h4>
+              <p>This folder contains the complete distribution version with all demo content included as seen in the live preview version.</p>
+              <h4>starter</h4>
+              <p>This folder contains the essentials components, this version does not include any of the live preview examples. This is especially designed to get started with only the needed elements. </p>
+              <h3>src</h3>
+              <p>In this folder you'll find the template's source code, if you want to customize the template to fit your specific needs, this is the right place to start with.</p>
+              <h3>dep-copy.json</h3>
+              <p>In this file you'll find the libraries that are copied from <code>"node_modules"</code> to <code>"src/assets/lib"</code>. If you want add a new libraries, this file is necessary.</p>
+              <h3>package.json</h3>
+              <p>This is the <a href="https://docs.npmjs.com/getting-started/using-a-package.json">npm manifest</a> file in which we define what are going to be our workflow dependencies and our main tasks.</p>
+              <h1 class="shareable-anchor" id="general_structure">
+                <div>HTML Structure <a href="#general_structure">#</a></div>
+              </h1>
+              <p>The template main structure is divided in three main sections: <b>Top Header</b>, <b>Sub Navigation</b> and <b>Main content</b>.</p>
+              <div class="code-panel">
+                <div class="code-panel__heading"><span>Main Structure</span></div>
+                <div class="code-panel__content">
+                  <pre class="prettyprint">&lt;!DOCTYPE html&gt;
+&lt;html lang=&quot;en&quot;&gt;
+  &lt;body&gt;
+    &lt;div class=&quot;navbar navbar-expand navbar-dark mai-top-header&quot;&gt;
+      &lt;!-- Top Header --&gt;
+    &lt;/div&gt;
+    &lt;div class=&quot;mai-wrapper&quot;&gt;
+      &lt;nav class=&quot;navbar navbar-expand-lg mai-sub-header&quot;&gt;
+        &lt;!-- Sub Navigation --&gt;
+      &lt;/nav&gt;
+      &lt;div class=&quot;main-content container&quot;&gt;
+        &lt;!-- Main Content --&gt;
+      &lt;/div&gt;
+    &lt;/div&gt;
+  &lt;/body&gt;
+&lt;/html&gt;
+</pre>
+                </div>
+              </div>
+              <h3 class="shareable-anchor" id="required_dependencies">
+                <div>Required Dependencies <a href="#required_dependencies">#</a></div>
+              </h3>
+              <p>This template require four libraries to work:</p>
+              <ul>
+                <li><a href="https://jquery.com/">jQuery 1.9.1</a> (or later)</li>
+                <li><a href="http://getbootstrap.com/">Bootstrap 4.1.2</a></li>
+                <li><a href="https://github.com/noraesae/perfect-scrollbar">Perfect Scrollbar 1.4.0</a></li>
+                <li><a href="https://github.com/olimsaidov/pixeden-stroke-7-icon">Stroke 7 Icon Font 1.0.1</a></li>
+              </ul>
+              <p>In addition to these libs, the main structure needs a basic modular js core to provide the template interaction like sidebars functionality. This file is located in <code>"assets/js/app.js"</code></p>
+              <p>There are some dependencies embedded in the <code>app.js</code> file that adds extra functionality to the template:</p>
+              <ul>
+                <li><a href="https://github.com/bgrins/TinyColor">Tiny Color 2 1.4.1</a></li>
+                <li><a href="https://github.com/foxythemes/bs4-breakpoint-check">jQuery Bootstrap 4 Breakpoint Check 1.0.5</a></li>
+              </ul>
+              <div class="alert alert-primary alert-theme" role="alert">
+                <div class="icon"><span class="s7-info"></span></div>
+                <div class="message"><strong>Note:</strong> You don't need to add these last dependencies because they are already included in the app.js file</div>
+              </div>
+              <h3 class="shareable-anchor" id="include_dependencies">
+                <div>Include the dependencies <a href="#include_dependencies">#</a></div>
+              </h3>
+              <p>Be sure to include the essentials scripts in your pages, for example inside your <code>head</code> tag should be like this:</p>
+              <div class="code-panel">
+                <div class="code-panel__heading"><span>Head Links</span></div>
+                <div class="code-panel__content">
+                  <pre class="prettyprint">&lt;link rel=&quot;stylesheet&quot; type=&quot;text/css&quot; href=&quot;assets/lib/stroke-7/style.css&quot;&gt;
+&lt;link rel=&quot;stylesheet&quot; type=&quot;text/css&quot; href=&quot;assets/lib/perfect-scrollbar/css/perfect-scrollbar.css&quot;&gt;
+&lt;link rel=&quot;stylesheet&quot; href=&quot;assets/css/app.css&quot; type=&quot;text/css&quot;&gt;
+</pre>
+                </div>
+              </div>
+              <p>And just before the <code>body</code> tag ends, please add these JavaScript libs:</p>
+              <div class="code-panel">
+                <div class="code-panel__heading"><span>Footer Scripts</span></div>
+                <div class="code-panel__content">
+                  <pre class="prettyprint">&lt;script src=&quot;assets/lib/jquery/jquery.min.js&quot; type=&quot;text/javascript&quot;&gt;&lt;/script&gt;				
+&lt;script src=&quot;assets/lib/perfect-scrollbar/js/perfect-scrollbar.min.js&quot; type=&quot;text/javascript&quot;&gt;&lt;/script&gt;
+&lt;script src=&quot;assets/lib/bootstrap/dist/js/bootstrap.bundle.min.js&quot; type=&quot;text/javascript&quot;&gt;&lt;/script&gt;
+&lt;script src=&quot;assets/js/app.js&quot; type=&quot;text/javascript&quot;&gt;&lt;/script&gt;
+
+&lt;script type=&quot;text/javascript&quot;&gt;
+  $(document).ready(function(){
+    //initialize the javascript
+    App.init();
+  });
+&lt;/script&gt;
+</pre>
+                </div>
+              </div>
+              <h2 class="shareable-anchor" id="gs_topbar">
+                <div>Top bar <a href="#gs_topbar">#</a></div>
+              </h2>
+              <p>We are extending the <a href="https://getbootstrap.com/docs/4.0/components/navbar/">Bootstrap Navbar</a> component using the fixed version by default, we also added some custom elements:</p>
+              <div class="code-panel">
+                <div class="code-panel__heading"><span>Top bar structure</span></div>
+                <div class="code-panel__content">
+                  <pre class="prettyprint">&lt;nav class=&quot;navbar navbar-expand navbar-dark mai-top-header&quot;&gt;
+  &lt;div class=&quot;container&quot;&gt;
+
+    &lt;!-- Brand Logo --&gt;
+    &lt;a href=&quot;&#35;&quot; class=&quot;navbar-brand&quot;&gt;&lt;/a&gt;
+
+    &lt;ul class=&quot;nav navbar-nav mai-top-nav&quot;&gt;
+      &lt;!-- User Menu --&gt;
+    &lt;/ul&gt;
+
+    &lt;ul class=&quot;navbar-nav float-lg-right mai-icons-nav&quot;&gt;
+      &lt;!-- Menu Options --&gt;
+    &lt;/ul&gt;
+
+    &lt;ul class=&quot;nav navbar-nav float-lg-right mai-user-nav&quot;&gt;
+      &lt;!-- Icons Menu --&gt;
+    &lt;/ul&gt;
+  &lt;/div&gt;
+&lt;/nav&gt;
+
+</pre>
+                </div>
+              </div>
+              <h3>Navbar Header</h3>
+              <p>In this element you'll find the app logo, located in the top left corner (<code>"navbar-brand"</code>), it will be shown on large devices and hidden on small resolutions:<br><img class="img-fluid" src="assets/img/docs/img1.png" alt="Nabvar Header"></p>
+              <h3>Main topbar elements</h3>
+              <p>Is composed by a group of elements and most of them are going to be hidden (<code>"mai-top-nav"</code>, <code>"mai-icons-nav"</code>) on small devices.<br></p>
+              <p>Desktop View<br><img class="img-fluid" src="assets/img/docs/img2.png" alt="Navbar Collapse"></p>
+              <p>Small View<br><img class="img-fluid" src="assets/img/docs/img3.png" alt="Navbar Collapse"></p>
+              <h1 class="shareable-anchor" id="general_javascript">
+                <div>JavaScript <a href="#general_javascript">#</a></div>
+              </h1>
+              <p>In every page, we are calling an object method which handles the basic template interaction. It's written with "The Module Pattern" which encapsulates certain code, allowing to be used when it's needed.</p>
+              <p>We use a global javascript object called "App", it provides a modular structure that we use to initialize the demo Js plugins on each demo page. You can find several modules in <code>"assets/js"</code> inside the <b>html</b> folder. </p>
+              <p>Said that you'll notice that there are different Js modules for some of the demo pages, all of them are optional, exept the <code>"app.js"</code> or <code>"app.min.js"</code> in case you want to use the minified version.</p>
+              <div class="alert alert-danger alert-theme" role="alert">
+                <div class="icon"><span class="s7-attention"></span></div>
+                <div class="message"><strong>Important<br></strong> Please don't add any custom Js code inside this file because you'll lose it when you update the template.</div>
+              </div>
+              <h3 class="shareable-anchor" id="init_method">
+                <div>init() Method <a href="#init_method">#</a></div>
+              </h3>
+              <p>This method is responsible for some of the bootstrap plugins initializing, both sidebars functionality and other responsive tasks. That's why this is the core method of this template.</p>
+              <p>You can add it at the end of the page like this:</p>
+              <div class="code-panel">
+                <div class="code-panel__heading"><span>Footer Scripts</span></div>
+                <div class="code-panel__content">
+                  <pre class="prettyprint">&lt;script type=&quot;text/javascript&quot;&gt;
+  $(document).ready(function(){
+    App.init();
+  });
+&lt;/script&gt;
+</pre>
+                </div>
+              </div>
+              <h3 class="shareable-anchor" id="gs_modules">
+                <div>Demo modules & methods <a href="#gs_modules">#</a></div>
+              </h3>
+              <p>In order to call the following methods you'll need to include the script reference of the JavaScript file, after that you can call it after the init method this way: <code>App.methodName();</code></p>
+              <p>Each of these modules contain the JS init for the demo plugins, feel free to copy and modify according to your needs.</p>
+              <table class="table table-striped">
+                <thead>
+                  <tr>
+                    <th width="20%">File Name</th>
+                    <th width="20%">Method</th>
+                    <th width="20%">Page</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td>app-dashboard.js</td>
+                    <td>dashboard</td>
+                    <td>index.html</td>
+                  </tr>
+                  <tr>
+                    <td>app-ui-general.js</td>
+                    <td>uiGeneral</td>
+                    <td>ui-general.html</td>
+                  </tr>
+                  <tr>
+                    <td>app-ui-notifications.js</td>
+                    <td>uiNotifications</td>
+                    <td>ui-notifications.html</td>
+                  </tr>
+                  <tr>
+                    <td>app-ui-nestable-lists.js</td>
+                    <td>uiNestableLists</td>
+                    <td>ui-nestable-lists.html</td>
+                  </tr>
+                  <tr>
+                    <td>app-charts.js</td>
+                    <td>charts</td>
+                    <td>charts.html</td>
+                  </tr>
+                  <tr>
+                    <td>app-charts-chartjs.js</td>
+                    <td>ChartJs</td>
+                    <td>charts-chartjs.html</td>
+                  </tr>
+                  <tr>
+                    <td>app-charts-morris.js</td>
+                    <td>chartsMorris</td>
+                    <td>charts-morris.html</td>
+                  </tr>
+                  <tr>
+                    <td>app-charts-sparkline.js</td>
+                    <td>chartsSparklines</td>
+                    <td>charts-sparkline.html</td>
+                  </tr>
+                  <tr>
+                    <td>app-form-elements.js</td>
+                    <td>formElements</td>
+                    <td>form-elements.html</td>
+                  </tr>
+                  <tr>
+                    <td>app-form-wizard.js</td>
+                    <td>wizard</td>
+                    <td>form-wizard.html</td>
+                  </tr>
+                  <tr>
+                    <td>app-form-masks.js</td>
+                    <td>masks</td>
+                    <td>form-masks.html</td>
+                  </tr>
+                  <tr>
+                    <td>app-form-multiselect.js</td>
+                    <td>formMultiselect</td>
+                    <td>form-multiselect.html</td>
+                  </tr>
+                  <tr>
+                    <td>app-mail-inbox.js</td>
+                    <td>emailInbox</td>
+                    <td>email-inbox.html</td>
+                  </tr>
+                  <tr>
+                    <td>app-mail-compose.js</td>
+                    <td>emailCompose</td>
+                    <td>email-compose.html</td>
+                  </tr>
+                  <tr>
+                    <td>app-tables-datatables.js</td>
+                    <td>dataTables</td>
+                    <td>tables-datatables.html</td>
+                  </tr>
+                  <tr>
+                    <td>app-table-filters.js</td>
+                    <td>tableFilters</td>
+                    <td>tables-filters.html</td>
+                  </tr>
+                  <tr>
+                    <td>app-pages-profile.js</td>
+                    <td>pageProfile</td>
+                    <td>pages-profile.html</td>
+                  </tr>
+                  <tr>
+                    <td>app-pages-calendar.js</td>
+                    <td>pageCalendar</td>
+                    <td>pages-calendar.html</td>
+                  </tr>
+                  <tr>
+                    <td>app-pages-gallery.js</td>
+                    <td>pageGallery</td>
+                    <td>pages-gallery.html</td>
+                  </tr>
+                  <tr>
+                    <td>app-maps-google.js</td>
+                    <td>mapsGoogle</td>
+                    <td>maps-google.html</td>
+                  </tr>
+                  <tr>
+                    <td>app-maps-vector.js</td>
+                    <td>mapsVector</td>
+                    <td>maps-vector.html</td>
+                  </tr>
+                </tbody>
+              </table>
+              <h3 class="shareable-anchor" id="gs_create_module">
+                <div>Create an App module <a href="#gs_create_module">#</a></div>
+              </h3>
+              <p>You can extend the App modular structure easily by creating your own modules like this:</p>
+              <div class="code-panel">
+                <div class="code-panel__heading"><span>Footer Scripts</span></div>
+                <div class="code-panel__content">
+                  <pre class="prettyprint">var App = (function () {
+
+  App.moduleName = function( ){
+    'use strict'
+
+    //Js Code
+    
+  };
+
+  return App;
+})(App || {});</pre>
+                </div>
+              </div>
+            </section>
+            <section id="getting_started">
+              <h1 class="shareable-anchor" id="getting_started">
+                <div>Getting Started <a href="#getting_started">#</a></div>
+              </h1>
+              <p>There are three different ways to use this template in your next project:</p>
+              <ul>
+                <li>Basic Setup</li>
+                <li>Using SASS files</li>
+                <li>Using NPM scripts</li>
+              </ul>
+              <h2 class="shareable-anchor" id="gs_basic_setup">
+                <div>Basic Setup <a href="#gs_basic_setup">#</a></div>
+              </h2>
+              <p>This is the quickest way to setup the template, you just have to copy the <b>"starter"</b> folder content into your project root folder and start working on the <code>index.html</code> file.</p>
+              <div class="alert alert-danger alert-theme" role="alert">
+                <div class="icon"><span class="s7-attention"></span></div>
+                <div class="message"><strong>Important:<br></strong> Using this method you'll need to add your custom styles in a different css file, to avoid losing changes when you update the template.</div>
+              </div>
+              <p>Be sure to include the <a href="#required_dependencies">essentials scripts</a> in your document to get things work properly. After that you're ready to start building.</p>
+              <h3>Cons</h3>
+              <p>This method is perfect if you think you are not going to make several changes to the original version and use it "as is", otherwise we suggest to use one of the following methods.</p>
+              <h2 class="shareable-anchor" id="gs_npm_setup">
+                <div>NPM scripts <a href="#gs_npm_setup">#</a></div>
+              </h2>
+              <p>The NPM scripts are a property of the package.json file, which allows us to define commands that will be executed several times in our workflow. We can create  commands to execute tasks or operations like install, compile, minify, remove, distribute, etc., all without having to depend of a task runner.</p>
+              <p>If you haven't used NPM scrips before, be sure to check out the <a href="https://docs.npmjs.com/misc/scripts">npm-scripts</a> documentation.</p>
+              <p>Supposing that you already are familiar with NPM scrips, we are going to explain step by step how to get started with the built-in workflow.</p>
+              <h3 class="shareable-anchor" id="gs_install_node">
+                <div>Install Node <a href="#gs_install_node">#</a></div>
+              </h3>
+              <p>If you already have Node.js installed you can skip this step.</p>
+              <ol class="mt-4">
+                <li class="mb-3">Be sure to have the latest version of <a href="https://nodejs.org">Node.js</a> installed & running in your computer. We are going to use <a href="https://www.npmjs.com/">npm</a> that comes with Node.js installation.</li>
+              </ol>
+              <h3 class="shareable-anchor" id="gs_npm_install_dependencies">
+                <div>Install npm dependencies <a href="#gs_npm_install_dependencies">#</a></div>
+              </h3>
+              <p>In your root folder enter the following command to install the project dependencies: <code>npm install</code>, this command will install all the template libraries inside the source folder: <code>src/assets/libs</code>, you need to run this command before you run <code>npm run dist</code> command in order to include dependencies in distribution.</p>
+              <h3 class="shareable-anchor" id="gs_npm_setup_sass">
+                <div>Setup SASS development environment <a href="#gs_npm_setup_sass">#</a></div>
+              </h3>
+              <p>In case you don't know nothing about css pre-processors, this is a brief description about what it is:</p>
+              <blockquote class="blockquote">
+                <p>Sass is the most mature, stable, and powerful professional grade CSS extension language in the world.</p>
+                <footer class="blockquote-footer">Taken from <a href="http://sass-lang.com/">sass-lang.com</a></footer>
+              </blockquote>
+              <p>In other words with css-preprocessors you can change the full color theme of this template by just changing a few lines of code.</p>
+              <h3 class="shareable-anchor" id="gs_setting_css">
+                <div>Setting up your css file <a href="#gs_setting_css">#</a></div>
+              </h3>
+              <ol class="mt-4">
+                <li class="mb-3">In the sass folder <code>src/sass/</code> you'll find a file called <code>app.scss</code>.</li>
+                <li class="mb-3">Rename it to a different name, for example <code>app.scss</code> => <code>maisonnette.scss</code>.</li>
+                <li class="mb-3">Then create a new file called <code>app.scss</code> which you are going to use it to modify variables and create your custom code.</li>
+                <li class="mb-3">
+                  <p>After that, you'll need to include the original main SASS file into the new file like this:</p>
+                  <div class="code-panel">
+                    <div class="code-panel__heading"><span>app.scss</span></div>
+                    <div class="code-panel__content">
+                      <pre class="prettyprint lang-css">// Your custom code goes here
+
+// Import the template source code
+@import &quot;maisonnette&quot;;
+</pre>
+                    </div>
+                  </div>
+                  <p>Inside this file you can modify the bootstrap and template variables values for example to change the color palette:</p>
+                  <div class="code-panel">
+                    <div class="code-panel__heading"><span>app.scss</span></div>
+                    <div class="code-panel__content">
+                      <pre class="prettyprint lang-css">// Modify template colors
+$primary:		&#35;9674c8;
+$danger:		&#35;FD3D39;
+$warning:		&#35;FFCB2F;
+$success:		&#35;53D86A;
+
+// Import the template source code
+@import &quot;maisonnette&quot;;
+</pre>
+                    </div>
+                  </div>
+                </li>
+              </ol>
+              <h3 class="shareable-anchor" id="gs_sass_variables">
+                <div>Variables <a href="#gs_sass_variables">#</a></div>
+              </h3>
+              <p>The template comes with several veriables that you can use to customize and create your own version, alongside with the Bootstrap default variables.</p>
+              <p>To see what variables are available go to  <code>"src/sass/config/_maisonnette-variables.scss"</code>.</p>
+              <h3 class="shareable-anchor" id="gs_npm_tasks">
+                <div>Available Commands <a href="#gs_npm_tasks">#</a></div>
+              </h3>
+              <p>After install dependencies now you can run the automated commands that here are the available:</p>
+              <h4>Custom commands</h4>
+              <table class="table table-striped">
+                <thead>
+                  <tr>
+                    <th width="20%">Command</th>
+                    <th>Description</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td>npm install</td>
+                    <td>Install and copy all the template libraries into <code>src/assets/lib</code> using the <br> <b>dep-copy.json</b> file.</td>
+                  </tr>
+                  <tr>
+                    <td>npm start</td>
+                    <td>It runs the watch command and an express development server in <code>'http://localhost:8080/index.html'</code>, this way you can modify your sass files and it automatically runs the sass compiler task designed for development.</td>
+                  </tr>
+                  <tr>
+                    <td>npm run dist</td>
+                    <td>Generate the end-compiled-ready-to-use distribution <code>dist</code> folder in your project root.</td>
+                  </tr>
+                </tbody>
+              </table>
+              <h3 class="shareable-anchor" id="gs_npm_add_new_dependencies">
+                <div>Adding new dependencies <a href="#gs_npm_add_new_dependencies">#</a></div>
+              </h3>
+              <p>You can add new dependencies easily using npm, just open your terminal in your root path and install the dependency as usual using <code>npm install dependency-name</code>, then you'll need to add a new entry on <b>dep-copy.json</b> file.</p>
+              <h4>Adding a new entry on dep-copy.json file</h4>
+              <p>We use a dep-copy.json file to filter which files do we really want to be copied to our development/production environment reducing the unnecessary load of unused files.</p>
+              <p>Open the <code>dep-copy.json</code> file and add a new entry like this:</p>
+              <div class="code-panel">
+                <div class="code-panel__heading"><span>dep-copy.json</span></div>
+                <div class="code-panel__content">
+                  <pre class="prettyprint">&quot;npm-package-name&quot;: {
+  &quot;files&quot;:{
+    &quot;npm-dependency-destination/css&quot; : &quot;npm-dependency-name/css/*&quot;,
+    &quot;npm-dependency-destination/js&quot; : &quot;bootstrap/js/*&quot;
+  }
+}
+</pre>
+                </div>
+              </div>
+              <p>This way the new dependency will be copied from <code>node_modules/npm-dependency-name/</code> to <code>src/assets/lib/npm-dependency-destination/</code> and only the files you specified in the new npmcopy entry will be moved to the <b>lib</b> folder.</p>
+              <p>Globs is enabled for using on dep-copy.json file.</p>
+            </section>
+            <section id="plugins">
+              <h1 class="shareable-anchor" id="plugins">
+                <div>Plugins <a href="#plugins">#</a></div>
+              </h1>
+              <p>This template comes with four <a href="#required_dependencies">main dependencies</a>, and several plugins for the demo pages, here is the plugin list with the official documentation for each one.</p>
+              <table class="table table-striped">
+                <thead>
+                  <tr>
+                    <th width="25%">Name</th>
+                    <th width="60%">Documentation</th>
+                    <th class="number">Version</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td>jQuery</td>
+                    <td><a href="https://jquery.com/">https://jquery.com/</a></td>
+                    <td class="number">>= 1.9.1</td>
+                  </tr>
+                  <tr>
+                    <td>Bootstrap</td>
+                    <td><a href="http://getbootstrap.com/">http://getbootstrap.com/</a></td>
+                    <td class="number">4.1.3</td>
+                  </tr>
+                  <tr>
+                    <td>perfect-scrollbar</td>
+                    <td><a href="https://github.com/noraesae/perfect-scrollbar">https://github.com/noraesae/perfect-scrollbar</a></td>
+                    <td class="number">1.4.0</td>
+                  </tr>
+                  <tr>
+                    <td>countUp.js</td>
+                    <td><a href="https://inorganik.github.io/countUp.js/">https://inorganik.github.io/countUp.js/</a></td>
+                    <td class="number">1.5.3</td>
+                  </tr>
+                  <tr id="plugin_datatables">
+                    <td>dataTables</td>
+                    <td><a href="http://datatables.net/">http://datatables.net/</a></td>
+                    <td class="number">1.10.16</td>
+                  </tr>
+                  <tr>
+                    <td>dataTables Buttons</td>
+                    <td><a href="https://github.com/DataTables/Buttons">https://github.com/DataTables/Buttons</a></td>
+                    <td class="number">1.5.1</td>
+                  </tr>
+                  <tr id="plugin_dropzone">
+                    <td>Dropzone</td>
+                    <td><a href="http://www.dropzonejs.com">http://www.dropzonejs.com</a></td>
+                    <td class="number">4.3.0</td>
+                  </tr>
+                  <tr>
+                    <td>CurvedLines</td>
+                    <td><a href="http://curvedlines.michaelzinsmaier.de/">http://curvedlines.michaelzinsmaier.de/</a></td>
+                    <td class="number">1.1.1</td>
+                  </tr>
+                  <tr>
+                    <td id="gritter_pluggin">Gritter</td>
+                    <td><a href="https://github.com/jboesch/Gritter">https://github.com/jboesch/Gritter</a></td>
+                    <td class="number">1.7.4</td>
+                  </tr>
+                  <tr id="plugin_fuelux">
+                    <td>Fuel UX</td>
+                    <td><a href="http://getfuelux.com/">http://getfuelux.com/</a></td>
+                    <td class="number">3.16.6</td>
+                  </tr>
+                  <tr id="plugin_calendar">
+                    <td>FullCalendar</td>
+                    <td><a href="http://arshaw.com/fullcalendar/">http://arshaw.com/fullcalendar/</a></td>
+                    <td class="number">3.8.2</td>
+                  </tr>
+                  <tr>
+                    <td>jQuery Bootstrap 4 Breakpoint Check</td>
+                    <td><a href="https://github.com/foxythemes/bs4-breakpoint-check">https://github.com/foxythemes/bs4-breakpoint-check</a></td>
+                    <td class="number">1.0.5</td>
+                  </tr>
+                  <tr>
+                    <td id="jquery_nestable">jQuery Nestable</td>
+                    <td><a href="https://github.com/thesabbir/jquery-nestable">https://github.com/thesabbir/jquery-nestable</a></td>
+                    <td class="number">1.0</td>
+                  </tr>
+                  <tr>
+                    <td id="nifty_modals">jQuery Nifty Modals</td>
+                    <td><a href="https://github.com/foxythemes/jquery-niftymodals">https://github.com/foxythemes/jquery-niftymodals</a></td>
+                    <td class="number">1.3.1</td>
+                  </tr>
+                  <tr id="plugin_jqueryui">
+                    <td>jQuery UI</td>
+                    <td><a href="https://jqueryui.com/">https://jqueryui.com/</a></td>
+                    <td class="number">1.11.4</td>
+                  </tr>
+                  <tr id="plugin_masked">
+                    <td>jQuery Masked Input</td>
+                    <td><a href="https://github.com/digitalBush/jquery.maskedinput">https://github.com/digitalBush/jquery.maskedinput</a></td>
+                    <td class="number">1.4.1</td>
+                  </tr>
+                  <tr id="plugin_google_map">
+                    <td>Google Maps</td>
+                    <td><a href="https://maps.googleapis.com">https://maps.googleapis.com</a></td>
+                    <td class="number">3.0.0</td>
+                  </tr>
+                  <tr id="plugin_jvector_map">
+                    <td>jVectorMap</td>
+                    <td><a href="https://github.com/bjornd/jvectormap/">https://github.com/bjornd/jvectormap/</a></td>
+                    <td class="number">1.2.2</td>
+                  </tr>
+                  <tr>
+                    <td>jQuery Vector Map</td>
+                    <td><a href="https://github.com/manifestinteractive/jqvmap">https://github.com/manifestinteractive/jqvmap</a></td>
+                    <td class="number">1.5.1</td>
+                  </tr>
+                  <tr id="plugin_sparkline">
+                    <td>jQuery Sparkline</td>
+                    <td><a href="https://github.com/kapusta/jquery.sparkline">https://github.com/kapusta/jquery.sparkline</a></td>
+                    <td class="number">2.1.3</td>
+                  </tr>
+                  <tr id="plugin_magnific_popup">
+                    <td>Magnific Popup</td>
+                    <td><a href="http://dimsemenov.com/plugins/magnific-popup/">http://dimsemenov.com/plugins/magnific-popup/</a></td>
+                    <td class="number">1.1.0</td>
+                  </tr>
+                  <tr id="plugin_masonry">
+                    <td>Masonry</td>
+                    <td><a href="http://masonry.desandro.com/">http://masonry.desandro.com/</a></td>
+                    <td class="number">4.2.1</td>
+                  </tr>
+                  <tr id="plugin_moment">
+                    <td>Moment</td>
+                    <td><a href="http://momentjs.com/">http://momentjs.com/</a></td>
+                    <td class="number">2.20.1</td>
+                  </tr>
+                  <tr id="plugin_parsley">
+                    <td>Parsley</td>
+                    <td><a href="http://parsleyjs.org/">http://parsleyjs.org/</a></td>
+                    <td class="number">2.8.1</td>
+                  </tr>
+                  <tr id="plugin_bsslider">
+                    <td>Bootstrap Slider</td>
+                    <td><a href="http://seiyria.github.io/bootstrap-slider/">http://seiyria.github.io/bootstrap-slider/</a></td>
+                    <td class="number">9.10.0</td>
+                  </tr>
+                  <tr id="plugin_select2">
+                    <td>Select2</td>
+                    <td><a href="https://select2.github.io/">https://select2.github.io/</a></td>
+                    <td class="number">4.0.5</td>
+                  </tr>
+                  <tr id="plugin_datepicker">
+                    <td>Date Picker</td>
+                    <td><a href="https://bootstrap-datepicker.readthedocs.io/en/stable/">https://bootstrap-datepicker.readthedocs.io/en/stable/</a></td>
+                    <td class="number">1.7.1</td>
+                  </tr>
+                  <tr id="plugin_multiselect">
+                    <td>Multi Select</td>
+                    <td><a href="http://loudev.com/">http://loudev.com/</a></td>
+                    <td class="number">0.9.12</td>
+                  </tr>
+                  <tr id="plugin_quicksearch">
+                    <td>Quicksearch</td>
+                    <td><a href="https://github.com/DeuxHuitHuit/quicksearch">https://github.com/DeuxHuitHuit/quicksearch</a></td>
+                    <td class="number">2.4.0</td>
+                  </tr>
+                  <tr id="plugin_summernote">
+                    <td>Sumernote</td>
+                    <td><a href="https://summernote.org/">https://summernote.org/</a></td>
+                    <td class="number">0.8.8</td>
+                  </tr>
+                  <tr>
+                    <td>Tiny Color 2</td>
+                    <td><a href="http://bgrins.github.io/TinyColor/">http://bgrins.github.io/TinyColor/</a></td>
+                    <td class="number">1.4.1</td>
+                  </tr>
+                  <tr id="plugin_flot">
+                    <td>Flot Charts</td>
+                    <td><a href="http://www.flotcharts.org/">http://www.flotcharts.org/</a></td>
+                    <td class="number">0.8.3</td>
+                  </tr>
+                  <tr id="plugin_morris">
+                    <td>Morris.js</td>
+                    <td><a href="https://github.com/morrisjs/morris.js">https://github.com/morrisjs/morris.jsTouchSwipe-Jquery-Plugin</a></td>
+                    <td class="number">0.5.1</td>
+                  </tr>
+                  <tr id="plugin_raphael">
+                    <td>Raphael.js</td>
+                    <td><a href="https://github.com/DmitryBaranovskiy/raphael">https://github.com/DmitryBaranovskiy/raphael</a></td>
+                    <td class="number">2.2.7</td>
+                  </tr>
+                  <tr id="plugin_chartjs">
+                    <td>Chart.js</td>
+                    <td><a href="https://github.com/chartjs/Chart.js">https://github.com/chartjs/Chart.js</a></td>
+                    <td class="number">2.7.1</td>
+                  </tr>
+                </tbody>
+              </table>
+            </section>
+            <section id="support">
+              <h1 class="shareable-anchor" id="support">
+                <div>Support <a href="#support">#</a></div>
+              </h1>
+              <p>We are here to assist you, thank you for report any bug/issue to our email <b>support@foxythemes.net</b>.</p>
+              <p>What support includes?</p>
+              <ul>
+                <li>Availability to answer questions</li>
+                <li>Answering technical questions about item's features</li>
+                <li>Assistance with reported bugs and issues</li>
+                <li>Help with included 3rd party assets</li>
+              </ul>
+              <p>What support doesn't include:</p>
+              <ul>
+                <li>Customization services</li>
+                <li>Installation services</li>
+              </ul>
+              <p>If you already read the documentation and you still need assistance, please send us your purchase data to <b>support@foxythemes.net</b> and we'll be glad to help you.</p>
+            </section>
+            <section id="changelog">
+              <h1 class="shareable-anchor" id="changelog">
+                <div>Changelog <a href="#changelog">#</a></div>
+              </h1>
+              <div class="row">
+                <div class="col-12">
+                  <div class="card card-table">
+                    <div class="card-header">
+                      <div class="title">Version 1.3.2 - 3 March 2019</div>
+                    </div>
+                    <div class="card-body table-responsive">
+                      <table class="table table-striped table-borderless">
+                        <thead>
+                          <tr>
+                            <th>Change</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          <tr class="success">
+                            <td>Updated: Bootstrap to v4.3.1</td>
+                          </tr>
+                          <tr class="success">
+                            <td>Added: Support for Sweetalerts2</td>
+                          </tr>
+                          <tr class="warning">
+                            <td>Improvement: Added shareable links on documentation page</td>
+                          </tr>
+                          <tr class="warning">
+                            <td>Improvement: Moved variables initialization to App.init() function</td>
+                          </tr>
+                          <tr class="warning">
+                            <td>Improvement: Switched from cards to alerts on documentation page notes</td>
+                          </tr>
+                          <tr class="warning">
+                            <td>Improvement: Change default primary color back to green</td>
+                          </tr>
+                          <tr class="warning">
+                            <td>Improvement: Change deprecated SASS color functions</td>
+                          </tr>
+                          <tr class="warning">
+                            <td>Improvement: Improvents in the readme file</td>
+                          </tr>
+                          <tr class="warning">
+                            <td>Improvement: Add empty state for main sub menu</td>
+                          </tr>
+                          <tr class="warning">
+                            <td>Improvement: Add support for outline buttons</td>
+                          </tr>
+                          <tr class="warning">
+                            <td>Improvement: Add Bootstrap input file examples</td>
+                          </tr>
+                          <tr class="danger">
+                            <td>Fixed: Verify all pages are W3C complaint</td>
+                          </tr>
+                          <tr class="danger">
+                            <td>Fixed: Perfect Scrollbar errors on top header</td>
+                          </tr>
+                          <tr class="danger">
+                            <td>Fixed: App.js is not working on head tag</td>
+                          </tr>
+                          <tr class="danger">
+                            <td>Fixed: Mobile menu strange delay effect when opening</td>
+                          </tr>
+                          <tr class="danger">
+                            <td>Fixed: Depencies issues with breakpoint check and Bootstrap</td>
+                          </tr>
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                </div>
+                <div class="col-12">
+                  <div class="card card-table">
+                    <div class="card-header">
+                      <div class="title">Version 1.3.1 - 16 August 2018</div>
+                    </div>
+                    <div class="card-body table-responsive">
+                      <table class="table table-striped table-borderless">
+                        <thead>
+                          <tr>
+                            <th>Change</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          <tr class="danger">
+                            <td>Fixed: Perfect scrollbar instantiation error on several pages</td>
+                          </tr>
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                </div>
+                <div class="col-12">
+                  <div class="card card-table">
+                    <div class="card-header">
+                      <div class="title">Version 1.3.0 - 1 August 2018</div>
+                    </div>
+                    <div class="card-body table-responsive">
+                      <table class="table table-striped table-borderless">
+                        <thead>
+                          <tr>
+                            <th>Change</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          <tr class="danger">
+                            <td>Fixed: Perfect scrollbar instantiation error on several pages</td>
+                          </tr>
+                          <tr class="primary">
+                            <td>Updated: Bootstrap to v4.1.3</td>
+                          </tr>
+                          <tr class="primary">
+                            <td>Updated: Perfect Scrollbar to v1.4.0</td>
+                          </tr>
+                          <tr class="primary">
+                            <td>Updated: Changed default primary color</td>
+                          </tr>
+                          <tr class="success">
+                            <td>Added: DataTable filters working example</td>
+                          </tr>
+                          <tr class="success">
+                            <td>Added: Readme to zip file</td>
+                          </tr>
+                          <tr class="warning">
+                            <td>Improvement: Changed panel classes to cards</td>
+                          </tr>
+                          <tr class="warning">
+                            <td>Improvement: Dropped grunt in favor of npm scripts</td>
+                          </tr>
+                          <tr class="warning">
+                            <td>Improvement: Move docs inside the template</td>
+                          </tr>
+                          <tr class="warning">
+                            <td>Improvement: Move git repos to npm packages</td>
+                          </tr>
+                          <tr class="danger">
+                            <td>Fixed: User dropdown menu on phone resolutions</td>
+                          </tr>
+                          <tr class="danger">
+                            <td>Fixed: Used margin instead of spaces in user dropdown menu items</td>
+                          </tr>
+                          <tr class="danger">
+                            <td>Fixed: Syntax error on _invoice.scss</td>
+                          </tr>
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                </div>
+                <div class="col-12">
+                  <div class="card card-table">
+                    <div class="card-header">
+                      <div class="title">Version 1.2.3 - 20 February 2018</div>
+                    </div>
+                    <div class="card-body table-responsive">
+                      <table class="table table-striped table-borderless">
+                        <thead>
+                          <tr>
+                            <th>Change</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          <tr class="danger">
+                            <td>Fixed: Boxed multiselect are wrong on small devices</td>
+                          </tr>
+                          <tr class="danger">
+                            <td>Fixed: Error on Chart.js page</td>
+                          </tr>
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                </div>
+                <div class="col-12">
+                  <div class="card card-table">
+                    <div class="card-header">
+                      <div class="title">Version 1.2.2 - 24 January 2018</div>
+                    </div>
+                    <div class="card-body table-responsive">
+                      <table class="table table-striped table-borderless">
+                        <thead>
+                          <tr>
+                            <th>Change</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          <tr class="danger">
+                            <td>Fixed: Logo is blurry on retina screens</td>
+                          </tr>
+                          <tr class="warning">
+                            <td>Improvement: Added links who match a page</td>
+                          </tr>
+                          <tr class="warning">
+                            <td>Improvement: Renamed dist folder 'light' by 'starter'</td>
+                          </tr>
+                          <tr class="warning">
+                            <td>Improvement: Added chart tooltips</td>
+                          </tr>
+                          <tr class="primary">
+                            <td>Updated: Bootstrap to v4.0.0</td>
+                          </tr>
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                </div>
+                <div class="col-12">
+                  <div class="card card-table">
+                    <div class="card-header">
+                      <div class="title">Version 1.2.1 - 16 January 2018</div>
+                    </div>
+                    <div class="card-body table-responsive">
+                      <table class="table table-striped table-borderless">
+                        <thead>
+                          <tr>
+                            <th>Change</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          <tr class="danger">
+                            <td>Fixed: Main navigation is not working properly</td>
+                          </tr>
+                          <tr class="danger">
+                            <td>Fixed: Close icon size in S7 iconset</td>
+                          </tr>
+                          <tr class="danger">
+                            <td>Fixed: Dropdowns display at top after BS4 update</td>
+                          </tr>
+                          <tr class="danger">
+                            <td>Fixed: White corners in modals</td>
+                          </tr>
+                          <tr class="danger">
+                            <td>Fixed: Center thick icon in custom checkbox</td>
+                          </tr>
+                          <tr class="danger">
+                            <td>Fixed: Wrong border color in calendar popup</td>
+                          </tr>
+                          <tr class="danger">
+                            <td>Fixed: Main nav z-index conflict with calendar</td>
+                          </tr>
+                          <tr class="danger">
+                            <td>Fixed: Mega menu not working on small resolutions</td>
+                          </tr>
+                          <tr class="danger">
+                            <td>Fixed: Bootstrap datepicker plugin is not working properly</td>
+                          </tr>
+                          <tr class="danger">
+                            <td>Fixed: Dashboard widgets are broken on medium and small resolutions</td>
+                          </tr>
+                          <tr class="danger">
+                            <td>Fixed: User nav is broken on extra small resolutions</td>
+                          </tr>
+                          <tr class="danger">
+                            <td>Fixed: Dropdowns panel is wrong on medium and small resolutions</td>
+                          </tr>
+                          <tr class="danger">
+                            <td>Fixed: Color contrasts panel is broken on large and medium resolutions</td>
+                          </tr>
+                          <tr class="danger">
+                            <td>Fixed: Pagination panel is broken on medium and small resolutions</td>
+                          </tr>
+                          <tr class="danger">
+                            <td>Fixed: Labels and inputs display is wrong on medium and small resolutions</td>
+                          </tr>
+                          <tr class="danger">
+                            <td>Fixed: Forms elements display wrong on small resolutions</td>
+                          </tr>
+                          <tr class="danger">
+                            <td>Fixed: Wizard plugin have a horizontal scroll</td>
+                          </tr>
+                          <tr class="danger">
+                            <td>Fixed: Table filters display broken in medium resolutions and below</td>
+                          </tr>
+                          <tr class="danger">
+                            <td>Fixed: Profile stats are wrong on medium and small resolutions</td>
+                          </tr>
+                          <tr class="danger">
+                            <td>Fixed: Project Deadline is wrong on medium resolutions</td>
+                          </tr>
+                          <tr class="danger">
+                            <td>Fixed: Login page is wrong on medium and small resolutions</td>
+                          </tr>
+                          <tr class="danger">
+                            <td>Fixed: Sign up page is wrong on medium and small devices</td>
+                          </tr>
+                          <tr class="danger">
+                            <td>Fixed: Forgot password page is wrong on medium and small devices</td>
+                          </tr>
+                          <tr class="danger">
+                            <td>Fixed: Gallery items overlay are broken on medium resolutions and below</td>
+                          </tr>
+                          <tr class="danger">
+                            <td>Fixed: Project list display wrong on medium resolutions</td>
+                          </tr>
+                          <tr class="danger">
+                            <td>Fixed: Dashboard legend indicators in small resolutions</td>
+                          </tr>
+                          <tr class="danger">
+                            <td>Fixed: Alerts don't have the same margin left</td>
+                          </tr>
+                          <tr class="danger">
+                            <td>Fixed: Modal custom width not working</td>
+                          </tr>
+                          <tr class="warning">
+                            <td>Improvement: Update fullcalendar to v3.8.0</td>
+                          </tr>
+                          <tr class="warning">
+                            <td>Improvement: Use month abbreviation in general tables</td>
+                          </tr>
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                </div>
+                <div class="col-12">
+                  <div class="card card-table">
+                    <div class="card-header">
+                      <div class="title">Version 1.2.0 - 1 November 2017</div>
+                    </div>
+                    <div class="card-body table-responsive">
+                      <table class="table table-striped table-borderless">
+                        <thead>
+                          <tr>
+                            <th>Change</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          <tr class="danger">
+                            <td>Fixed: Datatables container-fluid class issue</td>
+                          </tr>
+                          <tr class="danger">
+                            <td>Fixed: Placeholder not working on white backgrounds</td>
+                          </tr>
+                          <tr class="danger">
+                            <td>Fixed: Link to 'Text Editor' feature not working</td>
+                          </tr>
+                          <tr class="danger">
+                            <td>Fixed: Remove 'X-Editable' plugin</td>
+                          </tr>
+                          <tr class="warning">
+                            <td>Improvement: Migrate dependencies from bower to npm</td>
+                          </tr>
+                          <tr class="warning">
+                            <td>Improvement: Update Bootstrap to v4.0.0-beta.2</td>
+                          </tr>
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                </div>
+                <div class="col-12">
+                  <div class="card card-table">
+                    <div class="card-header">
+                      <div class="title">Version 1.1.0 - 24 May 2017</div>
+                    </div>
+                    <div class="card-body table-responsive">
+                      <table class="table table-striped table-borderless">
+                        <thead>
+                          <tr>
+                            <th>Change</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          <tr class="success">
+                            <td>Added: Layout option to show logo on mobile</td>
+                          </tr>
+                          <tr class="success">
+                            <td>Added: Timeline pages</td>
+                          </tr>
+                          <tr class="success">
+                            <td>Added: Datepicker plugin</td>
+                          </tr>
+                          <tr class="success">
+                            <td>Added: Table filters page</td>
+                          </tr>
+                          <tr class="warning">
+                            <td>Improvement: Primary color contrast calculation in main tabs</td>
+                          </tr>
+                          <tr class="warning">
+                            <td>Improvement: Create style for dropzone file items</td>
+                          </tr>
+                          <tr class="danger">
+                            <td>Fixed: Dashboard widget legend broken</td>
+                          </tr>
+                          <tr class="danger">
+                            <td>Fixed: Text is cutting off with form select sm</td>
+                          </tr>
+                          <tr class="danger">
+                            <td>Fixed: Radio button icon misaligned</td>
+                          </tr>
+                          <tr class="danger">
+                            <td>Fixed: Page head component broken on mobile</td>
+                          </tr>
+                          <tr class="danger">
+                            <td>Fixed: Logo text placeholder</td>
+                          </tr>
+                          <tr class="danger">
+                            <td>Fixed: Wrong maxYear value in x-editable</td>
+                          </tr>
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                </div>
+                <div class="col-12">
+                  <div class="card card-table">
+                    <div class="card-header">
+                      <div class="title">Version 1.0.1 - 15 March 2017</div>
+                    </div>
+                    <div class="card-body table-responsive">
+                      <table class="table table-striped table-borderless">
+                        <thead>
+                          <tr>
+                            <th>Change</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          <tr class="danger">
+                            <td>Fixed: Responsive menu in firefox</td>
+                          </tr>
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                </div>
+                <div class="col-12">
+                  <div class="card card-table">
+                    <div class="card-header">
+                      <div class="title">Version 1.0 - 1 March 2017</div>
+                    </div>
+                    <div class="card-body table-responsive">
+                      <table class="table table-striped table-borderless">
+                        <thead>
+                          <tr>
+                            <th>Change</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          <tr class="primary">
+                            <td>Initial Release</td>
+                          </tr>
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </section>
+          </div>
+        </div>
+      </div>
+    </div>
+    <script src="assets/lib/jquery/jquery.min.js" type="text/javascript"></script>
+    <script src="assets/lib/perfect-scrollbar/js/perfect-scrollbar.min.js" type="text/javascript"></script>
+    <script src="assets/lib/bootstrap/dist/js/bootstrap.bundle.min.js" type="text/javascript"></script>
+    <script src="assets/js/app.js" type="text/javascript"></script>
+    <script src="assets/lib/prettify/prettify.js" type="text/javascript"></script>
+    <script type="text/javascript">
+      $(document).ready(function(){
+      	//- initialize the javascript
+      	App.init();
+      
+      	//- Runs prettify
+      	prettyPrint();
+      
+      	$('body').scrollspy({
+      		target: '#aside-spy'
+      	});
+      
+      	$('#aside-spy li a').on('click',function(e) {
+      		e.preventDefault();
+      		var obj = { Title: "Maisonnette", Url: $(this).attr('href') };
+      		history.pushState(obj, obj.Title, obj.Url);
+      		$($(this).attr('href'))[0].scrollIntoView();
+      	});
+      
+      	$('.shareable-anchor div a').hover(function(e) {
+      		e.preventDefault();
+      		var obj = { Title: "Maisonnette", Url: $(this).attr('href') };
+      		history.pushState(obj, obj.Title, obj.Url);
+      	});
+      
+      	$(window).on('scroll', function(e) {
+      		var scrollValue = $(window).scrollTop();
+      		var offset = $('[data-spy="affix"]').attr('data-offset-top');
+      		if (scrollValue > offset) {
+      			$('[data-spy="affix"]').addClass('affix-top');
+      			var width = $('[data-spy="affix"]').parent().width();
+      			$('.affix-top').css('width', width);
+      		} else{
+      			$('[data-spy="affix"]').removeClass('affix-top');
+      		}
+      	});
+      
+      	$(window).resize(function () {
+      		var width = $('[data-spy="affix"]').parent().width();
+      		$('.affix-top').css('width', width);
+      	});
+      
+      	$(window).on('activate.bs.scrollspy', function(e) {
+      		App.scroller.updateScroller(App.scroller.aside_scroll);
+      	});
+      });
+    </script>
+  </body>
+</html>

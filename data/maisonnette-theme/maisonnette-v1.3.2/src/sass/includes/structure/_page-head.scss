@@ -1,0 +1,43 @@
+.page-head {
+	padding: 20px 0 30px;
+
+	@include tablet {
+		flex-direction: column;
+		align-items: center;
+		text-align: center;
+	}
+}
+
+.page-head-heading {
+	justify-content: center;
+  display: flex;
+  flex-direction: column;
+	
+	h1 {
+		font-size: 3.07692rem;
+		line-height: 1.3;
+
+		@include tablet {
+			font-size: 2.5rem;
+		}
+	}
+}
+
+.page-head-desc {
+	border-left: 2px solid darken(theme-color("light"), 15%);
+	text-align: center;
+
+	@include tablet {
+		border-left-width: 0;
+	}
+
+	h3 {		
+		font-size: 1.69231rem;
+		color: darken(theme-color("light"), 43%);
+		line-height: 1.4;
+
+		@include tablet {
+			font-size: 1.4rem;
+		}
+	}
+}

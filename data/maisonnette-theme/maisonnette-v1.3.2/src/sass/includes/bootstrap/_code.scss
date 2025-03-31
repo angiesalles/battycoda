@@ -1,0 +1,19 @@
+/*------------------------------------------------------------------
+  [Code]
+*/
+
+code {
+	padding: .2rem .4rem;
+}
+
+pre {
+	padding: 1.538rem;
+	border: 0;
+	border-radius: 0;
+	background-color: darken(theme-color("light"), 2%);
+
+	code {
+		white-space: pre-wrap;
+		padding: 0;
+	}
+}

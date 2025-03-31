@@ -1,0 +1,525 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="">
+    <meta name="author" content="">
+    <link rel="shortcut icon" href="assets/img/favicon.png">
+    <title>Maisonnette</title>
+    <link rel="stylesheet" type="text/css" href="assets/lib/stroke-7/style.css"/>
+    <link rel="stylesheet" type="text/css" href="assets/lib/perfect-scrollbar/css/perfect-scrollbar.css"/>
+    <link rel="stylesheet" href="assets/css/app.css" type="text/css"/>
+  </head>
+  <body>
+    <nav class="navbar navbar-expand navbar-dark mai-top-header">
+      <div class="container"><a class="navbar-brand" href="#"></a>
+        <ul class="nav navbar-nav mai-top-nav">
+          <li class="nav-item"><a class="nav-link" href="index.html">Home</a></li>
+          <li class="nav-item"><a class="nav-link" href="#">About</a></li>
+          <li class="nav-item dropdown"><a class="nav-link dropdown-toggle" href="#" data-toggle="dropdown" role="button" aria-expanded="false">Services<span class="angle-down s7-angle-down"></span></a>
+            <div class="dropdown-menu" role="menu"><a class="dropdown-item" href="#">Information</a><a class="dropdown-item" href="#">Company</a><a class="dropdown-item" href="#">Documentation</a><a class="dropdown-item" href="#">API Settings</a><a class="dropdown-item" href="#">Export Info</a></div>
+          </li>
+          <li class="nav-item"><a class="nav-link" href="#">Support</a></li>
+        </ul>
+        <ul class="navbar-nav float-lg-right mai-icons-nav">
+          <li class="dropdown nav-item mai-messages"><a class="nav-link dropdown-toggle" href="#" data-toggle="dropdown" role="button" aria-expanded="false"><span class="icon s7-comment"></span></a>
+            <ul class="dropdown-menu">
+              <li>
+                <div class="title">Messages</div>
+                <div class="mai-scroller-messages">
+                  <div class="content">
+                    <ul>
+                      <li><a href="#">
+                          <div class="img"><img src="assets/img/avatars/img1.jpg" alt="avatar"></div>
+                          <div class="content"><span class="date">16 Sept</span><span class="name">Victor Jara</span><span class="desc">The song that has been brave, will always be the new song.</span></div></a></li>
+                      <li><a href="#">
+                          <div class="img"><img src="assets/img/avatars/img2.jpg" alt="Avatar"></div>
+                          <div class="content"><span class="date">4 Sept</span><span class="name">Gustavo Cerati</span><span class="desc">You will see me fly across the city of fury where no one knows of me.</span></div></a></li>
+                      <li><a href="#">
+                          <div class="img"><img src="assets/img/avatars/img3.jpg" alt="Avatar"></div>
+                          <div class="content"><span class="date">13 Aug</span><span class="name">Jaime Garzón</span><span class="desc">Now everything came back to the abnormality.</span></div></a></li>
+                      <li><a href="#">
+                          <div class="img"><img src="assets/img/avatars/img4.jpg" alt="Avatar"></div>
+                          <div class="content"><span class="date">13 Aug</span><span class="name">Allen Collins</span><span class="desc">Things just couldn't even be the same 'Cause I'm as free as a bird now.</span></div></a></li>
+                    </ul>
+                  </div>
+                </div>
+                <div class="footer"><a href="#">View all messages</a></div>
+              </li>
+            </ul>
+          </li>
+          <li class="dropdown nav-item mai-notifications"><a class="nav-link dropdown-toggle" href="#" data-toggle="dropdown" role="button" aria-expanded="false"><span class="icon s7-bell"></span><span class="indicator"></span></a>
+            <ul class="dropdown-menu">
+              <li>
+                <div class="title">Notifications</div>
+                <div class="mai-scroller-notifications">
+                  <div class="content">
+                    <ul>
+                      <li><a href="#">
+                          <div class="icon"><span class="s7-check"></span></div>
+                          <div class="content"><span class="desc">This is a new message for my dear friend <strong>Rob</strong>.</span><span class="date">10 minutes ago</span></div></a></li>
+                      <li><a href="#">
+                          <div class="icon"><span class="s7-add-user"></span></div>
+                          <div class="content"><span class="desc">You have a new fiend request pending from <strong>John Doe</strong>.</span><span class="date">2 days ago</span></div></a></li>
+                      <li><a href="#">
+                          <div class="icon"><span class="s7-graph1"></span></div>
+                          <div class="content"><span class="desc">Your site visits have increased <strong>15.5%</strong> more since the last week.</span><span class="date">2 hours ago</span></div></a></li>
+                      <li><a href="#">
+                          <div class="icon"><span class="s7-check"></span></div>
+                          <div class="content"><span class="desc">This is a new message for my dear friend <strong>Rob</strong>.</span><span class="date">10 minutes ago</span></div></a></li>
+                    </ul>
+                  </div>
+                </div>
+                <div class="footer"><a href="#">View all notifications</a></div>
+              </li>
+            </ul>
+          </li>
+          <li class="dropdown nav-item mai-settings"><a class="nav-link dropdown-toggle" href="#" data-toggle="dropdown" role="button" aria-expanded="false"><span class="icon s7-settings"></span></a>
+            <ul class="dropdown-menu">
+              <li>
+                <div class="title">Settings</div>
+                <div class="content">
+                  <ul>
+                    <li><span>Enable Notifications</span>
+                      <div class="float-right">
+                        <div class="switch-button switch-button-sm">
+                          <input type="checkbox" checked="" name="check" id="switch1"><span>
+                            <label for="switch1"></label></span>
+                        </div>
+                      </div>
+                    </li>
+                    <li><span>Auto Commit</span>
+                      <div class="float-right">
+                        <div class="switch-button switch-button-sm">
+                          <input type="checkbox" checked="" name="check2" id="switch2"><span>
+                            <label for="switch2"></label></span>
+                        </div>
+                      </div>
+                    </li>
+                    <li><span>Sidebar</span>
+                      <div class="float-right">
+                        <div class="switch-button switch-button-sm">
+                          <input type="checkbox" name="check3" id="switch3"><span>
+                            <label for="switch3"></label></span>
+                        </div>
+                      </div>
+                    </li>
+                    <li><span>Full-width Layout</span>
+                      <div class="float-right">
+                        <div class="switch-button switch-button-sm">
+                          <input type="checkbox" checked="" name="check4" id="switch4"><span>
+                            <label for="switch4"></label></span>
+                        </div>
+                      </div>
+                    </li>
+                  </ul>
+                </div>
+              </li>
+            </ul>
+          </li>
+        </ul>
+        <ul class="nav navbar-nav float-lg-right mai-user-nav">
+          <li class="dropdown nav-item"><a class="dropdown-toggle nav-link" href="#" data-toggle="dropdown" role="button" aria-expanded="false"><img src="assets/img/avatar.jpg" alt="Avatar"><span class="user-name">Violeta Parra</span><span class="angle-down s7-angle-down"></span></a>
+            <div class="dropdown-menu" role="menu"><a class="dropdown-item" href="#"><span class="icon s7-home"></span>My Account</a><a class="dropdown-item" href="pages-profile.html"><span class="icon s7-user"></span>Profile</a><a class="dropdown-item" href="#"><span class="icon s7-cash"></span>Billing</a><a class="dropdown-item" href="#"><span class="icon s7-tools"></span>Settings</a><a class="dropdown-item" href="pages-login.html"><span class="icon s7-power"></span>Log Out</a></div>
+          </li>
+        </ul>
+      </div>
+    </nav>
+    <div class="mai-wrapper">
+      <nav class="navbar navbar-expand-lg mai-sub-header">
+        <div class="container">
+                    <nav class="navbar navbar-expand-md">
+                      <button class="navbar-toggler hidden-md-up collapsed" type="button" data-toggle="collapse" data-target="#mai-navbar-collapse" aria-controls="mai-navbar-collapse" aria-expanded="false" aria-label="Toggle navigation">       <span class="icon-bar"><span></span><span></span><span></span></span></button>
+                      <div class="navbar-collapse collapse mai-nav-tabs" id="mai-navbar-collapse">
+                        <ul class="nav navbar-nav">
+                                    <li class="nav-item parent open"><a class="nav-link" href="#" role="button" aria-expanded="false"><span class="icon s7-home"></span><span>Home</span></a>
+                                      <ul class="mai-nav-tabs-sub mai-sub-nav nav">
+                                                  <li class="nav-item"><a class="nav-link" href="index.html"><span class="icon s7-monitor"></span><span class="name">Dashboard</span></a>
+                                                  </li>
+                                                  <li class="nav-item dropdown parent"><a class="nav-link" href="ui-elements.html" data-toggle="dropdown"><span class="icon s7-diamond"></span><span class="name">UI Elements</span></a>
+                                                              <div class="dropdown-menu mai-sub-nav" role="menu"><a class="dropdown-item" href="ui-general.html">General</a><a class="dropdown-item" href="ui-cards.html">Cards</a><a class="dropdown-item" href="ui-buttons.html">Buttons</a><a class="dropdown-item" href="ui-typography.html">Typography</a><a class="dropdown-item" href="ui-grid.html">Grid</a>
+                                                              </div>
+                                                  </li>
+                                                  <li class="nav-item dropdown parent"><a class="nav-link" href="ui-elements.html" data-toggle="dropdown"><span class="icon s7-diamond"></span><span class="name">Components</span></a>
+                                                              <div class="dropdown-menu mai-sub-nav" role="menu"><a class="dropdown-item" href="ui-alerts.html">Alerts</a><a class="dropdown-item" href="ui-icons.html">Icons</a><a class="dropdown-item active" href="ui-tabs-accordions.html">Tabs &amp; Accordions</a>
+                                                              </div>
+                                                  </li>
+                                                  <li class="nav-item dropdown parent"><a class="nav-link" href="plugins.html" data-toggle="dropdown"><span class="icon s7-plugin"></span><span class="name">Plugins</span></a>
+                                                              <div class="dropdown-menu mai-sub-nav" role="menu"><a class="dropdown-item" href="ui-modals.html">Modals</a><a class="dropdown-item" href="ui-nestable-lists.html">Nestable Lists</a><a class="dropdown-item" href="ui-notifications.html">Notifications</a><a class="dropdown-item" href="ui-sweetalert2.html">Sweet Alerts2</a>
+                                                              </div>
+                                                  </li>
+                                                  <li class="nav-item"><a class="nav-link" href="documentation.html"><span class="icon s7-notebook"></span><span class="name">Documentation</span></a>
+                                                  </li>
+                                      </ul>
+                                    </li>
+                                    <li class="nav-item parent"><a class="nav-link" href="#" role="button" aria-expanded="false"><span class="icon s7-rocket"></span><span>Forms</span></a>
+                                      <ul class="mai-nav-tabs-sub mai-sub-nav nav">
+                                                  <li class="nav-item"><a class="nav-link" href="form-elements.html"><span class="name">Elements</span></a>
+                                                  </li>
+                                                  <li class="nav-item"><a class="nav-link" href="form-validation.html"><span class="name">Validation</span></a>
+                                                  </li>
+                                                  <li class="nav-item"><a class="nav-link" href="form-masks.html"><span class="name">Masks</span></a>
+                                                  </li>
+                                                  <li class="nav-item"><a class="nav-link" href="form-multiselect.html"><span class="name">Multiselect</span></a>
+                                                  </li>
+                                                  <li class="nav-item"><a class="nav-link" href="form-wizard.html"><span class="name">Wizard</span></a>
+                                                  </li>
+                                                  <li class="nav-item"><a class="nav-link" href="form-upload.html"><span class="name">Upload</span></a>
+                                                  </li>
+                                      </ul>
+                                    </li>
+                                    <li class="nav-item parent"><a class="nav-link" href="#" role="button" aria-expanded="false"><span class="icon s7-diamond"></span><span>Tables</span></a>
+                                      <ul class="mai-nav-tabs-sub mai-sub-nav nav">
+                                                  <li class="nav-item"><a class="nav-link" href="tables-general.html"><span class="icon s7-box2"></span><span class="name">General</span></a>
+                                                  </li>
+                                                  <li class="nav-item"><a class="nav-link" href="tables-datatables.html"><span class="icon s7-box2"></span><span class="name">Data Tables</span></a>
+                                                  </li>
+                                                  <li class="nav-item"><a class="nav-link" href="tables-filters.html"><span class="icon s7-box2"></span><span class="name">Filters</span></a>
+                                                  </li>
+                                      </ul>
+                                    </li>
+                                    <li class="nav-item parent"><a class="nav-link" href="#" role="button" aria-expanded="false"><span class="icon s7-portfolio"></span><span>Pages</span></a>
+                                      <ul class="mai-nav-tabs-sub mai-sub-nav nav">
+                                                  <li class="nav-item"><a class="nav-link" href="pages-profile.html"><span class="icon s7-user"></span><span class="name">Profile</span></a>
+                                                  </li>
+                                                  <li class="nav-item"><a class="nav-link" href="pages-pricing-tables.html"><span class="icon s7-cash"></span><span class="name">Pricing</span></a>
+                                                  </li>
+                                                  <li class="nav-item"><a class="nav-link" href="pages-invoice.html"><span class="icon s7-wallet"></span><span class="name">Invoice</span></a>
+                                                  </li>
+                                                  <li class="nav-item dropdown parent"><a class="nav-link" href="login.html" data-toggle="dropdown"><span class="icon s7-diamond"></span><span class="name">Login</span></a>
+                                                              <div class="dropdown-menu mai-sub-nav" role="menu"><a class="dropdown-item" href="pages-login.html">Login</a><a class="dropdown-item" href="pages-sign-up.html">Sign Up</a><a class="dropdown-item" href="pages-forgot-password.html">Forgot Password</a>
+                                                              </div>
+                                                  </li>
+                                                  <li class="nav-item dropdown parent"><a class="nav-link" href="mail.html" data-toggle="dropdown"><span class="icon s7-mail"></span><span class="name">Mail</span></a>
+                                                              <div class="dropdown-menu mai-sub-nav" role="menu"><a class="dropdown-item" href="email-inbox.html">Inbox</a><a class="dropdown-item" href="email-detail.html">Detail</a><a class="dropdown-item" href="email-compose.html">Compose</a>
+                                                              </div>
+                                                  </li>
+                                                  <li class="nav-item dropdown parent"><a class="nav-link" href="maps.html" data-toggle="dropdown"><span class="icon s7-map-marker"></span><span class="name">Maps</span></a>
+                                                              <div class="dropdown-menu mai-sub-nav" role="menu"><a class="dropdown-item" href="maps-google.html">Google Maps</a><a class="dropdown-item" href="maps-vector.html">Vector Maps</a>
+                                                              </div>
+                                                  </li>
+                                                  <li class="nav-item dropdown parent"><a class="nav-link" href="extra.html" data-toggle="dropdown"><span class="icon s7-diamond"></span><span class="name">Extra Pages</span></a>
+                                                              <div class="dropdown-menu mai-sub-nav" role="menu"><a class="dropdown-item" href="pages-blank.html">Blank Page</a><a class="dropdown-item" href="pages-blank-header.html">Blank Page Header</a><a class="dropdown-item" href="pages-404.html">404 Page</a><a class="dropdown-item" href="pages-gallery.html">Gallery</a><a class="dropdown-item" href="pages-calendar.html">Calendar</a><a class="dropdown-item" href="pages-timeline.html">Timeline</a><a class="dropdown-item" href="pages-timeline2.html">Timeline v2</a>
+                                                              </div>
+                                                  </li>
+                                      </ul>
+                                    </li>
+                                    <li class="nav-item parent"><a class="nav-link" href="#" role="button" aria-expanded="false"><span class="icon s7-display1"></span><span>Charts</span></a>
+                                      <ul class="mai-nav-tabs-sub mai-sub-nav nav">
+                                                  <li class="nav-item"><a class="nav-link" href="charts-flot.html"><span class="icon s7-graph"></span><span class="name">Flot</span></a>
+                                                  </li>
+                                                  <li class="nav-item"><a class="nav-link" href="charts-sparklines.html"><span class="icon s7-graph1"></span><span class="name">Sparklines</span></a>
+                                                  </li>
+                                                  <li class="nav-item"><a class="nav-link" href="charts-morris.html"><span class="icon s7-graph3"></span><span class="name">Morris.js</span></a>
+                                                  </li>
+                                                  <li class="nav-item"><a class="nav-link" href="charts-chartjs.html"><span class="icon s7-graph2"></span><span class="name">Chart.js</span></a>
+                                                  </li>
+                                      </ul>
+                                    </li>
+                                    <li class="nav-item parent"><a class="nav-link" href="#" role="button" aria-expanded="false"><span class="icon s7-tools"></span><span>Layouts</span></a>
+                                      <ul class="mai-nav-tabs-sub mai-sub-nav nav">
+                                                  <li class="nav-item dropdown parent mega-menu"><a class="nav-link" href="mega-menu.html" data-toggle="dropdown"><span class="icon s7-ribbon"></span><span class="name">Mega Menu</span></a>
+                                                              <div class="dropdown-menu mai-mega-menu mai-sub-nav" role="menu">
+                                                                <div class="mai-mega-menu-row">
+                                                                  <div class="mai-mega-menu-column">
+                                                                              <div class="mai-mega-menu-section parent"><a class="nav-link" href="#"><span class="icon s7-note2"></span><span>Forms</span></a>
+                                                                                <div class="mai-mega-menu-sub-items mai-sub-nav"><a class="dropdown-item" href="form-elements.html">Elements</a><a class="dropdown-item" href="form-validation.html">Validation</a><a class="dropdown-item" href="form-masks.html">Input Masks</a><a class="dropdown-item" href="form-xeditable.html">X Editable</a><a class="dropdown-item" href="form-multiselect.html">Multiselect</a><a class="dropdown-item" href="form-wizard.html">Wizard</a><a class="dropdown-item" href="form-upload.html">Multi Upload</a>
+                                                                                </div>
+                                                                              </div>
+                                                                  </div>
+                                                                  <div class="mai-mega-menu-column">
+                                                                              <div class="mai-mega-menu-section parent"><a class="nav-link" href="#"><span class="icon s7-keypad"></span><span>Tables</span></a>
+                                                                                <div class="mai-mega-menu-sub-items mai-sub-nav"><a class="dropdown-item" href="tables-general.html">General</a><a class="dropdown-item" href="tables-datatables.html">Datatables</a>
+                                                                                </div>
+                                                                              </div>
+                                                                  </div>
+                                                                  <div class="mai-mega-menu-column">
+                                                                              <div class="mai-mega-menu-section parent"><a class="nav-link" href="#"><span class="icon s7-bookmarks"></span><span>Pages</span></a>
+                                                                                <div class="mai-mega-menu-sub-items mai-sub-nav"><a class="dropdown-item" href="pages-login.html">Login</a><a class="dropdown-item" href="pages-sign-up.html">Sign Up</a><a class="dropdown-item" href="pages-forgot-password.html">Forgot Password</a><a class="dropdown-item" href="pages-blank.html">Blank Page</a><a class="dropdown-item" href="pages-calendar.html">Calendar</a><a class="dropdown-item" href="pages-gallery.html">Gallery</a><a class="dropdown-item" href="pages-pricing-tables.html">Pricing Tables</a><a class="dropdown-item" href="pages-invoice.html">Invoice</a><a class="dropdown-item" href="pages-profile.html">Profile</a><a class="dropdown-item" href="pages-404.html">404 Page</a>
+                                                                                </div>
+                                                                              </div>
+                                                                  </div>
+                                                                  <div class="mai-mega-menu-column">
+                                                                              <div class="mai-mega-menu-section parent"><a class="nav-link" href="#"><span class="icon s7-map"></span><span>Maps</span></a>
+                                                                                <div class="mai-mega-menu-sub-items mai-sub-nav"><a class="dropdown-item" href="maps-google.html">Google Maps</a><a class="dropdown-item" href="maps-vector.html">Vector Maps</a>
+                                                                                </div>
+                                                                              </div>
+                                                                              <div class="mai-mega-menu-section parent"><a class="nav-link" href="#"><span class="icon s7-mail"></span><span>Mail</span></a>
+                                                                                <div class="mai-mega-menu-sub-items mai-sub-nav"><a class="dropdown-item" href="email-inbox.html">Inbox</a><a class="dropdown-item" href="email-detail.html">Detail</a><a class="dropdown-item" href="email-compose.html">Compose</a>
+                                                                                </div>
+                                                                              </div>
+                                                                  </div>
+                                                                </div>
+                                                              </div>
+                                                  </li>
+                                                  <li class="nav-item"><a class="nav-link" href="layout-logo-mobile.html"><span class="icon s7-leaf"></span><span class="name">Logo Mobile</span></a>
+                                                  </li>
+                                      </ul>
+                                    </li>
+                        </ul>
+                      </div>
+                    </nav>
+          <div class="search">
+            <input type="text" placeholder="Search..." name="q"><span class="s7-search"></span>
+          </div>
+        </div>
+      </nav>
+      <div class="main-content container">
+        <div class="row">
+          <div class="col-sm-6">
+            <div class="tab-container mb-5">
+              <ul class="nav nav-tabs" role="tablist">
+                <li class="nav-item"><a class="nav-link active" href="#home" data-toggle="tab" role="tab">Home</a></li>
+                <li class="nav-item"><a class="nav-link" href="#profile" data-toggle="tab" role="tab">Profile</a></li>
+                <li class="nav-item"><a class="nav-link" href="#messages" data-toggle="tab" role="tab">Messages</a></li>
+              </ul>
+              <div class="tab-content">
+                <div class="tab-pane active" id="home" role="tabpanel">
+                  <h5>Top Tabs</h5>
+                  <p> Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut sed vestibulur quam. Pellentesque non feugiat neque, non volutpat orci. Integer ligula lacus, ornare eget lobortis ut, molestie quis risus. </p>
+                  <p> Fusce justo nibh, hendrerit id hendrerit ut, rhoncus sed nulla. Maecenas nibh eu nulla ultrices accumsan et quis augue. Etiam lobortis velit non ex pellentesque, quis volutpat metus viverra. In viverra hendrerit lacus. </p>
+                </div>
+                <div class="tab-pane" id="profile" role="tabpanel">
+                  <p> Lorem ipsum dolor sit amet, consectetur adipisicing elit. Minima praesentium laudantium ipsa, enim maxime placeat, dolores quos sequi nisi iste velit perspiciatis rerum eveniet voluptate laboriosam perferendis ipsum. Expedita, maiores.</p>
+                  <p> Consectetur adipisicing elit. Minima praesentium laudantium ipsa, enim maxime placeat, dolores quos sequi nisi iste velit perspiciatis rerum eveniet voluptate laboriosam perferendis ipsum. Expedita, maiores.</p>
+                </div>
+                <div class="tab-pane" id="messages" role="tabpanel">
+                  <p>Consectetur adipisicing elit. Ipsam ut praesentium, voluptate quidem necessitatibus quam nam officia soluta aperiam, recusandae.</p>
+                  <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit. Quos facilis laboriosam, vitae ipsum tenetur atque vel repellendus culpa reiciendis velit quas, unde soluta quidem voluptas ipsam, rerum fuga placeat rem error voluptate eligendi modi. Delectus, iure sit impedit? Facere provident expedita itaque, magni, quas assumenda numquam eum! Sequi deserunt, rerum.</p><a href="#">Read more</a>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="col-sm-6">
+            <div class="tab-container mb-5">
+              <ul class="nav nav-tabs nav-tabs-dark" role="tablist">
+                <li class="nav-item"><a class="nav-link active" href="#d-home" data-toggle="tab" role="tab">Home</a></li>
+                <li class="nav-item"><a class="nav-link" href="#d-profile" data-toggle="tab" role="tab">Profile</a></li>
+                <li class="nav-item"><a class="nav-link" href="#d-messages" data-toggle="tab" role="tab">Messages</a></li>
+              </ul>
+              <div class="tab-content">
+                <div class="tab-pane active" id="d-home" role="tabpanel">
+                  <h5>Top Tabs</h5>
+                  <p> Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut sed vestibulur quam. Pellentesque non feugiat neque, non volutpat orci. Integer ligula lacus, ornare eget lobortis ut, molestie quis risus. </p>
+                  <p> Fusce justo nibh, hendrerit id hendrerit ut, rhoncus sed nulla. Maecenas nibh eu nulla ultrices accumsan et quis augue. Etiam lobortis velit non ex pellentesque, quis volutpat metus viverra. In viverra hendrerit lacus. </p>
+                </div>
+                <div class="tab-pane" id="d-profile" role="tabpanel">
+                  <p> Lorem ipsum dolor sit amet, consectetur adipisicing elit. Minima praesentium laudantium ipsa, enim maxime placeat, dolores quos sequi nisi iste velit perspiciatis rerum eveniet voluptate laboriosam perferendis ipsum. Expedita, maiores.</p>
+                  <p> Consectetur adipisicing elit. Minima praesentium laudantium ipsa, enim maxime placeat, dolores quos sequi nisi iste velit perspiciatis rerum eveniet voluptate laboriosam perferendis ipsum. Expedita, maiores.</p>
+                </div>
+                <div class="tab-pane" id="d-messages" role="tabpanel">
+                  <p>Consectetur adipisicing elit. Ipsam ut praesentium, voluptate quidem necessitatibus quam nam officia soluta aperiam, recusandae.</p>
+                  <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit. Quos facilis laboriosam, vitae ipsum tenetur atque vel repellendus culpa reiciendis velit quas, unde soluta quidem voluptas ipsam, rerum fuga placeat rem error voluptate eligendi modi. Delectus, iure sit impedit? Facere provident expedita itaque, magni, quas assumenda numquam eum! Sequi deserunt, rerum.</p><a href="#">Read more</a>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="row">
+          <div class="col-sm-6">
+            <div class="tab-container mb-5">
+              <ul class="nav nav-tabs nav-tabs-primary" role="tablist">
+                <li class="nav-item"><a class="nav-link active" href="#p-home" data-toggle="tab" role="tab">Home</a></li>
+                <li class="nav-item"><a class="nav-link" href="#p-profile" data-toggle="tab" role="tab">Profile</a></li>
+                <li class="nav-item"><a class="nav-link" href="#p-messages" data-toggle="tab" role="tab">Messages</a></li>
+              </ul>
+              <div class="tab-content">
+                <div class="tab-pane active" id="p-home" role="tabpanel">
+                  <h5>Top Tabs</h5>
+                  <p> Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut sed vestibulur quam. Pellentesque non feugiat neque, non volutpat orci. Integer ligula lacus, ornare eget lobortis ut, molestie quis risus. </p>
+                  <p> Fusce justo nibh, hendrerit id hendrerit ut, rhoncus sed nulla. Maecenas nibh eu nulla ultrices accumsan et quis augue. Etiam lobortis velit non ex pellentesque, quis volutpat metus viverra. In viverra hendrerit lacus. </p>
+                </div>
+                <div class="tab-pane" id="p-profile" role="tabpanel">
+                  <p> Lorem ipsum dolor sit amet, consectetur adipisicing elit. Minima praesentium laudantium ipsa, enim maxime placeat, dolores quos sequi nisi iste velit perspiciatis rerum eveniet voluptate laboriosam perferendis ipsum. Expedita, maiores.</p>
+                  <p> Consectetur adipisicing elit. Minima praesentium laudantium ipsa, enim maxime placeat, dolores quos sequi nisi iste velit perspiciatis rerum eveniet voluptate laboriosam perferendis ipsum. Expedita, maiores.</p>
+                </div>
+                <div class="tab-pane" id="p-messages" role="tabpanel">
+                  <p>Consectetur adipisicing elit. Ipsam ut praesentium, voluptate quidem necessitatibus quam nam officia soluta aperiam, recusandae.</p>
+                  <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit. Quos facilis laboriosam, vitae ipsum tenetur atque vel repellendus culpa reiciendis velit quas, unde soluta quidem voluptas ipsam, rerum fuga placeat rem error voluptate eligendi modi. Delectus, iure sit impedit? Facere provident expedita itaque, magni, quas assumenda numquam eum! Sequi deserunt, rerum.</p><a href="#">Read more</a>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="col-sm-6">
+            <div class="tab-container mb-5">
+              <ul class="nav nav-tabs nav-tabs-dark" role="tablist">
+                <li class="nav-item"><a class="nav-link active" href="#di-home" data-toggle="tab" role="tab"><span class="icon s7-home"></span> Home</a></li>
+                <li class="nav-item"><a class="nav-link" href="#di-profile" data-toggle="tab" role="tab"><span class="icon s7-user"></span> Profile</a></li>
+                <li class="nav-item"><a class="nav-link" href="#di-messages" data-toggle="tab" role="tab"><span class="icon s7-comment"></span> Messages</a></li>
+              </ul>
+              <div class="tab-content">
+                <div class="tab-pane active" id="di-home" role="tabpanel">
+                  <h5>Top Tabs</h5>
+                  <p> Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut sed vestibulur quam. Pellentesque non feugiat neque, non volutpat orci. Integer ligula lacus, ornare eget lobortis ut, molestie quis risus. </p>
+                  <p> Fusce justo nibh, hendrerit id hendrerit ut, rhoncus sed nulla. Maecenas nibh eu nulla ultrices accumsan et quis augue. Etiam lobortis velit non ex pellentesque, quis volutpat metus viverra. In viverra hendrerit lacus. </p>
+                </div>
+                <div class="tab-pane" id="di-profile" role="tabpanel">
+                  <p> Lorem ipsum dolor sit amet, consectetur adipisicing elit. Minima praesentium laudantium ipsa, enim maxime placeat, dolores quos sequi nisi iste velit perspiciatis rerum eveniet voluptate laboriosam perferendis ipsum. Expedita, maiores.</p>
+                  <p> Consectetur adipisicing elit. Minima praesentium laudantium ipsa, enim maxime placeat, dolores quos sequi nisi iste velit perspiciatis rerum eveniet voluptate laboriosam perferendis ipsum. Expedita, maiores.</p>
+                </div>
+                <div class="tab-pane" id="di-messages" role="tabpanel">
+                  <p>Consectetur adipisicing elit. Ipsam ut praesentium, voluptate quidem necessitatibus quam nam officia soluta aperiam, recusandae.</p>
+                  <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit. Quos facilis laboriosam, vitae ipsum tenetur atque vel repellendus culpa reiciendis velit quas, unde soluta quidem voluptas ipsam, rerum fuga placeat rem error voluptate eligendi modi. Delectus, iure sit impedit? Facere provident expedita itaque, magni, quas assumenda numquam eum! Sequi deserunt, rerum.</p><a href="#">Read more</a>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="row">
+          <div class="col-sm-6">
+            <div class="tab-container mb-5">
+              <ul class="nav nav-tabs tab-icons" role="tablist">
+                <li class="nav-item"><a class="nav-link active" href="#t-home" data-toggle="tab" role="tab"><span class="icon s7-home"></span></a></li>
+                <li class="nav-item"><a class="nav-link" href="#t-profile" data-toggle="tab" role="tab"><span class="icon s7-user"></span></a></li>
+                <li class="nav-item"><a class="nav-link" href="#t-messages" data-toggle="tab" role="tab"><span class="icon s7-comment"></span></a></li>
+              </ul>
+              <div class="tab-content">
+                <div class="tab-pane active fade show" id="t-home" role="tabpanel">
+                  <h5>Top Tabs</h5>
+                  <p> Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut sed vestibulur quam. Pellentesque non feugiat neque, non volutpat orci. Integer ligula lacus, ornare eget lobortis ut, molestie quis risus. </p>
+                  <p> Fusce justo nibh, hendrerit id hendrerit ut, rhoncus sed nulla. Maecenas nibh eu nulla ultrices accumsan et quis augue. Etiam lobortis velit non ex pellentesque, quis volutpat metus viverra. In viverra hendrerit lacus. </p>
+                </div>
+                <div class="tab-pane fade" id="t-profile" role="tabpanel">
+                  <p> Lorem ipsum dolor sit amet, consectetur adipisicing elit. Minima praesentium laudantium ipsa, enim maxime placeat, dolores quos sequi nisi iste velit perspiciatis rerum eveniet voluptate laboriosam perferendis ipsum. Expedita, maiores.</p>
+                  <p> Consectetur adipisicing elit. Minima praesentium laudantium ipsa, enim maxime placeat, dolores quos sequi nisi iste velit perspiciatis rerum eveniet voluptate laboriosam perferendis ipsum. Expedita, maiores.</p>
+                </div>
+                <div class="tab-pane fade" id="t-messages" role="tabpanel">
+                  <p>Consectetur adipisicing elit. Ipsam ut praesentium, voluptate quidem necessitatibus quam nam officia soluta aperiam, recusandae.</p>
+                  <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit. Quos facilis laboriosam, vitae ipsum tenetur atque vel repellendus culpa reiciendis velit quas, unde soluta quidem voluptas ipsam, rerum fuga placeat rem error voluptate eligendi modi. Delectus, iure sit impedit? Facere provident expedita itaque, magni, quas assumenda numquam eum! Sequi deserunt, rerum.</p><a href="#">Read more</a>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="col-sm-6">
+            <div class="tab-container tab-left mb-5">
+              <ul class="nav nav-tabs nav-tabs-dark tab-icons">
+                <li class="nav-item"><a class="nav-link active" href="#l-home" data-toggle="tab" role="tab"><span class="icon s7-home"></span></a></li>
+                <li class="nav-item"><a class="nav-link" href="#l-profile" data-toggle="tab" role="tab"><span class="icon s7-user"></span></a></li>
+                <li class="nav-item"><a class="nav-link" href="#l-messages" data-toggle="tab" role="tab"><span class="icon s7-comment"></span></a></li>
+              </ul>
+              <div class="tab-content">
+                <div class="tab-pane active fade show" id="l-home" role="tabpanel">
+                  <h5>Left Tabs</h5>
+                  <p> Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut sed vestibulur quam. Pellentesque non feugiat neque, non volutpat orci. Integer ligula lacus, ornare eget lobortis ut, molestie quis risus. </p>
+                  <p> Fusce justo nibh, hendrerit id hendrerit ut, rhoncus sed nulla. Maecenas nibh eu nulla ulvtrices accumsan et quis augue. Etiam lobortis velit non ex pellentesque, quis volutpat metus viverra. In viverra hendrerit lacus. </p>
+                </div>
+                <div class="tab-pane fade" id="l-profile" role="tabpanel">
+                  <h3>Messages</h3>
+                  <p> Consectetur adipisicing elit. Ad aperiam dolore veniam mollitia consectetur aut. Cumque sunt consequatur, officiis voluptatum quas atque magnam animi eaque facere cupiditate quos ad totam saepe porro nostrum tenetur. Assumenda esse quidem, sed vel dolore quisquam fuga culpa non, ducimus, impedit fugiat vero similique recusandae?</p>
+                  <p> Lorem ipsum dolor sit amet, consectetur adipisicing elit. Ad aperiam dolore veniam mollitia consectetur aut. Cumque sunt consequatur, officiis voluptatum quas atque magnam animi eaque facere cupiditate quos ad totam saepe porro nostrum tenetur. Assumenda esse quidem, sed vel dolore quisquam fuga culpa non, ducimus, impedit fugiat vero similique recusandae?</p>
+                </div>
+                <div class="tab-pane fade" id="l-messages" role="tabpanel">
+                  <h3>Typography</h3>
+                  <p>Consectetur adipisicing elit. Ipsam ut praesentium, voluptate quidem necessitatibus quam nam officia soluta aperiam, recusandae.</p>
+                  <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit. Quos facilis laboriosam, vitae ipsum tenetur atque vel repellendus culpa reiciendis velit quas, unde soluta quidem voluptas ipsam, rerum fuga placeat rem error voluptate eligendi modi. Delectus, iure sit impedit? Facere provident expedita itaque, magni, quas assumenda numquam eum! Sequi deserunt, rerum.</p><a href="#">Read more</a>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="row">
+          <div class="col-sm-6">
+            <div class="accordion" id="accordion">
+              <div class="card">
+                <div class="card-header" id="headingOne">
+                  <button class="btn" data-toggle="collapse" data-target="#collapseOne" aria-expanded="true" aria-controls="collapseOne"><span class="icon s7-angle-right"> </span>1. Basic Accordion</button>
+                </div>
+                <div class="collapse show" id="collapseOne" aria-labelledby="headingOne" data-parent="#accordion">
+                  <div class="card-block">
+                    <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut sed vestiblum quam. Pellentesque non feugiat neque, non volutpat orci. Integer ligula lacus, ornare eget lobortis ut, molestie quis risus.</p>
+                  </div>
+                </div>
+              </div>
+              <div class="card">
+                <div class="card-header" id="headingTwo">
+                  <button class="btn" data-toggle="collapse" data-target="#collapseTwo" aria-expanded="false" aria-controls="collapsetwo"><span class="icon s7-angle-right"> </span>2. Collapsible Group Item</button>
+                </div>
+                <div class="collapse" id="collapseTwo" aria-labelledby="headingTwo" data-parent="#accordion">
+                  <div class="card-block">
+                    <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut sed vestiblum quam. Pellentesque non feugiat neque, non volutpat orci. Integer ligula lacus, ornare eget lobortis ut, molestie quis risus.</p>
+                  </div>
+                </div>
+              </div>
+              <div class="card">
+                <div class="card-header" id="headingThree">
+                  <button class="btn" data-toggle="collapse" data-target="#collapseThree" aria-expanded="false" aria-controls="collapseThree"><span class="icon s7-angle-right"> </span>3. Collapsible Group Item</button>
+                </div>
+                <div class="collapse" id="collapseThree" aria-labelledby="headingThree" data-parent="#accordion">
+                  <div class="card-block">
+                    <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut sed vestiblum quam. Pellentesque non feugiat neque, non volutpat orci. Integer ligula lacus, ornare eget lobortis ut, molestie quis risus.</p>
+                  </div>
+                </div>
+              </div>
+              <div class="card">
+                <div class="card-header" id="headingFour">
+                  <button class="btn" data-toggle="collapse" data-target="#collapseFour" aria-expanded="false" aria-controls="collapseFour"><span class="icon s7-angle-right"> </span>4. Collapsible Group Item</button>
+                </div>
+                <div class="collapse" id="collapseFour" aria-labelledby="headingFour" data-parent="#accordion">
+                  <div class="card-block">
+                    <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut sed vestiblum quam. Pellentesque non feugiat neque, non volutpat orci. Integer ligula lacus, ornare eget lobortis ut, molestie quis risus.</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="col-sm-6">
+            <div class="accordion accordion-dark" id="accordion2">
+              <div class="card">
+                <div class="card-header" id="headingOne2">
+                  <button class="btn" data-toggle="collapse" data-target="#collapseOne2" aria-expanded="true" aria-controls="collapseOne2"><span class="icon s7-angle-right"> </span>1. Basic Dark Accordion</button>
+                </div>
+                <div class="collapse show" id="collapseOne2" aria-labelledby="headingOne2" data-parent="#accordion2">
+                  <div class="card-block">
+                    <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut sed vestiblum quam. Pellentesque non feugiat neque, non volutpat orci. Integer ligula lacus, ornare eget lobortis ut, molestie quis risus.      </p>
+                  </div>
+                </div>
+              </div>
+              <div class="card">
+                <div class="card-header" id="headingTwo2">
+                  <button class="btn" data-toggle="collapse" data-target="#collapseTwo2" aria-expanded="false" aria-controls="collapsetwo2"><span class="icon s7-angle-right"> </span>2. Collapsible Group Item</button>
+                </div>
+                <div class="collapse" id="collapseTwo2" aria-labelledby="headingTwo2" data-parent="#accordion2">
+                  <div class="card-block">
+                    <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut sed vestiblum quam. Pellentesque non feugiat neque, non volutpat orci. Integer ligula lacus, ornare eget lobortis ut, molestie quis risus.</p>
+                  </div>
+                </div>
+              </div>
+              <div class="card">
+                <div class="card-header" id="headingThree2">
+                  <button class="btn" data-toggle="collapse" data-target="#collapseThree2" aria-expanded="false" aria-controls="collapseThree2"><span class="icon s7-angle-right"> </span>3. Collapsible Group Item</button>
+                </div>
+                <div class="collapse" id="collapseThree2" aria-labelledby="headingThree2" data-parent="#accordion2">
+                  <div class="card-block">
+                    <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut sed vestiblum quam. Pellentesque non feugiat neque, non volutpat orci. Integer ligula lacus, ornare eget lobortis ut, molestie quis risus.</p>
+                  </div>
+                </div>
+              </div>
+              <div class="card">
+                <div class="card-header" id="headingFour2">
+                  <button class="btn" data-toggle="collapse" data-target="#collapseFour2" aria-expanded="false" aria-controls="collapseFour2"><span class="icon s7-angle-right"> </span>4. Collapsible Group Item</button>
+                </div>
+                <div class="collapse" id="collapseFour2" aria-labelledby="headingFour2" data-parent="#accordion2">
+                  <div class="card-block">
+                    <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut sed vestiblum quam. Pellentesque non feugiat neque, non volutpat orci. Integer ligula lacus, ornare eget lobortis ut, molestie quis risus.</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <script src="assets/lib/jquery/jquery.min.js" type="text/javascript"></script>
+    <script src="assets/lib/perfect-scrollbar/js/perfect-scrollbar.min.js" type="text/javascript"></script>
+    <script src="assets/lib/bootstrap/dist/js/bootstrap.bundle.min.js" type="text/javascript"></script>
+    <script src="assets/js/app.js" type="text/javascript"></script>
+    <script type="text/javascript">
+      $(document).ready(function(){
+      	//-initialize the javascript
+      	App.init();
+      });
+      
+    </script>
+  </body>
+</html>

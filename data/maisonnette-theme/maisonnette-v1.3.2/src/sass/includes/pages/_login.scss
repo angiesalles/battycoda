@@ -1,0 +1,49 @@
+.mai-login {
+
+	@include phone {
+		height: 100%;
+	}
+
+	.main-content {
+		padding: 0;
+	}
+
+	// Input placeholder
+	@include placeholder-color( rgba(255,255,255,0.4) );
+}
+
+.login-submit {
+	padding: 2.4rem 0 2.5rem;
+}
+
+.login-tools {
+
+	> div {
+		padding: 0;
+	}
+}
+
+.login-remember {
+	
+	.custom-control-label::before {
+		background-color: transparent;
+		border-width: 2px;
+		border-color: lighten(theme-color("dark"), 10%);
+	}
+	
+	.custom-control-input:checked ~ .custom-control-label::before,
+	.custom-control-input:active ~ .custom-control-label::before {
+		background-color: transparent;
+	}
+}
+
+.login-forgot-password {
+	a {
+		color: theme-color("light");
+		opacity: .8;
+
+		&:hover {
+			opacity: 1;
+		}
+	}
+}

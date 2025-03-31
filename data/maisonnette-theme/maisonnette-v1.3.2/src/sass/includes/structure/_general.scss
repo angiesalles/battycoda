@@ -1,0 +1,21 @@
+html {
+	font-size: $font-size-root;
+	height: 100%;
+}
+
+body {
+	height: 100%;
+}
+
+a {
+	outline: none;
+
+	&:hover, &:focus{
+		text-decoration: none;
+		outline: none;
+	}
+}
+
+p {
+	font-size: $paragraph-size;
+}

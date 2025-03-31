@@ -1,0 +1,602 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="">
+    <meta name="author" content="">
+    <link rel="shortcut icon" href="assets/img/favicon.png">
+    <title>Maisonnette</title>
+    <link rel="stylesheet" type="text/css" href="assets/lib/stroke-7/style.css"/>
+    <link rel="stylesheet" type="text/css" href="assets/lib/perfect-scrollbar/css/perfect-scrollbar.css"/>
+    <link rel="stylesheet" href="assets/css/app.css" type="text/css"/>
+  </head>
+  <body>
+    <nav class="navbar navbar-expand navbar-dark mai-top-header">
+      <div class="container"><a class="navbar-brand" href="#"></a>
+        <ul class="nav navbar-nav mai-top-nav">
+          <li class="nav-item"><a class="nav-link" href="index.html">Home</a></li>
+          <li class="nav-item"><a class="nav-link" href="#">About</a></li>
+          <li class="nav-item dropdown"><a class="nav-link dropdown-toggle" href="#" data-toggle="dropdown" role="button" aria-expanded="false">Services<span class="angle-down s7-angle-down"></span></a>
+            <div class="dropdown-menu" role="menu"><a class="dropdown-item" href="#">Information</a><a class="dropdown-item" href="#">Company</a><a class="dropdown-item" href="#">Documentation</a><a class="dropdown-item" href="#">API Settings</a><a class="dropdown-item" href="#">Export Info</a></div>
+          </li>
+          <li class="nav-item"><a class="nav-link" href="#">Support</a></li>
+        </ul>
+        <ul class="navbar-nav float-lg-right mai-icons-nav">
+          <li class="dropdown nav-item mai-messages"><a class="nav-link dropdown-toggle" href="#" data-toggle="dropdown" role="button" aria-expanded="false"><span class="icon s7-comment"></span></a>
+            <ul class="dropdown-menu">
+              <li>
+                <div class="title">Messages</div>
+                <div class="mai-scroller-messages">
+                  <div class="content">
+                    <ul>
+                      <li><a href="#">
+                          <div class="img"><img src="assets/img/avatars/img1.jpg" alt="avatar"></div>
+                          <div class="content"><span class="date">16 Sept</span><span class="name">Victor Jara</span><span class="desc">The song that has been brave, will always be the new song.</span></div></a></li>
+                      <li><a href="#">
+                          <div class="img"><img src="assets/img/avatars/img2.jpg" alt="Avatar"></div>
+                          <div class="content"><span class="date">4 Sept</span><span class="name">Gustavo Cerati</span><span class="desc">You will see me fly across the city of fury where no one knows of me.</span></div></a></li>
+                      <li><a href="#">
+                          <div class="img"><img src="assets/img/avatars/img3.jpg" alt="Avatar"></div>
+                          <div class="content"><span class="date">13 Aug</span><span class="name">Jaime Garzón</span><span class="desc">Now everything came back to the abnormality.</span></div></a></li>
+                      <li><a href="#">
+                          <div class="img"><img src="assets/img/avatars/img4.jpg" alt="Avatar"></div>
+                          <div class="content"><span class="date">13 Aug</span><span class="name">Allen Collins</span><span class="desc">Things just couldn't even be the same 'Cause I'm as free as a bird now.</span></div></a></li>
+                    </ul>
+                  </div>
+                </div>
+                <div class="footer"><a href="#">View all messages</a></div>
+              </li>
+            </ul>
+          </li>
+          <li class="dropdown nav-item mai-notifications"><a class="nav-link dropdown-toggle" href="#" data-toggle="dropdown" role="button" aria-expanded="false"><span class="icon s7-bell"></span><span class="indicator"></span></a>
+            <ul class="dropdown-menu">
+              <li>
+                <div class="title">Notifications</div>
+                <div class="mai-scroller-notifications">
+                  <div class="content">
+                    <ul>
+                      <li><a href="#">
+                          <div class="icon"><span class="s7-check"></span></div>
+                          <div class="content"><span class="desc">This is a new message for my dear friend <strong>Rob</strong>.</span><span class="date">10 minutes ago</span></div></a></li>
+                      <li><a href="#">
+                          <div class="icon"><span class="s7-add-user"></span></div>
+                          <div class="content"><span class="desc">You have a new fiend request pending from <strong>John Doe</strong>.</span><span class="date">2 days ago</span></div></a></li>
+                      <li><a href="#">
+                          <div class="icon"><span class="s7-graph1"></span></div>
+                          <div class="content"><span class="desc">Your site visits have increased <strong>15.5%</strong> more since the last week.</span><span class="date">2 hours ago</span></div></a></li>
+                      <li><a href="#">
+                          <div class="icon"><span class="s7-check"></span></div>
+                          <div class="content"><span class="desc">This is a new message for my dear friend <strong>Rob</strong>.</span><span class="date">10 minutes ago</span></div></a></li>
+                    </ul>
+                  </div>
+                </div>
+                <div class="footer"><a href="#">View all notifications</a></div>
+              </li>
+            </ul>
+          </li>
+          <li class="dropdown nav-item mai-settings"><a class="nav-link dropdown-toggle" href="#" data-toggle="dropdown" role="button" aria-expanded="false"><span class="icon s7-settings"></span></a>
+            <ul class="dropdown-menu">
+              <li>
+                <div class="title">Settings</div>
+                <div class="content">
+                  <ul>
+                    <li><span>Enable Notifications</span>
+                      <div class="float-right">
+                        <div class="switch-button switch-button-sm">
+                          <input type="checkbox" checked="" name="check" id="switch1"><span>
+                            <label for="switch1"></label></span>
+                        </div>
+                      </div>
+                    </li>
+                    <li><span>Auto Commit</span>
+                      <div class="float-right">
+                        <div class="switch-button switch-button-sm">
+                          <input type="checkbox" checked="" name="check2" id="switch2"><span>
+                            <label for="switch2"></label></span>
+                        </div>
+                      </div>
+                    </li>
+                    <li><span>Sidebar</span>
+                      <div class="float-right">
+                        <div class="switch-button switch-button-sm">
+                          <input type="checkbox" name="check3" id="switch3"><span>
+                            <label for="switch3"></label></span>
+                        </div>
+                      </div>
+                    </li>
+                    <li><span>Full-width Layout</span>
+                      <div class="float-right">
+                        <div class="switch-button switch-button-sm">
+                          <input type="checkbox" checked="" name="check4" id="switch4"><span>
+                            <label for="switch4"></label></span>
+                        </div>
+                      </div>
+                    </li>
+                  </ul>
+                </div>
+              </li>
+            </ul>
+          </li>
+        </ul>
+        <ul class="nav navbar-nav float-lg-right mai-user-nav">
+          <li class="dropdown nav-item"><a class="dropdown-toggle nav-link" href="#" data-toggle="dropdown" role="button" aria-expanded="false"><img src="assets/img/avatar.jpg" alt="Avatar"><span class="user-name">Violeta Parra</span><span class="angle-down s7-angle-down"></span></a>
+            <div class="dropdown-menu" role="menu"><a class="dropdown-item" href="#"><span class="icon s7-home"></span>My Account</a><a class="dropdown-item" href="pages-profile.html"><span class="icon s7-user"></span>Profile</a><a class="dropdown-item" href="#"><span class="icon s7-cash"></span>Billing</a><a class="dropdown-item" href="#"><span class="icon s7-tools"></span>Settings</a><a class="dropdown-item" href="pages-login.html"><span class="icon s7-power"></span>Log Out</a></div>
+          </li>
+        </ul>
+      </div>
+    </nav>
+    <div class="mai-wrapper">
+      <nav class="navbar navbar-expand-lg mai-sub-header">
+        <div class="container">
+                    <nav class="navbar navbar-expand-md">
+                      <button class="navbar-toggler hidden-md-up collapsed" type="button" data-toggle="collapse" data-target="#mai-navbar-collapse" aria-controls="mai-navbar-collapse" aria-expanded="false" aria-label="Toggle navigation">       <span class="icon-bar"><span></span><span></span><span></span></span></button>
+                      <div class="navbar-collapse collapse mai-nav-tabs" id="mai-navbar-collapse">
+                        <ul class="nav navbar-nav">
+                                    <li class="nav-item parent open"><a class="nav-link" href="#" role="button" aria-expanded="false"><span class="icon s7-home"></span><span>Home</span></a>
+                                      <ul class="mai-nav-tabs-sub mai-sub-nav nav">
+                                                  <li class="nav-item"><a class="nav-link" href="index.html"><span class="icon s7-monitor"></span><span class="name">Dashboard</span></a>
+                                                  </li>
+                                                  <li class="nav-item dropdown parent"><a class="nav-link" href="ui-elements.html" data-toggle="dropdown"><span class="icon s7-diamond"></span><span class="name">UI Elements</span></a>
+                                                              <div class="dropdown-menu mai-sub-nav" role="menu"><a class="dropdown-item active" href="ui-general.html">General</a><a class="dropdown-item" href="ui-cards.html">Cards</a><a class="dropdown-item" href="ui-buttons.html">Buttons</a><a class="dropdown-item" href="ui-typography.html">Typography</a><a class="dropdown-item" href="ui-grid.html">Grid</a>
+                                                              </div>
+                                                  </li>
+                                                  <li class="nav-item dropdown parent"><a class="nav-link" href="ui-elements.html" data-toggle="dropdown"><span class="icon s7-diamond"></span><span class="name">Components</span></a>
+                                                              <div class="dropdown-menu mai-sub-nav" role="menu"><a class="dropdown-item" href="ui-alerts.html">Alerts</a><a class="dropdown-item" href="ui-icons.html">Icons</a><a class="dropdown-item" href="ui-tabs-accordions.html">Tabs &amp; Accordions</a>
+                                                              </div>
+                                                  </li>
+                                                  <li class="nav-item dropdown parent"><a class="nav-link" href="plugins.html" data-toggle="dropdown"><span class="icon s7-plugin"></span><span class="name">Plugins</span></a>
+                                                              <div class="dropdown-menu mai-sub-nav" role="menu"><a class="dropdown-item" href="ui-modals.html">Modals</a><a class="dropdown-item" href="ui-nestable-lists.html">Nestable Lists</a><a class="dropdown-item" href="ui-notifications.html">Notifications</a><a class="dropdown-item" href="ui-sweetalert2.html">Sweet Alerts2</a>
+                                                              </div>
+                                                  </li>
+                                                  <li class="nav-item"><a class="nav-link" href="documentation.html"><span class="icon s7-notebook"></span><span class="name">Documentation</span></a>
+                                                  </li>
+                                      </ul>
+                                    </li>
+                                    <li class="nav-item parent"><a class="nav-link" href="#" role="button" aria-expanded="false"><span class="icon s7-rocket"></span><span>Forms</span></a>
+                                      <ul class="mai-nav-tabs-sub mai-sub-nav nav">
+                                                  <li class="nav-item"><a class="nav-link" href="form-elements.html"><span class="name">Elements</span></a>
+                                                  </li>
+                                                  <li class="nav-item"><a class="nav-link" href="form-validation.html"><span class="name">Validation</span></a>
+                                                  </li>
+                                                  <li class="nav-item"><a class="nav-link" href="form-masks.html"><span class="name">Masks</span></a>
+                                                  </li>
+                                                  <li class="nav-item"><a class="nav-link" href="form-multiselect.html"><span class="name">Multiselect</span></a>
+                                                  </li>
+                                                  <li class="nav-item"><a class="nav-link" href="form-wizard.html"><span class="name">Wizard</span></a>
+                                                  </li>
+                                                  <li class="nav-item"><a class="nav-link" href="form-upload.html"><span class="name">Upload</span></a>
+                                                  </li>
+                                      </ul>
+                                    </li>
+                                    <li class="nav-item parent"><a class="nav-link" href="#" role="button" aria-expanded="false"><span class="icon s7-diamond"></span><span>Tables</span></a>
+                                      <ul class="mai-nav-tabs-sub mai-sub-nav nav">
+                                                  <li class="nav-item"><a class="nav-link" href="tables-general.html"><span class="icon s7-box2"></span><span class="name">General</span></a>
+                                                  </li>
+                                                  <li class="nav-item"><a class="nav-link" href="tables-datatables.html"><span class="icon s7-box2"></span><span class="name">Data Tables</span></a>
+                                                  </li>
+                                                  <li class="nav-item"><a class="nav-link" href="tables-filters.html"><span class="icon s7-box2"></span><span class="name">Filters</span></a>
+                                                  </li>
+                                      </ul>
+                                    </li>
+                                    <li class="nav-item parent"><a class="nav-link" href="#" role="button" aria-expanded="false"><span class="icon s7-portfolio"></span><span>Pages</span></a>
+                                      <ul class="mai-nav-tabs-sub mai-sub-nav nav">
+                                                  <li class="nav-item"><a class="nav-link" href="pages-profile.html"><span class="icon s7-user"></span><span class="name">Profile</span></a>
+                                                  </li>
+                                                  <li class="nav-item"><a class="nav-link" href="pages-pricing-tables.html"><span class="icon s7-cash"></span><span class="name">Pricing</span></a>
+                                                  </li>
+                                                  <li class="nav-item"><a class="nav-link" href="pages-invoice.html"><span class="icon s7-wallet"></span><span class="name">Invoice</span></a>
+                                                  </li>
+                                                  <li class="nav-item dropdown parent"><a class="nav-link" href="login.html" data-toggle="dropdown"><span class="icon s7-diamond"></span><span class="name">Login</span></a>
+                                                              <div class="dropdown-menu mai-sub-nav" role="menu"><a class="dropdown-item" href="pages-login.html">Login</a><a class="dropdown-item" href="pages-sign-up.html">Sign Up</a><a class="dropdown-item" href="pages-forgot-password.html">Forgot Password</a>
+                                                              </div>
+                                                  </li>
+                                                  <li class="nav-item dropdown parent"><a class="nav-link" href="mail.html" data-toggle="dropdown"><span class="icon s7-mail"></span><span class="name">Mail</span></a>
+                                                              <div class="dropdown-menu mai-sub-nav" role="menu"><a class="dropdown-item" href="email-inbox.html">Inbox</a><a class="dropdown-item" href="email-detail.html">Detail</a><a class="dropdown-item" href="email-compose.html">Compose</a>
+                                                              </div>
+                                                  </li>
+                                                  <li class="nav-item dropdown parent"><a class="nav-link" href="maps.html" data-toggle="dropdown"><span class="icon s7-map-marker"></span><span class="name">Maps</span></a>
+                                                              <div class="dropdown-menu mai-sub-nav" role="menu"><a class="dropdown-item" href="maps-google.html">Google Maps</a><a class="dropdown-item" href="maps-vector.html">Vector Maps</a>
+                                                              </div>
+                                                  </li>
+                                                  <li class="nav-item dropdown parent"><a class="nav-link" href="extra.html" data-toggle="dropdown"><span class="icon s7-diamond"></span><span class="name">Extra Pages</span></a>
+                                                              <div class="dropdown-menu mai-sub-nav" role="menu"><a class="dropdown-item" href="pages-blank.html">Blank Page</a><a class="dropdown-item" href="pages-blank-header.html">Blank Page Header</a><a class="dropdown-item" href="pages-404.html">404 Page</a><a class="dropdown-item" href="pages-gallery.html">Gallery</a><a class="dropdown-item" href="pages-calendar.html">Calendar</a><a class="dropdown-item" href="pages-timeline.html">Timeline</a><a class="dropdown-item" href="pages-timeline2.html">Timeline v2</a>
+                                                              </div>
+                                                  </li>
+                                      </ul>
+                                    </li>
+                                    <li class="nav-item parent"><a class="nav-link" href="#" role="button" aria-expanded="false"><span class="icon s7-display1"></span><span>Charts</span></a>
+                                      <ul class="mai-nav-tabs-sub mai-sub-nav nav">
+                                                  <li class="nav-item"><a class="nav-link" href="charts-flot.html"><span class="icon s7-graph"></span><span class="name">Flot</span></a>
+                                                  </li>
+                                                  <li class="nav-item"><a class="nav-link" href="charts-sparklines.html"><span class="icon s7-graph1"></span><span class="name">Sparklines</span></a>
+                                                  </li>
+                                                  <li class="nav-item"><a class="nav-link" href="charts-morris.html"><span class="icon s7-graph3"></span><span class="name">Morris.js</span></a>
+                                                  </li>
+                                                  <li class="nav-item"><a class="nav-link" href="charts-chartjs.html"><span class="icon s7-graph2"></span><span class="name">Chart.js</span></a>
+                                                  </li>
+                                      </ul>
+                                    </li>
+                                    <li class="nav-item parent"><a class="nav-link" href="#" role="button" aria-expanded="false"><span class="icon s7-tools"></span><span>Layouts</span></a>
+                                      <ul class="mai-nav-tabs-sub mai-sub-nav nav">
+                                                  <li class="nav-item dropdown parent mega-menu"><a class="nav-link" href="mega-menu.html" data-toggle="dropdown"><span class="icon s7-ribbon"></span><span class="name">Mega Menu</span></a>
+                                                              <div class="dropdown-menu mai-mega-menu mai-sub-nav" role="menu">
+                                                                <div class="mai-mega-menu-row">
+                                                                  <div class="mai-mega-menu-column">
+                                                                              <div class="mai-mega-menu-section parent"><a class="nav-link" href="#"><span class="icon s7-note2"></span><span>Forms</span></a>
+                                                                                <div class="mai-mega-menu-sub-items mai-sub-nav"><a class="dropdown-item" href="form-elements.html">Elements</a><a class="dropdown-item" href="form-validation.html">Validation</a><a class="dropdown-item" href="form-masks.html">Input Masks</a><a class="dropdown-item" href="form-xeditable.html">X Editable</a><a class="dropdown-item" href="form-multiselect.html">Multiselect</a><a class="dropdown-item" href="form-wizard.html">Wizard</a><a class="dropdown-item" href="form-upload.html">Multi Upload</a>
+                                                                                </div>
+                                                                              </div>
+                                                                  </div>
+                                                                  <div class="mai-mega-menu-column">
+                                                                              <div class="mai-mega-menu-section parent"><a class="nav-link" href="#"><span class="icon s7-keypad"></span><span>Tables</span></a>
+                                                                                <div class="mai-mega-menu-sub-items mai-sub-nav"><a class="dropdown-item" href="tables-general.html">General</a><a class="dropdown-item" href="tables-datatables.html">Datatables</a>
+                                                                                </div>
+                                                                              </div>
+                                                                  </div>
+                                                                  <div class="mai-mega-menu-column">
+                                                                              <div class="mai-mega-menu-section parent"><a class="nav-link" href="#"><span class="icon s7-bookmarks"></span><span>Pages</span></a>
+                                                                                <div class="mai-mega-menu-sub-items mai-sub-nav"><a class="dropdown-item" href="pages-login.html">Login</a><a class="dropdown-item" href="pages-sign-up.html">Sign Up</a><a class="dropdown-item" href="pages-forgot-password.html">Forgot Password</a><a class="dropdown-item" href="pages-blank.html">Blank Page</a><a class="dropdown-item" href="pages-calendar.html">Calendar</a><a class="dropdown-item" href="pages-gallery.html">Gallery</a><a class="dropdown-item" href="pages-pricing-tables.html">Pricing Tables</a><a class="dropdown-item" href="pages-invoice.html">Invoice</a><a class="dropdown-item" href="pages-profile.html">Profile</a><a class="dropdown-item" href="pages-404.html">404 Page</a>
+                                                                                </div>
+                                                                              </div>
+                                                                  </div>
+                                                                  <div class="mai-mega-menu-column">
+                                                                              <div class="mai-mega-menu-section parent"><a class="nav-link" href="#"><span class="icon s7-map"></span><span>Maps</span></a>
+                                                                                <div class="mai-mega-menu-sub-items mai-sub-nav"><a class="dropdown-item" href="maps-google.html">Google Maps</a><a class="dropdown-item" href="maps-vector.html">Vector Maps</a>
+                                                                                </div>
+                                                                              </div>
+                                                                              <div class="mai-mega-menu-section parent"><a class="nav-link" href="#"><span class="icon s7-mail"></span><span>Mail</span></a>
+                                                                                <div class="mai-mega-menu-sub-items mai-sub-nav"><a class="dropdown-item" href="email-inbox.html">Inbox</a><a class="dropdown-item" href="email-detail.html">Detail</a><a class="dropdown-item" href="email-compose.html">Compose</a>
+                                                                                </div>
+                                                                              </div>
+                                                                  </div>
+                                                                </div>
+                                                              </div>
+                                                  </li>
+                                                  <li class="nav-item"><a class="nav-link" href="layout-logo-mobile.html"><span class="icon s7-leaf"></span><span class="name">Logo Mobile</span></a>
+                                                  </li>
+                                      </ul>
+                                    </li>
+                        </ul>
+                      </div>
+                    </nav>
+          <div class="search">
+            <input type="text" placeholder="Search..." name="q"><span class="s7-search"></span>
+          </div>
+        </div>
+      </nav>
+      <div class="main-content container">
+        <div class="row">
+          <div class="col-md-6">
+            <div class="card card-default">
+              <div class="card-header card-header-divider">Dropdowns<span class="card-subtitle">These are the default bootstrap dropdowns components</span></div>
+              <div class="card-body">
+                <h5 class="mb-4">Basic dropdown</h5>
+                <div class="row dropdown-showcase">
+                  <div class="col-sm-6 col-md-12 col-lg-6 mb-4 mb-lg-0">
+                    <div class="btn-hspace mx-auto">
+                      <button class="btn btn-secondary d-block active dropdown-toggle" type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Default <span class="icon-dropdown s7-angle-down"></span></button>
+                      <div class="dropdown-menu" style="display: block; position: relative; z-index: 0;" role="menu"><a class="dropdown-item" href="#">Action</a><a class="dropdown-item" href="#">Another action</a><a class="dropdown-item" href="#">Something else here</a>
+                        <div class="dropdown-divider"></div><a class="dropdown-item" href="#">Separated link</a>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="col-sm-6 col-md-12 col-lg-6">
+                    <div class="btn-hspace mx-auto">
+                      <button class="btn btn-dark d-block active dropdown-toggle" type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Default <span class="icon-dropdown s7-angle-down"></span></button>
+                      <div class="dropdown-menu dropdown-menu-dark" style="display: block; position: relative;  z-index: 0;" role="menu"><a class="dropdown-item" href="#">Action</a><a class="dropdown-item" href="#">Another action</a><a class="dropdown-item" href="#">Something else here</a>
+                        <div class="dropdown-divider"></div><a class="dropdown-item" href="#">Separated link</a>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <h5 class="mt-5 mb-4">Dropdown with icons</h5>
+                <div class="row dropdown-showcase mb-4">
+                  <div class="col-sm-6 col-md-12 col-lg-6 mb-4 mb-lg-0">
+                    <div class="btn-hspace mx-auto">
+                      <button class="btn btn-secondary d-block active dropdown-toggle" type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Default <span class="icon-dropdown s7-angle-down"></span></button>
+                      <div class="dropdown-menu" style="display: block; position: relative;" role="menu"><a class="dropdown-item" href="#"><span class="icon s7-user"></span> Action</a><a class="dropdown-item" href="#"><span class="icon s7-config"></span> Another action</a><a class="dropdown-item" href="#"><span class="icon s7-help1"></span> Something else here</a>
+                        <div class="dropdown-divider"></div><a class="dropdown-item" href="#"><span class="icon s7-power"></span> Separated link</a>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="col-sm-6 col-md-12 col-lg-6">
+                    <div class="btn-hspace mx-auto">
+                      <button class="btn btn-dark d-block active dropdown-toggle" type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Default <span class="icon-dropdown s7-angle-down"></span></button>
+                      <div class="dropdown-menu dropdown-menu-dark" style="display: block; position: relative;" role="menu"><a class="dropdown-item" href="#"><span class="icon s7-user"></span> Action</a><a class="dropdown-item" href="#"><span class="icon s7-config"></span> Another action</a><a class="dropdown-item" href="#"><span class="icon s7-help1"></span> Something else here</a>
+                        <div class="dropdown-divider"></div><a class="dropdown-item" href="#"><span class="icon s7-power"></span> Separated link</a>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="card card-default">
+              <div class="card-header card-header-divider">Breadcrumbs<span class="card-subtitle">Default bootstrap breadcrumbs component</span></div>
+              <div class="card-body">
+                <div class="row">
+                  <div class="col-sm-6 col-md-12 col-lg-6">
+                    <h5 class="mb-4">Default</h5>
+                    <ol class="breadcrumb">
+                      <li class="breadcrumb-item active">Home</li>
+                    </ol>
+                    <ol class="breadcrumb">
+                      <li class="breadcrumb-item"><a href="index.html">Home</a></li>
+                      <li class="breadcrumb-item active">Menu</li>
+                    </ol>
+                    <ol class="breadcrumb">
+                      <li class="breadcrumb-item"><a href="index.html">Home</a></li>
+                      <li class="breadcrumb-item"><a href="#">Menu</a></li>
+                      <li class="breadcrumb-item active">Menu</li>
+                    </ol>
+                  </div>
+                  <div class="col-sm-6 col-md-12 col-lg-6">
+                    <h5 class="mb-4">With icon</h5>
+                    <ol class="breadcrumb">
+                      <li class="breadcrumb-item active"><span class="icon s7-home"></span></li>
+                    </ol>
+                    <ol class="breadcrumb">
+                      <li class="breadcrumb-item"><a href="index.html"> <span class="icon s7-home"></span></a></li>
+                      <li class="breadcrumb-item active">Menu</li>
+                    </ol>
+                    <ol class="breadcrumb">
+                      <li class="breadcrumb-item"><a href="index.html"><span class="icon s7-home"></span></a></li>
+                      <li class="breadcrumb-item"><a href="#">Menu</a></li>
+                      <li class="breadcrumb-item active">Menu</li>
+                    </ol>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="card card-default">
+              <div class="card-header card-header-divider">Tooltips<span class="card-subtitle">Default bootstrap tooltip component</span></div>
+              <div class="card-body">
+                <p class="mb-3">This is just an example of tooltip in a paragraph content written by <a data-toggle="tooltip" href="#" data-original-title="Default tooltip">Author</a>. You can set the tooltip position easily with<a data-toggle="tooltip" href="#" data-original-title="I am a Tooltip">Tooltip</a> options.</p>
+                <p class="mb-3 text-center">
+                  <button class="btn btn-secondary btn-space" type="button" data-toggle="tooltip" data-placement="left" title="Tooltip on left">Tooltip on left</button>
+                  <button class="btn btn-secondary btn-space" type="button" data-toggle="tooltip" data-placement="top" title="Tooltip on top">Tooltip on top</button>
+                  <button class="btn btn-secondary btn-space" type="button" data-toggle="tooltip" data-placement="bottom" title="Tooltip on bottom">Tooltip on bottom</button>
+                  <button class="btn btn-secondary btn-space" type="button" data-toggle="tooltip" data-placement="right" data-container="body" title="Tooltip on right">Tooltip on right</button>
+                </p>
+              </div>
+            </div>
+            <div class="card card-default">
+              <div class="card-header card-header-divider"><span class="card-title">Pagination</span></div>
+              <div class="card-body">
+                <h5 class="mb-4">Square</h5>
+                <nav>
+                  <ul class="pagination">
+                    <li class="page-item"><a class="page-link" href="#" aria-label="Previous"><span class="s7-angle-left" aria-hidden="true"></span></a></li>
+                    <li class="page-item"><a class="page-link" href="#">1</a></li>
+                    <li class="page-item active"><a class="page-link" href="#">2</a></li>
+                    <li class="page-item"><a class="page-link" href="#">3</a></li>
+                    <li class="page-item"><a class="page-link" href="#">4</a></li>
+                    <li class="page-item"><a class="page-link" href="#">5</a></li>
+                    <li class="page-item"><a class="page-link" href="#">6</a></li>
+                    <li class="page-item d-none"><a class="page-link" href="#">7</a></li>
+                    <li class="page-item"><a class="page-link" href="#" aria-label="Next"><span class="s7-angle-right" aria-hidden="true"></span></a></li>
+                  </ul>
+                </nav>
+                <h5 class="mb-4">Circle</h5>
+                <nav>
+                  <ul class="pagination pagination-rounded">
+                    <li class="page-item"><a class="page-link" href="#" aria-label="Previous"><span class="s7-angle-left" aria-hidden="true"></span></a></li>
+                    <li class="page-item"><a class="page-link" href="#">1</a></li>
+                    <li class="page-item active"><a class="page-link" href="#">2</a></li>
+                    <li class="page-item"><a class="page-link" href="#">3</a></li>
+                    <li class="page-item"><a class="page-link" href="#">4</a></li>
+                    <li class="page-item"><a class="page-link" href="#">5</a></li>
+                    <li class="page-item"><a class="page-link" href="#">6</a></li>
+                    <li class="page-item d-none"><a class="page-link" href="#">7</a></li>
+                    <li class="page-item"><a class="page-link" href="#" aria-label="Next"><span class="s7-angle-right" aria-hidden="true"></span></a></li>
+                  </ul>
+                </nav>
+              </div>
+            </div>
+            <div class="card card-default">
+              <div class="card-header card-header-divider">List Group<span class="card-subtitle">Default bootstrap navbar list component</span></div>
+              <div class="card-body">
+                <div class="mt-3">
+                  <div class="list-group"><a class="list-group-item d-flex list-group-item-action" href="#"> <span class="s7-notebook icon"></span><span class="text">Cras justo odio</span><span class="badge badge-pill badge-primary">26</span></a><a class="list-group-item d-flex list-group-item-action active" href="#"> <span class="s7-plugin icon"></span><span class="text">Dapibus ac facilisis in</span><span class="badge badge-pill badge-primary">2</span></a><a class="list-group-item d-flex list-group-item-action" href="#"> <span class="s7-rocket icon"></span><span class="text">Morbi leo risus</span></a><a class="list-group-item d-flex list-group-item-action" href="#"> <span class="s7-camera icon"></span><span class="text">Porta ac consectetur ac</span></a><a class="list-group-item d-flex list-group-item-action disabled" href="#"><span class="s7-car icon"></span><span class="text">Vestibulum at eros</span><span class="badge badge-pill badge-danger">3</span></a></div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="col-md-6">
+            <div class="card card-default">
+              <div class="card-header card-header-divider">Color contrasts<span class="card-subtitle">These are the multiple colors you can use</span></div>
+              <div class="card-body">
+                <div class="row text-center">
+                  <div class="col-sm-6 col-md-12 col-xl-6">
+                    <div class="color-swatch color-swatch-primary">
+                      <div class="row state-names">
+                        <div class="col-6"><span>Normal</span></div>
+                        <div class="col-6"><span>Hover</span></div>
+                      </div>
+                      <div class="row colors">
+                        <div class="col-6 state normal-state"></div>
+                        <div class="col-6 state hover-state"></div>
+                      </div>
+                      <div class="color-description d-flex justify-content-between"><span>Primary color</span><span>100%</span></div>
+                    </div>
+                  </div>
+                  <div class="col-sm-6 col-md-12 col-xl-6">
+                    <div class="color-swatch color-swatch-info">
+                      <div class="row state-names">
+                        <div class="col-6"><span>Normal</span></div>
+                        <div class="col-6"><span>Hover</span></div>
+                      </div>
+                      <div class="row colors">
+                        <div class="col-6 state normal-state"></div>
+                        <div class="col-6 state hover-state"></div>
+                      </div>
+                      <div class="color-description d-flex justify-content-between"><span>Info color</span><span>100%</span></div>
+                    </div>
+                  </div>
+                </div>
+                <div class="row text-center">
+                  <div class="col-sm-6 col-md-12 col-xl-6">
+                    <div class="color-swatch color-swatch-warning">
+                      <div class="row state-names">
+                        <div class="col-6"><span>Normal</span></div>
+                        <div class="col-6"><span>Hover</span></div>
+                      </div>
+                      <div class="row colors">
+                        <div class="col-6 state normal-state"></div>
+                        <div class="col-6 state hover-state"></div>
+                      </div>
+                      <div class="color-description d-flex justify-content-between"><span>Warning color</span><span>100%</span></div>
+                    </div>
+                  </div>
+                  <div class="col-sm-6 col-md-12 col-xl-6">
+                    <div class="color-swatch color-swatch-danger">
+                      <div class="row state-names">
+                        <div class="col-6"><span>Normal</span></div>
+                        <div class="col-6"><span>Hover</span></div>
+                      </div>
+                      <div class="row colors">
+                        <div class="col-6 state normal-state"></div>
+                        <div class="col-6 state hover-state"></div>
+                      </div>
+                      <div class="color-description d-flex justify-content-between"><span>Danger color</span><span>100%</span></div>
+                    </div>
+                  </div>
+                </div>
+                <div class="row text-center">
+                  <div class="col-sm-6 col-md-12 col-xl-6">
+                    <div class="color-swatch color-swatch-dark">
+                      <div class="row state-names">
+                        <div class="col-6"><span>Normal</span></div>
+                        <div class="col-6"><span>Hover</span></div>
+                      </div>
+                      <div class="row colors">
+                        <div class="col-6 state normal-state"></div>
+                        <div class="col-6 state hover-state"></div>
+                      </div>
+                      <div class="color-description d-flex justify-content-between"><span>Dark color</span><span>100%</span></div>
+                    </div>
+                  </div>
+                  <div class="col-sm-6 col-md-12 col-xl-6">
+                    <div class="color-swatch">
+                      <div class="row state-names">
+                        <div class="col-6"><span>Normal</span></div>
+                        <div class="col-6"><span>Hover</span></div>
+                      </div>
+                      <div class="row colors">
+                        <div class="col-6 state normal-state"></div>
+                        <div class="col-6 state hover-state"></div>
+                      </div>
+                      <div class="color-description d-flex justify-content-between"><span>Default color</span><span>100%</span></div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="card card-default">
+              <div class="card-header card-header-divider">Badges<span class="card-subtitle">Extended version of bootstrap badges style</span></div>
+              <div class="card-body">
+                <table class="table">
+                  <thead>
+                    <tr>
+                      <th style="width:40%;">Type</th>
+                      <th class="text-center">Badge</th>
+                      <th class="text-center">Badge Pill</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td>Default</td>
+                      <td class="text-center"><span class="badge badge-default">Default</span></td>
+                      <td class="text-center"><span class="badge badge-pill badge-default">26</span></td>
+                    </tr>
+                    <tr>
+                      <td>Primary</td>
+                      <td class="text-center"><span class="badge badge-primary">Primary</span></td>
+                      <td class="text-center"><span class="badge badge-pill badge-primary">8</span></td>
+                    </tr>
+                    <tr>
+                      <td>Info</td>
+                      <td class="text-center"><span class="badge badge-info">Info</span></td>
+                      <td class="text-center"><span class="badge badge-pill badge-info">2</span></td>
+                    </tr>
+                    <tr>
+                      <td>Warning</td>
+                      <td class="text-center"><span class="badge badge-warning">Warning</span></td>
+                      <td class="text-center"><span class="badge badge-pill badge-warning">7</span></td>
+                    </tr>
+                    <tr>
+                      <td>Danger</td>
+                      <td class="text-center"><span class="badge badge-danger">Danger</span></td>
+                      <td class="text-center"><span class="badge badge-pill badge-danger">3</span></td>
+                    </tr>
+                    <tr>
+                      <td>Dark</td>
+                      <td class="text-center"><span class="badge badge-dark">Dark</span></td>
+                      <td class="text-center"><span class="badge badge-pill badge-dark">5</span></td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+            <div class="card card-default">
+              <div class="card-header card-header-divider">Popovers<span class="card-subtitle">Default bootstrap popover component style</span></div>
+              <div class="card-body">
+                <div class="mb-3">
+                  <p>This is just an example of popover use in a paragraph content without a title written by <a href="javascript:;" data-toggle="popover" data-content="This is a popover without a title!" data-placement="top">Author</a>, also you can set a popover trigger on hover event like <a href="javascript:;" data-toggle="popover" data-trigger="hover" title="Popover on hover" data-content="This is a popover with a title!" data-placement="top">this</a> popover.</p>
+                </div>
+                <p class="mb-3 text-xs-center">
+                  <button class="btn btn-secondary btn-space" type="button" title="Popover on top" data-container="body" data-toggle="popover" data-placement="top" data-content="Vivamus sagittis lacus vel augue laoreet rutrum faucibus.">On top</button>
+                  <button class="btn btn-secondary btn-space" type="button" title="Popover on left" data-container="body" data-toggle="popover" data-placement="left" data-content="Vivamus sagittis lacus vel augue laoreet rutrum faucibus.">On left</button>
+                  <button class="btn btn-secondary btn-space" type="button" title="Popover on right" data-container="body" data-toggle="popover" data-placement="right" data-content="Vivamus sagittis lacus vel augue laoreet rutrum faucibus.">On right</button>
+                  <button class="btn btn-secondary btn-space" type="button" title="Popover on bottom" data-container="body" data-toggle="popover" data-placement="bottom" data-content="Vivamus sagittis lacus vel augue laoreet rutrum faucibus.">On bottom</button>
+                </p>
+              </div>
+            </div>
+            <div class="card card-default">
+              <div class="card-header card-header-divider">Images<span class="card-subtitle">These are the different images classes</span></div>
+              <div class="card-body">
+                <div class="mt-3 mb-3">
+                  <div class="text-center"><img class="rounded mr-3" src="assets/img/140x140.png" alt="Placeholder"><img class="rounded-circle mr-3" src="assets/img/140x140.png" alt="Placeholder"><img class="img-thumbnail" src="assets/img/140x140.png" alt="Placeholder"></div>
+                </div>
+              </div>
+            </div>
+            <div class="card card-default">
+              <div class="card-header card-header-divider">Progress Bars<span class="card-subtitle">Default bootstrap progress bar component</span></div>
+              <div class="card-body">
+                <div class="mt-3 mb-3">
+                  <div class="progress mb-4">
+                    <div class="progress-bar bg-success" role="progressbar" style="width: 40%" aria-valuenow="40" aria-valuemin="0" aria-valuemax="100">Simple 40%</div>
+                  </div>
+                  <div class="progress mb-4">
+                    <div class="progress-bar bg-success progress-bar-striped" role="progressbar" style="width: 60%" aria-valuenow="60" aria-valuemin="0" aria-valuemax="100">Striped 60%</div>
+                  </div>
+                  <div class="progress mb-4">
+                    <div class="progress-bar bg-success progress-bar-striped progress-bar-animated" role="progressbar" style="width: 70%" aria-valuenow="70" aria-valuemin="0" aria-valuemax="100">Animated 70%</div>
+                  </div>
+                  <div class="progress mb-4">
+                    <div class="progress-bar bg-success progress-bar-striped" role="progressbar" style="width: 30%" aria-valuenow="30" aria-valuemin="0" aria-valuemax="100">Stacked</div>
+                    <div class="progress-bar bg-info progress-bar-striped" role="progressbar" style="width: 20%" aria-valuenow="20" aria-valuemin="0" aria-valuemax="100">20%</div>
+                    <div class="progress-bar bg-warning progress-bar-striped" role="progressbar" style="width: 25%" aria-valuenow="25" aria-valuemin="0" aria-valuemax="100">25%</div>
+                    <div class="progress-bar bg-danger progress-bar-striped" role="progressbar" style="width: 10%" aria-valuenow="10" aria-valuemin="0" aria-valuemax="100">10%</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <script src="assets/lib/jquery/jquery.min.js" type="text/javascript"></script>
+    <script src="assets/lib/perfect-scrollbar/js/perfect-scrollbar.min.js" type="text/javascript"></script>
+    <script src="assets/lib/bootstrap/dist/js/bootstrap.bundle.min.js" type="text/javascript"></script>
+    <script src="assets/js/app.js" type="text/javascript"></script>
+    <script src="assets/js/app-ui-general.js" type="text/javascript"></script>
+    <script type="text/javascript">
+      $(document).ready(function(){
+      	//-initialize the javascript
+      	App.init();
+      	App.uiGeneral();
+      });
+    </script>
+  </body>
+</html>

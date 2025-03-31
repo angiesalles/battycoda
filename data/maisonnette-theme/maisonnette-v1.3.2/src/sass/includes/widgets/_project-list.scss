@@ -1,0 +1,157 @@
+.project-list{
+	background-color: transparent;
+	margin-bottom: $widget-margin-bottom;
+}
+
+.project-list-title {
+	font-size: 1.38462rem;
+	margin-bottom: 28px;
+}
+
+.project-item {
+	position: relative;
+	display: flex;
+	align-items: center;
+	background-color: $project-item-bg;
+	padding: $project-item-padding;
+	margin-bottom: .923077rem;
+
+	@include tablet {
+		flex-direction: column;
+		align-items: stretch;
+	}
+
+	.description {
+		font-size: .846154rem;
+		color: darken(theme-color("light"), 40%);
+
+		@include tablet {
+			font-size: 1rem;
+		}
+	}
+}
+
+.project-item-column {
+	display: flex;
+}
+
+.project-item-title {
+	display: flex;
+	flex: 0 1 20%;
+	flex-direction: column;
+	padding-right: 5px;
+
+	@include tablet {
+		order: 2;
+		margin-bottom: 10px;
+	}
+}
+
+.project-item-user {
+	display: flex;
+	align-items: center;
+	flex: 0 1 25%;
+	padding-right: 5px;
+
+	@include tablet {
+		order: 1;
+		align-items: center;
+		margin-bottom: 20px;
+	}
+
+	.user-avatar {
+		margin-right: 12px;
+
+		img {	
+			border-radius: 50%;
+			width: $project-user-avatar-size;
+			height: $project-user-avatar-size;
+
+			@include tablet {
+				height: ($project-user-avatar-size * 1.5);
+				width: ($project-user-avatar-size * 1.5);
+			}
+		}
+	}
+
+	.user-info {
+		display: flex;
+		flex-direction: column;
+
+		.name {
+			@include tablet {
+				font-size: $paragraph-size;
+			}
+		}
+	}
+}
+
+.project-item-state {
+	display: flex;
+	flex-direction: column;
+	flex: 0 1 20%;
+	padding-right: 5px;
+
+	@include tablet {
+		order: 3;
+		margin-bottom: 10px;
+	}
+}
+
+.project-item-date {
+	display: flex;
+	flex-direction: column;
+	flex: 0 1 15%;
+	padding-right: 5px;
+
+	@include tablet {
+		order: 4;
+		margin-bottom: 10px;
+	}
+}
+
+.project-item-progress {
+	flex: 0 1 15%;
+	display: flex;
+	flex-direction: column;
+
+	@include tablet {
+		order: 5;
+		margin-bottom: 10px;
+	}
+
+	span {
+		text-align: right;
+	}
+
+	.progress {
+		border-radius: 0.25rem;
+		height: auto;
+	}
+
+	.progress-bar {
+		height: 6px;
+		border-radius: 0.25rem;
+	}
+}
+
+.project-item-actions {
+	flex: 0 1 5%;
+	display: flex;
+	justify-content: flex-end;
+
+	@include tablet {
+		position: absolute;
+		top: $project-item-padding;
+		right: $project-item-padding;
+	}
+
+	.icon {
+		font-size: 1.23077rem;
+		margin-left: .384615rem;
+
+		@include tablet {
+			font-size: 1.38462rem;
+		}
+	}
+}

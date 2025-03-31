@@ -1,0 +1,1392 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="">
+    <meta name="author" content="">
+    <link rel="shortcut icon" href="assets/img/favicon.png">
+    <title>Maisonnette</title>
+    <link rel="stylesheet" type="text/css" href="assets/lib/stroke-7/style.css"/>
+    <link rel="stylesheet" type="text/css" href="assets/lib/perfect-scrollbar/css/perfect-scrollbar.css"/>
+    <link rel="stylesheet" href="assets/css/app.css" type="text/css"/>
+  </head>
+  <body>
+    <nav class="navbar navbar-expand navbar-dark mai-top-header">
+      <div class="container"><a class="navbar-brand" href="#"></a>
+        <ul class="nav navbar-nav mai-top-nav">
+          <li class="nav-item"><a class="nav-link" href="index.html">Home</a></li>
+          <li class="nav-item"><a class="nav-link" href="#">About</a></li>
+          <li class="nav-item dropdown"><a class="nav-link dropdown-toggle" href="#" data-toggle="dropdown" role="button" aria-expanded="false">Services<span class="angle-down s7-angle-down"></span></a>
+            <div class="dropdown-menu" role="menu"><a class="dropdown-item" href="#">Information</a><a class="dropdown-item" href="#">Company</a><a class="dropdown-item" href="#">Documentation</a><a class="dropdown-item" href="#">API Settings</a><a class="dropdown-item" href="#">Export Info</a></div>
+          </li>
+          <li class="nav-item"><a class="nav-link" href="#">Support</a></li>
+        </ul>
+        <ul class="navbar-nav float-lg-right mai-icons-nav">
+          <li class="dropdown nav-item mai-messages"><a class="nav-link dropdown-toggle" href="#" data-toggle="dropdown" role="button" aria-expanded="false"><span class="icon s7-comment"></span></a>
+            <ul class="dropdown-menu">
+              <li>
+                <div class="title">Messages</div>
+                <div class="mai-scroller-messages">
+                  <div class="content">
+                    <ul>
+                      <li><a href="#">
+                          <div class="img"><img src="assets/img/avatars/img1.jpg" alt="avatar"></div>
+                          <div class="content"><span class="date">16 Sept</span><span class="name">Victor Jara</span><span class="desc">The song that has been brave, will always be the new song.</span></div></a></li>
+                      <li><a href="#">
+                          <div class="img"><img src="assets/img/avatars/img2.jpg" alt="Avatar"></div>
+                          <div class="content"><span class="date">4 Sept</span><span class="name">Gustavo Cerati</span><span class="desc">You will see me fly across the city of fury where no one knows of me.</span></div></a></li>
+                      <li><a href="#">
+                          <div class="img"><img src="assets/img/avatars/img3.jpg" alt="Avatar"></div>
+                          <div class="content"><span class="date">13 Aug</span><span class="name">Jaime Garzón</span><span class="desc">Now everything came back to the abnormality.</span></div></a></li>
+                      <li><a href="#">
+                          <div class="img"><img src="assets/img/avatars/img4.jpg" alt="Avatar"></div>
+                          <div class="content"><span class="date">13 Aug</span><span class="name">Allen Collins</span><span class="desc">Things just couldn't even be the same 'Cause I'm as free as a bird now.</span></div></a></li>
+                    </ul>
+                  </div>
+                </div>
+                <div class="footer"><a href="#">View all messages</a></div>
+              </li>
+            </ul>
+          </li>
+          <li class="dropdown nav-item mai-notifications"><a class="nav-link dropdown-toggle" href="#" data-toggle="dropdown" role="button" aria-expanded="false"><span class="icon s7-bell"></span><span class="indicator"></span></a>
+            <ul class="dropdown-menu">
+              <li>
+                <div class="title">Notifications</div>
+                <div class="mai-scroller-notifications">
+                  <div class="content">
+                    <ul>
+                      <li><a href="#">
+                          <div class="icon"><span class="s7-check"></span></div>
+                          <div class="content"><span class="desc">This is a new message for my dear friend <strong>Rob</strong>.</span><span class="date">10 minutes ago</span></div></a></li>
+                      <li><a href="#">
+                          <div class="icon"><span class="s7-add-user"></span></div>
+                          <div class="content"><span class="desc">You have a new fiend request pending from <strong>John Doe</strong>.</span><span class="date">2 days ago</span></div></a></li>
+                      <li><a href="#">
+                          <div class="icon"><span class="s7-graph1"></span></div>
+                          <div class="content"><span class="desc">Your site visits have increased <strong>15.5%</strong> more since the last week.</span><span class="date">2 hours ago</span></div></a></li>
+                      <li><a href="#">
+                          <div class="icon"><span class="s7-check"></span></div>
+                          <div class="content"><span class="desc">This is a new message for my dear friend <strong>Rob</strong>.</span><span class="date">10 minutes ago</span></div></a></li>
+                    </ul>
+                  </div>
+                </div>
+                <div class="footer"><a href="#">View all notifications</a></div>
+              </li>
+            </ul>
+          </li>
+          <li class="dropdown nav-item mai-settings"><a class="nav-link dropdown-toggle" href="#" data-toggle="dropdown" role="button" aria-expanded="false"><span class="icon s7-settings"></span></a>
+            <ul class="dropdown-menu">
+              <li>
+                <div class="title">Settings</div>
+                <div class="content">
+                  <ul>
+                    <li><span>Enable Notifications</span>
+                      <div class="float-right">
+                        <div class="switch-button switch-button-sm">
+                          <input type="checkbox" checked="" name="check" id="switch1"><span>
+                            <label for="switch1"></label></span>
+                        </div>
+                      </div>
+                    </li>
+                    <li><span>Auto Commit</span>
+                      <div class="float-right">
+                        <div class="switch-button switch-button-sm">
+                          <input type="checkbox" checked="" name="check2" id="switch2"><span>
+                            <label for="switch2"></label></span>
+                        </div>
+                      </div>
+                    </li>
+                    <li><span>Sidebar</span>
+                      <div class="float-right">
+                        <div class="switch-button switch-button-sm">
+                          <input type="checkbox" name="check3" id="switch3"><span>
+                            <label for="switch3"></label></span>
+                        </div>
+                      </div>
+                    </li>
+                    <li><span>Full-width Layout</span>
+                      <div class="float-right">
+                        <div class="switch-button switch-button-sm">
+                          <input type="checkbox" checked="" name="check4" id="switch4"><span>
+                            <label for="switch4"></label></span>
+                        </div>
+                      </div>
+                    </li>
+                  </ul>
+                </div>
+              </li>
+            </ul>
+          </li>
+        </ul>
+        <ul class="nav navbar-nav float-lg-right mai-user-nav">
+          <li class="dropdown nav-item"><a class="dropdown-toggle nav-link" href="#" data-toggle="dropdown" role="button" aria-expanded="false"><img src="assets/img/avatar.jpg" alt="Avatar"><span class="user-name">Violeta Parra</span><span class="angle-down s7-angle-down"></span></a>
+            <div class="dropdown-menu" role="menu"><a class="dropdown-item" href="#"><span class="icon s7-home"></span>My Account</a><a class="dropdown-item" href="pages-profile.html"><span class="icon s7-user"></span>Profile</a><a class="dropdown-item" href="#"><span class="icon s7-cash"></span>Billing</a><a class="dropdown-item" href="#"><span class="icon s7-tools"></span>Settings</a><a class="dropdown-item" href="pages-login.html"><span class="icon s7-power"></span>Log Out</a></div>
+          </li>
+        </ul>
+      </div>
+    </nav>
+    <div class="mai-wrapper">
+      <nav class="navbar navbar-expand-lg mai-sub-header">
+        <div class="container">
+                    <nav class="navbar navbar-expand-md">
+                      <button class="navbar-toggler hidden-md-up collapsed" type="button" data-toggle="collapse" data-target="#mai-navbar-collapse" aria-controls="mai-navbar-collapse" aria-expanded="false" aria-label="Toggle navigation">       <span class="icon-bar"><span></span><span></span><span></span></span></button>
+                      <div class="navbar-collapse collapse mai-nav-tabs" id="mai-navbar-collapse">
+                        <ul class="nav navbar-nav">
+                                    <li class="nav-item parent open"><a class="nav-link" href="#" role="button" aria-expanded="false"><span class="icon s7-home"></span><span>Home</span></a>
+                                      <ul class="mai-nav-tabs-sub mai-sub-nav nav">
+                                                  <li class="nav-item"><a class="nav-link" href="index.html"><span class="icon s7-monitor"></span><span class="name">Dashboard</span></a>
+                                                  </li>
+                                                  <li class="nav-item dropdown parent"><a class="nav-link" href="ui-elements.html" data-toggle="dropdown"><span class="icon s7-diamond"></span><span class="name">UI Elements</span></a>
+                                                              <div class="dropdown-menu mai-sub-nav" role="menu"><a class="dropdown-item" href="ui-general.html">General</a><a class="dropdown-item" href="ui-cards.html">Cards</a><a class="dropdown-item" href="ui-buttons.html">Buttons</a><a class="dropdown-item" href="ui-typography.html">Typography</a><a class="dropdown-item" href="ui-grid.html">Grid</a>
+                                                              </div>
+                                                  </li>
+                                                  <li class="nav-item dropdown parent"><a class="nav-link" href="ui-elements.html" data-toggle="dropdown"><span class="icon s7-diamond"></span><span class="name">Components</span></a>
+                                                              <div class="dropdown-menu mai-sub-nav" role="menu"><a class="dropdown-item" href="ui-alerts.html">Alerts</a><a class="dropdown-item" href="ui-icons.html">Icons</a><a class="dropdown-item" href="ui-tabs-accordions.html">Tabs &amp; Accordions</a>
+                                                              </div>
+                                                  </li>
+                                                  <li class="nav-item dropdown parent"><a class="nav-link" href="plugins.html" data-toggle="dropdown"><span class="icon s7-plugin"></span><span class="name">Plugins</span></a>
+                                                              <div class="dropdown-menu mai-sub-nav" role="menu"><a class="dropdown-item active" href="ui-modals.html">Modals</a><a class="dropdown-item" href="ui-nestable-lists.html">Nestable Lists</a><a class="dropdown-item" href="ui-notifications.html">Notifications</a><a class="dropdown-item" href="ui-sweetalert2.html">Sweet Alerts2</a>
+                                                              </div>
+                                                  </li>
+                                                  <li class="nav-item"><a class="nav-link" href="documentation.html"><span class="icon s7-notebook"></span><span class="name">Documentation</span></a>
+                                                  </li>
+                                      </ul>
+                                    </li>
+                                    <li class="nav-item parent"><a class="nav-link" href="#" role="button" aria-expanded="false"><span class="icon s7-rocket"></span><span>Forms</span></a>
+                                      <ul class="mai-nav-tabs-sub mai-sub-nav nav">
+                                                  <li class="nav-item"><a class="nav-link" href="form-elements.html"><span class="name">Elements</span></a>
+                                                  </li>
+                                                  <li class="nav-item"><a class="nav-link" href="form-validation.html"><span class="name">Validation</span></a>
+                                                  </li>
+                                                  <li class="nav-item"><a class="nav-link" href="form-masks.html"><span class="name">Masks</span></a>
+                                                  </li>
+                                                  <li class="nav-item"><a class="nav-link" href="form-multiselect.html"><span class="name">Multiselect</span></a>
+                                                  </li>
+                                                  <li class="nav-item"><a class="nav-link" href="form-wizard.html"><span class="name">Wizard</span></a>
+                                                  </li>
+                                                  <li class="nav-item"><a class="nav-link" href="form-upload.html"><span class="name">Upload</span></a>
+                                                  </li>
+                                      </ul>
+                                    </li>
+                                    <li class="nav-item parent"><a class="nav-link" href="#" role="button" aria-expanded="false"><span class="icon s7-diamond"></span><span>Tables</span></a>
+                                      <ul class="mai-nav-tabs-sub mai-sub-nav nav">
+                                                  <li class="nav-item"><a class="nav-link" href="tables-general.html"><span class="icon s7-box2"></span><span class="name">General</span></a>
+                                                  </li>
+                                                  <li class="nav-item"><a class="nav-link" href="tables-datatables.html"><span class="icon s7-box2"></span><span class="name">Data Tables</span></a>
+                                                  </li>
+                                                  <li class="nav-item"><a class="nav-link" href="tables-filters.html"><span class="icon s7-box2"></span><span class="name">Filters</span></a>
+                                                  </li>
+                                      </ul>
+                                    </li>
+                                    <li class="nav-item parent"><a class="nav-link" href="#" role="button" aria-expanded="false"><span class="icon s7-portfolio"></span><span>Pages</span></a>
+                                      <ul class="mai-nav-tabs-sub mai-sub-nav nav">
+                                                  <li class="nav-item"><a class="nav-link" href="pages-profile.html"><span class="icon s7-user"></span><span class="name">Profile</span></a>
+                                                  </li>
+                                                  <li class="nav-item"><a class="nav-link" href="pages-pricing-tables.html"><span class="icon s7-cash"></span><span class="name">Pricing</span></a>
+                                                  </li>
+                                                  <li class="nav-item"><a class="nav-link" href="pages-invoice.html"><span class="icon s7-wallet"></span><span class="name">Invoice</span></a>
+                                                  </li>
+                                                  <li class="nav-item dropdown parent"><a class="nav-link" href="login.html" data-toggle="dropdown"><span class="icon s7-diamond"></span><span class="name">Login</span></a>
+                                                              <div class="dropdown-menu mai-sub-nav" role="menu"><a class="dropdown-item" href="pages-login.html">Login</a><a class="dropdown-item" href="pages-sign-up.html">Sign Up</a><a class="dropdown-item" href="pages-forgot-password.html">Forgot Password</a>
+                                                              </div>
+                                                  </li>
+                                                  <li class="nav-item dropdown parent"><a class="nav-link" href="mail.html" data-toggle="dropdown"><span class="icon s7-mail"></span><span class="name">Mail</span></a>
+                                                              <div class="dropdown-menu mai-sub-nav" role="menu"><a class="dropdown-item" href="email-inbox.html">Inbox</a><a class="dropdown-item" href="email-detail.html">Detail</a><a class="dropdown-item" href="email-compose.html">Compose</a>
+                                                              </div>
+                                                  </li>
+                                                  <li class="nav-item dropdown parent"><a class="nav-link" href="maps.html" data-toggle="dropdown"><span class="icon s7-map-marker"></span><span class="name">Maps</span></a>
+                                                              <div class="dropdown-menu mai-sub-nav" role="menu"><a class="dropdown-item" href="maps-google.html">Google Maps</a><a class="dropdown-item" href="maps-vector.html">Vector Maps</a>
+                                                              </div>
+                                                  </li>
+                                                  <li class="nav-item dropdown parent"><a class="nav-link" href="extra.html" data-toggle="dropdown"><span class="icon s7-diamond"></span><span class="name">Extra Pages</span></a>
+                                                              <div class="dropdown-menu mai-sub-nav" role="menu"><a class="dropdown-item" href="pages-blank.html">Blank Page</a><a class="dropdown-item" href="pages-blank-header.html">Blank Page Header</a><a class="dropdown-item" href="pages-404.html">404 Page</a><a class="dropdown-item" href="pages-gallery.html">Gallery</a><a class="dropdown-item" href="pages-calendar.html">Calendar</a><a class="dropdown-item" href="pages-timeline.html">Timeline</a><a class="dropdown-item" href="pages-timeline2.html">Timeline v2</a>
+                                                              </div>
+                                                  </li>
+                                      </ul>
+                                    </li>
+                                    <li class="nav-item parent"><a class="nav-link" href="#" role="button" aria-expanded="false"><span class="icon s7-display1"></span><span>Charts</span></a>
+                                      <ul class="mai-nav-tabs-sub mai-sub-nav nav">
+                                                  <li class="nav-item"><a class="nav-link" href="charts-flot.html"><span class="icon s7-graph"></span><span class="name">Flot</span></a>
+                                                  </li>
+                                                  <li class="nav-item"><a class="nav-link" href="charts-sparklines.html"><span class="icon s7-graph1"></span><span class="name">Sparklines</span></a>
+                                                  </li>
+                                                  <li class="nav-item"><a class="nav-link" href="charts-morris.html"><span class="icon s7-graph3"></span><span class="name">Morris.js</span></a>
+                                                  </li>
+                                                  <li class="nav-item"><a class="nav-link" href="charts-chartjs.html"><span class="icon s7-graph2"></span><span class="name">Chart.js</span></a>
+                                                  </li>
+                                      </ul>
+                                    </li>
+                                    <li class="nav-item parent"><a class="nav-link" href="#" role="button" aria-expanded="false"><span class="icon s7-tools"></span><span>Layouts</span></a>
+                                      <ul class="mai-nav-tabs-sub mai-sub-nav nav">
+                                                  <li class="nav-item dropdown parent mega-menu"><a class="nav-link" href="mega-menu.html" data-toggle="dropdown"><span class="icon s7-ribbon"></span><span class="name">Mega Menu</span></a>
+                                                              <div class="dropdown-menu mai-mega-menu mai-sub-nav" role="menu">
+                                                                <div class="mai-mega-menu-row">
+                                                                  <div class="mai-mega-menu-column">
+                                                                              <div class="mai-mega-menu-section parent"><a class="nav-link" href="#"><span class="icon s7-note2"></span><span>Forms</span></a>
+                                                                                <div class="mai-mega-menu-sub-items mai-sub-nav"><a class="dropdown-item" href="form-elements.html">Elements</a><a class="dropdown-item" href="form-validation.html">Validation</a><a class="dropdown-item" href="form-masks.html">Input Masks</a><a class="dropdown-item" href="form-xeditable.html">X Editable</a><a class="dropdown-item" href="form-multiselect.html">Multiselect</a><a class="dropdown-item" href="form-wizard.html">Wizard</a><a class="dropdown-item" href="form-upload.html">Multi Upload</a>
+                                                                                </div>
+                                                                              </div>
+                                                                  </div>
+                                                                  <div class="mai-mega-menu-column">
+                                                                              <div class="mai-mega-menu-section parent"><a class="nav-link" href="#"><span class="icon s7-keypad"></span><span>Tables</span></a>
+                                                                                <div class="mai-mega-menu-sub-items mai-sub-nav"><a class="dropdown-item" href="tables-general.html">General</a><a class="dropdown-item" href="tables-datatables.html">Datatables</a>
+                                                                                </div>
+                                                                              </div>
+                                                                  </div>
+                                                                  <div class="mai-mega-menu-column">
+                                                                              <div class="mai-mega-menu-section parent"><a class="nav-link" href="#"><span class="icon s7-bookmarks"></span><span>Pages</span></a>
+                                                                                <div class="mai-mega-menu-sub-items mai-sub-nav"><a class="dropdown-item" href="pages-login.html">Login</a><a class="dropdown-item" href="pages-sign-up.html">Sign Up</a><a class="dropdown-item" href="pages-forgot-password.html">Forgot Password</a><a class="dropdown-item" href="pages-blank.html">Blank Page</a><a class="dropdown-item" href="pages-calendar.html">Calendar</a><a class="dropdown-item" href="pages-gallery.html">Gallery</a><a class="dropdown-item" href="pages-pricing-tables.html">Pricing Tables</a><a class="dropdown-item" href="pages-invoice.html">Invoice</a><a class="dropdown-item" href="pages-profile.html">Profile</a><a class="dropdown-item" href="pages-404.html">404 Page</a>
+                                                                                </div>
+                                                                              </div>
+                                                                  </div>
+                                                                  <div class="mai-mega-menu-column">
+                                                                              <div class="mai-mega-menu-section parent"><a class="nav-link" href="#"><span class="icon s7-map"></span><span>Maps</span></a>
+                                                                                <div class="mai-mega-menu-sub-items mai-sub-nav"><a class="dropdown-item" href="maps-google.html">Google Maps</a><a class="dropdown-item" href="maps-vector.html">Vector Maps</a>
+                                                                                </div>
+                                                                              </div>
+                                                                              <div class="mai-mega-menu-section parent"><a class="nav-link" href="#"><span class="icon s7-mail"></span><span>Mail</span></a>
+                                                                                <div class="mai-mega-menu-sub-items mai-sub-nav"><a class="dropdown-item" href="email-inbox.html">Inbox</a><a class="dropdown-item" href="email-detail.html">Detail</a><a class="dropdown-item" href="email-compose.html">Compose</a>
+                                                                                </div>
+                                                                              </div>
+                                                                  </div>
+                                                                </div>
+                                                              </div>
+                                                  </li>
+                                                  <li class="nav-item"><a class="nav-link" href="layout-logo-mobile.html"><span class="icon s7-leaf"></span><span class="name">Logo Mobile</span></a>
+                                                  </li>
+                                      </ul>
+                                    </li>
+                        </ul>
+                      </div>
+                    </nav>
+          <div class="search">
+            <input type="text" placeholder="Search..." name="q"><span class="s7-search"></span>
+          </div>
+        </div>
+      </nav>
+      <div class="main-content container">
+        <div class="row">
+          <div class="col-sm-6">
+            <div class="card card-default">
+              <div class="card-header card-header-divider">Bootstrap Modals<span class="card-subtitle">These are the different modal styles using bootstrap modals</span></div>
+              <div class="card-body">
+                <p>Modals are streamlined, but flexible, dialog prompts with the minimum required functionality and smart defaults.</p>
+                <div class="mt-3 mb-2 text-center">
+                  <button class="btn btn-space btn-primary" data-toggle="modal" data-target="#md-default" type="button"> Default</button>
+                  <button class="btn btn-space btn-primary" data-toggle="modal" data-target="#md-fullWidth" type="button"> Full Width</button>
+                  <button class="btn btn-space btn-primary" data-toggle="modal" data-target="#md-custom" type="button"> Custom width</button>
+                  <button class="btn btn-space btn-primary" data-toggle="modal" data-target="#md-fullColor" type="button"> Full Color</button>
+                </div>
+              </div>
+            </div>
+            <div class="card card-default">
+              <div class="card-header card-header-divider">Modal Alerts<span class="card-subtitle">Default bootstrap modal component</span></div>
+              <div class="card-body">
+                <p>Default modals with a white background</p>
+                <div class="mt-4 mb-3 text-center">
+                  <button class="btn btn-space btn-primary" data-toggle="modal" data-target="#mod-primary" type="button">Primary</button>
+                  <button class="btn btn-space btn-info" data-toggle="modal" data-target="#mod-info" type="button">Information</button>
+                  <button class="btn btn-space btn-warning" data-toggle="modal" data-target="#mod-warning" type="button">Warning</button>
+                  <button class="btn btn-space btn-danger" data-toggle="modal" data-target="#mod-danger" type="button">Danger</button>
+                </div>
+                <p>Default modals with a dark background</p>
+                <div class="mt-3 mb-3 text-center">
+                  <button class="btn btn-space btn-primary" data-toggle="modal" data-target="#md-dark-primary" type="button">Primary</button>
+                  <button class="btn btn-space btn-info" data-toggle="modal" data-target="#md-dark-info" type="button">Information</button>
+                  <button class="btn btn-space btn-warning" data-toggle="modal" data-target="#md-dark-warning" type="button">Warning</button>
+                  <button class="btn btn-space btn-danger" data-toggle="modal" data-target="#md-dark-danger" type="button">Danger</button>
+                </div>
+              </div>
+            </div>
+            <div class="card card-default">
+              <div class="card-header card-header-divider">Colored Header<span class="card-subtitle">Nifty modals with colored headers style</span></div>
+              <div class="card-body">
+                <p>Colored header modals with a white background</p>
+                <div class="mt-3 mb-2 text-center">
+                  <button class="btn btn-space btn-secondary md-trigger" data-modal="colored-default">Default</button>
+                  <button class="btn btn-space btn-primary md-trigger" data-modal="colored-primary">Primary</button>
+                  <button class="btn btn-space btn-info md-trigger" data-modal="colored-info">Information</button>
+                  <button class="btn btn-space btn-warning md-trigger" data-modal="colored-warning">Warning</button>
+                  <button class="btn btn-space btn-danger md-trigger" data-modal="colored-danger">Danger</button>
+                  <button class="btn btn-space btn-dark md-trigger" data-modal="colored-dark">Dark</button>
+                </div>
+                <p>Colored header modals with a dark background</p>
+                <div class="mt-3 mb-2 text-center">
+                  <button class="btn btn-space btn-dark md-trigger" data-modal="colored-default-dark">Dark</button>
+                  <button class="btn btn-space btn-primary md-trigger" data-modal="colored-primary-dark">Primary</button>
+                  <button class="btn btn-space btn-info md-trigger" data-modal="colored-info-dark">Information</button>
+                  <button class="btn btn-space btn-warning md-trigger" data-modal="colored-warning-dark">Warning</button>
+                  <button class="btn btn-space btn-danger md-trigger" data-modal="colored-danger-dark">Danger</button>
+                </div>
+                <div class="modal-container modal-effect-1" id="colored-default">
+                  <div class="modal-content">
+                    <div class="modal-header modal-header-colored">
+                      <h4 class="modal-title">Custom Colored Header</h4>
+                      <button class="close modal-close" type="button" data-dismiss="modal" aria-hidden="true"><span class="s7-close"></span></button>
+                    </div>
+                    <div class="modal-body">
+                      <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Fusce ultrices euismod lobortis. Donec fermentum mattis velit id pretium. Suspendisse sed tortor sed diam lobortis tempus at sed lacus.</p>
+                      <p>Fusce sit amet lacus arcu. Pellentesque iaculis massa vitae ullamcorper venenatis. Cras metus dolor, maximus sit amet est nec, pharetra blandit elit sagittis vehicula. Dolor sit amet.</p>
+                    </div>
+                    <div class="modal-footer">
+                      <button class="btn btn-link btn-link-secondary modal-close" type="button" data-dismiss="modal">Cancel</button>
+                      <button class="btn btn-link btn-link-primary modal-close" type="button" data-dismiss="modal">Proceed</button>
+                    </div>
+                  </div>
+                </div>
+                <div class="modal-container modal-effect-1" id="colored-primary">
+                  <div class="modal-content">
+                    <div class="modal-header modal-header-colored modal-header-colored-primary">
+                      <h4 class="modal-title">Custom Colored Header</h4>
+                      <button class="close modal-close" type="button" data-dismiss="modal" aria-hidden="true"><span class="s7-close"></span></button>
+                    </div>
+                    <div class="modal-body">
+                      <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Fusce ultrices euismod lobortis. Donec fermentum mattis velit id pretium. Suspendisse sed tortor sed diam lobortis tempus at sed lacus.</p>
+                      <p>Fusce sit amet lacus arcu. Pellentesque iaculis massa vitae ullamcorper venenatis. Cras metus dolor, maximus sit amet est nec, pharetra blandit elit sagittis vehicula. Dolor sit amet.</p>
+                    </div>
+                    <div class="modal-footer">
+                      <button class="btn btn-link btn-link-secondary modal-close" type="button" data-dismiss="modal">Cancel</button>
+                      <button class="btn btn-link btn-link-primary modal-close" type="button" data-dismiss="modal">Proceed    </button>
+                    </div>
+                  </div>
+                </div>
+                <div class="modal-container modal-effect-1" id="colored-info">
+                  <div class="modal-content">
+                    <div class="modal-header modal-header-colored modal-header-colored-info">
+                      <h4 class="modal-title">Custom Colored Header</h4>
+                      <button class="close modal-close" type="button" data-dismiss="modal" aria-hidden="true"><span class="s7-close"></span></button>
+                    </div>
+                    <div class="modal-body">
+                      <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Fusce ultrices euismod lobortis. Donec fermentum mattis velit id pretium. Suspendisse sed tortor sed diam lobortis tempus at sed lacus.</p>
+                      <p>Fusce sit amet lacus arcu. Pellentesque iaculis massa vitae ullamcorper venenatis. Cras metus dolor, maximus sit amet est nec, pharetra blandit elit sagittis vehicula. Dolor sit amet.</p>
+                    </div>
+                    <div class="modal-footer">
+                      <button class="btn btn-link btn-link-secondary modal-close" type="button" data-dismiss="modal">Cancel</button>
+                      <button class="btn btn-link btn-link-info modal-close" type="button" data-dismiss="modal">Proceed</button>
+                    </div>
+                  </div>
+                </div>
+                <div class="modal-container modal-effect-1" id="colored-warning">
+                  <div class="modal-content">
+                    <div class="modal-header modal-header-colored modal-header-colored-warning">
+                      <h4 class="modal-title">Custom Colored Header</h4>
+                      <button class="close modal-close" type="button" data-dismiss="modal" aria-hidden="true"><span class="s7-close"></span></button>
+                    </div>
+                    <div class="modal-body">
+                      <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Fusce ultrices euismod lobortis. Donec fermentum mattis velit id pretium. Suspendisse sed tortor sed diam lobortis tempus at sed lacus.</p>
+                      <p>Fusce sit amet lacus arcu. Pellentesque iaculis massa vitae ullamcorper venenatis. Cras metus dolor, maximus sit amet est nec, pharetra blandit elit sagittis vehicula. Dolor sit amet.</p>
+                    </div>
+                    <div class="modal-footer">
+                      <button class="btn btn-link btn-link-secondary modal-close" type="button" data-dismiss="modal">Cancel</button>
+                      <button class="btn btn-link btn-link-warning modal-close" type="button" data-dismiss="modal">Proceed</button>
+                    </div>
+                  </div>
+                </div>
+                <div class="modal-container modal-effect-1" id="colored-danger">
+                  <div class="modal-content">
+                    <div class="modal-header modal-header-colored modal-header-colored-danger">
+                      <h4 class="modal-title">Custom Colored Header</h4>
+                      <button class="close modal-close" type="button" data-dismiss="modal" aria-hidden="true"><span class="s7-close"></span></button>
+                    </div>
+                    <div class="modal-body">
+                      <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Fusce ultrices euismod lobortis. Donec fermentum mattis velit id pretium. Suspendisse sed tortor sed diam lobortis tempus at sed lacus.</p>
+                      <p>Fusce sit amet lacus arcu. Pellentesque iaculis massa vitae ullamcorper venenatis. Cras metus dolor, maximus sit amet est nec, pharetra blandit elit sagittis vehicula. Dolor sit amet.</p>
+                    </div>
+                    <div class="modal-footer">
+                      <button class="btn btn-link btn-link-secondary modal-close" type="button" data-dismiss="modal">Cancel</button>
+                      <button class="btn btn-link btn-link-danger modal-close" type="button" data-dismiss="modal">Proceed</button>
+                    </div>
+                  </div>
+                </div>
+                <div class="modal-container modal-effect-1" id="colored-dark">
+                  <div class="modal-content">
+                    <div class="modal-header modal-header-colored modal-header-colored-dark">
+                      <h4 class="modal-title">Custom Colored Header</h4>
+                      <button class="close modal-close" type="button" data-dismiss="modal" aria-hidden="true"><span class="s7-close"></span></button>
+                    </div>
+                    <div class="modal-body">
+                      <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Fusce ultrices euismod lobortis. Donec fermentum mattis velit id pretium. Suspendisse sed tortor sed diam lobortis tempus at sed lacus.</p>
+                      <p>Fusce sit amet lacus arcu. Pellentesque iaculis massa vitae ullamcorper venenatis. Cras metus dolor, maximus sit amet est nec, pharetra blandit elit sagittis vehicula. Dolor sit amet.</p>
+                    </div>
+                    <div class="modal-footer">
+                      <button class="btn btn-link btn-link-secondary modal-close" type="button" data-dismiss="modal">Cancel</button>
+                      <button class="btn btn-link btn-link-secondary modal-close" type="button" data-dismiss="modal">Proceed</button>
+                    </div>
+                  </div>
+                </div>
+                <div class="modal-dark modal-container modal-effect-1" id="colored-default-dark">
+                  <div class="modal-content">
+                    <div class="modal-header modal-header-colored">
+                      <h4 class="modal-title">Custom Colored Header</h4>
+                      <button class="close modal-close" type="button" data-dismiss="modal" aria-hidden="true"><span class="s7-close"></span></button>
+                    </div>
+                    <div class="modal-body">
+                      <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Fusce ultrices euismod lobortis. Donec fermentum mattis velit id pretium. Suspendisse sed tortor sed diam lobortis tempus at sed lacus.</p>
+                      <p>Fusce sit amet lacus arcu. Pellentesque iaculis massa vitae ullamcorper venenatis. Cras metus dolor, maximus sit amet est nec, pharetra blandit elit sagittis vehicula. Dolor sit amet.</p>
+                    </div>
+                    <div class="modal-footer">
+                      <button class="btn btn-link btn-link-secondary modal-close" type="button" data-dismiss="modal">Cancel</button>
+                      <button class="btn btn-link btn-link-primary modal-close" type="button" data-dismiss="modal">Proceed</button>
+                    </div>
+                  </div>
+                </div>
+                <div class="modal-dark modal-container modal-effect-1" id="colored-primary-dark">
+                  <div class="modal-content">
+                    <div class="modal-header modal-header-colored modal-header-colored-primary">
+                      <h4 class="modal-title">Custom Colored Header</h4>
+                      <button class="close modal-close" type="button" data-dismiss="modal" aria-hidden="true"><span class="s7-close"></span></button>
+                    </div>
+                    <div class="modal-body">
+                      <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Fusce ultrices euismod lobortis. Donec fermentum mattis velit id pretium. Suspendisse sed tortor sed diam lobortis tempus at sed lacus.</p>
+                      <p>Fusce sit amet lacus arcu. Pellentesque iaculis massa vitae ullamcorper venenatis. Cras metus dolor, maximus sit amet est nec, pharetra blandit elit sagittis vehicula. Dolor sit amet.</p>
+                    </div>
+                    <div class="modal-footer">
+                      <button class="btn btn-link btn-link-secondary modal-close" type="button" data-dismiss="modal">Cancel</button>
+                      <button class="btn btn-link btn-link-primary modal-close" type="button" data-dismiss="modal">Proceed</button>
+                    </div>
+                  </div>
+                </div>
+                <div class="modal-dark modal-container modal-effect-1" id="colored-info-dark">
+                  <div class="modal-content">
+                    <div class="modal-header modal-header-colored modal-header-colored-info">
+                      <h4 class="modal-title">Custom Colored Header</h4>
+                      <button class="close modal-close" type="button" data-dismiss="modal" aria-hidden="true"><span class="s7-close"></span></button>
+                    </div>
+                    <div class="modal-body">
+                      <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Fusce ultrices euismod lobortis. Donec fermentum mattis velit id pretium. Suspendisse sed tortor sed diam lobortis tempus at sed lacus.</p>
+                      <p>Fusce sit amet lacus arcu. Pellentesque iaculis massa vitae ullamcorper venenatis. Cras metus dolor, maximus sit amet est nec, pharetra blandit elit sagittis vehicula. Dolor sit amet.</p>
+                    </div>
+                    <div class="modal-footer">
+                      <button class="btn btn-link btn-link-secondary modal-close" type="button" data-dismiss="modal">Cancel</button>
+                      <button class="btn btn-link btn-link-info modal-close" type="button" data-dismiss="modal">Proceed</button>
+                    </div>
+                  </div>
+                </div>
+                <div class="modal-dark modal-container modal-effect-1" id="colored-warning-dark">
+                  <div class="modal-content">
+                    <div class="modal-header modal-header-colored modal-header-colored-warning">
+                      <h4 class="modal-title">Custom Colored Header</h4>
+                      <button class="close modal-close" type="button" data-dismiss="modal" aria-hidden="true"><span class="s7-close"></span></button>
+                    </div>
+                    <div class="modal-body">
+                      <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Fusce ultrices euismod lobortis. Donec fermentum mattis velit id pretium. Suspendisse sed tortor sed diam lobortis tempus at sed lacus.</p>
+                      <p>Fusce sit amet lacus arcu. Pellentesque iaculis massa vitae ullamcorper venenatis. Cras metus dolor, maximus sit amet est nec, pharetra blandit elit sagittis vehicula. Dolor sit amet.</p>
+                    </div>
+                    <div class="modal-footer">
+                      <button class="btn btn-link btn-link-secondary modal-close" type="button" data-dismiss="modal">Cancel</button>
+                      <button class="btn btn-link btn-link-warning modal-close" type="button" data-dismiss="modal">Proceed</button>
+                    </div>
+                  </div>
+                </div>
+                <div class="modal-dark modal-container modal-effect-1" id="colored-danger-dark">
+                  <div class="modal-content">
+                    <div class="modal-header modal-header-colored modal-header-colored-danger">
+                      <h4 class="modal-title">Custom Colored Header</h4>
+                      <button class="close modal-close" type="button" data-dismiss="modal" aria-hidden="true"><span class="s7-close"></span></button>
+                    </div>
+                    <div class="modal-body">
+                      <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Fusce ultrices euismod lobortis. Donec fermentum mattis velit id pretium. Suspendisse sed tortor sed diam lobortis tempus at sed lacus.</p>
+                      <p>Fusce sit amet lacus arcu. Pellentesque iaculis massa vitae ullamcorper venenatis. Cras metus dolor, maximus sit amet est nec, pharetra blandit elit sagittis vehicula. Dolor sit amet.</p>
+                    </div>
+                    <div class="modal-footer">
+                      <button class="btn btn-link btn-link-secondary modal-close" type="button" data-dismiss="modal">Cancel</button>
+                      <button class="btn btn-link btn-link-danger modal-close" type="button" data-dismiss="modal">Proceed</button>
+                    </div>
+                  </div>
+                </div>
+                <div class="modal-overlay"></div>
+              </div>
+            </div>
+            <div class="card card-default">
+              <div class="card-header card-header-divider">Nifty Modals Effects<span class="card-subtitle">These are examples of niftymodals effects</span></div>
+              <div class="card-body">
+                <p>jQuery NiftyModal plugin has 18 different amazing effects to give your modals life.</p>
+                <div class="mt-3 mb-2 text-center">
+                  <button class="btn btn-space btn-primary md-trigger" data-modal="md-scale"> Fade in & Scale</button>
+                  <button class="btn btn-space btn-primary md-trigger" data-modal="md-slideLeft"> Slide in Left</button>
+                  <button class="btn btn-space btn-primary md-trigger" data-modal="md-slideUp"> Slide in Up</button>
+                  <button class="btn btn-space btn-primary md-trigger" data-modal="md-fall"> Fall</button>
+                  <button class="btn btn-space btn-primary md-trigger" data-modal="md-sideFall"> Side Fall</button>
+                  <button class="btn btn-space btn-primary md-trigger" data-modal="md-stickyUp"> Sticky Up</button>
+                  <button class="btn btn-space btn-primary md-trigger" data-modal="md-flipH"> 3D Flip Horizontal</button>
+                  <button class="btn btn-space btn-primary md-trigger" data-modal="md-flipV"> 3D Flip Vertical</button>
+                  <button class="btn btn-space btn-primary md-trigger" data-modal="md-3dSign"> 3D Sign</button>
+                  <button class="btn btn-space btn-primary md-trigger" data-modal="md-superScaled"> Super Scaled</button>
+                  <button class="btn btn-space btn-primary md-trigger" data-modal="md-justModal"> Just Modal</button>
+                  <button class="btn btn-space btn-primary md-trigger" data-modal="md-3dRotateUp"> 3D Rotate Up</button>
+                  <button class="btn btn-space btn-primary md-trigger" data-modal="md-3dRotateRight"> 3D Rotate Right</button>
+                </div>
+                <div class="modal-container modal-effect-1" id="md-scale">
+                  <div class="modal-content">
+                    <div class="modal-header">
+                      <button class="close modal-close" type="button" data-dismiss="modal" aria-hidden="true"><span class="s7-close"></span></button>
+                    </div>
+                    <div class="modal-body">
+                      <div class="text-center">
+                        <div class="text-primary"><span class="modal-main-icon s7-check"></span></div>
+                        <h3 class="mb-5">Awesome!</h3>
+                        <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit.<br>Fusce ultrices euismod lobortis.</p>
+                        <div class="mt-5">
+                          <button class="btn btn-secondary modal-close" type="button" data-dismiss="modal">Cancel</button>
+                          <button class="btn btn-primary modal-close" type="button" data-dismiss="modal">Proceed</button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div class="modal-container modal-effect-2" id="md-slideLeft">
+                  <div class="modal-content">
+                    <div class="modal-header">
+                      <button class="close modal-close" type="button" data-dismiss="modal" aria-hidden="true"><span class="s7-close"></span></button>
+                    </div>
+                    <div class="modal-body">
+                      <div class="text-center">
+                        <div class="text-primary"><span class="modal-main-icon s7-check"></span></div>
+                        <h3 class="mb-5">Awesome!</h3>
+                        <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit.<br>Fusce ultrices euismod lobortis.</p>
+                        <div class="mt-5">
+                          <button class="btn btn-secondary modal-close" type="button" data-dismiss="modal">Cancel</button>
+                          <button class="btn btn-primary modal-close" type="button" data-dismiss="modal">Proceed</button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div class="modal-container modal-effect-3" id="md-slideUp">
+                  <div class="modal-content">
+                    <div class="modal-header">
+                      <button class="close modal-close" type="button" data-dismiss="modal" aria-hidden="true"><span class="s7-close"></span></button>
+                    </div>
+                    <div class="modal-body">
+                      <div class="text-center">
+                        <div class="text-primary"><span class="modal-main-icon s7-check"></span></div>
+                        <h3 class="mb-5">Awesome!</h3>
+                        <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit.<br>Fusce ultrices euismod lobortis.</p>
+                        <div class="mt-5">
+                          <button class="btn btn-secondary modal-close" type="button" data-dismiss="modal">Cancel</button>
+                          <button class="btn btn-primary modal-close" type="button" data-dismiss="modal">Proceed</button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div class="modal-container modal-effect-5" id="md-fall">
+                  <div class="modal-content">
+                    <div class="modal-header">
+                      <button class="close modal-close" type="button" data-dismiss="modal" aria-hidden="true"><span class="s7-close"></span></button>
+                    </div>
+                    <div class="modal-body">
+                      <div class="text-center">
+                        <div class="text-primary"><span class="modal-main-icon s7-check"></span></div>
+                        <h3 class="mb-5">Awesome!</h3>
+                        <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit.<br>Fusce ultrices euismod lobortis.</p>
+                        <div class="mt-5">
+                          <button class="btn btn-secondary modal-close" type="button" data-dismiss="modal">Cancel</button>
+                          <button class="btn btn-primary modal-close" type="button" data-dismiss="modal">Proceed</button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div class="modal-container modal-effect-6" id="md-sideFall">
+                  <div class="modal-content">
+                    <div class="modal-header">
+                      <button class="close modal-close" type="button" data-dismiss="modal" aria-hidden="true"><span class="s7-close"></span></button>
+                    </div>
+                    <div class="modal-body">
+                      <div class="text-center">
+                        <div class="text-primary"><span class="modal-main-icon s7-check"></span></div>
+                        <h3 class="mb-5">Awesome!</h3>
+                        <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit.<br>Fusce ultrices euismod lobortis.</p>
+                        <div class="mt-5">
+                          <button class="btn btn-secondary modal-close" type="button" data-dismiss="modal">Cancel</button>
+                          <button class="btn btn-primary modal-close" type="button" data-dismiss="modal">Proceed</button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div class="modal-container modal-effect-7" id="md-stickyUp">
+                  <div class="modal-content">
+                    <div class="modal-header">
+                      <button class="close modal-close" type="button" data-dismiss="modal" aria-hidden="true"><span class="s7-close"></span></button>
+                    </div>
+                    <div class="modal-body">
+                      <div class="text-center">
+                        <div class="text-primary"><span class="modal-main-icon s7-check"></span></div>
+                        <h3 class="mb-5">Awesome!</h3>
+                        <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit.<br>Fusce ultrices euismod lobortis.</p>
+                        <div class="mt-5">
+                          <button class="btn btn-secondary modal-close" type="button" data-dismiss="modal">Cancel</button>
+                          <button class="btn btn-primary modal-close" type="button" data-dismiss="modal">Proceed</button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div class="modal-container modal-effect-8" id="md-flipH">
+                  <div class="modal-content">
+                    <div class="modal-header">
+                      <button class="close modal-close" type="button" data-dismiss="modal" aria-hidden="true"><span class="s7-close"></span></button>
+                    </div>
+                    <div class="modal-body">
+                      <div class="text-center">
+                        <div class="text-primary"><span class="modal-main-icon s7-check"></span></div>
+                        <h3 class="mb-5">Awesome!</h3>
+                        <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit.<br>Fusce ultrices euismod lobortis.</p>
+                        <div class="mt-5">
+                          <button class="btn btn-secondary modal-close" type="button" data-dismiss="modal">Cancel</button>
+                          <button class="btn btn-primary modal-close" type="button" data-dismiss="modal">Proceed</button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div class="modal-container modal-effect-9" id="md-flipV">
+                  <div class="modal-content">
+                    <div class="modal-header">
+                      <button class="close modal-close" type="button" data-dismiss="modal" aria-hidden="true"><span class="s7-close"></span></button>
+                    </div>
+                    <div class="modal-body">
+                      <div class="text-center">
+                        <div class="text-primary"><span class="modal-main-icon s7-check"></span></div>
+                        <h3 class="mb-5">Awesome!</h3>
+                        <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit.<br>Fusce ultrices euismod lobortis.</p>
+                        <div class="mt-5">
+                          <button class="btn btn-secondary modal-close" type="button" data-dismiss="modal">Cancel</button>
+                          <button class="btn btn-primary modal-close" type="button" data-dismiss="modal">Proceed</button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div class="modal-container modal-effect-10" id="md-3dSign">
+                  <div class="modal-content">
+                    <div class="modal-header">
+                      <button class="close modal-close" type="button" data-dismiss="modal" aria-hidden="true"><span class="s7-close"></span></button>
+                    </div>
+                    <div class="modal-body">
+                      <div class="text-center">
+                        <div class="text-primary"><span class="modal-main-icon s7-check"></span></div>
+                        <h3 class="mb-5">Awesome!</h3>
+                        <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit.<br>Fusce ultrices euismod lobortis.</p>
+                        <div class="mt-5">
+                          <button class="btn btn-secondary modal-close" type="button" data-dismiss="modal">Cancel</button>
+                          <button class="btn btn-primary modal-close" type="button" data-dismiss="modal">Proceed</button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div class="modal-container modal-effect-11" id="md-superScaled">
+                  <div class="modal-content">
+                    <div class="modal-header">
+                      <button class="close modal-close" type="button" data-dismiss="modal" aria-hidden="true"><span class="s7-close"></span></button>
+                    </div>
+                    <div class="modal-body">
+                      <div class="text-center">
+                        <div class="text-primary"><span class="modal-main-icon s7-check"></span></div>
+                        <h3 class="mb-5">Awesome!</h3>
+                        <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit.<br>Fusce ultrices euismod lobortis.</p>
+                        <div class="mt-5">
+                          <button class="btn btn-secondary modal-close" type="button" data-dismiss="modal">Cancel</button>
+                          <button class="btn btn-primary modal-close" type="button" data-dismiss="modal">Proceed</button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div class="modal-container modal-effect-12" id="md-justModal">
+                  <div class="modal-content">
+                    <div class="modal-header">
+                      <button class="close modal-close" type="button" data-dismiss="modal" aria-hidden="true"><span class="s7-close"></span></button>
+                    </div>
+                    <div class="modal-body">
+                      <div class="text-center">
+                        <div class="text-primary"><span class="modal-main-icon s7-check"></span></div>
+                        <h3 class="mb-5">Awesome!</h3>
+                        <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit.<br>Fusce ultrices euismod lobortis.</p>
+                        <div class="mt-5">
+                          <button class="btn btn-secondary modal-close" type="button" data-dismiss="modal">Cancel</button>
+                          <button class="btn btn-primary modal-close" type="button" data-dismiss="modal">Proceed</button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div class="modal-container modal-effect-14" id="md-3dRotateUp">
+                  <div class="modal-content">
+                    <div class="modal-header">
+                      <button class="close modal-close" type="button" data-dismiss="modal" aria-hidden="true"><span class="s7-close"></span></button>
+                    </div>
+                    <div class="modal-body">
+                      <div class="text-center">
+                        <div class="text-primary"><span class="modal-main-icon s7-check"></span></div>
+                        <h3 class="mb-5">Awesome!</h3>
+                        <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit.<br>Fusce ultrices euismod lobortis.</p>
+                        <div class="mt-5">
+                          <button class="btn btn-secondary modal-close" type="button" data-dismiss="modal">Cancel</button>
+                          <button class="btn btn-primary modal-close" type="button" data-dismiss="modal">Proceed</button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div class="modal-container modal-effect-15" id="md-3dRotateRight">
+                  <div class="modal-content">
+                    <div class="modal-header">
+                      <button class="close modal-close" type="button" data-dismiss="modal" aria-hidden="true"><span class="s7-close"></span></button>
+                    </div>
+                    <div class="modal-body">
+                      <div class="text-center">
+                        <div class="text-primary"><span class="modal-main-icon s7-check"></span></div>
+                        <h3 class="mb-5">Awesome!</h3>
+                        <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit.<br>Fusce ultrices euismod lobortis.</p>
+                        <div class="mt-5">
+                          <button class="btn btn-secondary modal-close" type="button" data-dismiss="modal">Cancel</button>
+                          <button class="btn btn-primary modal-close" type="button" data-dismiss="modal">Proceed</button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div class="modal-overlay"></div>
+              </div>
+            </div>
+          </div>
+          <div class="col-sm-6">
+            <div class="card card-default">
+              <div class="card-header card-header-divider">Nifty Modals<span class="card-subtitle">These are the different modal styles using nifty modals</span></div>
+              <div class="card-body">
+                <p>Modals are streamlined, but flexible, dialog prompts with the minimum required functionality and smart defaults.</p>
+                <div class="mt-3 mb-2 text-center">
+                  <button class="btn btn-space btn-primary md-trigger" data-modal="nft-default"> Default</button>
+                  <button class="btn btn-space btn-primary md-trigger" data-modal="nft-fullWidth"> Full Width</button>
+                  <button class="btn btn-space btn-primary md-trigger" data-modal="nft-custom"> Custom width</button>
+                  <button class="btn btn-space btn-primary md-trigger" data-modal="nft-fullColor"> Full Color</button>
+                </div>
+                <div class="modal-container modal-effect-1" id="nft-default">
+                  <div class="modal-content">
+                    <div class="modal-header">
+                      <button class="close modal-close" type="button" data-dismiss="modal" aria-hidden="true"><span class="s7-close"></span></button>
+                    </div>
+                    <div class="modal-body">
+                      <div class="text-center">
+                        <div class="text-primary"><span class="modal-main-icon s7-check"></span></div>
+                        <h3 class="mb-4">Awesome!</h3>
+                        <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit.<br>Fusce ultrices euismod lobortis.</p>
+                        <div class="mt-6">
+                          <button class="btn btn-sm btn-space btn-secondary modal-close" type="button" data-dismiss="modal">Cancel</button>
+                          <button class="btn btn-sm btn-space btn-primary modal-close" type="button" data-dismiss="modal">Proceed</button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div class="modal-container full-width modal-effect-1" id="nft-fullWidth">
+                  <div class="modal-content">
+                    <div class="modal-header">
+                      <button class="close modal-close" type="button" data-dismiss="modal" aria-hidden="true"><span class="s7-close"></span></button>
+                    </div>
+                    <div class="modal-body">
+                      <div class="text-center">
+                        <div class="text-primary"><span class="modal-main-icon s7-check"></span></div>
+                        <h3 class="mb-4">Awesome!</h3>
+                        <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit.<br>Fusce ultrices euismod lobortis.</p>
+                        <div class="mt-6">
+                          <button class="btn btn-sm btn-space btn-secondary modal-close" type="button" data-dismiss="modal">Cancel</button>
+                          <button class="btn btn-sm btn-space btn-primary modal-close" type="button" data-dismiss="modal">Proceed</button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div class="custom-width modal-container modal-effect-1" id="nft-custom">
+                  <div class="modal-content">
+                    <div class="modal-header">
+                      <button class="close modal-close" type="button" data-dismiss="modal" aria-hidden="true"><span class="s7-close"></span></button>
+                    </div>
+                    <div class="modal-body">
+                      <div class="text-center">
+                        <div class="text-primary"><span class="modal-main-icon s7-check"></span></div>
+                        <h3 class="mb-4">Awesome!</h3>
+                        <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit.<br>Fusce ultrices euismod lobortis.</p>
+                        <div class="mt-6">
+                          <button class="btn btn-sm btn-space btn-secondary modal-close" type="button" data-dismiss="modal">Cancel</button>
+                          <button class="btn btn-sm btn-space btn-primary modal-close" type="button" data-dismiss="modal">Proceed</button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div class="modal-container modal-full-color modal-full-color-primary modal-effect-1" id="nft-fullColor">
+                  <div class="modal-content">
+                    <div class="modal-header">
+                      <button class="close modal-close" type="button" data-dismiss="modal" aria-hidden="true"><span class="s7-close"></span></button>
+                    </div>
+                    <div class="modal-body">
+                      <div class="text-center"><span class="modal-main-icon s7-check"></span>
+                        <h3 class="mb-4">Awesome!</h3>
+                        <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit.<br>Fusce ultrices euismod lobortis.</p>
+                        <div class="mt-6">
+                          <button class="btn btn-sm btn-space btn-secondary modal-close" type="button" data-dismiss="modal">Cancel</button>
+                          <button class="btn btn-sm btn-space btn-primary modal-close" type="button" data-dismiss="modal">Proceed</button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div class="modal-overlay"></div>
+              </div>
+            </div>
+            <div class="card card-default">
+              <div class="card-header card-header-divider">Footer Modals<span class="card-subtitle">Default bootstrap modal with buttons in modal footer</span></div>
+              <div class="card-body">
+                <p>Default modals with a white background</p>
+                <div class="mt-4 mb-3 text-center">
+                  <button class="btn btn-space btn-primary" data-toggle="modal" data-target="#mod-footer-primary" type="button">Primary</button>
+                  <button class="btn btn-space btn-info" data-toggle="modal" data-target="#mod-footer-info" type="button">Information</button>
+                  <button class="btn btn-space btn-warning" data-toggle="modal" data-target="#mod-footer-warning" type="button">Warning</button>
+                  <button class="btn btn-space btn-danger" data-toggle="modal" data-target="#mod-footer-danger" type="button">Danger</button>
+                </div>
+                <p>Default modals with a dark background</p>
+                <div class="mt-3 mb-3 text-center">
+                  <button class="btn btn-space btn-primary" data-toggle="modal" data-target="#md-dark-footer-primary" type="button">Primary</button>
+                  <button class="btn btn-space btn-info" data-toggle="modal" data-target="#md-dark-footer-info" type="button">Information</button>
+                  <button class="btn btn-space btn-warning" data-toggle="modal" data-target="#md-dark-footer-warning" type="button">Warning</button>
+                  <button class="btn btn-space btn-danger" data-toggle="modal" data-target="#md-dark-footer-danger" type="button">Danger</button>
+                </div>
+              </div>
+            </div>
+            <div class="card card-default">
+              <div class="card-header card-header-divider">Full Color Modals<span class="card-subtitle">Nifty modals with full color background style</span></div>
+              <div class="card-body">
+                <p>Modals are streamlined, but flexible, dialog prompts with the minimum required functionality and smart defaults.</p>
+                <div class="mt-3 mb-2 text-center">
+                  <button class="btn btn-space btn-primary md-trigger" data-modal="full-primary">Primary</button>
+                  <button class="btn btn-space btn-info md-trigger" data-modal="full-info">Information</button>
+                  <button class="btn btn-space btn-warning md-trigger" data-modal="full-warning">Warning</button>
+                  <button class="btn btn-space btn-danger md-trigger" data-modal="full-danger">Danger</button>
+                  <button class="btn btn-space btn-dark md-trigger" data-modal="full-dark">Dark</button>
+                </div>
+                <div class="modal-container modal-full-color modal-full-color-primary modal-effect-1" id="full-primary">
+                  <div class="modal-content">
+                    <div class="modal-header">
+                      <button class="close modal-close" type="button" data-dismiss="modal" aria-hidden="true"><span class="s7-close"></span></button>
+                    </div>
+                    <div class="modal-body">
+                      <div class="text-center"><span class="modal-main-icon s7-check"></span>
+                        <h3 class="mb-4">Awesome!</h3>
+                        <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit.<br>Fusce ultrices euismod lobortis.</p>
+                        <div class="mt-6">
+                          <button class="btn btn-sm btn-space btn-secondary modal-close" type="button" data-dismiss="modal">Cancel</button>
+                          <button class="btn btn-sm btn-space btn-primary modal-close" type="button" data-dismiss="modal">Proceed              </button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div class="modal-container modal-full-color modal-full-color-info modal-effect-1" id="full-info">
+                  <div class="modal-content">
+                    <div class="modal-header">
+                      <button class="close modal-close" type="button" data-dismiss="modal" aria-hidden="true"><span class="s7-close"></span></button>
+                    </div>
+                    <div class="modal-body">
+                      <div class="text-center"><span class="modal-main-icon s7-info"></span>
+                        <h3 class="mb-4">Information!</h3>
+                        <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit.<br>Fusce ultrices euismod lobortis.</p>
+                        <div class="mt-6">
+                          <button class="btn btn-sm btn-space btn-secondary modal-close" type="button" data-dismiss="modal">Cancel</button>
+                          <button class="btn btn-sm btn-space btn-info modal-close" type="button" data-dismiss="modal">Proceed</button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div class="modal-container modal-full-color modal-full-color-warning modal-effect-1" id="full-warning">
+                  <div class="modal-content">
+                    <div class="modal-header">
+                      <button class="close modal-close" type="button" data-dismiss="modal" aria-hidden="true"><span class="s7-close"></span></button>
+                    </div>
+                    <div class="modal-body">
+                      <div class="text-center"><span class="modal-main-icon s7-attention"></span>
+                        <h3 class="mb-4">Warning!</h3>
+                        <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit.<br>Fusce ultrices euismod lobortis.</p>
+                        <div class="mt-6">
+                          <button class="btn btn-sm btn-space btn-secondary modal-close" type="button" data-dismiss="modal">Cancel</button>
+                          <button class="btn btn-sm btn-space btn-warning modal-close" type="button" data-dismiss="modal">Proceed</button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div class="modal-container modal-full-color modal-full-color-danger modal-effect-1" id="full-danger">
+                  <div class="modal-content">
+                    <div class="modal-header">
+                      <button class="close modal-close" type="button" data-dismiss="modal" aria-hidden="true"><span class="s7-close"></span></button>
+                    </div>
+                    <div class="modal-body">
+                      <div class="text-center"><span class="modal-main-icon s7-close-circle"></span>
+                        <h3 class="mb-4">Danger!</h3>
+                        <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit.<br>Fusce ultrices euismod lobortis.</p>
+                        <div class="mt-6">
+                          <button class="btn btn-sm btn-space btn-secondary modal-close" type="button" data-dismiss="modal">Cancel</button>
+                          <button class="btn btn-sm btn-space btn-danger modal-close" type="button" data-dismiss="modal">Proceed</button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div class="modal-container modal-full-color modal-full-color-dark modal-effect-1" id="full-dark">
+                  <div class="modal-content">
+                    <div class="modal-header">
+                      <button class="close modal-close" type="button" data-dismiss="modal" aria-hidden="true"><span class="s7-close"></span></button>
+                    </div>
+                    <div class="modal-body">
+                      <div class="text-center"><span class="modal-main-icon s7-close-circle"></span>
+                        <h3 class="mb-4">Danger!</h3>
+                        <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit.<br>Fusce ultrices euismod lobortis.</p>
+                        <div class="mt-6">
+                          <button class="btn btn-sm btn-space btn-secondary modal-close" type="button" data-dismiss="modal">Cancel</button>
+                          <button class="btn btn-sm btn-space btn-dark modal-close" type="button" data-dismiss="modal">Proceed</button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div class="modal-overlay"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <script src="assets/lib/jquery/jquery.min.js" type="text/javascript"></script>
+    <script src="assets/lib/perfect-scrollbar/js/perfect-scrollbar.min.js" type="text/javascript"></script>
+    <script src="assets/lib/bootstrap/dist/js/bootstrap.bundle.min.js" type="text/javascript"></script>
+    <script src="assets/js/app.js" type="text/javascript"></script>
+    <script src="assets/lib/jquery.niftymodals/js/jquery.niftymodals.js" type="text/javascript"></script>
+    <script type="text/javascript">
+      //-Set Nifty Modals defaults
+      $.fn.niftyModal('setDefaults',{
+      	overlaySelector: '.modal-overlay',
+      	contentSelector: '.modal-content',
+      	closeSelector: '.modal-close',
+      	classAddAfterOpen: 'modal-show',
+      	classModalOpen: 'modal-open',
+      	classScrollbarMeasure: 'modal-scrollbar-measure',
+      	afterOpen: function(){
+      	 $("html").addClass('mai-modal-open');
+      	},
+      	afterClose: function(){
+      		$("html").removeClass('mai-modal-open');
+      	}
+      });
+      
+      $(document).ready(function(){
+      	//-initialize the javascript
+      	App.init();
+      });
+    </script>
+    <div class="modal fade" id="md-default" tabindex="-1" role="dialog">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <button class="close" type="button" data-dismiss="modal" aria-hidden="true"><span class="s7-close"></span></button>
+          </div>
+          <div class="modal-body">
+            <div class="text-center">
+              <div class="text-primary"><span class="modal-main-icon s7-check"></span></div>
+              <h3 class="mb-4">Awesome!</h3>
+              <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit.<br>Fusce ultrices euismod lobortis.</p>
+              <div class="mt-6">
+                <button class="btn btn-sm btn-space btn-secondary" type="button" data-dismiss="modal">Cancel</button>
+                <button class="btn btn-sm btn-space btn-primary" type="button" data-dismiss="modal">Proceed</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="modal fade" id="md-fullWidth" tabindex="-1" role="dialog">
+      <div class="modal-dialog full-width">
+        <div class="modal-content">
+          <div class="modal-header">
+            <button class="close" type="button" data-dismiss="modal" aria-hidden="true"><span class="s7-close"></span></button>
+          </div>
+          <div class="modal-body">
+            <div class="text-center">
+              <div class="text-primary"><span class="modal-main-icon s7-check"></span></div>
+              <h3 class="mb-4">Awesome!</h3>
+              <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit.<br>Fusce ultrices euismod lobortis.</p>
+              <div class="mt-6">
+                <button class="btn btn-sm btn-space btn-secondary" type="button" data-dismiss="modal">Cancel</button>
+                <button class="btn btn-sm btn-space btn-primary" type="button" data-dismiss="modal">Proceed</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="custom-width modal fade" id="md-custom" tabindex="-1" role="dialog">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <button class="close" type="button" data-dismiss="modal" aria-hidden="true"><span class="s7-close"></span></button>
+          </div>
+          <div class="modal-body">
+            <div class="text-center">
+              <div class="text-primary"><span class="modal-main-icon s7-check"></span></div>
+              <h3 class="mb-4">Awesome!</h3>
+              <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit.<br>Fusce ultrices euismod lobortis.</p>
+              <div class="mt-6">
+                <button class="btn btn-sm btn-space btn-secondary" type="button" data-dismiss="modal">Cancel</button>
+                <button class="btn btn-sm btn-space btn-primary" type="button" data-dismiss="modal">Proceed</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="modal modal-full-color modal-full-color-primary fade" id="md-fullColor" tabindex="-1" role="dialog">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <button class="close" type="button" data-dismiss="modal" aria-hidden="true"><span class="s7-close"></span></button>
+          </div>
+          <div class="modal-body">
+            <div class="text-center"><span class="modal-main-icon s7-info"></span>
+              <h3 class="mb-4">Information!</h3>
+              <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit.<br>Fusce ultrices euismod lobortis.</p>
+              <div class="mt-6">
+                <button class="btn btn-sm btn-space btn-secondary" type="button" data-dismiss="modal">Cancel</button>
+                <button class="btn btn-sm btn-space btn-primary" type="button" data-dismiss="modal">Proceed</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="modal fade" id="mod-primary" tabindex="-1" role="dialog">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <button class="close" type="button" data-dismiss="modal" aria-hidden="true"><span class="s7-close"></span></button>
+          </div>
+          <div class="modal-body">
+            <div class="text-center">
+              <div class="text-primary"><span class="modal-main-icon s7-check"></span></div>
+              <h3 class="mb-4">Awesome!</h3>
+              <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit.<br>Fusce ultrices euismod lobortis.</p>
+              <div class="mt-6">
+                <button class="btn btn-sm btn-space btn-secondary" type="button" data-dismiss="modal">Cancel</button>
+                <button class="btn btn-sm btn-space btn-primary" type="button" data-dismiss="modal">Proceed</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="modal fade" id="mod-info" tabindex="-1" role="dialog">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <button class="close" type="button" data-dismiss="modal" aria-hidden="true"><span class="s7-close"></span></button>
+          </div>
+          <div class="modal-body">
+            <div class="text-center">
+              <div class="text-info"><span class="modal-main-icon s7-info"></span></div>
+              <h3 class="mb-4">Information!</h3>
+              <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit.<br>Fusce ultrices euismod lobortis.</p>
+              <div class="mt-6">
+                <button class="btn btn-sm btn-space btn-secondary" type="button" data-dismiss="modal">Cancel</button>
+                <button class="btn btn-sm btn-space btn-info" type="button" data-dismiss="modal">Proceed</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="modal fade" id="mod-warning" tabindex="-1" role="dialog">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <button class="close" type="button" data-dismiss="modal" aria-hidden="true"><span class="s7-close"></span></button>
+          </div>
+          <div class="modal-body">
+            <div class="text-center">
+              <div class="text-warning"><span class="modal-main-icon s7-attention"></span></div>
+              <h3 class="mb-4">Warning!</h3>
+              <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit.<br>Fusce ultrices euismod lobortis.</p>
+              <div class="mt-6">
+                <button class="btn btn-sm btn-space btn-secondary" type="button" data-dismiss="modal">Cancel</button>
+                <button class="btn btn-sm btn-space btn-warning" type="button" data-dismiss="modal">Proceed</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="modal fade" id="mod-danger" tabindex="-1" role="dialog">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <button class="close" type="button" data-dismiss="modal" aria-hidden="true"><span class="s7-close"></span></button>
+          </div>
+          <div class="modal-body">
+            <div class="text-center">
+              <div class="text-danger"><span class="modal-main-icon s7-close-circle"></span></div>
+              <h3 class="mb-4">Danger!</h3>
+              <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit.<br>Fusce ultrices euismod lobortis.</p>
+              <div class="mt-6">
+                <button class="btn btn-sm btn-space btn-secondary" type="button" data-dismiss="modal">Cancel</button>
+                <button class="btn btn-sm btn-space btn-danger" type="button" data-dismiss="modal">Proceed</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="modal modal-dark fade" id="md-dark-primary" tabindex="-1" role="dialog">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <button class="close" type="button" data-dismiss="modal" aria-hidden="true"><span class="s7-close"></span></button>
+          </div>
+          <div class="modal-body">
+            <div class="text-center">
+              <div class="text-primary"><span class="modal-main-icon s7-check"></span></div>
+              <h3 class="mb-4">Awesome!</h3>
+              <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit.<br>Fusce ultrices euismod lobortis.</p>
+              <div class="mt-6">
+                <button class="btn btn-sm btn-space btn-secondary" type="button" data-dismiss="modal">Cancel</button>
+                <button class="btn btn-sm btn-space btn-primary" type="button" data-dismiss="modal">Proceed</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="modal modal-dark fade" id="md-dark-info" tabindex="-1" role="dialog">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <button class="close" type="button" data-dismiss="modal" aria-hidden="true"><span class="s7-close"></span></button>
+          </div>
+          <div class="modal-body">
+            <div class="text-center">
+              <div class="text-info"><span class="modal-main-icon s7-info"></span></div>
+              <h3 class="mb-4">Information!</h3>
+              <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit.<br>Fusce ultrices euismod lobortis.</p>
+              <div class="mt-6">
+                <button class="btn btn-sm btn-space btn-secondary" type="button" data-dismiss="modal">Cancel</button>
+                <button class="btn btn-sm btn-space btn-info" type="button" data-dismiss="modal">Proceed</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="modal modal-dark fade" id="md-dark-warning" tabindex="-1" role="dialog">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <button class="close" type="button" data-dismiss="modal" aria-hidden="true"><span class="s7-close"></span></button>
+          </div>
+          <div class="modal-body">
+            <div class="text-center">
+              <div class="text-warning"><span class="modal-main-icon s7-attention"></span></div>
+              <h3 class="mb-4">Warning!</h3>
+              <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit.<br>Fusce ultrices euismod lobortis.</p>
+              <div class="mt-6">
+                <button class="btn btn-sm btn-space btn-secondary" type="button" data-dismiss="modal">Cancel</button>
+                <button class="btn btn-sm btn-space btn-warning" type="button" data-dismiss="modal">Proceed</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="modal modal-dark fade" id="md-dark-danger" tabindex="-1" role="dialog">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <button class="close" type="button" data-dismiss="modal" aria-hidden="true"><span class="s7-close"></span></button>
+          </div>
+          <div class="modal-body">
+            <div class="text-center">
+              <div class="text-danger"><span class="modal-main-icon s7-close-circle"></span></div>
+              <h3 class="mb-4">Danger!</h3>
+              <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit.<br>Fusce ultrices euismod lobortis.</p>
+              <div class="mt-6">
+                <button class="btn btn-sm btn-space btn-secondary" type="button" data-dismiss="modal">Cancel</button>
+                <button class="btn btn-sm btn-space btn-danger" type="button" data-dismiss="modal">Proceed</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="modal fade" id="mod-footer-primary" tabindex="-1" role="dialog">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <button class="close" type="button" data-dismiss="modal" aria-hidden="true"><span class="s7-close"></span></button>
+          </div>
+          <div class="modal-body">
+            <div class="text-center">
+              <div class="text-primary"><span class="modal-main-icon s7-check"></span></div>
+              <h3 class="mb-4">Awesome!</h3>
+              <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit.<br>Fusce ultrices euismod lobortis.</p>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button class="btn btn-link btn-link-secondary" type="button" data-dismiss="modal">Cancel</button>
+            <button class="btn btn-link btn-link-primary" type="button" data-dismiss="modal">Proceed</button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="modal fade" id="mod-footer-info" tabindex="-1" role="dialog">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <button class="close" type="button" data-dismiss="modal" aria-hidden="true"><span class="s7-close"></span></button>
+          </div>
+          <div class="modal-body">
+            <div class="text-center">
+              <div class="text-info"><span class="modal-main-icon s7-info"></span></div>
+              <h3 class="mb-4">Information!</h3>
+              <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit.<br>Fusce ultrices euismod lobortis.</p>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button class="btn btn-link btn-link-secondary" type="button" data-dismiss="modal">Cancel</button>
+            <button class="btn btn-link btn-link-info" type="button" data-dismiss="modal">Proceed</button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="modal fade" id="mod-footer-warning" tabindex="-1" role="dialog">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <button class="close" type="button" data-dismiss="modal" aria-hidden="true"><span class="s7-close"></span></button>
+          </div>
+          <div class="modal-body">
+            <div class="text-center">
+              <div class="text-warning"><span class="modal-main-icon s7-attention"></span></div>
+              <h3 class="mb-4">Warning!</h3>
+              <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit.<br>Fusce ultrices euismod lobortis.</p>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button class="btn btn-link btn-link-secondary" type="button" data-dismiss="modal">Cancel</button>
+            <button class="btn btn-link btn-link-warning" type="button" data-dismiss="modal">Proceed</button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="modal fade" id="mod-footer-danger" tabindex="-1" role="dialog">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <button class="close" type="button" data-dismiss="modal" aria-hidden="true"><span class="s7-close"></span></button>
+          </div>
+          <div class="modal-body">
+            <div class="text-center">
+              <div class="text-danger"><span class="modal-main-icon s7-close-circle"></span></div>
+              <h3 class="mb-4">Danger!</h3>
+              <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit.<br>Fusce ultrices euismod lobortis.</p>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button class="btn btn-link btn-link-secondary" type="button" data-dismiss="modal">Cancel</button>
+            <button class="btn btn-link btn-link-danger" type="button" data-dismiss="modal">Proceed</button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="modal modal-dark fade" id="md-dark-footer-primary" tabindex="-1" role="dialog">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <button class="close" type="button" data-dismiss="modal" aria-hidden="true"><span class="s7-close"></span></button>
+          </div>
+          <div class="modal-body">
+            <div class="text-center">
+              <div class="text-primary"><span class="modal-main-icon s7-check"></span></div>
+              <h3 class="mb-4">Awesome!</h3>
+              <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit.<br>Fusce ultrices euismod lobortis.</p>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button class="btn btn-link btn-link-secondary" type="button" data-dismiss="modal">Cancel</button>
+            <button class="btn btn-link btn-link-primary" type="button" data-dismiss="modal">Proceed</button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="modal modal-dark fade" id="md-dark-footer-info" tabindex="-1" role="dialog">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <button class="close" type="button" data-dismiss="modal" aria-hidden="true"><span class="s7-close"></span></button>
+          </div>
+          <div class="modal-body">
+            <div class="text-center">
+              <div class="text-info"><span class="modal-main-icon s7-info"></span></div>
+              <h3 class="mb-4">Information!</h3>
+              <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit.<br>Fusce ultrices euismod lobortis.</p>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button class="btn btn-link btn-link-secondary" type="button" data-dismiss="modal">Cancel</button>
+            <button class="btn btn-link btn-link-info" type="button" data-dismiss="modal">Proceed</button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="modal modal-dark fade" id="md-dark-footer-warning" tabindex="-1" role="dialog">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <button class="close" type="button" data-dismiss="modal" aria-hidden="true"><span class="s7-close"></span></button>
+          </div>
+          <div class="modal-body">
+            <div class="text-center">
+              <div class="text-warning"><span class="modal-main-icon s7-attention"></span></div>
+              <h3 class="mb-4">Warning!</h3>
+              <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit.<br>Fusce ultrices euismod lobortis.</p>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button class="btn btn-link btn-link-secondary" type="button" data-dismiss="modal">Cancel</button>
+            <button class="btn btn-link btn-link-warning" type="button" data-dismiss="modal">Proceed</button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="modal modal-dark fade" id="md-dark-footer-danger" tabindex="-1" role="dialog">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <button class="close" type="button" data-dismiss="modal" aria-hidden="true"><span class="s7-close"></span></button>
+          </div>
+          <div class="modal-body">
+            <div class="text-center">
+              <div class="text-danger"><span class="modal-main-icon s7-close-circle"></span></div>
+              <h3 class="mb-4">Danger!</h3>
+              <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit.<br>Fusce ultrices euismod lobortis.</p>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button class="btn btn-link btn-link-secondary" type="button" data-dismiss="modal">Cancel</button>
+            <button class="btn btn-link btn-link-danger" type="button" data-dismiss="modal">Proceed</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>

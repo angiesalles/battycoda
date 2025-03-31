@@ -1,0 +1,80 @@
+// Summernote
+
+.note-editor.note-frame {
+	margin-bottom: 0;
+	border-width: 0;
+	box-shadow: none;
+
+	.note-toolbar {
+		margin: 0;
+		padding-bottom: 5px;
+
+		.btn {
+
+			.fa {
+				font-size: 14px;
+			}
+		}
+
+		> .btn-group {
+			margin-left: 0;
+	    margin-right: 5px;
+	    margin-top: 5px
+		}
+
+		.note-color .dropdown-toggle {
+			padding-left: 5px;
+    	width: 20px;
+		}
+	}
+
+	.note-statusbar {
+		background-color: darken(theme-color("light"), 3.5%);
+
+		.note-resizebar {
+			height: auto;
+			padding-top: 3px; 
+			padding-bottom: 4px; 
+		}
+	}
+
+	.note-editable {
+		border: 1px solid $input-border-color;
+		padding: 10px 12px;
+		margin-top: 6px;
+		border-radius: 0;
+	}
+
+	.note-editing-area {
+		
+		.note-editable {
+			color: $body-color;
+		}
+	}
+}
+
+.note-btn-group {
+     .btn-default {
+        @extend .btn-secondary; 
+     }
+
+    .dropdown-menu {
+        > li {
+            > a {
+                display: block;
+                padding: 3px 20px;
+                clear: both;
+                font-weight: normal;
+                line-height: 1.42857143;
+                color: #333;
+                white-space: nowrap;
+            }
+        }
+    }    
+}
+
+.note-popover .popover-content .note-color .dropdown-toggle, 
+.note-editor .card-header.note-toolbar .note-color .dropdown-toggle {
+    width: 20px;
+    padding-left: 1px;
+}

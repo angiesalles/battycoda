@@ -1,0 +1,91 @@
+.ads-chart {
+	margin-bottom: $widget-margin-bottom;
+
+	&.widget.widget-fullwidth {		
+
+		.widget-head {
+
+			 & {
+				margin-bottom: 1rem;
+			}
+		}
+	}
+}
+
+.ads-resume {
+	display: flex;
+	justify-content: space-between;
+}
+
+.ads-info {
+	display: flex;
+	flex-direction: column;
+	flex: 0 1 45%;
+	padding: 30px;
+}
+
+.ads-progress {
+
+	.progress {
+		border-radius: 0.25rem;
+		margin-bottom: 1.76923rem;
+		height: auto;
+	}
+
+	.progress-bar {
+		display: block;
+		border-radius: 0.25rem;
+		height: 4px;
+	}
+}
+
+.ads-progress-counter {
+	display: block;
+	font-size: 1.84615rem;
+	line-height: 1;
+}
+
+.ads-progress-title {
+	font-size: $paragraph-size;
+}
+
+.ads-legend {
+
+	.legendColorBox {
+		padding: 0 7px 0 0;
+
+		> div {
+			border: 0 !important;
+
+			> div {
+				width: 8px !important;
+				height: 8px !important;
+			}
+		}
+	}
+
+	.legendLabel {
+		font-size: 1rem;
+	}
+}
+
+.ads-users {
+	position: relative;
+	padding-right: 30px;
+	width: 50%;
+}
+
+.users-chart-counter {
+	position: absolute;
+	display: flex;
+	flex-direction: column;
+	top: 50%;
+ 	width: 100%;
+ 	text-align: center;
+ 	margin-top: -20px;
+
+ 	.users-counter {
+ 		font-size: 1.84615rem;
+ 		line-height: 1;
+ 	}
+}

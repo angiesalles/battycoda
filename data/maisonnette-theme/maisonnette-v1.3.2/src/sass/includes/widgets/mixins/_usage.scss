@@ -1,0 +1,37 @@
+@mixin usage-variant($bg-color, $text-color: theme-color("light")) {
+
+	background-color: $bg-color;
+	color: $text-color;
+
+	.usage-head-title {
+		@if $bg-color == theme-color("dark") {
+	   	color: darken($text-color, 29%);
+	   }
+	}
+
+	.usage-detail {
+
+		 @if $bg-color == theme-color("dark") {
+	     	color: darken($text-color, 14%);
+	    } @else {
+	      color: desaturate( darken($bg-color, 10%), 20% );
+	    }
+	}
+
+	.usage-counter {
+		@if $bg-color == theme-color("dark") {
+	   	color: darken($text-color, 14%);
+	   }
+	}
+
+	.usage-icon {
+
+		.icon {
+			@if $bg-color == theme-color("dark") {
+		   	color: darken($text-color, 14%);
+		   } @else {
+		   	color: desaturate( darken($bg-color, 10%), 20% );
+		   }
+		}
+	}
+}

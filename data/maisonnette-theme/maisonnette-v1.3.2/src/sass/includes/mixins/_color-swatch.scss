@@ -1,0 +1,17 @@
+@mixin color-swatch-variation($color) {
+
+	.state-names {
+		border-color: $color;
+	}
+
+	.colors {
+
+		.normal-state {
+      background-color: $color;
+    }
+
+    .hover-state {
+      background-color: lighten($color, 4%);
+    }
+	}
+}

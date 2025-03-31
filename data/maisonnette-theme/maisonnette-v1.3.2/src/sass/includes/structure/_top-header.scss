@@ -1,0 +1,111 @@
+.mai-top-header {
+	border:	0;
+	margin-bottom: 0;
+	background-color: $top-header-bg;
+	padding: 0;
+
+	@include tablet {
+		background-color: $top-header-bg-mobile;
+	}
+
+	> .container {
+		padding: 0;
+		display: flex;
+		align-items: center;
+
+		@include phone {
+			justify-content: space-between;
+		}
+	}
+
+	.dropdown-toggle {
+
+		// Hide default bootstrap dropdown caret
+		&:after {
+			display: none;
+		}
+	}
+
+	.dropdown-menu {
+		margin-top: 0;
+	}
+
+	// logo
+	.navbar-brand {
+		flex: 0 0 auto;
+		color: $white;
+		padding-top: 0;
+		padding-bottom: 0;
+		font-size: $top-header-logo-font-size;
+		font-weight: $font-weight-light;
+		line-height: $top-header-height;
+		height: $top-header-height;
+		width: $logo-width;
+		background-image: url('#{$img-path}/logo.png');
+		background-repeat: no-repeat;
+		background-position: 0 center;
+		margin-right: $content-padding;
+
+		&-text {
+			background-image: none;
+		}
+
+		//Retina logo
+		@media #{$retina}{
+			background-image: url("#{$img-path}/logo-2x.png");
+			background-size: $logo-width $logo-height;
+		}
+
+		@include laptop {
+			flex: 1 1 100%;
+		}
+
+		@include tablet {
+			display: none;
+		}
+
+		@include phone {
+			display: none;
+		}
+	}
+
+	// Logo mobile layout
+	&.mai-top-header-show-logo .navbar-brand {
+		
+		@include tablet {
+			display: inline-block;
+			flex: 1 1;
+			margin-right: 0;
+			margin-left: $logo-mobile-margin;
+		}
+	}
+
+	//Flex direction fix on top header navbars
+	.navbar-nav {
+		flex-direction: row;
+	}
+
+	.mai-top-nav {
+		flex: 1 1;
+
+		@include tablet {
+			display: none;
+		}
+
+		@include phone {
+			display: none;
+		}
+
+		@include laptop {
+			display: none;
+		}
+
+		.nav-link {
+			padding: 0 18px;
+		}
+	}
+
+	.navbar-collapse {
+		padding-right: $content-padding;
+	}
+}

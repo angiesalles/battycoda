@@ -1,0 +1,30 @@
+.user-develop-chart {
+	
+	.legend-container {
+		padding: 20px;
+	}
+
+	.legendColorBox {
+		padding-right: 7px;
+
+		> div {
+			border: 0 !important;
+			border-radius: 50%;
+
+			> div {
+				width: 10px !important;
+				height: 10px !important;
+				border-radius: 50%;
+			}
+		}
+	}
+
+	.legendLabel {
+		padding-right: 25px;
+		font-size: 1rem;
+
+		@include phone {
+			padding-right: 15px;
+		}
+	}
+}

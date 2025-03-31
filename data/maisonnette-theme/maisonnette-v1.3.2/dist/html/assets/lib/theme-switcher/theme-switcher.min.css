@@ -1,0 +1,11 @@
+/*!
+ * Maisonnette-admin v1.3.2
+ * https://foxythemes.net
+ *
+ * Copyright (c) 2019 Foxy Themes
+ */
+
+/*!
+ * theme-switcher v0.1.0 (https://bitbucket.org/foxythemes/theme-switcher/admin)
+ * Copyright 2017 Foxy Themes all rights reserved 
+ */.ft_theme_switcher{position:fixed;top:125px;right:-280px;z-index:99999999;background-color:#222222;color:#FFF;padding:20px;width:280px;border-radius:3px 0 0 3px}.rtl .ft_theme_switcher{right:auto;left:-280px}.ft_theme_switcher .toggle{top:14px;font-size:18px;line-height:40px;text-align:center;background-color:#222222;cursor:pointer;left:-38px;width:38px;height:40px;position:absolute;border-radius:3px 0 0 3px}.rtl .ft_theme_switcher .toggle{left:auto;right:-38px;border-radius:0 3px 3px 0}.ft_theme_switcher .desc h3{font-weight:300;margin-top:0}.ft_theme_switcher .desc p{font-size:12px;line-height:19px;font-weight:300;margin-bottom:23px}.ft_theme_switcher .style_list{overflow:hidden}.ft_theme_switcher .style_list .style{margin-right:40px;margin-bottom:10px;display:block;width:100%;position:relative}.rtl .ft_theme_switcher .style_list .style{margin-left:40px;margin-right:0}.ft_theme_switcher .style_list .style a{outline:none;position:absolute;width:100%;height:100%;top:0;left:0}.ft_theme_switcher .style_list .style .name{font-size:12px;color:#878787}.ft_theme_switcher .style_list .style .colors{margin-bottom:2px;overflow:hidden}.ft_theme_switcher .style_list .style .colors .name{padding-left:15px;float:left}.ft_theme_switcher .style_list .style .color{float:left;height:20px;width:25px}.rtl .ft_theme_switcher .style_list .style .color{float:right}.ft_theme_switcher .style_list .style:hover .name{color:#FFF}.ft_theme_switcher .switchers{margin-top:20px;display:block;margin-right:15px}.rtl .ft_theme_switcher .switchers{margin-right:0;margin-left:15px}.ft_theme_switcher .switchers .switch-title{float:right}.rtl .ft_theme_switcher .switchers .switch-title{float:left}.ft_theme_switcher .switchers .switch-button{float:left}.rtl .ft_theme_switcher .switchers .switch-button{float:right}

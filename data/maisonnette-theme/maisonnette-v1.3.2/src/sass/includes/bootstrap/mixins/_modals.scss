@@ -1,0 +1,40 @@
+//Full colored modal
+@mixin modal-header-colored-variant($color) {
+  background-color: $color;
+
+  h1, h2, h3, h4, h5, h6 {
+    @if $color == theme-color("dark") {
+      color: darken(theme-color("light"), 18%);
+    } @else {
+      color: theme-color("light");
+    } 
+  }
+
+  .close{
+    color: theme-color("light") !important;
+    opacity: 0.6 !important;
+
+    &:hover {
+      opacity: 1 !important;
+    }
+  }
+}
+
+@mixin modal-full-color($color) {
+
+  .modal-header {
+    background-color: $color;
+  }
+
+  .modal-body, .modal-footer {
+    background-color: $color;
+  }
+
+  .btn-default {
+		color: $color;
+
+    &:active {
+      color: $color;
+    }
+  }
+}

@@ -1,0 +1,64 @@
+// Left navbar style
+
+.mai-top-header .navbar-nav {
+
+	> .nav-item {
+
+		& + .nav-item {
+			margin-left: 0;
+		}
+
+		> .nav-link {
+			line-height: $top-header-height;
+			font-family: $raleway;
+			font-size: 1.077rem;
+			padding: 0 18px;
+			outline: none;
+
+			@include tablet {
+				line-height: $top-header-height-responsive;
+			}
+		}
+
+		&.dropdown {
+
+			> a {
+
+				.angle-down {
+					position: relative;
+					font-size: 2.077rem;
+					vertical-align: middle;
+					width: 27px;
+					display: inline-block;
+					line-height: inherit;
+				}
+			}
+
+			.dropdown-menu {
+				border: 0;
+				border-radius: 0 0 3px 3px;
+				box-shadow: none;
+				background-color: theme-color("dark");
+				min-width: $top-header-dropdown-min-width;
+
+				> .dropdown-item {
+					font-size: 1rem;
+					color: $top-header-dropdown-color;
+					padding: 9px 20px;
+					min-width: 175px;
+					font-family: $raleway;
+
+					&:hover {
+						background-color: darken(theme-color("primary"), 3%);
+						color: $white;
+					}
+
+					&:focus {
+						background-color: transparent;
+					}
+				}
+				
+			}
+		}
+	}
+}

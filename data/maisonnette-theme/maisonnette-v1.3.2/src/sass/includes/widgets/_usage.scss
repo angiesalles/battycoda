@@ -1,0 +1,73 @@
+.usage {
+	background-color: theme-color("light");
+	padding: 20px 20px 35px;
+	margin-bottom: $widget-margin-bottom;
+}
+
+.usage-head {
+	display: flex;
+	align-items: center;
+	margin-bottom: 1rem;
+}
+
+.usage-head-tools {
+	.icon {
+		font-size: 16px;
+	}
+}
+
+.usage-head-title {
+	flex: 1;
+	font-size: 1.38462rem;
+}
+
+.usage-resume {
+	display: flex;
+	padding-top: .615385rem;
+}
+
+.usage-data {
+	display: flex;
+	flex: 1;
+	flex-direction: column;
+}
+
+.usage-counter {
+	font-size: 2.76923rem;
+}
+
+.usage-icon {
+	display: flex;
+	flex-direction: column;
+	justify-content: flex-end;
+
+	.icon {
+		font-size: 3.69231rem;
+	}
+}
+
+// Usage color variants
+
+.usage.usage-primary{
+	@include usage-variant(theme-color("primary"));
+}
+
+.usage.usage-success{
+	@include usage-variant(theme-color("success"));
+}
+
+.usage.usage-info{
+	@include usage-variant(theme-color("info"));
+}
+
+.usage.usage-warning{
+	@include usage-variant(theme-color("warning"));
+}
+
+.usage.usage-danger{
+	@include usage-variant(theme-color("danger"));
+}
+
+.usage.usage-dark{
+	@include usage-variant(theme-color("dark"));
+}

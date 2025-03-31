@@ -1,0 +1,37 @@
+.widget-indicators {
+	background-color: theme-color("light");
+	margin-bottom: $widget-margin-bottom;
+}
+
+.indicator-item{
+	padding: 12px 30px;
+	display: flex;
+	width: 100%;
+	margin-bottom: 0;
+	align-items: center;
+	border-bottom: 1px solid darken(theme-color("light"), 10%);
+}
+
+.indicator-item-icon {
+	flex: 1;
+
+	.icon {
+		font-size: 3.07692rem;
+		color: theme-color("primary");
+	}
+}
+
+.indicator-item-value {
+	flex: 0 1 50%;
+	display: flex;
+	flex-direction: column;
+	align-items: flex-end;
+}
+
+.indicator-value-counter {
+	font-size: 1.84615rem;
+}
+
+.indicator-value-title {
+	font-weight: $font-weight-light;
+}

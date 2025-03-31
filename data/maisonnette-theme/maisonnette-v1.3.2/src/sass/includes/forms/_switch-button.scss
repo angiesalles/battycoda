@@ -1,0 +1,139 @@
+@mixin switch-button-size($size-base){
+  height: $size-base;
+  width: $size-base + 33px;
+  line-height: $size-base - 4px;
+
+  label{
+    height: $size-base - 4px;
+    width: $size-base - 4px;
+
+    &:before{
+      line-height: $size-base;
+    }
+  }
+}
+
+@mixin switch-button-color($active-color, $off-color: darken(theme-color("light"), 20%)){
+  background-color: $off-color;
+
+  input[type="checkbox"]:checked + span{ 
+    background-color: $active-color;
+  }
+}
+
+.switch-button{
+  display: inline-block;
+  line-height: 16px;
+  border-radius: 50px;
+  background-color: darken(theme-color("light"), 20%);
+  width: 57px;
+  height: 27px;
+  padding: 2px;
+  position: relative;
+  overflow: hidden;
+  vertical-align: middle;
+  
+  input[type="checkbox"]{
+    display: none;
+  }
+  
+  label{
+    border-radius: 50%;
+    border: 1px solid transparent;
+    background-color: $white;
+    margin: 0;
+    height: 22px;
+    width: 22px;
+    display: inline-block;
+    cursor: pointer;
+    background-clip: padding-box;
+    
+    &:before{
+      position: absolute;
+      font-size: 11px;
+      z-index: 0;
+      content: "OFF";
+      right: 0;
+      display: block;
+      width: 100%;
+      height: 100%;
+      line-height: 27px;
+      top: 0;
+      text-align: right;
+      padding-right: 8px;
+      color: theme-color("light");
+    } 								    
+  }
+  
+  input[type="checkbox"]:checked + span{ 
+    background-color: theme-color("primary");
+    display: block;
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    padding: 2px;
+    
+    label{
+      float: right;
+    
+      &:before{
+        position: absolute;
+        z-index: 0;
+        content: "ON";
+        color: $white;
+        left: 0;
+        text-align: left;
+        padding-left: 8px;
+      }
+    }
+  }
+ 
+  //Yes-No labels
+  &.switch-button-yesno{
+    label{
+ 
+      &:before{
+        content: "NO";
+      }
+    }
+ 
+    input[type="checkbox"]:checked + span{
+ 
+      label{
+        &:before{
+          content: "YES";
+        }
+      }
+    }
+  }
+
+  //Sizes
+  &.switch-button-xs{
+    @include switch-button-size(20px);
+    width: 50px;
+  }
+
+  &.switch-button-sm{
+    @include switch-button-size(24px);
+  }
+
+  &.switch-button-lg{
+    @include switch-button-size(30px);
+    width: 65px;
+  }
+
+  //Color styles
+  &.switch-button-info{
+    @include switch-button-color(theme-color("info"));
+  }
+  
+  &.switch-button-warning{
+    @include switch-button-color(theme-color("warning"));
+  }
+
+  &.switch-button-danger{
+    @include switch-button-color(theme-color("danger"));
+  }
+}

@@ -1,28 +1,67 @@
 /* 
- * BattyCoda Main CSS
- * Main file that imports all modular stylesheets 
+ * BattyCoda Main CSS - Maisonnette Version
+ * Core application-specific styles that complement the Maisonnette theme
  */
 
-/* Import base styles */
-@import url('base.css');
+/* Domain-specific styles */
+@import url('audio.css');
+@import url('task_annotation.css');
+@import url('waveform_viewer.css');
+@import url('debug.css');
 
-/* Import theme color variables */
+/* Modifying the theme selector styling */
 @import url('themes.css');
 
-/* Import themed elements */
-@import url('color-elements.css');
+/* Custom form overrides if needed */
+/* @import url('forms.css'); */
 
-/* Import components */
-@import url('components.css');
+/* Custom BattyCoda-specific styles */
 
-/* Import form styles */
-@import url('forms.css');
+/* Fix for title colors */
+title {
+    color: black !important;
+}
 
-/* Import audio-related styles */
-@import url('audio.css');
+/* Default navbar styling is now handled by the Maisonnette theme */
 
-/* Import responsive adjustments */
-@import url('responsive.css');
+/* Dashboard padding */
+.dashboard-container {
+    padding: 20px;
+}
 
-/* Import debug styles */
-@import url('debug.css');
+/* Status indicators */
+.status-badge {
+    display: inline-block;
+    padding: 0.25rem 0.5rem;
+    border-radius: 0.25rem;
+    font-size: 0.75rem;
+    font-weight: 600;
+}
+
+.status-success {
+    background-color: rgba(40, 167, 69, 0.2);
+    color: #28a745;
+}
+
+.status-warning {
+    background-color: rgba(255, 193, 7, 0.2);
+    color: #ffc107;
+}
+
+.status-error {
+    background-color: rgba(220, 53, 69, 0.2);
+    color: #dc3545;
+}
+
+/* Task button styling */
+.task-button {
+    padding: 10px 20px;
+    font-size: 1rem;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+}
+
+.task-button:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 3px 6px rgba(0,0,0,0.2);
+}

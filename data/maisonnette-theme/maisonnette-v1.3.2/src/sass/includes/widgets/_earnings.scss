@@ -1,0 +1,40 @@
+.earnings {
+	margin-bottom: $widget-margin-bottom;
+
+	&.widget.widget-fullwidth {		
+
+		.widget-head {
+
+			 & {
+				margin-bottom: 1rem;
+			}
+		}
+	}
+}
+
+.earnings-resume {
+	padding: $earnings-resume-padding;
+	margin-bottom: -15px;
+}
+
+.earnings-value {
+	display: flex;
+	flex-direction: column;
+	margin-bottom: 1rem;
+
+	&.earnings-value-big{
+		margin-bottom: 2.30769rem;
+	}
+}
+
+.earnings-counter {
+	font-size: 1.23077rem;
+
+	.earnings-value-big & {
+		font-size: 2.76923rem;
+	}
+}
+
+.earnings-title {
+	color: darken(theme-color("light"), 40%);
+}

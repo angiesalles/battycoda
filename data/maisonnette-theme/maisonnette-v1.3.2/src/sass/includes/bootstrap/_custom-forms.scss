@@ -1,0 +1,212 @@
+// Checkboxes and radios
+
+.custom-control {
+  min-height: $custom-control-indicator-size;
+  min-width: $custom-control-indicator-size;
+  margin-bottom: .923rem;
+
+  .custom-control-label {
+	  position: unset;
+
+	  &:after, &:before {
+		  left: 0;
+	  }
+  }
+}
+
+.custom-control-input {
+
+	.custom-control-label {
+		line-height: 1.6;
+	}
+
+	&:checked ~ .custom-control-label::after {
+		color: theme-color("primary");
+	}
+
+  &:checked ~ .custom-control-label::before {
+    border-color: theme-color("primary");    
+  }
+
+  &:checked ~ .custom-control-color::after {
+		background-color: theme-color("primary");
+		color: theme-color("light");
+
+		.custom-radio & {
+			border-radius: 50%;
+		}
+	}
+}
+
+// Checkboxes
+
+.custom-checkbox {
+	.custom-control-label::before {
+		border: 2px solid $input-border-color;
+		content: "";
+	}
+
+  .custom-control-input:checked ~ .custom-control-label::after {
+  	content: "\e6ca";
+  	font-family: $icon-font;
+		font-size: $input-check-component-size - 2px;		
+		font-weight: normal;
+		text-align: center;
+		line-height: 1.1;
+  }
+}
+
+// Radios
+
+.custom-radio {
+
+	.custom-control-label::before {
+		border: 2px solid $input-border-color;
+		content: "";
+	}
+
+  .custom-control-input:checked ~ .custom-control-label::after {
+  	content: "\e6ce";
+  	font-family: $icon-font;
+  	font-size: 14px;
+  	font-weight: normal;
+		text-align: center;
+  	line-height: 1.6;
+  }
+}
+
+// Icon radio
+.custom-radio-icon {
+	margin: 0;
+	padding: 0;
+	width: $radio-icon-component-size;
+	height: $radio-icon-component-size;
+
+	.custom-control-label::after, .custom-control-label::before {
+		display: none;
+	}
+
+	.custom-control-label {
+		cursor: pointer;
+		width: $radio-icon-component-size;
+		height: $radio-icon-component-size;
+		line-height: 1;
+		border: 2px solid $radio-icon-component-border;
+		border-radius: 50%;
+		font-size: $radio-icon-component-icon-size;
+		color: $radio-icon-component-color;
+		background-color: theme-color("light");
+		text-align: center;
+
+		&:hover {
+			border-color: darken($radio-icon-component-border, 10%);
+		}
+
+		i {
+			vertical-align: middle;
+		}
+	}
+
+	// Checked
+	input[type="radio"]:checked {
+
+		& + .custom-control-label {
+			border-color: theme-color("primary");
+			color: theme-color("primary");
+			background-color: theme-color("light");
+
+			i {
+				color: theme-color("primary");
+			}
+		}
+	}
+
+	input[type="radio"]:focus {
+		& + .custom-control-label {
+			box-shadow: none;
+		}
+	}
+
+	// Inline style
+	&.custom-control-inline {
+
+		& + & {
+			margin-left: 18px;
+		}
+	}
+}
+
+//Form validation states
+.form-control-success {
+  background-image: $form-icon-success;
+}
+
+.form-control-danger {
+  background-image: $form-icon-danger;
+}
+
+@include custom-form-validation-state("valid", theme-color("success"));
+@include custom-form-validation-state("invalid", theme-color("danger"));
+
+// Sizing
+.custom-control-sm {
+	min-width: 1.38462rem;
+	min-height: 1.38462rem;
+
+	&.custom-control {
+		top: 2px;
+	}
+
+	.custom-control-input {
+
+		~ .custom-control-label {
+
+			&::before {
+				width: 1.38462rem;
+				height: 1.38462rem;
+			}			
+		}
+
+		&:checked ~ .custom-control-label {
+
+			&::after {
+				width: 1.38462rem;
+				height: 1.38462rem;
+				font-size: 15px;
+				right: 0;
+				line-height: 1.3;
+				vertical-align: top;
+			}
+		}	
+	}	
+}
+
+// Select
+
+.custom-select {
+	transition: $input-transition;
+	@include border-radius(0);
+
+	&:focus {
+		box-shadow: 0 0 0 transparent;
+	}
+}
+
+
+
+
+// Custom file input
+
+.custom-file-label {
+
+	.input-group  & {
+		display: flex;
+		align-items: center;
+
+		&:after {
+			display: flex;
+			align-items: center;
+			height: 100%;
+		}
+	}
+}

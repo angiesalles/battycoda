@@ -1,0 +1,41 @@
+.badge {
+  display: inline-block;
+  border: 1px solid darken(theme-color("light"), 20%);
+  vertical-align: middle;
+  @include border-radius(0);
+
+  // Empty badges collapse automatically
+  &:empty {
+    display: none;
+  }
+}
+
+.badge-pill {
+  padding: ($badge-padding-y - .1915) ($badge-padding-x - .1154);
+}
+
+// Color variants
+
+.badge-primary {
+  @include badge-color-variant(theme-color("primary"));
+}
+
+.badge-success {
+  @include badge-color-variant(theme-color("success"));
+}
+
+.badge-info {
+  @include badge-color-variant(theme-color("info"));
+}
+
+.badge-warning {
+  @include badge-color-variant(theme-color("warning"));
+}
+
+.badge-danger {
+  @include badge-color-variant(theme-color("danger"));
+}
+
+.badge-dark {
+  @include badge-color-variant(theme-color("dark"));
+}

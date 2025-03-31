@@ -1,0 +1,139 @@
+// User nav style
+.mai-user-nav {
+
+	flex: 0 0 auto;
+
+	@include tablet {
+		flex: 1 1 100%;
+		order: 1;
+	}
+
+	@include phone {
+		flex: 0 1 auto;
+	}
+
+	.mai-top-header-show-logo & {
+		
+		@include tablet {
+			flex: 0 1 auto;
+			margin-right: 20px;
+		}
+
+		@include phone {
+			flex: 0 1 auto;
+			margin-right: 20px;
+		}
+	}
+
+
+	> .nav-item.dropdown {
+
+		@include phone {
+			width: 100%;
+		}
+
+		&.show,
+		&.show:hover {
+
+			> a {
+
+				.angle-down {
+
+					&:after {
+						position: absolute;
+						content: "";
+						display: inline-block;
+						border-bottom: 10px solid theme-color("dark");
+				    border-left: 10px solid transparent;
+				    border-right: 10px solid transparent;
+				    border-top: 0;
+				    right: 50%;
+				    bottom: 0;
+				    margin-right: -10px;
+					}
+				}
+
+			}
+		}
+
+		> .nav-link {
+			color: $white;
+			padding-right: 0;
+			font-size: 1.231rem;
+			white-space: nowrap;
+
+			@include tablet {
+				display: flex;
+				align-items: center;
+			}
+
+			@include phone {
+				display: flex;
+				align-items: center;
+			}
+
+			img {
+				max-width: 30px;
+				max-height: 30px;
+				border-radius: 3px;
+
+				@include tablet {
+					flex: 0 0 auto;
+				}
+
+				@include phone {
+					flex: 0 0 auto;
+				}
+			}
+
+			.user-name {
+				margin-left: 10px;
+
+				.mai-top-header-show-logo & {
+					@include tablet {
+						display: none;
+					}
+				}
+				
+				@include phone {
+					flex: 1 1 100%;
+					overflow: hidden;
+					text-overflow: ellipsis;
+				}
+				@include tablet {
+					flex: 1 1 100%;
+					overflow: hidden;
+					text-overflow: ellipsis;
+				}
+			}
+		}
+
+		.mai-top-header-show-logo & .dropdown-menu {
+			
+			@include tablet {
+				left: auto;
+				right: -10px;
+			}
+
+			@include phone {
+				right: 10px;
+			}
+		}
+		.dropdown-menu {
+
+			.dropdown-item {
+
+				.icon {
+					font-size: 1.538rem;
+					vertical-align: middle;
+					margin-right: 10px;
+				}
+			}
+
+			&:after {
+				left: auto;
+				right: 20px;
+			}
+		}
+	}
+}

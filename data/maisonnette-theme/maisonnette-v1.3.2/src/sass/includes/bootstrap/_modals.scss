@@ -1,0 +1,296 @@
+// Modals
+
+.modal-content {
+	box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+	overflow: hidden;
+	background-color: theme-color("light");
+	color: $body-color;
+	border: none;
+	border-radius: 0;
+	max-width : $modal-md;
+
+	.btn-link {
+		font-weight: 400;
+	}
+}
+
+// Modal Header
+.modal-header {
+	border: 0;
+	padding: 19px;
+	justify-content: flex-end;
+
+	h1, h2, h3, h4, h5, h6 {
+		display: block;
+		margin: 0;
+		color: $body-color;
+	}
+
+	.close {
+		font-size: 20px;
+		opacity: 0.4;
+		text-shadow: none;
+
+		&:hover {
+			opacity: 0.8;
+		}
+	}
+}
+
+// Modal Body
+.modal-body {
+	padding: 20px 30px 30px;
+
+	// Remove margin bottom from last row form group
+	.row:last-child {
+		
+		.form-group {
+			margin-bottom: 0;
+		}
+	}
+}
+
+// Modal Main Icon
+.modal-main-icon {
+	display: inline-block;
+	height: 77px;
+	width: 77px;
+	line-height: normal;
+	font-size: 77px;
+	margin-bottom: 37px;
+}
+
+//Modal Footer
+.modal-footer {
+	padding: 20px 30px;
+	border: none;
+}
+
+// Modal dark
+.modal-dark {
+
+	.modal-content {
+		background-color: theme-color("dark");
+		color: darken(theme-color("light"), 18%);
+	}
+
+	.modal-header {
+		
+		.close, .close:not(:disabled):not(.disabled):focus {
+			color: theme-color("light");
+			opacity: 0.6;
+
+			&:hover, .close:not(:disabled):not(.disabled):hover {
+				color: theme-color("light");
+				opacity: 1;
+			}
+		}
+	}
+
+	.btn {
+		border-width: 0;
+	}
+
+	.modal-footer {
+		
+		.btn-link-secondary {
+			color: darken(theme-color("light"), 12%);
+
+			@include hover {
+				color: darken(theme-color("light"), 20%);
+			}
+		}
+	}
+}
+
+// Colored Header
+.modal-header-colored {
+	justify-content: space-between;
+	background-color: darken(theme-color("light"), 4%);
+
+	& + .modal-body {
+		padding-top: 30px;
+	}
+
+	.modal-dark & {
+		background-color: lighten($black, 29%);
+
+		h1, h2, h3, h4, h5, h6 {
+			color: darken(theme-color("light"), 18%);
+		}
+	}
+
+	&-primary, .modal-dark &-primary {
+		@include modal-header-colored-variant(theme-color("primary"));
+	}
+
+	&-success, .modal-dark &-success {
+		@include modal-header-colored-variant(theme-color("success"));
+	}
+
+	&-info, .modal-dark &-info {
+		@include modal-header-colored-variant(theme-color("info"));
+	}
+
+	&-warning, .modal-dark &-warning {
+		@include modal-header-colored-variant(theme-color("warning"));
+	}
+
+	&-danger, .modal-dark &-danger {
+		@include modal-header-colored-variant(theme-color("danger"));
+	}
+
+	&-dark, .modal-dark &-dark {
+		@include modal-header-colored-variant(theme-color("dark"));
+	}
+}
+
+// Full Color Modals
+.modal-full-color {
+
+	.modal-content {
+		color: theme-color("light");
+	}
+
+	.modal-header {
+		
+		.close, .close:not(:disabled):not(.disabled):focus {
+			color: theme-color("light");
+			opacity: 0.6;
+
+			&:hover, .close:not(:disabled):not(.disabled):hover {
+				color: theme-color("light");
+				opacity: 1;
+			}
+		}
+	}
+
+	.modal-footer {
+
+		.btn-link-secondary {
+			color: theme-color("light");
+
+			@include hover {
+				color: darken(theme-color("light"), 8%);
+			}
+		}
+	}
+
+	.btn {
+		border-width: 0;
+	}
+
+	//Transparent style for color buttons
+	.btn-primary,
+  .btn-success,
+  .btn-info,
+  .btn-warning,
+  .btn-danger,
+  .btn-dark {
+		background-color: rgba(0, 0, 0, 0);
+
+		
+		&:focus {
+			background-color: rgba(0, 0, 0, 0);
+		}
+
+		&:hover,.hover {
+			background-color: rgba(0, 0, 0, 0.1);
+		}
+
+		&:active {
+			background-color: rgba(0, 0, 0, 0.15);
+		}
+  }
+}
+
+// Modal Full Color set
+.modal-full-color-primary {
+	@include modal-full-color(theme-color("primary"));
+}
+
+.modal-full-color-success {
+	@include modal-full-color(theme-color("success"));
+}
+
+.modal-full-color-info {
+	@include modal-full-color(theme-color("info"));
+}
+
+.modal-full-color-warning {
+	@include modal-full-color(theme-color("warning"));
+}
+
+.modal-full-color-danger {
+	@include modal-full-color(theme-color("danger"));
+}
+
+.modal-full-color-dark {
+	@include modal-full-color(theme-color("dark"));
+}
+
+
+//Bootstrap Modals
+.full-width{
+	width: 90%;
+	max-width:none;
+
+	@include tablet {
+		width: 100%;
+	}
+
+	&.modal-container {
+		width: 100%;
+
+		@include tablet {
+			width: 100%;
+		}
+
+		.modal-content {
+			width: 81%;
+
+			@include tablet {
+				width: 100%;
+			}
+		}
+	}
+
+	.modal-content {
+		width: 100%;
+		max-width:none;
+	}
+}
+
+//Custom Width Modals
+.custom-width {
+
+	//Bootstrap Modals
+	.modal-dialog {
+		width: 700px;
+		max-width: none;
+	}		
+	
+	//Nifty Modals
+	.modal-content {
+		width: 700px;
+		max-width: none;
+	}
+	
+	@include tablet {
+		.modal-content, .modal-dialog, .modal-header {
+			width: 100% !important;
+		}		
+	}
+}
+
+// Responsive Design
+@include phone {
+
+	.modal-dialog {
+		margin: 0 auto;
+	}
+}
+
+.mai-modal-open {
+	overflow-x: visible;
+}

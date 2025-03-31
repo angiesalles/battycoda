@@ -1,0 +1,1309 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="">
+    <meta name="author" content="">
+    <link rel="shortcut icon" href="assets/img/favicon.png">
+    <title>Maisonnette</title>
+    <link rel="stylesheet" type="text/css" href="assets/lib/stroke-7/style.css"/>
+    <link rel="stylesheet" type="text/css" href="assets/lib/perfect-scrollbar/css/perfect-scrollbar.css"/>
+    <link rel="stylesheet" href="assets/css/app.css" type="text/css"/>
+  </head>
+  <body>
+    <nav class="navbar navbar-expand navbar-dark mai-top-header">
+      <div class="container"><a class="navbar-brand" href="#"></a>
+        <ul class="nav navbar-nav mai-top-nav">
+          <li class="nav-item"><a class="nav-link" href="index.html">Home</a></li>
+          <li class="nav-item"><a class="nav-link" href="#">About</a></li>
+          <li class="nav-item dropdown"><a class="nav-link dropdown-toggle" href="#" data-toggle="dropdown" role="button" aria-expanded="false">Services<span class="angle-down s7-angle-down"></span></a>
+            <div class="dropdown-menu" role="menu"><a class="dropdown-item" href="#">Information</a><a class="dropdown-item" href="#">Company</a><a class="dropdown-item" href="#">Documentation</a><a class="dropdown-item" href="#">API Settings</a><a class="dropdown-item" href="#">Export Info</a></div>
+          </li>
+          <li class="nav-item"><a class="nav-link" href="#">Support</a></li>
+        </ul>
+        <ul class="navbar-nav float-lg-right mai-icons-nav">
+          <li class="dropdown nav-item mai-messages"><a class="nav-link dropdown-toggle" href="#" data-toggle="dropdown" role="button" aria-expanded="false"><span class="icon s7-comment"></span></a>
+            <ul class="dropdown-menu">
+              <li>
+                <div class="title">Messages</div>
+                <div class="mai-scroller-messages">
+                  <div class="content">
+                    <ul>
+                      <li><a href="#">
+                          <div class="img"><img src="assets/img/avatars/img1.jpg" alt="avatar"></div>
+                          <div class="content"><span class="date">16 Sept</span><span class="name">Victor Jara</span><span class="desc">The song that has been brave, will always be the new song.</span></div></a></li>
+                      <li><a href="#">
+                          <div class="img"><img src="assets/img/avatars/img2.jpg" alt="Avatar"></div>
+                          <div class="content"><span class="date">4 Sept</span><span class="name">Gustavo Cerati</span><span class="desc">You will see me fly across the city of fury where no one knows of me.</span></div></a></li>
+                      <li><a href="#">
+                          <div class="img"><img src="assets/img/avatars/img3.jpg" alt="Avatar"></div>
+                          <div class="content"><span class="date">13 Aug</span><span class="name">Jaime Garzón</span><span class="desc">Now everything came back to the abnormality.</span></div></a></li>
+                      <li><a href="#">
+                          <div class="img"><img src="assets/img/avatars/img4.jpg" alt="Avatar"></div>
+                          <div class="content"><span class="date">13 Aug</span><span class="name">Allen Collins</span><span class="desc">Things just couldn't even be the same 'Cause I'm as free as a bird now.</span></div></a></li>
+                    </ul>
+                  </div>
+                </div>
+                <div class="footer"><a href="#">View all messages</a></div>
+              </li>
+            </ul>
+          </li>
+          <li class="dropdown nav-item mai-notifications"><a class="nav-link dropdown-toggle" href="#" data-toggle="dropdown" role="button" aria-expanded="false"><span class="icon s7-bell"></span><span class="indicator"></span></a>
+            <ul class="dropdown-menu">
+              <li>
+                <div class="title">Notifications</div>
+                <div class="mai-scroller-notifications">
+                  <div class="content">
+                    <ul>
+                      <li><a href="#">
+                          <div class="icon"><span class="s7-check"></span></div>
+                          <div class="content"><span class="desc">This is a new message for my dear friend <strong>Rob</strong>.</span><span class="date">10 minutes ago</span></div></a></li>
+                      <li><a href="#">
+                          <div class="icon"><span class="s7-add-user"></span></div>
+                          <div class="content"><span class="desc">You have a new fiend request pending from <strong>John Doe</strong>.</span><span class="date">2 days ago</span></div></a></li>
+                      <li><a href="#">
+                          <div class="icon"><span class="s7-graph1"></span></div>
+                          <div class="content"><span class="desc">Your site visits have increased <strong>15.5%</strong> more since the last week.</span><span class="date">2 hours ago</span></div></a></li>
+                      <li><a href="#">
+                          <div class="icon"><span class="s7-check"></span></div>
+                          <div class="content"><span class="desc">This is a new message for my dear friend <strong>Rob</strong>.</span><span class="date">10 minutes ago</span></div></a></li>
+                    </ul>
+                  </div>
+                </div>
+                <div class="footer"><a href="#">View all notifications</a></div>
+              </li>
+            </ul>
+          </li>
+          <li class="dropdown nav-item mai-settings"><a class="nav-link dropdown-toggle" href="#" data-toggle="dropdown" role="button" aria-expanded="false"><span class="icon s7-settings"></span></a>
+            <ul class="dropdown-menu">
+              <li>
+                <div class="title">Settings</div>
+                <div class="content">
+                  <ul>
+                    <li><span>Enable Notifications</span>
+                      <div class="float-right">
+                        <div class="switch-button switch-button-sm">
+                          <input type="checkbox" checked="" name="check" id="switch1"><span>
+                            <label for="switch1"></label></span>
+                        </div>
+                      </div>
+                    </li>
+                    <li><span>Auto Commit</span>
+                      <div class="float-right">
+                        <div class="switch-button switch-button-sm">
+                          <input type="checkbox" checked="" name="check2" id="switch2"><span>
+                            <label for="switch2"></label></span>
+                        </div>
+                      </div>
+                    </li>
+                    <li><span>Sidebar</span>
+                      <div class="float-right">
+                        <div class="switch-button switch-button-sm">
+                          <input type="checkbox" name="check3" id="switch3"><span>
+                            <label for="switch3"></label></span>
+                        </div>
+                      </div>
+                    </li>
+                    <li><span>Full-width Layout</span>
+                      <div class="float-right">
+                        <div class="switch-button switch-button-sm">
+                          <input type="checkbox" checked="" name="check4" id="switch4"><span>
+                            <label for="switch4"></label></span>
+                        </div>
+                      </div>
+                    </li>
+                  </ul>
+                </div>
+              </li>
+            </ul>
+          </li>
+        </ul>
+        <ul class="nav navbar-nav float-lg-right mai-user-nav">
+          <li class="dropdown nav-item"><a class="dropdown-toggle nav-link" href="#" data-toggle="dropdown" role="button" aria-expanded="false"><img src="assets/img/avatar.jpg" alt="Avatar"><span class="user-name">Violeta Parra</span><span class="angle-down s7-angle-down"></span></a>
+            <div class="dropdown-menu" role="menu"><a class="dropdown-item" href="#"><span class="icon s7-home"></span>My Account</a><a class="dropdown-item" href="pages-profile.html"><span class="icon s7-user"></span>Profile</a><a class="dropdown-item" href="#"><span class="icon s7-cash"></span>Billing</a><a class="dropdown-item" href="#"><span class="icon s7-tools"></span>Settings</a><a class="dropdown-item" href="pages-login.html"><span class="icon s7-power"></span>Log Out</a></div>
+          </li>
+        </ul>
+      </div>
+    </nav>
+    <div class="mai-wrapper">
+      <nav class="navbar navbar-expand-lg mai-sub-header">
+        <div class="container">
+                    <nav class="navbar navbar-expand-md">
+                      <button class="navbar-toggler hidden-md-up collapsed" type="button" data-toggle="collapse" data-target="#mai-navbar-collapse" aria-controls="mai-navbar-collapse" aria-expanded="false" aria-label="Toggle navigation">       <span class="icon-bar"><span></span><span></span><span></span></span></button>
+                      <div class="navbar-collapse collapse mai-nav-tabs" id="mai-navbar-collapse">
+                        <ul class="nav navbar-nav">
+                                    <li class="nav-item parent open"><a class="nav-link" href="#" role="button" aria-expanded="false"><span class="icon s7-home"></span><span>Home</span></a>
+                                      <ul class="mai-nav-tabs-sub mai-sub-nav nav">
+                                                  <li class="nav-item"><a class="nav-link" href="index.html"><span class="icon s7-monitor"></span><span class="name">Dashboard</span></a>
+                                                  </li>
+                                                  <li class="nav-item dropdown parent"><a class="nav-link" href="ui-elements.html" data-toggle="dropdown"><span class="icon s7-diamond"></span><span class="name">UI Elements</span></a>
+                                                              <div class="dropdown-menu mai-sub-nav" role="menu"><a class="dropdown-item" href="ui-general.html">General</a><a class="dropdown-item" href="ui-cards.html">Cards</a><a class="dropdown-item" href="ui-buttons.html">Buttons</a><a class="dropdown-item" href="ui-typography.html">Typography</a><a class="dropdown-item" href="ui-grid.html">Grid</a>
+                                                              </div>
+                                                  </li>
+                                                  <li class="nav-item dropdown parent"><a class="nav-link" href="ui-elements.html" data-toggle="dropdown"><span class="icon s7-diamond"></span><span class="name">Components</span></a>
+                                                              <div class="dropdown-menu mai-sub-nav" role="menu"><a class="dropdown-item" href="ui-alerts.html">Alerts</a><a class="dropdown-item active" href="ui-icons.html">Icons</a><a class="dropdown-item" href="ui-tabs-accordions.html">Tabs &amp; Accordions</a>
+                                                              </div>
+                                                  </li>
+                                                  <li class="nav-item dropdown parent"><a class="nav-link" href="plugins.html" data-toggle="dropdown"><span class="icon s7-plugin"></span><span class="name">Plugins</span></a>
+                                                              <div class="dropdown-menu mai-sub-nav" role="menu"><a class="dropdown-item" href="ui-modals.html">Modals</a><a class="dropdown-item" href="ui-nestable-lists.html">Nestable Lists</a><a class="dropdown-item" href="ui-notifications.html">Notifications</a><a class="dropdown-item" href="ui-sweetalert2.html">Sweet Alerts2</a>
+                                                              </div>
+                                                  </li>
+                                                  <li class="nav-item"><a class="nav-link" href="documentation.html"><span class="icon s7-notebook"></span><span class="name">Documentation</span></a>
+                                                  </li>
+                                      </ul>
+                                    </li>
+                                    <li class="nav-item parent"><a class="nav-link" href="#" role="button" aria-expanded="false"><span class="icon s7-rocket"></span><span>Forms</span></a>
+                                      <ul class="mai-nav-tabs-sub mai-sub-nav nav">
+                                                  <li class="nav-item"><a class="nav-link" href="form-elements.html"><span class="name">Elements</span></a>
+                                                  </li>
+                                                  <li class="nav-item"><a class="nav-link" href="form-validation.html"><span class="name">Validation</span></a>
+                                                  </li>
+                                                  <li class="nav-item"><a class="nav-link" href="form-masks.html"><span class="name">Masks</span></a>
+                                                  </li>
+                                                  <li class="nav-item"><a class="nav-link" href="form-multiselect.html"><span class="name">Multiselect</span></a>
+                                                  </li>
+                                                  <li class="nav-item"><a class="nav-link" href="form-wizard.html"><span class="name">Wizard</span></a>
+                                                  </li>
+                                                  <li class="nav-item"><a class="nav-link" href="form-upload.html"><span class="name">Upload</span></a>
+                                                  </li>
+                                      </ul>
+                                    </li>
+                                    <li class="nav-item parent"><a class="nav-link" href="#" role="button" aria-expanded="false"><span class="icon s7-diamond"></span><span>Tables</span></a>
+                                      <ul class="mai-nav-tabs-sub mai-sub-nav nav">
+                                                  <li class="nav-item"><a class="nav-link" href="tables-general.html"><span class="icon s7-box2"></span><span class="name">General</span></a>
+                                                  </li>
+                                                  <li class="nav-item"><a class="nav-link" href="tables-datatables.html"><span class="icon s7-box2"></span><span class="name">Data Tables</span></a>
+                                                  </li>
+                                                  <li class="nav-item"><a class="nav-link" href="tables-filters.html"><span class="icon s7-box2"></span><span class="name">Filters</span></a>
+                                                  </li>
+                                      </ul>
+                                    </li>
+                                    <li class="nav-item parent"><a class="nav-link" href="#" role="button" aria-expanded="false"><span class="icon s7-portfolio"></span><span>Pages</span></a>
+                                      <ul class="mai-nav-tabs-sub mai-sub-nav nav">
+                                                  <li class="nav-item"><a class="nav-link" href="pages-profile.html"><span class="icon s7-user"></span><span class="name">Profile</span></a>
+                                                  </li>
+                                                  <li class="nav-item"><a class="nav-link" href="pages-pricing-tables.html"><span class="icon s7-cash"></span><span class="name">Pricing</span></a>
+                                                  </li>
+                                                  <li class="nav-item"><a class="nav-link" href="pages-invoice.html"><span class="icon s7-wallet"></span><span class="name">Invoice</span></a>
+                                                  </li>
+                                                  <li class="nav-item dropdown parent"><a class="nav-link" href="login.html" data-toggle="dropdown"><span class="icon s7-diamond"></span><span class="name">Login</span></a>
+                                                              <div class="dropdown-menu mai-sub-nav" role="menu"><a class="dropdown-item" href="pages-login.html">Login</a><a class="dropdown-item" href="pages-sign-up.html">Sign Up</a><a class="dropdown-item" href="pages-forgot-password.html">Forgot Password</a>
+                                                              </div>
+                                                  </li>
+                                                  <li class="nav-item dropdown parent"><a class="nav-link" href="mail.html" data-toggle="dropdown"><span class="icon s7-mail"></span><span class="name">Mail</span></a>
+                                                              <div class="dropdown-menu mai-sub-nav" role="menu"><a class="dropdown-item" href="email-inbox.html">Inbox</a><a class="dropdown-item" href="email-detail.html">Detail</a><a class="dropdown-item" href="email-compose.html">Compose</a>
+                                                              </div>
+                                                  </li>
+                                                  <li class="nav-item dropdown parent"><a class="nav-link" href="maps.html" data-toggle="dropdown"><span class="icon s7-map-marker"></span><span class="name">Maps</span></a>
+                                                              <div class="dropdown-menu mai-sub-nav" role="menu"><a class="dropdown-item" href="maps-google.html">Google Maps</a><a class="dropdown-item" href="maps-vector.html">Vector Maps</a>
+                                                              </div>
+                                                  </li>
+                                                  <li class="nav-item dropdown parent"><a class="nav-link" href="extra.html" data-toggle="dropdown"><span class="icon s7-diamond"></span><span class="name">Extra Pages</span></a>
+                                                              <div class="dropdown-menu mai-sub-nav" role="menu"><a class="dropdown-item" href="pages-blank.html">Blank Page</a><a class="dropdown-item" href="pages-blank-header.html">Blank Page Header</a><a class="dropdown-item" href="pages-404.html">404 Page</a><a class="dropdown-item" href="pages-gallery.html">Gallery</a><a class="dropdown-item" href="pages-calendar.html">Calendar</a><a class="dropdown-item" href="pages-timeline.html">Timeline</a><a class="dropdown-item" href="pages-timeline2.html">Timeline v2</a>
+                                                              </div>
+                                                  </li>
+                                      </ul>
+                                    </li>
+                                    <li class="nav-item parent"><a class="nav-link" href="#" role="button" aria-expanded="false"><span class="icon s7-display1"></span><span>Charts</span></a>
+                                      <ul class="mai-nav-tabs-sub mai-sub-nav nav">
+                                                  <li class="nav-item"><a class="nav-link" href="charts-flot.html"><span class="icon s7-graph"></span><span class="name">Flot</span></a>
+                                                  </li>
+                                                  <li class="nav-item"><a class="nav-link" href="charts-sparklines.html"><span class="icon s7-graph1"></span><span class="name">Sparklines</span></a>
+                                                  </li>
+                                                  <li class="nav-item"><a class="nav-link" href="charts-morris.html"><span class="icon s7-graph3"></span><span class="name">Morris.js</span></a>
+                                                  </li>
+                                                  <li class="nav-item"><a class="nav-link" href="charts-chartjs.html"><span class="icon s7-graph2"></span><span class="name">Chart.js</span></a>
+                                                  </li>
+                                      </ul>
+                                    </li>
+                                    <li class="nav-item parent"><a class="nav-link" href="#" role="button" aria-expanded="false"><span class="icon s7-tools"></span><span>Layouts</span></a>
+                                      <ul class="mai-nav-tabs-sub mai-sub-nav nav">
+                                                  <li class="nav-item dropdown parent mega-menu"><a class="nav-link" href="mega-menu.html" data-toggle="dropdown"><span class="icon s7-ribbon"></span><span class="name">Mega Menu</span></a>
+                                                              <div class="dropdown-menu mai-mega-menu mai-sub-nav" role="menu">
+                                                                <div class="mai-mega-menu-row">
+                                                                  <div class="mai-mega-menu-column">
+                                                                              <div class="mai-mega-menu-section parent"><a class="nav-link" href="#"><span class="icon s7-note2"></span><span>Forms</span></a>
+                                                                                <div class="mai-mega-menu-sub-items mai-sub-nav"><a class="dropdown-item" href="form-elements.html">Elements</a><a class="dropdown-item" href="form-validation.html">Validation</a><a class="dropdown-item" href="form-masks.html">Input Masks</a><a class="dropdown-item" href="form-xeditable.html">X Editable</a><a class="dropdown-item" href="form-multiselect.html">Multiselect</a><a class="dropdown-item" href="form-wizard.html">Wizard</a><a class="dropdown-item" href="form-upload.html">Multi Upload</a>
+                                                                                </div>
+                                                                              </div>
+                                                                  </div>
+                                                                  <div class="mai-mega-menu-column">
+                                                                              <div class="mai-mega-menu-section parent"><a class="nav-link" href="#"><span class="icon s7-keypad"></span><span>Tables</span></a>
+                                                                                <div class="mai-mega-menu-sub-items mai-sub-nav"><a class="dropdown-item" href="tables-general.html">General</a><a class="dropdown-item" href="tables-datatables.html">Datatables</a>
+                                                                                </div>
+                                                                              </div>
+                                                                  </div>
+                                                                  <div class="mai-mega-menu-column">
+                                                                              <div class="mai-mega-menu-section parent"><a class="nav-link" href="#"><span class="icon s7-bookmarks"></span><span>Pages</span></a>
+                                                                                <div class="mai-mega-menu-sub-items mai-sub-nav"><a class="dropdown-item" href="pages-login.html">Login</a><a class="dropdown-item" href="pages-sign-up.html">Sign Up</a><a class="dropdown-item" href="pages-forgot-password.html">Forgot Password</a><a class="dropdown-item" href="pages-blank.html">Blank Page</a><a class="dropdown-item" href="pages-calendar.html">Calendar</a><a class="dropdown-item" href="pages-gallery.html">Gallery</a><a class="dropdown-item" href="pages-pricing-tables.html">Pricing Tables</a><a class="dropdown-item" href="pages-invoice.html">Invoice</a><a class="dropdown-item" href="pages-profile.html">Profile</a><a class="dropdown-item" href="pages-404.html">404 Page</a>
+                                                                                </div>
+                                                                              </div>
+                                                                  </div>
+                                                                  <div class="mai-mega-menu-column">
+                                                                              <div class="mai-mega-menu-section parent"><a class="nav-link" href="#"><span class="icon s7-map"></span><span>Maps</span></a>
+                                                                                <div class="mai-mega-menu-sub-items mai-sub-nav"><a class="dropdown-item" href="maps-google.html">Google Maps</a><a class="dropdown-item" href="maps-vector.html">Vector Maps</a>
+                                                                                </div>
+                                                                              </div>
+                                                                              <div class="mai-mega-menu-section parent"><a class="nav-link" href="#"><span class="icon s7-mail"></span><span>Mail</span></a>
+                                                                                <div class="mai-mega-menu-sub-items mai-sub-nav"><a class="dropdown-item" href="email-inbox.html">Inbox</a><a class="dropdown-item" href="email-detail.html">Detail</a><a class="dropdown-item" href="email-compose.html">Compose</a>
+                                                                                </div>
+                                                                              </div>
+                                                                  </div>
+                                                                </div>
+                                                              </div>
+                                                  </li>
+                                                  <li class="nav-item"><a class="nav-link" href="layout-logo-mobile.html"><span class="icon s7-leaf"></span><span class="name">Logo Mobile</span></a>
+                                                  </li>
+                                      </ul>
+                                    </li>
+                        </ul>
+                      </div>
+                    </nav>
+          <div class="search">
+            <input type="text" placeholder="Search..." name="q"><span class="s7-search"></span>
+          </div>
+        </div>
+      </nav>
+      <div class="main-content container">
+        <div class="row">
+          <div class="col-xs-12">
+            <div class="card card-default">
+              <div class="card-header card-header-divider">New Icons<span class="card-subtitle">A series of iOS 7 inspired vector icons</span></div>
+              <div class="card-body xs-mt-15">
+                <div class="row">
+                  <div class="col-xs-4 col-md-3 col-lg-3">
+                    <div class="icon-container">
+                      <div class="icon"><span class="s7-album"></span></div><span class="icon-class">album</span>
+                    </div>
+                  </div>
+                  <div class="col-xs-4 col-md-3 col-lg-3">
+                    <div class="icon-container">
+                      <div class="icon"><span class="s7-arc"></span></div><span class="icon-class">arc</span>
+                    </div>
+                  </div>
+                  <div class="col-xs-4 col-md-3 col-lg-3">
+                    <div class="icon-container">
+                      <div class="icon"><span class="s7-back-2"></span></div><span class="icon-class">back-2</span>
+                    </div>
+                  </div>
+                  <div class="col-xs-4 col-md-3 col-lg-3">
+                    <div class="icon-container">
+                      <div class="icon"><span class="s7-bandaid"></span></div><span class="icon-class">bandaid</span>
+                    </div>
+                  </div>
+                  <div class="col-xs-4 col-md-3 col-lg-3">
+                    <div class="icon-container">
+                      <div class="icon"><span class="s7-car"></span></div><span class="icon-class">car</span>
+                    </div>
+                  </div>
+                  <div class="col-xs-4 col-md-3 col-lg-3">
+                    <div class="icon-container">
+                      <div class="icon"><span class="s7-diamond"></span></div><span class="icon-class">diamond</span>
+                    </div>
+                  </div>
+                  <div class="col-xs-4 col-md-3 col-lg-3">
+                    <div class="icon-container">
+                      <div class="icon"><span class="s7-door-lock"></span></div><span class="icon-class">door-lock</span>
+                    </div>
+                  </div>
+                  <div class="col-xs-4 col-md-3 col-lg-3">
+                    <div class="icon-container">
+                      <div class="icon"><span class="s7-eyedropper"></span></div><span class="icon-class">eyedropper</span>
+                    </div>
+                  </div>
+                  <div class="col-xs-4 col-md-3 col-lg-3">
+                    <div class="icon-container">
+                      <div class="icon"><span class="s7-female"></span></div><span class="icon-class">female</span>
+                    </div>
+                  </div>
+                  <div class="col-xs-4 col-md-3 col-lg-3">
+                    <div class="icon-container">
+                      <div class="icon"><span class="s7-gym"></span></div><span class="icon-class">gym</span>
+                    </div>
+                  </div>
+                  <div class="col-xs-4 col-md-3 col-lg-3">
+                    <div class="icon-container">
+                      <div class="icon"><span class="s7-hammer"></span></div><span class="icon-class">hammer</span>
+                    </div>
+                  </div>
+                  <div class="col-xs-4 col-md-3 col-lg-3">
+                    <div class="icon-container">
+                      <div class="icon"><span class="s7-headphones"></span></div><span class="icon-class">headphones</span>
+                    </div>
+                  </div>
+                  <div class="col-xs-4 col-md-3 col-lg-3">
+                    <div class="icon-container">
+                      <div class="icon"><span class="s7-helm"></span></div><span class="icon-class">helm</span>
+                    </div>
+                  </div>
+                  <div class="col-xs-4 col-md-3 col-lg-3">
+                    <div class="icon-container">
+                      <div class="icon"><span class="s7-hourglass"></span></div><span class="icon-class">hourglass</span>
+                    </div>
+                  </div>
+                  <div class="col-xs-4 col-md-3 col-lg-3">
+                    <div class="icon-container">
+                      <div class="icon"><span class="s7-leaf"></span></div><span class="icon-class">leaf</span>
+                    </div>
+                  </div>
+                  <div class="col-xs-4 col-md-3 col-lg-3">
+                    <div class="icon-container">
+                      <div class="icon"><span class="s7-magic-wand"></span></div><span class="icon-class">magic-wand</span>
+                    </div>
+                  </div>
+                  <div class="col-xs-4 col-md-3 col-lg-3">
+                    <div class="icon-container">
+                      <div class="icon"><span class="s7-male"></span></div><span class="icon-class">male</span>
+                    </div>
+                  </div>
+                  <div class="col-xs-4 col-md-3 col-lg-3">
+                    <div class="icon-container">
+                      <div class="icon"><span class="s7-map-2"></span></div><span class="icon-class">map-2</span>
+                    </div>
+                  </div>
+                  <div class="col-xs-4 col-md-3 col-lg-3">
+                    <div class="icon-container">
+                      <div class="icon"><span class="s7-next-2"></span></div><span class="icon-class">next-2</span>
+                    </div>
+                  </div>
+                  <div class="col-xs-4 col-md-3 col-lg-3">
+                    <div class="icon-container">
+                      <div class="icon"><span class="s7-paint-bucket"></span></div><span class="icon-class">paint-bucket</span>
+                    </div>
+                  </div>
+                  <div class="col-xs-4 col-md-3 col-lg-3">
+                    <div class="icon-container">
+                      <div class="icon"><span class="s7-pendrive"></span></div><span class="icon-class">pendrive</span>
+                    </div>
+                  </div>
+                  <div class="col-xs-4 col-md-3 col-lg-3">
+                    <div class="icon-container">
+                      <div class="icon"><span class="s7-photo"></span></div><span class="icon-class">photo</span>
+                    </div>
+                  </div>
+                  <div class="col-xs-4 col-md-3 col-lg-3">
+                    <div class="icon-container">
+                      <div class="icon"><span class="s7-piggy"></span></div><span class="icon-class">piggy</span>
+                    </div>
+                  </div>
+                  <div class="col-xs-4 col-md-3 col-lg-3">
+                    <div class="icon-container">
+                      <div class="icon"><span class="s7-plugin"></span></div><span class="icon-class">plugin</span>
+                    </div>
+                  </div>
+                  <div class="col-xs-4 col-md-3 col-lg-3">
+                    <div class="icon-container">
+                      <div class="icon"><span class="s7-refresh-2"></span></div><span class="icon-class">refresh-2</span>
+                    </div>
+                  </div>
+                  <div class="col-xs-4 col-md-3 col-lg-3">
+                    <div class="icon-container">
+                      <div class="icon"><span class="s7-rocket"></span></div><span class="icon-class">rocket</span>
+                    </div>
+                  </div>
+                  <div class="col-xs-4 col-md-3 col-lg-3">
+                    <div class="icon-container">
+                      <div class="icon"><span class="s7-settings"></span></div><span class="icon-class">settings</span>
+                    </div>
+                  </div>
+                  <div class="col-xs-4 col-md-3 col-lg-3">
+                    <div class="icon-container">
+                      <div class="icon"><span class="s7-shield"></span></div><span class="icon-class">shield</span>
+                    </div>
+                  </div>
+                  <div class="col-xs-4 col-md-3 col-lg-3">
+                    <div class="icon-container">
+                      <div class="icon"><span class="s7-smile"></span></div><span class="icon-class">smile</span>
+                    </div>
+                  </div>
+                  <div class="col-xs-4 col-md-3 col-lg-3">
+                    <div class="icon-container">
+                      <div class="icon"><span class="s7-usb"></span></div><span class="icon-class">usb</span>
+                    </div>
+                  </div>
+                  <div class="col-xs-4 col-md-3 col-lg-3">
+                    <div class="icon-container">
+                      <div class="icon"><span class="s7-vector"></span></div><span class="icon-class">vector</span>
+                    </div>
+                  </div>
+                  <div class="col-xs-4 col-md-3 col-lg-3">
+                    <div class="icon-container">
+                      <div class="icon"><span class="s7-wine"></span></div><span class="icon-class">wine</span>
+                    </div>
+                  </div>
+                  <div class="col-xs-4 col-md-3 col-lg-3">
+                    <div class="icon-container">
+                      <div class="icon"><span class="s7-cloud-upload"></span></div><span class="icon-class">cloud-upload</span>
+                    </div>
+                  </div>
+                  <div class="col-xs-4 col-md-3 col-lg-3">
+                    <div class="icon-container">
+                      <div class="icon"><span class="s7-cash"></span></div><span class="icon-class">cash</span>
+                    </div>
+                  </div>
+                  <div class="col-xs-4 col-md-3 col-lg-3">
+                    <div class="icon-container">
+                      <div class="icon"><span class="s7-close"></span></div><span class="icon-class">close</span>
+                    </div>
+                  </div>
+                  <div class="col-xs-4 col-md-3 col-lg-3">
+                    <div class="icon-container">
+                      <div class="icon"><span class="s7-bluetooth"></span></div><span class="icon-class">bluetooth</span>
+                    </div>
+                  </div>
+                  <div class="col-xs-4 col-md-3 col-lg-3">
+                    <div class="icon-container">
+                      <div class="icon"><span class="s7-cloud-download"></span></div><span class="icon-class">cloud-download</span>
+                    </div>
+                  </div>
+                  <div class="col-xs-4 col-md-3 col-lg-3">
+                    <div class="icon-container">
+                      <div class="icon"><span class="s7-way"></span></div><span class="icon-class">way</span>
+                    </div>
+                  </div>
+                  <div class="col-xs-4 col-md-3 col-lg-3">
+                    <div class="icon-container">
+                      <div class="icon"><span class="s7-close-circle"></span></div><span class="icon-class">close-circle</span>
+                    </div>
+                  </div>
+                  <div class="col-xs-4 col-md-3 col-lg-3">
+                    <div class="icon-container">
+                      <div class="icon"><span class="s7-id"></span></div><span class="icon-class">id</span>
+                    </div>
+                  </div>
+                  <div class="col-xs-4 col-md-3 col-lg-3">
+                    <div class="icon-container">
+                      <div class="icon"><span class="s7-angle-up"></span></div><span class="icon-class">angle-up</span>
+                    </div>
+                  </div>
+                  <div class="col-xs-4 col-md-3 col-lg-3">
+                    <div class="icon-container">
+                      <div class="icon"><span class="s7-wristwatch"></span></div><span class="icon-class">wristwatch</span>
+                    </div>
+                  </div>
+                  <div class="col-xs-4 col-md-3 col-lg-3">
+                    <div class="icon-container">
+                      <div class="icon"><span class="s7-angle-up-circle"></span></div><span class="icon-class">angle-up-circle</span>
+                    </div>
+                  </div>
+                  <div class="col-xs-4 col-md-3 col-lg-3">
+                    <div class="icon-container">
+                      <div class="icon"><span class="s7-world"></span></div><span class="icon-class">world</span>
+                    </div>
+                  </div>
+                  <div class="col-xs-4 col-md-3 col-lg-3">
+                    <div class="icon-container">
+                      <div class="icon"><span class="s7-angle-right"></span></div><span class="icon-class">angle-right</span>
+                    </div>
+                  </div>
+                  <div class="col-xs-4 col-md-3 col-lg-3">
+                    <div class="icon-container">
+                      <div class="icon"><span class="s7-volume"></span></div><span class="icon-class">volume</span>
+                    </div>
+                  </div>
+                  <div class="col-xs-4 col-md-3 col-lg-3">
+                    <div class="icon-container">
+                      <div class="icon"><span class="s7-angle-right-circle"></span></div><span class="icon-class">angle-right-circle</span>
+                    </div>
+                  </div>
+                  <div class="col-xs-4 col-md-3 col-lg-3">
+                    <div class="icon-container">
+                      <div class="icon"><span class="s7-users"></span></div><span class="icon-class">users</span>
+                    </div>
+                  </div>
+                  <div class="col-xs-4 col-md-3 col-lg-3">
+                    <div class="icon-container">
+                      <div class="icon"><span class="s7-angle-left"></span></div><span class="icon-class">angle-left</span>
+                    </div>
+                  </div>
+                  <div class="col-xs-4 col-md-3 col-lg-3">
+                    <div class="icon-container">
+                      <div class="icon"><span class="s7-user-female"></span></div><span class="icon-class">user-female</span>
+                    </div>
+                  </div>
+                  <div class="col-xs-4 col-md-3 col-lg-3">
+                    <div class="icon-container">
+                      <div class="icon"><span class="s7-angle-left-circle"></span></div><span class="icon-class">angle-left-circle</span>
+                    </div>
+                  </div>
+                  <div class="col-xs-4 col-md-3 col-lg-3">
+                    <div class="icon-container">
+                      <div class="icon"><span class="s7-up-arrow"></span></div><span class="icon-class">up-arrow</span>
+                    </div>
+                  </div>
+                  <div class="col-xs-4 col-md-3 col-lg-3">
+                    <div class="icon-container">
+                      <div class="icon"><span class="s7-angle-down"></span></div><span class="icon-class">angle-down</span>
+                    </div>
+                  </div>
+                  <div class="col-xs-4 col-md-3 col-lg-3">
+                    <div class="icon-container">
+                      <div class="icon"><span class="s7-switch"></span></div><span class="icon-class">switch</span>
+                    </div>
+                  </div>
+                  <div class="col-xs-4 col-md-3 col-lg-3">
+                    <div class="icon-container">
+                      <div class="icon"><span class="s7-angle-down-circle"></span></div><span class="icon-class">angle-down-circle</span>
+                    </div>
+                  </div>
+                  <div class="col-xs-4 col-md-3 col-lg-3">
+                    <div class="icon-container">
+                      <div class="icon"><span class="s7-scissors"></span></div><span class="icon-class">scissors</span>
+                    </div>
+                  </div>
+                  <div class="col-xs-4 col-md-3 col-lg-3">
+                    <div class="icon-container">
+                      <div class="icon"><span class="s7-wallet"></span></div><span class="icon-class">wallet</span>
+                    </div>
+                  </div>
+                  <div class="col-xs-4 col-md-3 col-lg-3">
+                    <div class="icon-container">
+                      <div class="icon"><span class="s7-safe"></span></div><span class="icon-class">safe</span>
+                    </div>
+                  </div>
+                  <div class="col-xs-4 col-md-3 col-lg-3">
+                    <div class="icon-container">
+                      <div class="icon"><span class="s7-volume2"></span></div><span class="icon-class">volume2</span>
+                    </div>
+                  </div>
+                  <div class="col-xs-4 col-md-3 col-lg-3">
+                    <div class="icon-container">
+                      <div class="icon"><span class="s7-volume1"></span></div><span class="icon-class">volume1</span>
+                    </div>
+                  </div>
+                  <div class="col-xs-4 col-md-3 col-lg-3">
+                    <div class="icon-container">
+                      <div class="icon"><span class="s7-voicemail"></span></div><span class="icon-class">voicemail</span>
+                    </div>
+                  </div>
+                  <div class="col-xs-4 col-md-3 col-lg-3">
+                    <div class="icon-container">
+                      <div class="icon"><span class="s7-video"></span></div><span class="icon-class">video</span>
+                    </div>
+                  </div>
+                  <div class="col-xs-4 col-md-3 col-lg-3">
+                    <div class="icon-container">
+                      <div class="icon"><span class="s7-user"></span></div><span class="icon-class">user</span>
+                    </div>
+                  </div>
+                  <div class="col-xs-4 col-md-3 col-lg-3">
+                    <div class="icon-container">
+                      <div class="icon"><span class="s7-upload"></span></div><span class="icon-class">upload</span>
+                    </div>
+                  </div>
+                  <div class="col-xs-4 col-md-3 col-lg-3">
+                    <div class="icon-container">
+                      <div class="icon"><span class="s7-unlock"></span></div><span class="icon-class">unlock</span>
+                    </div>
+                  </div>
+                  <div class="col-xs-4 col-md-3 col-lg-3">
+                    <div class="icon-container">
+                      <div class="icon"><span class="s7-umbrella"></span></div><span class="icon-class">umbrella</span>
+                    </div>
+                  </div>
+                  <div class="col-xs-4 col-md-3 col-lg-3">
+                    <div class="icon-container">
+                      <div class="icon"><span class="s7-trash"></span></div><span class="icon-class">trash</span>
+                    </div>
+                  </div>
+                  <div class="col-xs-4 col-md-3 col-lg-3">
+                    <div class="icon-container">
+                      <div class="icon"><span class="s7-tools"></span></div><span class="icon-class">tools</span>
+                    </div>
+                  </div>
+                  <div class="col-xs-4 col-md-3 col-lg-3">
+                    <div class="icon-container">
+                      <div class="icon"><span class="s7-timer"></span></div><span class="icon-class">timer</span>
+                    </div>
+                  </div>
+                  <div class="col-xs-4 col-md-3 col-lg-3">
+                    <div class="icon-container">
+                      <div class="icon"><span class="s7-ticket"></span></div><span class="icon-class">ticket</span>
+                    </div>
+                  </div>
+                  <div class="col-xs-4 col-md-3 col-lg-3">
+                    <div class="icon-container">
+                      <div class="icon"><span class="s7-target"></span></div><span class="icon-class">target</span>
+                    </div>
+                  </div>
+                  <div class="col-xs-4 col-md-3 col-lg-3">
+                    <div class="icon-container">
+                      <div class="icon"><span class="s7-sun"></span></div><span class="icon-class">sun</span>
+                    </div>
+                  </div>
+                  <div class="col-xs-4 col-md-3 col-lg-3">
+                    <div class="icon-container">
+                      <div class="icon"><span class="s7-study"></span></div><span class="icon-class">study</span>
+                    </div>
+                  </div>
+                  <div class="col-xs-4 col-md-3 col-lg-3">
+                    <div class="icon-container">
+                      <div class="icon"><span class="s7-stopwatch"></span></div><span class="icon-class">stopwatch</span>
+                    </div>
+                  </div>
+                  <div class="col-xs-4 col-md-3 col-lg-3">
+                    <div class="icon-container">
+                      <div class="icon"><span class="s7-star"></span></div><span class="icon-class">star</span>
+                    </div>
+                  </div>
+                  <div class="col-xs-4 col-md-3 col-lg-3">
+                    <div class="icon-container">
+                      <div class="icon"><span class="s7-speaker"></span></div><span class="icon-class">speaker</span>
+                    </div>
+                  </div>
+                  <div class="col-xs-4 col-md-3 col-lg-3">
+                    <div class="icon-container">
+                      <div class="icon"><span class="s7-signal"></span></div><span class="icon-class">signal</span>
+                    </div>
+                  </div>
+                  <div class="col-xs-4 col-md-3 col-lg-3">
+                    <div class="icon-container">
+                      <div class="icon"><span class="s7-shuffle"></span></div><span class="icon-class">shuffle</span>
+                    </div>
+                  </div>
+                  <div class="col-xs-4 col-md-3 col-lg-3">
+                    <div class="icon-container">
+                      <div class="icon"><span class="s7-shopbag"></span></div><span class="icon-class">shopbag</span>
+                    </div>
+                  </div>
+                  <div class="col-xs-4 col-md-3 col-lg-3">
+                    <div class="icon-container">
+                      <div class="icon"><span class="s7-share"></span></div><span class="icon-class">share</span>
+                    </div>
+                  </div>
+                  <div class="col-xs-4 col-md-3 col-lg-3">
+                    <div class="icon-container">
+                      <div class="icon"><span class="s7-server"></span></div><span class="icon-class">server</span>
+                    </div>
+                  </div>
+                  <div class="col-xs-4 col-md-3 col-lg-3">
+                    <div class="icon-container">
+                      <div class="icon"><span class="s7-search"></span></div><span class="icon-class">search</span>
+                    </div>
+                  </div>
+                  <div class="col-xs-4 col-md-3 col-lg-3">
+                    <div class="icon-container">
+                      <div class="icon"><span class="s7-film"></span></div><span class="icon-class">film</span>
+                    </div>
+                  </div>
+                  <div class="col-xs-4 col-md-3 col-lg-3">
+                    <div class="icon-container">
+                      <div class="icon"><span class="s7-science"></span></div><span class="icon-class">science</span>
+                    </div>
+                  </div>
+                  <div class="col-xs-4 col-md-3 col-lg-3">
+                    <div class="icon-container">
+                      <div class="icon"><span class="s7-disk"></span></div><span class="icon-class">disk</span>
+                    </div>
+                  </div>
+                  <div class="col-xs-4 col-md-3 col-lg-3">
+                    <div class="icon-container">
+                      <div class="icon"><span class="s7-ribbon"></span></div><span class="icon-class">ribbon</span>
+                    </div>
+                  </div>
+                  <div class="col-xs-4 col-md-3 col-lg-3">
+                    <div class="icon-container">
+                      <div class="icon"><span class="s7-repeat"></span></div><span class="icon-class">repeat</span>
+                    </div>
+                  </div>
+                  <div class="col-xs-4 col-md-3 col-lg-3">
+                    <div class="icon-container">
+                      <div class="icon"><span class="s7-refresh"></span></div><span class="icon-class">refresh</span>
+                    </div>
+                  </div>
+                  <div class="col-xs-4 col-md-3 col-lg-3">
+                    <div class="icon-container">
+                      <div class="icon"><span class="s7-add-user"></span></div><span class="icon-class">add-user</span>
+                    </div>
+                  </div>
+                  <div class="col-xs-4 col-md-3 col-lg-3">
+                    <div class="icon-container">
+                      <div class="icon"><span class="s7-refresh-cloud"></span></div><span class="icon-class">refresh-cloud</span>
+                    </div>
+                  </div>
+                  <div class="col-xs-4 col-md-3 col-lg-3">
+                    <div class="icon-container">
+                      <div class="icon"><span class="s7-paperclip"></span></div><span class="icon-class">paperclip</span>
+                    </div>
+                  </div>
+                  <div class="col-xs-4 col-md-3 col-lg-3">
+                    <div class="icon-container">
+                      <div class="icon"><span class="s7-radio"></span></div><span class="icon-class">radio</span>
+                    </div>
+                  </div>
+                  <div class="col-xs-4 col-md-3 col-lg-3">
+                    <div class="icon-container">
+                      <div class="icon"><span class="s7-note2"></span></div><span class="icon-class">note2</span>
+                    </div>
+                  </div>
+                  <div class="col-xs-4 col-md-3 col-lg-3">
+                    <div class="icon-container">
+                      <div class="icon"><span class="s7-print"></span></div><span class="icon-class">print</span>
+                    </div>
+                  </div>
+                  <div class="col-xs-4 col-md-3 col-lg-3">
+                    <div class="icon-container">
+                      <div class="icon"><span class="s7-network"></span></div><span class="icon-class">network</span>
+                    </div>
+                  </div>
+                  <div class="col-xs-4 col-md-3 col-lg-3">
+                    <div class="icon-container">
+                      <div class="icon"><span class="s7-prev"></span></div><span class="icon-class">prev</span>
+                    </div>
+                  </div>
+                  <div class="col-xs-4 col-md-3 col-lg-3">
+                    <div class="icon-container">
+                      <div class="icon"><span class="s7-mute"></span></div><span class="icon-class">mute</span>
+                    </div>
+                  </div>
+                  <div class="col-xs-4 col-md-3 col-lg-3">
+                    <div class="icon-container">
+                      <div class="icon"><span class="s7-power"></span></div><span class="icon-class">power</span>
+                    </div>
+                  </div>
+                  <div class="col-xs-4 col-md-3 col-lg-3">
+                    <div class="icon-container">
+                      <div class="icon"><span class="s7-medal"></span></div><span class="icon-class">medal</span>
+                    </div>
+                  </div>
+                  <div class="col-xs-4 col-md-3 col-lg-3">
+                    <div class="icon-container">
+                      <div class="icon"><span class="s7-portfolio"></span></div><span class="icon-class">portfolio</span>
+                    </div>
+                  </div>
+                  <div class="col-xs-4 col-md-3 col-lg-3">
+                    <div class="icon-container">
+                      <div class="icon"><span class="s7-like2"></span></div><span class="icon-class">like2</span>
+                    </div>
+                  </div>
+                  <div class="col-xs-4 col-md-3 col-lg-3">
+                    <div class="icon-container">
+                      <div class="icon"><span class="s7-plus"></span></div><span class="icon-class">plus</span>
+                    </div>
+                  </div>
+                  <div class="col-xs-4 col-md-3 col-lg-3">
+                    <div class="icon-container">
+                      <div class="icon"><span class="s7-left-arrow"></span></div><span class="icon-class">left-arrow</span>
+                    </div>
+                  </div>
+                  <div class="col-xs-4 col-md-3 col-lg-3">
+                    <div class="icon-container">
+                      <div class="icon"><span class="s7-play"></span></div><span class="icon-class">play</span>
+                    </div>
+                  </div>
+                  <div class="col-xs-4 col-md-3 col-lg-3">
+                    <div class="icon-container">
+                      <div class="icon"><span class="s7-key"></span></div><span class="icon-class">key</span>
+                    </div>
+                  </div>
+                  <div class="col-xs-4 col-md-3 col-lg-3">
+                    <div class="icon-container">
+                      <div class="icon"><span class="s7-plane"></span></div><span class="icon-class">plane</span>
+                    </div>
+                  </div>
+                  <div class="col-xs-4 col-md-3 col-lg-3">
+                    <div class="icon-container">
+                      <div class="icon"><span class="s7-angle-up"></span></div><span class="icon-class">angle-up</span>
+                    </div>
+                  </div>
+                  <div class="col-xs-4 col-md-3 col-lg-3">
+                    <div class="icon-container">
+                      <div class="icon"><span class="s7-joy"></span></div><span class="icon-class">joy</span>
+                    </div>
+                  </div>
+                  <div class="col-xs-4 col-md-3 col-lg-3">
+                    <div class="icon-container">
+                      <div class="icon"><span class="s7-photo-gallery"></span></div><span class="icon-class">photo-gallery</span>
+                    </div>
+                  </div>
+                  <div class="col-xs-4 col-md-3 col-lg-3">
+                    <div class="icon-container">
+                      <div class="icon"><span class="s7-pin"></span></div><span class="icon-class">pin</span>
+                    </div>
+                  </div>
+                  <div class="col-xs-4 col-md-3 col-lg-3">
+                    <div class="icon-container">
+                      <div class="icon"><span class="s7-phone"></span></div><span class="icon-class">phone</span>
+                    </div>
+                  </div>
+                  <div class="col-xs-4 col-md-3 col-lg-3">
+                    <div class="icon-container">
+                      <div class="icon"><span class="s7-plug"></span></div><span class="icon-class">plug</span>
+                    </div>
+                  </div>
+                  <div class="col-xs-4 col-md-3 col-lg-3">
+                    <div class="icon-container">
+                      <div class="icon"><span class="s7-pen"></span></div><span class="icon-class">pen</span>
+                    </div>
+                  </div>
+                  <div class="col-xs-4 col-md-3 col-lg-3">
+                    <div class="icon-container">
+                      <div class="icon"><span class="s7-right-arrow"></span></div><span class="icon-class">right-arrow</span>
+                    </div>
+                  </div>
+                  <div class="col-xs-4 col-md-3 col-lg-3">
+                    <div class="icon-container">
+                      <div class="icon"><span class="s7-paper-plane"></span></div><span class="icon-class">paper-plane</span>
+                    </div>
+                  </div>
+                  <div class="col-xs-4 col-md-3 col-lg-3">
+                    <div class="icon-container">
+                      <div class="icon"><span class="s7-delete-user"></span></div><span class="icon-class">delete-user</span>
+                    </div>
+                  </div>
+                  <div class="col-xs-4 col-md-3 col-lg-3">
+                    <div class="icon-container">
+                      <div class="icon"><span class="s7-paint"></span></div><span class="icon-class">paint</span>
+                    </div>
+                  </div>
+                  <div class="col-xs-4 col-md-3 col-lg-3">
+                    <div class="icon-container">
+                      <div class="icon"><span class="s7-bottom-arrow"></span></div><span class="icon-class">bottom-arrow</span>
+                    </div>
+                  </div>
+                  <div class="col-xs-4 col-md-3 col-lg-3">
+                    <div class="icon-container">
+                      <div class="icon"><span class="s7-notebook"></span></div><span class="icon-class">notebook</span>
+                    </div>
+                  </div>
+                  <div class="col-xs-4 col-md-3 col-lg-3">
+                    <div class="icon-container">
+                      <div class="icon"><span class="s7-note"></span></div><span class="icon-class">note</span>
+                    </div>
+                  </div>
+                  <div class="col-xs-4 col-md-3 col-lg-3">
+                    <div class="icon-container">
+                      <div class="icon"><span class="s7-next"></span></div><span class="icon-class">next</span>
+                    </div>
+                  </div>
+                  <div class="col-xs-4 col-md-3 col-lg-3">
+                    <div class="icon-container">
+                      <div class="icon"><span class="s7-news-paper"></span></div><span class="icon-class">news-paper</span>
+                    </div>
+                  </div>
+                  <div class="col-xs-4 col-md-3 col-lg-3">
+                    <div class="icon-container">
+                      <div class="icon"><span class="s7-musiclist"></span></div><span class="icon-class">musiclist</span>
+                    </div>
+                  </div>
+                  <div class="col-xs-4 col-md-3 col-lg-3">
+                    <div class="icon-container">
+                      <div class="icon"><span class="s7-music"></span></div><span class="icon-class">music</span>
+                    </div>
+                  </div>
+                  <div class="col-xs-4 col-md-3 col-lg-3">
+                    <div class="icon-container">
+                      <div class="icon"><span class="s7-mouse"></span></div><span class="icon-class">mouse</span>
+                    </div>
+                  </div>
+                  <div class="col-xs-4 col-md-3 col-lg-3">
+                    <div class="icon-container">
+                      <div class="icon"><span class="s7-more"></span></div><span class="icon-class">more</span>
+                    </div>
+                  </div>
+                  <div class="col-xs-4 col-md-3 col-lg-3">
+                    <div class="icon-container">
+                      <div class="icon"><span class="s7-moon"></span></div><span class="icon-class">moon</span>
+                    </div>
+                  </div>
+                  <div class="col-xs-4 col-md-3 col-lg-3">
+                    <div class="icon-container">
+                      <div class="icon"><span class="s7-monitor"></span></div><span class="icon-class">monitor</span>
+                    </div>
+                  </div>
+                  <div class="col-xs-4 col-md-3 col-lg-3">
+                    <div class="icon-container">
+                      <div class="icon"><span class="s7-micro"></span></div><span class="icon-class">micro</span>
+                    </div>
+                  </div>
+                  <div class="col-xs-4 col-md-3 col-lg-3">
+                    <div class="icon-container">
+                      <div class="icon"><span class="s7-menu"></span></div><span class="icon-class">menu</span>
+                    </div>
+                  </div>
+                  <div class="col-xs-4 col-md-3 col-lg-3">
+                    <div class="icon-container">
+                      <div class="icon"><span class="s7-map"></span></div><span class="icon-class">map</span>
+                    </div>
+                  </div>
+                  <div class="col-xs-4 col-md-3 col-lg-3">
+                    <div class="icon-container">
+                      <div class="icon"><span class="s7-map-marker"></span></div><span class="icon-class">map-marker</span>
+                    </div>
+                  </div>
+                  <div class="col-xs-4 col-md-3 col-lg-3">
+                    <div class="icon-container">
+                      <div class="icon"><span class="s7-mail"></span></div><span class="icon-class">mail</span>
+                    </div>
+                  </div>
+                  <div class="col-xs-4 col-md-3 col-lg-3">
+                    <div class="icon-container">
+                      <div class="icon"><span class="s7-mail-open"></span></div><span class="icon-class">mail-open</span>
+                    </div>
+                  </div>
+                  <div class="col-xs-4 col-md-3 col-lg-3">
+                    <div class="icon-container">
+                      <div class="icon"><span class="s7-mail-open-file"></span></div><span class="icon-class">mail-open-file</span>
+                    </div>
+                  </div>
+                  <div class="col-xs-4 col-md-3 col-lg-3">
+                    <div class="icon-container">
+                      <div class="icon"><span class="s7-magnet"></span></div><span class="icon-class">magnet</span>
+                    </div>
+                  </div>
+                  <div class="col-xs-4 col-md-3 col-lg-3">
+                    <div class="icon-container">
+                      <div class="icon"><span class="s7-loop"></span></div><span class="icon-class">loop</span>
+                    </div>
+                  </div>
+                  <div class="col-xs-4 col-md-3 col-lg-3">
+                    <div class="icon-container">
+                      <div class="icon"><span class="s7-look"></span></div><span class="icon-class">look</span>
+                    </div>
+                  </div>
+                  <div class="col-xs-4 col-md-3 col-lg-3">
+                    <div class="icon-container">
+                      <div class="icon"><span class="s7-lock"></span></div><span class="icon-class">lock</span>
+                    </div>
+                  </div>
+                  <div class="col-xs-4 col-md-3 col-lg-3">
+                    <div class="icon-container">
+                      <div class="icon"><span class="s7-lintern"></span></div><span class="icon-class">lintern</span>
+                    </div>
+                  </div>
+                  <div class="col-xs-4 col-md-3 col-lg-3">
+                    <div class="icon-container">
+                      <div class="icon"><span class="s7-link"></span></div><span class="icon-class">link</span>
+                    </div>
+                  </div>
+                  <div class="col-xs-4 col-md-3 col-lg-3">
+                    <div class="icon-container">
+                      <div class="icon"><span class="s7-like"></span></div><span class="icon-class">like</span>
+                    </div>
+                  </div>
+                  <div class="col-xs-4 col-md-3 col-lg-3">
+                    <div class="icon-container">
+                      <div class="icon"><span class="s7-light"></span></div><span class="icon-class">light</span>
+                    </div>
+                  </div>
+                  <div class="col-xs-4 col-md-3 col-lg-3">
+                    <div class="icon-container">
+                      <div class="icon"><span class="s7-less"></span></div><span class="icon-class">less</span>
+                    </div>
+                  </div>
+                  <div class="col-xs-4 col-md-3 col-lg-3">
+                    <div class="icon-container">
+                      <div class="icon"><span class="s7-keypad"></span></div><span class="icon-class">keypad</span>
+                    </div>
+                  </div>
+                  <div class="col-xs-4 col-md-3 col-lg-3">
+                    <div class="icon-container">
+                      <div class="icon"><span class="s7-junk"></span></div><span class="icon-class">junk</span>
+                    </div>
+                  </div>
+                  <div class="col-xs-4 col-md-3 col-lg-3">
+                    <div class="icon-container">
+                      <div class="icon"><span class="s7-info"></span></div><span class="icon-class">info</span>
+                    </div>
+                  </div>
+                  <div class="col-xs-4 col-md-3 col-lg-3">
+                    <div class="icon-container">
+                      <div class="icon"><span class="s7-home"></span></div><span class="icon-class">home</span>
+                    </div>
+                  </div>
+                  <div class="col-xs-4 col-md-3 col-lg-3">
+                    <div class="icon-container">
+                      <div class="icon"><span class="s7-help2"></span></div><span class="icon-class">help2</span>
+                    </div>
+                  </div>
+                  <div class="col-xs-4 col-md-3 col-lg-3">
+                    <div class="icon-container">
+                      <div class="icon"><span class="s7-help1"></span></div><span class="icon-class">help1</span>
+                    </div>
+                  </div>
+                  <div class="col-xs-4 col-md-3 col-lg-3">
+                    <div class="icon-container">
+                      <div class="icon"><span class="s7-graph3"></span></div><span class="icon-class">graph3</span>
+                    </div>
+                  </div>
+                  <div class="col-xs-4 col-md-3 col-lg-3">
+                    <div class="icon-container">
+                      <div class="icon"><span class="s7-graph2"></span></div><span class="icon-class">graph2</span>
+                    </div>
+                  </div>
+                  <div class="col-xs-4 col-md-3 col-lg-3">
+                    <div class="icon-container">
+                      <div class="icon"><span class="s7-graph1"></span></div><span class="icon-class">graph1</span>
+                    </div>
+                  </div>
+                  <div class="col-xs-4 col-md-3 col-lg-3">
+                    <div class="icon-container">
+                      <div class="icon"><span class="s7-graph"></span></div><span class="icon-class">graph</span>
+                    </div>
+                  </div>
+                  <div class="col-xs-4 col-md-3 col-lg-3">
+                    <div class="icon-container">
+                      <div class="icon"><span class="s7-global"></span></div><span class="icon-class">global</span>
+                    </div>
+                  </div>
+                  <div class="col-xs-4 col-md-3 col-lg-3">
+                    <div class="icon-container">
+                      <div class="icon"><span class="s7-gleam"></span></div><span class="icon-class">gleam</span>
+                    </div>
+                  </div>
+                  <div class="col-xs-4 col-md-3 col-lg-3">
+                    <div class="icon-container">
+                      <div class="icon"><span class="s7-glasses"></span></div><span class="icon-class">glasses</span>
+                    </div>
+                  </div>
+                  <div class="col-xs-4 col-md-3 col-lg-3">
+                    <div class="icon-container">
+                      <div class="icon"><span class="s7-gift"></span></div><span class="icon-class">gift</span>
+                    </div>
+                  </div>
+                  <div class="col-xs-4 col-md-3 col-lg-3">
+                    <div class="icon-container">
+                      <div class="icon"><span class="s7-folder"></span></div><span class="icon-class">folder</span>
+                    </div>
+                  </div>
+                  <div class="col-xs-4 col-md-3 col-lg-3">
+                    <div class="icon-container">
+                      <div class="icon"><span class="s7-flag"></span></div><span class="icon-class">flag</span>
+                    </div>
+                  </div>
+                  <div class="col-xs-4 col-md-3 col-lg-3">
+                    <div class="icon-container">
+                      <div class="icon"><span class="s7-filter"></span></div><span class="icon-class">filter</span>
+                    </div>
+                  </div>
+                  <div class="col-xs-4 col-md-3 col-lg-3">
+                    <div class="icon-container">
+                      <div class="icon"><span class="s7-file"></span></div><span class="icon-class">file</span>
+                    </div>
+                  </div>
+                  <div class="col-xs-4 col-md-3 col-lg-3">
+                    <div class="icon-container">
+                      <div class="icon"><span class="s7-expand1"></span></div><span class="icon-class">expand1</span>
+                    </div>
+                  </div>
+                  <div class="col-xs-4 col-md-3 col-lg-3">
+                    <div class="icon-container">
+                      <div class="icon"><span class="s7-expand2"></span></div><span class="icon-class">expand2</span>
+                    </div>
+                  </div>
+                  <div class="col-xs-4 col-md-3 col-lg-3">
+                    <div class="icon-container">
+                      <div class="icon"><span class="s7-edit"></span></div><span class="icon-class">edit</span>
+                    </div>
+                  </div>
+                  <div class="col-xs-4 col-md-3 col-lg-3">
+                    <div class="icon-container">
+                      <div class="icon"><span class="s7-drop"></span></div><span class="icon-class">drop</span>
+                    </div>
+                  </div>
+                  <div class="col-xs-4 col-md-3 col-lg-3">
+                    <div class="icon-container">
+                      <div class="icon"><span class="s7-drawer"></span></div><span class="icon-class">drawer</span>
+                    </div>
+                  </div>
+                  <div class="col-xs-4 col-md-3 col-lg-3">
+                    <div class="icon-container">
+                      <div class="icon"><span class="s7-download"></span></div><span class="icon-class">download</span>
+                    </div>
+                  </div>
+                  <div class="col-xs-4 col-md-3 col-lg-3">
+                    <div class="icon-container">
+                      <div class="icon"><span class="s7-display2"></span></div><span class="icon-class">display2</span>
+                    </div>
+                  </div>
+                  <div class="col-xs-4 col-md-3 col-lg-3">
+                    <div class="icon-container">
+                      <div class="icon"><span class="s7-display1"></span></div><span class="icon-class">display1</span>
+                    </div>
+                  </div>
+                  <div class="col-xs-4 col-md-3 col-lg-3">
+                    <div class="icon-container">
+                      <div class="icon"><span class="s7-diskette"></span></div><span class="icon-class">diskette</span>
+                    </div>
+                  </div>
+                  <div class="col-xs-4 col-md-3 col-lg-3">
+                    <div class="icon-container">
+                      <div class="icon"><span class="s7-date"></span></div><span class="icon-class">date</span>
+                    </div>
+                  </div>
+                  <div class="col-xs-4 col-md-3 col-lg-3">
+                    <div class="icon-container">
+                      <div class="icon"><span class="s7-cup"></span></div><span class="icon-class">cup</span>
+                    </div>
+                  </div>
+                  <div class="col-xs-4 col-md-3 col-lg-3">
+                    <div class="icon-container">
+                      <div class="icon"><span class="s7-culture"></span></div><span class="icon-class">culture</span>
+                    </div>
+                  </div>
+                  <div class="col-xs-4 col-md-3 col-lg-3">
+                    <div class="icon-container">
+                      <div class="icon"><span class="s7-crop"></span></div><span class="icon-class">crop</span>
+                    </div>
+                  </div>
+                  <div class="col-xs-4 col-md-3 col-lg-3">
+                    <div class="icon-container">
+                      <div class="icon"><span class="s7-credit"></span></div><span class="icon-class">credit</span>
+                    </div>
+                  </div>
+                  <div class="col-xs-4 col-md-3 col-lg-3">
+                    <div class="icon-container">
+                      <div class="icon"><span class="s7-copy-file"></span></div><span class="icon-class">copy-file</span>
+                    </div>
+                  </div>
+                  <div class="col-xs-4 col-md-3 col-lg-3">
+                    <div class="icon-container">
+                      <div class="icon"><span class="s7-config"></span></div><span class="icon-class">config</span>
+                    </div>
+                  </div>
+                  <div class="col-xs-4 col-md-3 col-lg-3">
+                    <div class="icon-container">
+                      <div class="icon"><span class="s7-compass"></span></div><span class="icon-class">compass</span>
+                    </div>
+                  </div>
+                  <div class="col-xs-4 col-md-3 col-lg-3">
+                    <div class="icon-container">
+                      <div class="icon"><span class="s7-comment"></span></div><span class="icon-class">comment</span>
+                    </div>
+                  </div>
+                  <div class="col-xs-4 col-md-3 col-lg-3">
+                    <div class="icon-container">
+                      <div class="icon"><span class="s7-coffee"></span></div><span class="icon-class">coffee</span>
+                    </div>
+                  </div>
+                  <div class="col-xs-4 col-md-3 col-lg-3">
+                    <div class="icon-container">
+                      <div class="icon"><span class="s7-cloud"></span></div><span class="icon-class">cloud</span>
+                    </div>
+                  </div>
+                  <div class="col-xs-4 col-md-3 col-lg-3">
+                    <div class="icon-container">
+                      <div class="icon"><span class="s7-clock"></span></div><span class="icon-class">clock</span>
+                    </div>
+                  </div>
+                  <div class="col-xs-4 col-md-3 col-lg-3">
+                    <div class="icon-container">
+                      <div class="icon"><span class="s7-check"></span></div><span class="icon-class">check</span>
+                    </div>
+                  </div>
+                  <div class="col-xs-4 col-md-3 col-lg-3">
+                    <div class="icon-container">
+                      <div class="icon"><span class="s7-chat"></span></div><span class="icon-class">chat</span>
+                    </div>
+                  </div>
+                  <div class="col-xs-4 col-md-3 col-lg-3">
+                    <div class="icon-container">
+                      <div class="icon"><span class="s7-cart"></span></div><span class="icon-class">cart</span>
+                    </div>
+                  </div>
+                  <div class="col-xs-4 col-md-3 col-lg-3">
+                    <div class="icon-container">
+                      <div class="icon"><span class="s7-camera"></span></div><span class="icon-class">camera</span>
+                    </div>
+                  </div>
+                  <div class="col-xs-4 col-md-3 col-lg-3">
+                    <div class="icon-container">
+                      <div class="icon"><span class="s7-call"></span></div><span class="icon-class">call</span>
+                    </div>
+                  </div>
+                  <div class="col-xs-4 col-md-3 col-lg-3">
+                    <div class="icon-container">
+                      <div class="icon"><span class="s7-calculator"></span></div><span class="icon-class">calculator</span>
+                    </div>
+                  </div>
+                  <div class="col-xs-4 col-md-3 col-lg-3">
+                    <div class="icon-container">
+                      <div class="icon"><span class="s7-browser"></span></div><span class="icon-class">browser</span>
+                    </div>
+                  </div>
+                  <div class="col-xs-4 col-md-3 col-lg-3">
+                    <div class="icon-container">
+                      <div class="icon"><span class="s7-box2"></span></div><span class="icon-class">box2</span>
+                    </div>
+                  </div>
+                  <div class="col-xs-4 col-md-3 col-lg-3">
+                    <div class="icon-container">
+                      <div class="icon"><span class="s7-box1"></span></div><span class="icon-class">box1</span>
+                    </div>
+                  </div>
+                  <div class="col-xs-4 col-md-3 col-lg-3">
+                    <div class="icon-container">
+                      <div class="icon"><span class="s7-bookmarks"></span></div><span class="icon-class">bookmarks</span>
+                    </div>
+                  </div>
+                  <div class="col-xs-4 col-md-3 col-lg-3">
+                    <div class="icon-container">
+                      <div class="icon"><span class="s7-bicycle"></span></div><span class="icon-class">bicycle</span>
+                    </div>
+                  </div>
+                  <div class="col-xs-4 col-md-3 col-lg-3">
+                    <div class="icon-container">
+                      <div class="icon"><span class="s7-bell"></span></div><span class="icon-class">bell</span>
+                    </div>
+                  </div>
+                  <div class="col-xs-4 col-md-3 col-lg-3">
+                    <div class="icon-container">
+                      <div class="icon"><span class="s7-battery"></span></div><span class="icon-class">battery</span>
+                    </div>
+                  </div>
+                  <div class="col-xs-4 col-md-3 col-lg-3">
+                    <div class="icon-container">
+                      <div class="icon"><span class="s7-ball"></span></div><span class="icon-class">ball</span>
+                    </div>
+                  </div>
+                  <div class="col-xs-4 col-md-3 col-lg-3">
+                    <div class="icon-container">
+                      <div class="icon"><span class="s7-back"></span></div><span class="icon-class">back</span>
+                    </div>
+                  </div>
+                  <div class="col-xs-4 col-md-3 col-lg-3">
+                    <div class="icon-container">
+                      <div class="icon"><span class="s7-attention"></span></div><span class="icon-class">attention</span>
+                    </div>
+                  </div>
+                  <div class="col-xs-4 col-md-3 col-lg-3">
+                    <div class="icon-container">
+                      <div class="icon"><span class="s7-anchor"></span></div><span class="icon-class">anchor</span>
+                    </div>
+                  </div>
+                  <div class="col-xs-4 col-md-3 col-lg-3">
+                    <div class="icon-container">
+                      <div class="icon"><span class="s7-albums"></span></div><span class="icon-class">albums</span>
+                    </div>
+                  </div>
+                  <div class="col-xs-4 col-md-3 col-lg-3">
+                    <div class="icon-container">
+                      <div class="icon"><span class="s7-alarm"></span></div><span class="icon-class">alarm</span>
+                    </div>
+                  </div>
+                  <div class="col-xs-4 col-md-3 col-lg-3">
+                    <div class="icon-container">
+                      <div class="icon"><span class="s7-airplay"></span></div><span class="icon-class">airplay</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <script src="assets/lib/jquery/jquery.min.js" type="text/javascript"></script>
+    <script src="assets/lib/perfect-scrollbar/js/perfect-scrollbar.min.js" type="text/javascript"></script>
+    <script src="assets/lib/bootstrap/dist/js/bootstrap.bundle.min.js" type="text/javascript"></script>
+    <script src="assets/js/app.js" type="text/javascript"></script>
+    <script type="text/javascript">
+      $(document).ready(function(){
+      	//-initialize the javascript
+      	App.init();
+      });
+      
+    </script>
+  </body>
+</html>

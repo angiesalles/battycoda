@@ -1,0 +1,13 @@
+// Badges
+
+@mixin badge-color-variant($color) {
+  background-color: $color;
+  color: theme-color("light");
+  border-color: $color;
+
+  &[href] {
+    @include hover-focus {
+      background-color: darken($color, 10%);
+    }
+  }
+}

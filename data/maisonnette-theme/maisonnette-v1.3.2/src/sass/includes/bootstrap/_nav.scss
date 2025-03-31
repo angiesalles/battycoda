@@ -1,0 +1,75 @@
+// Nav Tabs
+
+.nav {
+
+	@include tablet {
+		flex-wrap: nowrap;
+	}
+}
+
+.nav-link {
+	font-size: $paragraph-size;
+	color: $body-color;
+
+	&.hover,
+	&:hover {
+		color: theme-color("primary");
+	}
+
+	.icon {
+		font-size: $nav-tabs-link-icon-font-size;
+		vertical-align: middle;
+	}
+}
+
+.tab-content {
+	padding:	$nav-tab-content-padding;
+	background-color:	$nav-tab-content-bg;
+}
+
+.nav-tabs-dark {
+	@include tabs-color-variation(theme-color("noir"));
+}
+
+.nav-tabs-primary {
+	@include tabs-color-variation(theme-color("primary"));
+}
+
+//Tab Left and Tab Rgiht
+.tab-left, .tab-right {
+
+	.nav-tabs {
+		float: left;
+		flex-direction: column;
+
+		> li {
+			float:none;
+			margin-right: 0;
+			margin-bottom: 0;
+
+			> a {
+				text-align: left;
+				min-width: 38px;
+				padding: 1.154rem 1.308rem;
+			}
+		}
+	}
+
+	.tab-content {
+		overflow: auto;
+	}
+}
+
+//Tab Right
+.tab-right {
+
+	.nav-tabs {
+		float:right;
+	}
+}
+
+.tab-icons {
+	.nav-link .icon {
+		font-size: 1.6rem;
+	}
+}

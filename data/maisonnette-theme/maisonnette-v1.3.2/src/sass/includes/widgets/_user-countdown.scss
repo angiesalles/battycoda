@@ -1,0 +1,64 @@
+.user-countdown {
+	border-top-width: 2px;
+
+	.card-body {
+		padding-bottom: 20px;
+	}
+}
+
+.countdown-title {
+	font-size: 1.23077rem;
+	font-weight: $font-weight-light;
+	margin-top: 1rem;
+}
+
+.time-component {
+	display: inline-block;
+	font-weight: $font-weight-light;
+	width: 33.3%;
+	padding-top: 0.384615rem;
+
+	&:last-child {
+		
+		.time-counter:after {
+			content: " ";
+		}
+	}
+}
+
+.time-counter {
+	position: relative;
+	display: block;
+	text-align: center;
+	font-size: 5rem;
+	line-height: 1;
+
+	@include desktop {
+		font-size: 4rem;
+	}
+
+	@include laptop {
+		font-size: 3rem;
+	}
+
+	@include tablet {
+		font-size: 4rem;
+	}
+
+	&:after {
+    position: absolute;
+		content: ":";
+		display: block;
+    right: 0;
+    width: 6px;
+    top: 0;
+	}
+}
+
+.time-component-title {
+	display: block;
+	text-align: center;
+	font-size: $paragraph-size;
+	color: theme-color("dark");
+	margin-top: 1rem;
+}

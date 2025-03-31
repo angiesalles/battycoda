@@ -1,0 +1,306 @@
+// Invoice
+
+.invoice-aside {
+	background-color: darken(theme-color("light"), 7%);
+	display: flex;
+	flex-direction: column;
+	padding: 50px 33px;
+	min-width: 300px;
+
+	@include phone {
+		padding: 25px;
+	}
+}
+
+.invoice-logo {
+	height: $invoice-logo-height;
+	min-width: $invoice-logo-width;
+	background-image: url("#{$img-path}/logo-inv-2x.png");
+	background-repeat: no-repeat;
+	background-size: 100% 100%;
+	background-position: 0;
+	margin: 0 auto $invoice-logo-margin;
+
+	@include phone {
+		height: $invoice-logo-small-height;
+		min-width: $invoice-logo-small-width;
+		width: $invoice-logo-small-width;
+		margin: 0 auto ($invoice-logo-margin / 2);
+		float: none;
+		min-width: auto;
+	}
+}
+
+.invoice-person {
+
+	text-align: center;
+
+	.name {
+		font-size: 1.53846rem;
+		font-weight: $font-weight-semi-bold;
+
+		@include phone {
+			font-size: 1.07692rem;
+		}
+	}
+
+	.position {
+		font-size: 1.23077rem;
+
+		@include phone {
+			font-size: 1rem;
+		}
+	}
+
+	span {
+		font-size: 1.23077rem;
+		line-height: 1.78;
+		display: block;
+		font-weight: $font-weight-light;
+
+		@include phone {
+			font-size: 1rem;
+		}
+	}
+}
+
+.invoice-payment-direction {
+	text-align: center;
+	margin: $invoice-payment-direction-margin 0;
+
+	@include phone {
+		margin: ($invoice-payment-direction-margin / 2) 0;
+	}
+
+	.icon {
+		font-size: 4.23077rem;
+		line-height: 1;
+
+		@include tablet {
+			font-size: 1.92308rem;
+		}
+	}
+}
+
+.invoice-company-info {
+	margin-top: $invoice-company-info-margin;
+
+	@include phone {
+		margin-top: $invoice-company-info-margin / 2;
+		text-align: center;
+	}
+
+	.summary {
+		font-size: $paragraph-size;
+		line-height: 1.3;
+
+		@include phone {
+			font-size: 1rem;
+		}
+
+		.title {
+			display: block;
+			font-size: 1.38462rem;
+			line-height: 1;
+			font-weight: $font-weight-semi-bold;
+			margin-bottom: 1.38462rem;
+
+			@include phone {
+				font-size: 1.07692rem;
+			}
+		}
+	}
+
+	.phone, .email {
+
+		li {
+			font-size: $paragraph-size;
+			line-height: 1.7;
+		}
+	}
+}
+
+.invoice-content {
+	background-color: theme-color("light");
+	padding: 50px 33px;
+	flex: 1 1 0%;
+
+	@include phone {
+		padding: 25px;
+	}
+}
+
+.invoice-header {
+	margin-bottom: $invoice-header-margin;
+
+	@include phone {
+		margin-bottom: $invoice-header-margin / 2;
+	}
+}
+
+.invoice-title {
+	font-size: 2.69231rem;
+	font-weight: $font-weight-light;
+
+	@include phone {
+		font-size: 1.92308rem;
+	}
+}
+
+.invoice-order {
+	text-align: right;
+
+	.invoice-number {
+		display: block;
+		margin-top: 1rem;
+		font-size: 1.38462rem;
+
+		@include phone {
+			font-size: 1.07692rem;
+		}
+	}
+
+	.invoice-date {
+		font-size: $paragraph-size;
+		color: darken( theme-color("light"), 48%);
+
+		@include phone {
+			font-size: 1rem;
+		}
+	}
+}
+
+.invoice-details {
+	width: 100%;
+	font-size: $invoice-details-font-size;
+	margin-bottom: $invoice-details-margin;
+
+	@include phone {
+		font-size: 1rem;
+		margin-bottom: $invoice-details-margin / 2;
+	}
+
+	thead {
+
+		th {
+			text-align: right;
+			padding-bottom: 1.69231rem;
+			font-size: $invoice-th-font-size;
+
+			@include phone {
+				font-size: 1rem;
+				padding-bottom: 1.15385rem;
+			}
+
+			&:first-child {
+				text-align: left;
+			}
+		}
+	}
+
+	tr > td {
+		padding: 23px 0;
+
+		@include tablet {
+			padding: 10px 0;
+		}
+	}
+
+	tbody {
+
+		.hours {
+			text-align: right;
+		}
+
+		.amount {
+			text-align: right;
+		}
+	}
+}
+
+.invoice-summary {
+	width: 100%;
+	font-size: 1.38462rem;
+	border-top: 1px solid darken(theme-color("light"), 15%);
+	margin-bottom: $invoice-details-margin;
+
+	@include phone {
+		margin-bottom: $invoice-details-margin / 2;
+		font-size: 1.07692rem;
+	}
+
+	th {
+		padding-top: 26px;
+		font-weight: $font-weight-semi-bold;
+		width: 20%;
+
+		@include phone {
+			width: 37%; 
+		}
+
+		&.total {
+			width: 60%;
+			font-size: 1.84615rem;
+			text-align: right;
+
+			@include phone {
+				font-size: 1.07692rem;
+				width: 26%;
+			}
+		}
+	}
+
+	.total-value {
+		text-align: right;
+		font-size: 3.07692rem;
+
+		@include phone {
+			font-size: 1.07692rem;
+			font-weight: $font-weight-semi-bold;
+		}
+	}
+}
+
+.invoice-payment-details {
+	border: 1px solid darken(theme-color("light"), 15%);
+	border-left-width: 0;
+	border-right-width: 0;
+	padding: 23px 0;
+
+	p {
+		margin-bottom: .538462rem;
+	}
+}
+
+.invoice-message {
+
+	.title {
+		display: block;
+		font-weight: $font-weight-semi-bold;
+		text-transform: uppercase;
+		color: $body-color;
+		font-size: $invoice-message-font-size;
+
+		@include phone {
+			font-size: $paragraph-size;
+		}
+	}
+
+	p {
+		font-size: $invoice-message-font-size;
+		color: darken(theme-color("light"), 40%);
+		line-height: 1.6;
+
+		@include phone {
+			font-size: 1rem;
+		}
+	}
+}
+
+.invoice-footer {
+	text-align: right;
+
+	@include phone {
+		text-align: center;
+	}
+}

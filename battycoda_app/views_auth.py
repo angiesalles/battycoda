@@ -1,4 +1,6 @@
 
+import json
+
 from django.contrib import messages
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
@@ -8,6 +10,7 @@ from django.shortcuts import redirect, render
 from django.urls import reverse
 from django.utils import timezone
 from django.views.decorators.csrf import csrf_exempt
+from django.views.decorators.http import require_POST
 
 from .forms import UserLoginForm, UserProfileForm, UserRegisterForm
 from .models.user import GroupInvitation, GroupMembership, UserProfile
@@ -506,3 +509,26 @@ def check_username(request):
         return JsonResponse(response)
         
     return JsonResponse({"error": "Method not allowed"}, status=405)
+
+
+@login_required
+@require_POST
+def update_theme_preference(request):
+    """Update user theme preference via AJAX"""
+    try:
+        data = json.loads(request.body)
+        theme = data.get('theme')
+        
+        # Validate theme name from choices in UserProfile
+        valid_themes = dict(UserProfile.THEME_CHOICES).keys()
+        if theme not in valid_themes:
+            return JsonResponse({'status': 'error', 'message': 'Invalid theme name'}, status=400)
+        
+        # Update user profile theme preference
+        profile = request.user.profile
+        profile.theme = theme
+        profile.save(update_fields=['theme'])
+        
+        return JsonResponse({'status': 'success'})
+    except Exception as e:
+        return JsonResponse({'status': 'error', 'message': str(e)}, status=500)

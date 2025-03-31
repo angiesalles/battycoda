@@ -1,0 +1,368 @@
+.mai-sub-header {
+	border:	0;
+	border-radius: 0;
+	margin-bottom: 0;
+	background-color: theme-color("primary");
+	padding: 0 0 $sub-nav-height;
+
+	@include tablet {
+		padding-bottom: 0;
+		background-color: $sub-header-mobile-bg;
+	}
+
+	// Subnav white bg
+	&:before {
+		position: absolute;
+		content: '';
+		display: block;
+		background-color: $sub-nav-bg;
+		bottom: 0;
+		left: 0;
+		right: 0;
+		width: 100%;
+		height: $sub-nav-height;
+		z-index: 1;
+
+		@include tablet {
+			display: none;
+		}
+	}
+
+	&.mai-sub-header--no-child{
+		padding-bottom: 6px;
+
+		&:before{
+			height: 6px;
+		}
+	}
+
+	> .container {
+		padding: 0;
+		padding-top: $sub-header-top-space;
+		position: relative;
+
+		@include tablet {
+			padding: 0;
+		}
+	}
+
+	.navbar {
+		padding: 0;
+		width: 100%;
+	}
+
+	.navbar-toggler {
+		padding: 14px 0;
+		height: auto;
+		width: 100%;
+		background-color: darken($top-header-bg-mobile, 2.5%);
+
+		&:focus {
+			outline: none;
+		}
+
+		&.collapsed {
+			background-color: darken($sub-header-mobile-bg, 4%);
+
+			.icon-bar span {
+				background-color: lighten($sub-header-mobile-bg, 60%);
+			}
+		}
+
+		.icon-bar {
+			display: inline-block;
+	    background-color: transparent;
+	    height: auto;
+	    width: auto;
+	    vertical-align: middle;
+
+	    span {
+	    	display: block;
+		    width: 24px;
+		    height: 1px;
+		    margin-top: 6px;
+		    background-color: theme-color("light");
+
+		    &:first-child {
+		    	margin-top: 0;
+		    }
+	    }
+		}
+	}
+
+	.navbar-nav {
+
+		> .nav-item {
+
+			& + .nav-item {
+				margin-left: 0;
+			}
+
+			> .nav-link {
+				font-family: $raleway;
+				font-size: 1.308rem;
+				font-weight: 500;
+				line-height: $sub-header-navbar-height;
+				min-width: 120px;
+				padding: 0 17px;
+				text-align: center;
+				border-radius: 3px 3px 0 0;
+				color: $white;
+				transition: color .12s ease-in-out;
+
+				@include laptop-only {
+					font-size: 1.2rem;
+					min-width: 90px;
+					padding: 0 13px;
+				}
+
+				@include tablet {
+					color: lighten($sub-header-mobile-bg, 50%);
+					text-align: left;
+					background-color: darken($sub-header-mobile-bg, 2%);
+					font-size: 1.077rem;
+				}
+
+				> .icon {
+					font-size: 2.154rem;
+    			margin-right: 5px;
+
+					@include laptop-only {
+						font-size: 1.5rem;
+					}
+
+    			@include tablet {
+						display: inline-block;
+    				font-size: 1.615rem;
+    				margin-right: 10px;
+    				min-width: 21px;
+    				text-align: center;
+    			}
+				}
+
+				> span {
+					vertical-align: middle;
+				}
+
+				&:hover {
+					background-color: transparent;
+					color: $sub-header-tab-hover-color;
+
+					@include tablet {
+						background-color: darken($sub-header-mobile-bg, 2%);
+						color: lighten($sub-header-mobile-bg, 50%);
+					}
+				}
+
+				&.dropdown-toggle:after {
+					display: none;
+				}
+			}
+
+			@include tablet {
+				&.parent {
+
+					> .nav-link:after {
+						position: absolute;
+						content: $arrow-down-code;
+						font-family: $icon-font;
+						font-size: 1.9rem;
+						vertical-align: middle;
+						right: 15px;
+					}
+
+					&.open {
+						> .nav-link:after {
+							content: $arrow-up-code;
+						}
+					}
+				}
+			}
+
+			&.open,
+			&.open:hover {
+
+				> a{
+					color: theme-color("primary");
+					background-color: $white;
+
+					@include tablet {
+						background-color: darken($sub-header-mobile-bg, 2%);
+					}
+				}
+			}
+		}
+	}
+
+	.search {
+		position: absolute;
+		top: (($sub-header-top-space + $sub-header-navbar-height) / 2);
+		right: 0;
+		margin-top: -21px;
+		width: 235px;
+		border-bottom: 1px solid lighten(theme-color("primary"), 1.8%);
+
+		@include desktop {
+			display: none;
+		}
+
+		> input{
+			border: 1px solid transparent;
+			background-color: darken(theme-color("primary"), 2.5%);
+			color: $white;
+			width: 100%;
+			font-family: $raleway;
+			font-size: 1.308rem;
+			font-weight: 500;
+			padding: 8px 10px;
+			outline: none;
+			transition: border-color 0.3s ease;
+
+			&:focus{
+				border-color: darken(theme-color("primary"), 6%);
+			}
+		}
+
+		> span{
+			position: absolute;
+			color: $white;
+			right: 8px;
+			top: 50%;
+			font-size: 1.846rem;
+			margin-top: -12px;
+		}
+	}
+
+	// Input placeholder
+	@include placeholder-color( rgba(255,255,255,0.4) );
+}
+
+// Sub navigation
+.mai-nav-tabs-sub {
+	position: absolute;
+	display: none;
+	left: 0;
+	top: 100%;
+	z-index: $zindex-dropdown - 1;
+	width: 100%;
+	background-color: $sub-nav-bg;
+
+	@include tablet {
+		position: static;
+		top: 0;
+		background-color: $sub-header-mobile-bg;
+		flex-direction: column;
+		padding: 5px 0;
+	}
+
+	.nav-item.open & {
+		display: flex;
+	}
+
+	> .nav-item {
+
+		&.mega-menu {
+			position: static;
+		}
+
+		> .nav-link {
+			padding: 0 $sub-nav-item-padding;
+			line-height: $sub-nav-height;
+
+			@include laptop-only {
+				padding: 0 $sub-nav-item-padding - 12px;
+			}
+
+			@include tablet {
+				padding-left: $sub-nav-item-padding + 8px;
+				line-height: $sub-nav-height * 0.72;
+				color: lighten($sub-header-mobile-bg, 39%);
+				font-size: 1rem;
+			}
+
+			.icon {
+				margin-right: .4rem;
+
+				@include laptop-only {
+					display: none;
+				}
+			}
+
+			&.active {
+				color: theme-color("primary");
+			}
+		}
+
+		&.parent {
+
+			> .nav-link {
+				padding-right: $sub-nav-item-padding + 8px;
+
+				&:after {
+					position: absolute;
+					content: $arrow-down-code;
+					font-family: $icon-font;
+					font-size: 1.9rem;
+					vertical-align: middle;
+
+					@include tablet {
+						right: 15px;
+					}
+				}
+			}
+
+			&.open {
+				> .nav-link {
+					color: $link-color;
+				}
+			}
+
+			@include tablet {
+				&.open {
+					> .nav-link:after {
+						content: $arrow-up-code;
+					}
+				}
+			}
+		}
+	}
+
+	@include tablet {
+		.dropdown.open {
+			> .dropdown-menu {
+				display: block;
+			}
+		}
+	}
+
+	.dropdown-menu {
+		min-width: $sub-nav-dropdown-min-width;
+		box-shadow: $sub-nav-dropdown-box-shadow;
+		margin-top: 0;
+		padding-top: $sub-nav-mobile-vertical-padding;
+		border: 0;
+
+		.dropdown-item {
+			color: $sub-nav-dropdown-item-color;
+
+			&.active {
+				color: theme-color("primary");
+			}
+		}
+
+		@include tablet {
+			background-color: lighten($sub-header-mobile-bg, 1.2%);
+			box-shadow: none;
+			padding-bottom: $sub-nav-mobile-vertical-padding;
+
+			.dropdown-item {
+				padding-left: $sub-nav-item-padding + 30px;
+				color: lighten($sub-header-mobile-bg, 39%);
+
+				&:hover {
+					background-color: inherit;
+				}
+			}
+		}
+	}
+}

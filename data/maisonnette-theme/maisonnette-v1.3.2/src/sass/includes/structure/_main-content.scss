@@ -1,0 +1,9 @@
+.main-content {
+	padding: $content-padding 0;
+
+	@include tablet {
+		padding-top: $content-padding - 20px;
+		padding-left: $content-padding - 25px;
+		padding-right: $content-padding - 25px;
+	}
+}

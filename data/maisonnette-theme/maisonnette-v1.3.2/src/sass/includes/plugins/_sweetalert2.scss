@@ -1,0 +1,566 @@
+.swal2-shown {
+    overflow-x: unset;
+
+    .swal2-popup {
+        padding: 0;
+        border-radius: $modal-content-border-radius;
+
+        .swal2-checkbox,
+        .swal2-file,
+        .swal2-input,
+        .swal2-radio,
+        .swal2-select,
+        .swal2-textarea {
+            margin: auto;
+        }
+
+        .swal2-header {
+            align-items: start;
+            padding: 20px;
+
+            .swal2-progresssteps {
+                margin: 0;
+                padding: 10px 0 20px;
+            }
+
+            .swal2-icon {
+                order: 2;
+                margin: 30px auto 0;
+            }
+
+            .swal2-image {
+                order: 3;
+                margin: 30px auto 0;
+            }
+
+            .swal2-title {
+                font-size: 1.538rem;
+                font-weight: $font-weight-light;
+                order: 1;
+                margin: 0;
+                line-height: $line-height-base;
+            }
+        }
+
+
+
+
+        .swal2-close {
+            width: auto;
+            height: auto;
+            right: 5px;
+            outline: none;
+            opacity: 0.4;
+            color: $black;
+            font-size: 2.15rem;
+            font-weight: bold;
+            line-height: 1;
+            padding: 1rem;
+
+            &:hover {
+                opacity: 0.75;
+            }
+        }
+
+        .swal2-content {
+            padding: 10px 20px 20px;
+
+            #swal2-content {
+                text-align: left;
+                font-size: 1rem;
+                color: $body-color;
+                font-weight: $font-weight-normal;
+                line-height: 21px;
+            }
+
+            .swal2-textarea {
+                min-height: 100px;
+            }
+
+            .swal2-input, .swal2-textarea, .swal2-select {
+                display: block;
+                width: 100%;
+                height: $input-height;
+                padding: $input-padding-y $input-padding-x;
+                font-size: $font-size-base;
+                line-height: $input-line-height;
+                color: $input-color;
+                background-color: $input-bg;
+                background-clip: padding-box;
+                border: $input-border-width solid $input-border-color;
+
+                border-width: 1px;
+                //border-top-color: $input-top-border;
+                box-shadow: none;
+                padding: 10px 12px;
+                font-size: $font-size-base + 0.1538rem;
+                transition: none;
+                height: $input-height;
+
+                @if $enable-rounded {
+                    border-radius: $input-border-radius;
+                } @else {
+                    border-radius: 0;
+                }
+
+                @include box-shadow($input-box-shadow);
+                @include transition($input-transition);
+
+                &::-ms-expand {
+                    background-color: transparent;
+                    border: 0;
+                }
+
+                @include form-control-focus();
+
+                &::placeholder {
+                    color: $input-placeholder-color;
+                    opacity: 1;
+                }
+
+                &:disabled,
+                &[readonly] {
+                    background-color: $input-disabled-bg;
+                    opacity: 1;
+                }
+            }
+        }
+
+        .swal2-actions {
+            padding: 20px;
+            margin: 0;
+            justify-content: end;
+        }
+
+        &.swal2-loading {
+            .swal2-actions {
+                .swal2-styled {
+                    &.swal2-confirm {
+                        border-left-color: theme-color('primary') !important;
+                        border-right-color: theme-color('primary') !important;
+                        background-color: transparent;
+                    }
+                }
+            }
+        }
+
+        .swal2-footer {
+            margin: 0;
+            padding: 20px;
+            justify-content: left;
+        }
+    }
+
+    .content-text-center {
+        &.swal2-popup {
+            .swal2-content {
+                #swal2-content {
+                    text-align: center;
+                }
+            }
+        }
+    }
+
+    .content {
+
+        &-header {
+
+            &-left {
+
+                &.swal2-popup {
+
+                    .swal2-header {
+                        align-items: start;
+                    }
+                }
+            }
+
+            &-center {
+
+                &.swal2-popup {
+
+                    .swal2-header {
+                        align-items: center;
+                    }
+                }
+            }
+
+            &-right {
+
+                &.swal2-popup {
+
+                    .swal2-header {
+                        align-items: end;
+                    }
+                }
+            }
+
+            &-title {
+
+                &-left {
+
+                    &.swal2-popup {
+
+                        .swal2-header {
+
+                            .swal2-title {
+                                align-self: start;
+                            }
+                        }
+                    }
+                }
+
+                &-center {
+
+                    &.swal2-popup {
+
+                        .swal2-header {
+
+                            .swal2-title {
+                                align-self: center;
+                            }
+                        }
+                    }
+                }
+
+                &-right {
+
+                    &.swal2-popup {
+
+                        .swal2-header {
+
+                            .swal2-title {
+                                align-self: end;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        &-text {
+
+            &-left {
+
+                &.swal2-popup {
+
+                    .swal2-content {
+
+                        #swal2-content {
+                            text-align: left;
+                        }
+                    }
+                }
+            }
+
+            &-center {
+
+                &.swal2-popup {
+
+                    .swal2-content {
+
+                        #swal2-content {
+                            text-align: center;
+                        }
+                    }
+                }
+            }
+
+            &-right {
+
+                &.swal2-popup {
+
+                    .swal2-content {
+
+                        #swal2-content {
+                            text-align: right;
+                        }
+                    }
+                }
+            }
+        }
+
+        &-actions {
+
+            &-left {
+
+                &.swal2-popup {
+
+                    .swal2-actions {
+                        justify-content: start;
+                    }
+                }
+            }
+
+            &-center {
+
+                &.swal2-popup {
+
+                    .swal2-actions {
+                        justify-content: center;
+                    }
+                }
+            }
+
+            &-right {
+
+                &.swal2-popup {
+
+                    .swal2-actions {
+                        justify-content: end;
+                    }
+                }
+            }
+        }
+
+        &-footer {
+
+            &-left {
+
+                &.swal2-popup {
+
+                    .swal2-footer {
+                        justify-content: start;
+                    }
+                }
+            }
+
+            &-center {
+
+                &.swal2-popup {
+
+                    .swal2-footer {
+                        justify-content: center;
+                    }
+                }
+            }
+
+            &-right {
+
+                &.swal2-popup {
+
+                    .swal2-footer {
+                        justify-content: end;
+                    }
+                }
+            }
+        }
+    }
+
+    .colored-header {
+
+        &.swal2-popup {
+            border-top-left-radius: 6px;
+            border-top-right-radius: 6px;
+
+            .swal2-header {
+                padding: 30px 20px;
+                border-top-left-radius: 4px;
+                border-top-right-radius: 4px;
+
+                .swal2-title, .swal2-icon {
+                    color: theme-color("light");
+                    border-color: theme-color("light");
+                }
+            }
+
+            .swal2-content {
+                padding: 35px 20px 20px;
+            }
+
+            .swal2-actions {
+
+                .swal2-styled {
+
+                    &.swal2-confirm {
+                        border-left-color: transparent !important;
+                        border-right-color: transparent !important;
+                    }
+                }
+            }
+        }
+
+        .swal2-close {
+            color: rgba(0, 0, 0, 0.7);
+            line-height: 1.95;
+        }
+
+
+
+        &-primary {
+
+            &.swal2-popup {
+
+                .swal2-header {
+                    background-color: theme-color("primary");
+                }
+
+                .swal2-actions {
+
+                    .swal2-styled {
+
+                        &.swal2-confirm {
+                            @include button-variant($btn-primary-color, $btn-primary-bg, $btn-primary-border);
+                        }
+                    }
+                }
+            }
+        }
+
+        &-info {
+
+            &.swal2-popup {
+
+                .swal2-header {
+                    background-color: theme-color("info");
+                }
+
+                .swal2-actions {
+
+                    .swal2-styled {
+
+                        &.swal2-confirm {
+                            @include button-variant($btn-info-color, $btn-info-bg, $btn-info-border);
+                        }
+                    }
+                }
+            }
+        }
+
+        &-warning {
+
+            &.swal2-popup {
+
+                .swal2-header {
+                    background-color: theme-color("warning");
+                }
+
+                .swal2-actions {
+
+                    .swal2-styled {
+
+                        &.swal2-confirm {
+                            @include button-variant($btn-warning-color, $btn-warning-bg, $btn-warning-border);
+                        }
+                    }
+                }
+            }
+        }
+
+        &-danger {
+
+            &.swal2-popup {
+
+                .swal2-header {
+                    background-color: theme-color("danger");
+                }
+
+                .swal2-actions {
+
+                    .swal2-styled {
+
+                        &.swal2-confirm {
+                            @include button-variant($btn-danger-color, $btn-danger-bg, $btn-danger-border);
+                        }
+                    }
+                }
+            }
+        }
+
+        &-dark {
+
+            &.swal2-popup {
+
+                .swal2-header {
+                    background-color: theme-color("dark");
+                }
+
+                .swal2-actions {
+
+                    .swal2-styled {
+
+                        &.swal2-confirm {
+                            @include button-variant($btn-dark-color, $btn-dark-bg, $btn-dark-border);
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    .modal-full-color {
+
+        &.swal2-popup {
+
+            .swal2-header {
+
+                .swal2-title, .swal2-icon {
+                    color: theme-color("light");
+                    border-color: theme-color("light");
+                }
+            }
+
+            .swal2-content {
+
+                #swal2-content {
+                    color: theme-color("light");
+                }
+            }
+      }
+
+        .swal2-close {
+            color: theme-color("light");
+            opacity: 0.6;
+
+            &:hover {
+                opacity: 1;
+            }
+        }
+
+        &-primary {
+            background-color: theme-color("primary");
+        }
+
+        &-info {
+            background-color: theme-color("info");
+        }
+
+        &-warning {
+            background-color: theme-color("warning");
+        }
+
+        &-danger {
+            background-color: theme-color("danger");
+        }
+
+        &-dark {
+            background-color: theme-color("dark");
+        }
+    }
+}
+
+// Progress steps
+.swal2-progress-steps {
+
+  .swal2-progress-step {
+    background-color: theme-color('primary');
+
+      &.swal2-active-progress-step {
+        background-color: theme-color('primary');
+
+        & ~ .swal2-progress-step-line,
+        & ~ .swal2-progress-step {
+          background-color: lighten(theme-color('primary'), 25%);
+        }
+      }
+    }
+
+  .swal2-progress-step-line {
+    background-color: theme-color('primary');
+  }
+}
+
+// Add a separation between buttons
+.swal2-actions .btn {
+    margin-right: 5px;
+}

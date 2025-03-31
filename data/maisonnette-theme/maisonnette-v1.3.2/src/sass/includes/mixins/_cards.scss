@@ -1,0 +1,59 @@
+// Heading colored card
+@mixin card-header-color ($color, $set-defaults: false) {
+  background-color: $color;
+
+  @if $set-defaults != true {
+    color: theme-color("light");
+  }
+
+  @if $set-defaults != true {
+    .card-subtitle {
+      color: theme-color("light");
+    }
+  }
+
+  @if $set-defaults != true {
+    .tools {
+      .icon {
+        color:theme-color("light");
+
+        &:hover {
+          color: darken($color, 6%);
+        }
+      }
+    }
+  }
+}
+
+// Full colored card
+@mixin card-full-color($color, $set-defaults: false) {
+  background-color: $color;
+
+  @if $set-defaults != true {
+    color: theme-color("light");
+  }
+
+  @if $set-defaults != true {
+    .card-header {
+      color: theme-color("light");
+    }
+  }
+
+  @if $set-defaults != true {
+    .card-subtitle {
+      color: theme-color("light");
+    }
+  }
+
+  @if $set-defaults != true {
+    .tools {
+      .icon {
+        color:theme-color("light");
+
+        &:hover {
+          color: darken($color, 6%);
+        }
+      }
+    }
+  }
+}

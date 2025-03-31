@@ -1,0 +1,267 @@
+/*------------------------------------------------------------------
+  [Elements]
+*/
+/*------------------------------------------------------------------
+  [Widgets]
+*/
+.widget{
+	background-color: theme-color("light");
+	padding: 20px;
+	margin-bottom: $widget-margin-bottom;
+
+	&.widget-fullwidth{
+		padding: 0;
+		
+		.widget-head{
+			padding: 20px $widget-horizontal-padding 10px;
+			margin-bottom: 0;
+
+			@include phone{
+				padding-left: $widget-horizontal-padding-small;
+				padding-left: $widget-horizontal-padding-small;
+			}
+		}
+
+		.widget-chart-container{
+
+			.counter{
+				left: $widget-horizontal-padding;
+			}
+		}
+
+		.widget-info {
+			margin: 0;
+			padding: 45px 10px;
+
+			.counter-block {
+				padding: 7px 0;
+				text-align: center;
+				border-left: 1px solid darken(theme-color("light"), 10%);
+
+				&:first-child {
+					border-left-width: 0;
+				}
+
+				.counter {
+					font-size: 1.84615rem;
+					display: block
+				}
+
+				.title {
+					color: theme-color("primary");
+					font-size: $paragraph-size;
+					font-weight: $font-weight-light;
+				}
+			}
+		}
+
+		.chart-table{
+
+			table{
+				margin-bottom: 0;
+			}
+		}
+	}
+
+	&.widget-small{
+		margin-bottom: 20px;
+
+		&.widget-fullwidth{
+
+			> .widget-head{
+				padding: 20px 15px 10px;
+			}
+		}
+	}
+}
+
+//Widget head
+.widget-head{
+	margin-bottom: 20px;
+	display: block;
+	@include clearfix();
+
+	.title{
+		display: block;
+		font-size: $widget-heading-font-size;
+		font-weight: $widget-heading-font-weight;
+	}
+
+	.description{
+		display: block;
+		color: hsl(0, 0%, 62%);
+		line-height: 22px;
+		font-weight: $font-weight-light;
+	}
+
+	//Icon tools
+	.tools{
+		float: right;
+		margin-left: 10px;
+
+		.icon{
+			display: inline-block;
+			font-size: $card-header-icon-size;
+			line-height: $card-header-icon-line-height;
+			vertical-align: middle;
+			cursor: pointer;
+			color: $card-header-icon-color;
+			min-width: $card-header-icon-size;
+			text-align: center;
+
+			& + .icon{
+				margin-left: $card-header-icon-separation;
+			}
+
+			&:hover{
+				color: $card-header-icon-hover;
+			}
+		}
+
+		.value{
+			font-size: 1.84615rem;
+			line-height: 22px;
+		}
+
+		.dropdown{
+			display: inline-block;
+		}
+
+		//Open dropdowns from right to left
+		.dropdown-menu{
+			right: 0;
+			left: auto;
+		}
+	}
+
+	//Button toolbar
+	.button-toolbar{
+		float: right;
+
+		.btn-group{
+
+			@include phone{
+				margin-bottom: 5px;
+			}
+
+			& + * {
+				margin-left: 7px;
+			}
+		}
+
+		//Open dropdowns from right to left
+		.dropdown-menu{
+			right: 0;
+			left: auto;
+		}
+	}
+}
+
+//Widget chart container
+.widget-chart-container{
+	position: relative;
+
+	.counter{
+		min-height: auto;
+		top: 0;
+		left: 0;
+		position: absolute;
+		z-index: 2;
+
+		&-inline{
+			position: relative;
+			display: inline-block;
+		}
+
+		.value{
+			font-size: 1.84615rem;
+		}
+
+		.desc{
+			text-transform: uppercase;
+			font-size: 0.846154rem;
+			color: lighten($body-color, 36.5%);
+		}
+	}
+
+	.counter-big{
+	
+		.value{
+			display: block;
+			font-size: 2.07692rem;
+			line-height: 1;
+			font-weight: $font-weight-light;
+			margin-bottom: 5px;
+		}
+	}
+
+	.indicator{
+
+		&-equal{
+
+			.icon{
+				color: theme-color("primary");
+			}
+		}
+
+		&-positive{
+
+			.icon{
+				color: theme-color("success");
+			}
+		}
+
+		&-negative{
+
+			.icon{
+				color: theme-color("danger");
+			}
+		}
+
+		.icon{
+			font-size: 1.92308rem;
+	    margin-right: 7px;
+	    line-height: 24px;
+	    vertical-align: middle;
+		}
+
+		.number{
+			font-size: 1.53846rem;
+			vertical-align: middle;
+		}
+	}
+}
+
+//Chart information section
+.widget-chart-info{
+	@include clearfix();
+	
+	@include phone{
+
+		& + .widget-counter-group{
+			margin-top: 15px;
+		}
+	}
+
+	.widget-fullwidth &{
+		padding: 9px $widget-horizontal-padding 0;
+	}
+}
+
+//Widget counter group
+.widget-counter-group{
+	padding: 0 $widget-horizontal-padding 10px;
+
+	&-right{
+		text-align: right;
+	}
+
+	.counter{
+		position: static;
+		display: inline-block;
+
+		& + .counter{
+			margin-left: 20px;
+		}
+	}
+}

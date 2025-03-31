@@ -1,0 +1,65 @@
+.dropdown-showcase {
+  margin: 0;
+}
+
+// The dropdown menu
+.dropdown-menu {
+  &.dropdown-menu-dark {
+    background-color: $dropdown-dark-bg;
+    box-shadow: none;
+  }
+
+  color: $body-color;
+  border-radius: 0;
+  box-shadow: $dropdown-box-shadow;
+}
+
+// Dividers (basically an `<hr>`) within the dropdown
+.dropdown-divider {
+  .dropdown-menu-dark & {
+    @include nav-divider($dropdown-dark-divider-bg);
+  }
+}
+
+.dropdown-item {
+  padding: $dropdown-item-padding-y $dropdown-item-padding-x;
+
+  &:focus {
+    background-color: transparent;
+  }
+
+  &:active {
+    color: $dropdown-link-color;
+    background-color: $dropdown-link-hover-bg;
+  }
+
+  &.active:hover, 
+  &.active:active {
+    background-color: $dropdown-link-hover-bg;
+    color: theme-color("primary");
+  }
+
+  .dropdown-menu-dark & {
+    color: $dropdown-dark-link-color;
+  
+    &.active {
+      color: theme-color("primary");
+    }
+
+    &:active {
+      background-color: transparent;
+    }
+
+    &:hover {
+      @include hover-focus { 
+        color: $dropdown-dark-link-hover-color;
+        background-color: $dropdown-dark-link-hover-bg;
+      }
+    }
+  }
+
+  .icon {
+    font-size: 1.385rem;
+    vertical-align: middle;
+  }
+}

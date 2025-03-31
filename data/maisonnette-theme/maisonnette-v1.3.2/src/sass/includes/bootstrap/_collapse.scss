@@ -1,0 +1,77 @@
+// Collapse cards style
+
+.accordion {
+
+	.card {
+		border: $collapse-card-border-width solid $collapse-card-border-color;
+		box-shadow: 0 0 .307rem rgba(0, 0, 0, 0.04);
+		background-color: trn;
+
+		& + .card {
+			margin-top: .384rem;
+		}
+	}
+
+	.card-header {
+		padding: 0;
+		border-bottom:	$collapse-card-border-width solid $collapse-card-border-color;
+		background-color: $collapse-card-header-bg;
+	
+		button {
+			display: block;
+			width: 100%;
+			font-size: 1.384rem;
+			text-align: left;
+			line-height: 1;
+			padding: $collapse-card-header-padding-y $collapse-card-header-padding-x;
+			color: $body-color;
+			background-color: transparent;			
+
+			.icon{
+				transition: transform 200ms ease-in-out;
+				font-size: 2.307rem;
+				line-height: .7;
+				vertical-align: middle;
+				position: relative;
+				top: -1px;
+				display: inline-block;
+				margin-right: .384rem;
+			}
+
+			&[aria-expanded='true'] {
+				color: theme-color("primary");
+
+				.icon{
+					transform: rotate(90deg);
+				}
+			}
+		}
+	}
+
+	.card-block {
+		padding: $collapse-card-block-padding-y $collapse-card-block-padding-x;
+	}
+}
+
+// Accordion Dark
+
+.accordion-dark {
+
+	.card {
+		background-color: $collapse-dark-card-bg;
+		color: $collapse-dark-card-color;
+	}
+
+	.card-header {
+		background-color: $collapse-dark-card-header-bg;
+
+		button {
+			color: theme-color("light");
+
+			&[aria-expanded='true'] {
+				color: theme-color("primary");
+				background-color: darken($collapse-dark-card-header-bg, 3%);
+			}
+		}
+	}
+}

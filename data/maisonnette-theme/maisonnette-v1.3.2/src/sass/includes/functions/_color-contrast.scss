@@ -1,0 +1,8 @@
+//Dynamic color if bg color is dark
+@function contrast-color($color) {
+  @if is-dark-color($color) == true {
+    @return desaturate( lighten($color, 40%), 20% ); // Darker background, return light color
+  } @else {
+    @return desaturate( darken($color, 11.5%), 20% ); // Lighter backgorund, return dark color
+  }
+}

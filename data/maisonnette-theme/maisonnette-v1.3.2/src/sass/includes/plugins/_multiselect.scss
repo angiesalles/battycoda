@@ -1,0 +1,46 @@
+.ms-container {
+	@include phone {
+		width: auto;
+	}
+
+	@include tablet {
+		margin: 0 auto;
+	}
+}
+
+.ms-container .ms-selectable li.ms-elem-selectable, 
+.ms-container .ms-selection li.ms-elem-selection {
+	padding: 6px 10px;
+}
+
+.ms-selectable, .ms-selection {
+	.ms-container & {
+		background-color: transparent;
+	}
+}
+
+.ms-container .ms-selectable li.ms-hover, 
+.ms-container .ms-selection li.ms-hover {
+	background-color: theme-color("primary");
+}
+
+.ms-list {
+	.ms-container & {
+		border: 2px solid $input-border-color;
+		background-color: theme-color("light");
+		border-radius: 0;
+		box-shadow: none;
+	}
+
+	.ms-container &.ms-focus {
+		box-shadow: none;
+		border-color: theme-color("primary");
+	}
+} 
+
+.search-input {
+	.ms-container & {
+		height: 30px;
+		margin-bottom: 10px;
+	}
+}

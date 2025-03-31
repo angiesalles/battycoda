@@ -1,0 +1,8 @@
+//Evaluate if is a dark color
+@function is-dark-color($color) {
+	@if (lightness($color) < 30) {
+    @return true;
+  } @else {
+    @return false;
+  }
+}

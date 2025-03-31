@@ -1,0 +1,192 @@
+/*------------------------------------------------------------------
+  [Notifications]
+*/
+
+#gritter-notice-wrapper {
+	width: $notification-width;
+	top: $notification-top-position;
+}
+
+// Social Color Mixin
+@mixin social-gritter($social-color, $icon) {
+
+	.gritter-icon-container {
+		color: $social-color;
+	}
+
+	.gritter-icon {
+
+		&:after {
+			content: $icon;
+			font-family: $notification-icon-font;
+		}
+	}
+}
+
+.gritter-item-wrapper {
+	background: theme-color("light");
+	box-shadow: 0 0px 0.307rem rgba(0, 0, 0, 0.25);
+	margin-bottom: 20px;
+}
+
+.gritter-item {
+	font-family: $open-sans;
+	background: transparent;
+	color: theme-color("light");
+	padding: 0;
+	display: table;
+	table-layout: fixed;
+	width: 100%;
+}
+
+.gritter-icon-container,
+.gritter-img-container, {
+	display: table-cell;
+	width: 26%;
+	vertical-align: middle;
+	text-align: center;
+}
+
+.gritter-image {
+	float: none;
+	width: 4.61538rem;
+	height: 4.61538rem;
+}
+
+.gritter-content {
+	width: auto;
+}	
+
+.gritter-with-image, .gritter-without-image {
+	padding: 1.153rem 2.692rem 1.51rem 1.7rem;
+	color: $body-color;
+	width: 23rem;
+	display: table-cell;
+
+	p{
+		font-size: 1rem;
+		line-height: 1.5;
+	}
+}
+
+.gritter-without-image {
+	padding-left: 1.461rem;
+}
+
+.gritter-close {
+	display: block;
+	top: 10px;
+	right: 10px;
+	left: auto;
+	height: 1.525rem;
+	width: 1.525rem;
+	font-size: 0;
+	background: transparent;
+	text-indent: inherit;
+	color: darken(theme-color("light"), 45%);
+
+	&:hover {
+		color: darken(theme-color("light"), 50%);
+	}
+
+	&:after {
+		content: '';
+		font-family: $icon-font;
+		font-size: 1.525rem;
+		text-shadow: none;
+		line-height: 1;
+	}
+}
+
+.gritter-title {
+	text-shadow: none;
+	font-weight:300;
+	font-size:17px;
+}
+
+// Gritter modifiers
+.gritter-clean {
+	background: theme-color("light");
+
+	.gritter-item {
+		color: $body-color;
+
+		.gritter-img-container {
+			background-color: darken(theme-color("light"), 2%);
+		}
+
+		.gritter-content {
+			color: $body-color;
+
+			.gritter-close {
+				opacity: 0.5;
+				
+				&:after {
+					color: $body-color;
+				}
+			}
+		}
+	}
+}
+
+.gritter-social {
+	
+	.gritter-icon {
+		font-size: 2.8rem;
+	}
+
+	.gritter-content {
+		padding-left: 0;
+		width: 21.6rem;
+	}
+
+	// Social colors
+	&.facebook 		{ @include social-gritter($facebook, '\f09a'); 		}
+	&.twitter			{ @include social-gritter($twitter, '\f099');  		}
+	&.google-plus	{ @include social-gritter($google-plus, '\f0d5'); }
+	&.dribbble		{ @include social-gritter($dribbble, '\f17d');		}
+	&.flickr			{ @include social-gritter($flickr, '\f16e');			}
+	&.linkedin		{ @include social-gritter($linkedin, '\f0e1');		}
+	&.youtube			{ @include social-gritter($youtube, '\f16a');			}
+	&.pinterest		{ @include social-gritter($pinterest, '\f231');		}
+	&.github			{ @include social-gritter($github, '\f09b');			}
+	&.tumblr			{ @include social-gritter($tumblr, '\f173');			}
+}
+
+.gritter-theme {
+	background-color: theme-color("dark");
+
+	.gritter-title {
+		color: theme-color("primary");
+	}
+
+	.gritter-content {
+		color: theme-color("light");
+	}
+}
+
+.gritter-color {
+		
+	.gritter-content {
+		color: theme-color("light");
+	}
+
+	.gritter-close {
+		color: theme-color("light");
+		opacity: 0.7;
+		
+		&:hover {
+			opacity: 1;
+		}
+	}
+	
+	// Color variants
+
+	// States colors
+	&.primary	{ background: theme-color("primary"); }
+	&.success	{ background: theme-color("success"); }
+	&.info		{ background: theme-color("info"); }
+	&.warning { background: theme-color("warning"); }
+	&.danger	{ background: theme-color("danger"); 	}
+	&.dark 		{ background: theme-color("noir"); 		}
+}

@@ -1,0 +1,239 @@
+/*------------------------------------------------------------------
+  [cards]
+*/
+
+.card {
+	background-color: theme-color("light");
+	margin-bottom: $card-margin-bottom;
+	box-shadow: $card-box-shadow;
+	border-radius: $card-border-radius;
+}
+
+// card body
+.card-body {
+	padding: $card-body-padding;
+}
+
+// card heading
+.card-header {
+	font-size: $card-header-font-size;
+	font-weight: $card-header-font-weight;
+	color: $card-header-color;
+	padding: $card-header-padding-top 0 $card-header-padding-bottom;
+	margin: 0 $card-header-horizontal-padding;
+
+	.tools {
+		float: right;
+		font-size: 0;
+
+		> a {
+			display: inline-block;
+		}
+
+		.icon {
+			display: inline-block;
+			font-size: $card-header-icon-size;
+			line-height: $card-header-icon-line-height;
+			vertical-align: middle;
+			cursor: pointer;
+			color: $card-header-icon-color;
+			min-width: $card-header-icon-size;
+			text-align: center;
+
+			& + .icon {
+				margin-left: $card-header-icon-separation;
+			}
+
+			&:hover {
+				color: $card-header-icon-hover;
+			}
+		}
+	}
+}
+
+// card title
+.card-title {
+	font-size: $card-header-font-size;
+	font-weight: $card-header-font-weight;
+	display: block;
+	margin: 0;
+}
+
+// card subtitle
+.card-subtitle {
+	display: block;
+	font-size: $font-size-base;
+	margin-top: 0;
+	line-height: 1;
+	margin-bottom: $card-header-subtitle-margin;
+	color: darken(theme-color("light"), 47%);
+	
+}
+
+// card heading divider
+.card-header-divider {
+	border-bottom: 1px solid darken(theme-color("light"), 10%);
+  padding-left: 0;
+  padding-right: 0;
+}
+
+// card border
+.card-border {
+	box-shadow: none;
+	border: 1px solid darken(theme-color("light"), 10%);
+}
+
+// card transparent
+.card-transparent {
+	background-color: transparent;
+	box-shadow: none;
+}
+
+// card border color
+.card-border-color {
+	border-top: 4px solid darken(theme-color("light"), 21%);
+	border-radius: 0 0 $card-border-radius $card-border-radius;
+}
+
+// card border danger
+.card-border-color-primary {
+	border-top-color: theme-color("primary");
+}
+
+// card border danger
+.card-border-color-danger {
+	border-top-color: theme-color("danger");
+}
+
+// card border warning
+.card-border-color-warning {
+	border-top-color: theme-color("warning");
+}
+
+// card border info
+.card-border-color-info {
+	border-top-color: theme-color("info");
+}
+
+// card border success
+.card-border-color-success {
+	border-top-color: theme-color("success");
+}
+
+// card border dark
+.card-border-color-dark {
+	border-top-color: theme-color("noir");
+}
+
+// card full colors
+.card-header-full-width {
+	margin: 0;
+	padding-left: $card-header-horizontal-padding;
+	padding-right: $card-header-horizontal-padding;
+}
+
+// card body contrast
+.card-body-contrast {
+	background-color: darken(theme-color("light"), 10%);
+	border-radius: 0 0 $card-border-radius $card-border-radius;
+}
+
+// cards Heading Color
+.card-header-color {
+  margin: 0;
+  padding: 22px 20px 21px;
+  border-radius: $card-border-radius $card-border-radius 0 0;
+
+  .card-subtitle {
+    margin-bottom: 0;
+  }
+}
+
+.card-header-color-contrast {
+	@include card-header-color(theme-color("grey"), true);
+}
+
+.card-header-color-primary {
+	@include card-header-color(theme-color("primary"));
+}
+
+.card-header-color-success {
+	@include card-header-color(theme-color("success"));
+}
+
+.card-header-color-info {
+	@include card-header-color(theme-color("info"));
+}
+
+.card-header-color-danger {
+	@include card-header-color(theme-color("danger"));
+}
+
+.card-header-color-warning {
+	@include card-header-color(theme-color("warning"));
+}
+
+.card-header-color-dark {
+	@include card-header-color(theme-color("noir"));
+}
+
+// card colors
+.card-full-color {
+	
+	.card-header {
+		border-radius: $card-border-radius $card-border-radius 0 0;
+	}
+
+	.card-header-divider {
+		border-color: rgba(0,0,0,0.07);
+	}
+
+	.card-body {
+		border-radius: 0 0 $card-border-radius $card-border-radius;
+	}
+}
+
+// Full color style
+.card-full-color-primary {
+	@include card-full-color(theme-color("primary"));
+}
+
+.card-full-color-success {
+	@include card-full-color(theme-color("success"));
+}
+
+.card-full-color-warning {
+	@include card-full-color(theme-color("warning"));
+}
+
+.card-full-color-danger {
+	@include card-full-color(theme-color("danger"));
+}
+
+.card-full-color-dark {
+	@include card-full-color(theme-color("noir"));
+}
+
+.card-full-color-grey {
+	@include card-full-color(theme-color("grey"), true);
+}
+
+//Table card
+.card-table{
+
+	.card-body{
+		padding: 0;
+	}
+}
+
+//card Striped Rows
+.card-striped-rows {
+	.row:nth-of-type(odd) {
+		background-color: $table-accent-bg;
+	}
+}
+
+.card-divider {
+	margin: 2rem 0;
+  border-top: 1px solid darken(theme-color("light"), 5%);
+}

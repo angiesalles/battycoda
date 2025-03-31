@@ -1,0 +1,324 @@
+/*------------------------------------------------------------------
+  [Alerts]
+*/
+
+.alert {
+	padding: 0;
+	position: relative;
+	line-height: 25px;
+	border-width: 0;
+	margin-bottom: 20px;
+
+	.icon {
+		width: $alert-icon-width;
+		font-size: 24px;
+		vertical-align: middle;
+		text-align: center;		
+		line-height: 22px;
+		margin-right: 20px;
+		display: table-cell;
+		cursor: default;
+		padding-top: 1px;
+	}
+
+	.close {
+		position: absolute;
+		font-size: 24px;
+		top: 0;
+		right: $alert-padding-x - .6154rem;
+		text-shadow: none;
+		padding: $alert-padding-y 0;
+		outline: none;
+	}
+	
+	.message {
+		display: table-cell;
+		padding: $alert-padding-y ($alert-padding-x + .7692rem) $alert-padding-y ($alert-padding-x - 1.154rem);
+		border-left-width: 0;
+
+		// Improve alignment and spacing of inner content
+	  > p,
+	  > ul {
+	    margin-bottom: 0;
+	  }
+
+	  > p + p {
+	    margin-top: 5px;
+	  }
+	}	
+}
+
+.alert-warning {
+	@include bg-alert-variation($alert-warning-bg);
+}
+
+.alert-danger {
+	@include bg-alert-variation($alert-danger-bg);
+}
+
+.alert-success {
+	@include bg-saturate-alert-variation($alert-success-bg);
+}
+
+.alert-primary {
+	@include bg-saturate-alert-variation($alert-primary-bg);
+}
+
+.alert-theme {
+	padding: 0;
+	color: theme-color("light");
+
+	> .icon {
+		color: theme-color("light");
+	}
+
+	> .message {
+		padding: $alert-padding-y ($alert-padding-x + 1.154rem) $alert-padding-y ($alert-padding-x - 1.154rem);
+	}
+
+	&.alert-success {
+		@include theme-color-variation($alert-success-bg);
+	}
+	
+	&.alert-info {
+		@include theme-color-variation($alert-info-bg);
+	}
+	
+	&.alert-warning {
+		@include theme-color-variation($alert-warning-bg);
+	}
+	
+	&.alert-danger {
+		@include theme-color-variation($alert-danger-bg);
+	}
+	
+	&.alert-primary {
+		@include theme-color-variation($alert-primary-bg);
+	}
+}
+
+.alert-contrast {
+	padding: 0; 
+	position: relative;
+	color: theme-color("light");	
+
+	> .icon {
+		color: theme-color("light");
+	}
+
+	> .message {
+		padding: $alert-padding-y $alert-padding-x;
+
+		@include phone {
+			padding: $alert-padding-y ($alert-padding-x + 1.154rem) $alert-padding-y $alert-padding-x;			
+		}
+	}
+
+	&.alert-success {
+		@include contrast-alert-variation($alert-success-bg);
+	}
+	
+	&.alert-info {
+		@include contrast-alert-variation($alert-info-bg);
+	}
+	
+	&.alert-warning {
+		@include contrast-alert-variation($alert-warning-bg);
+	}
+	
+	&.alert-danger {
+		@include contrast-alert-variation($alert-danger-bg);
+	}
+	
+	&.alert-primary {
+		@include contrast-alert-variation($alert-primary-bg);
+	}
+}
+
+.alert-dismissible {
+
+	.close, .close:not(:disabled):not(.disabled):hover, .close:not(:disabled):not(.disabled):focus{
+		opacity: 1;
+	}
+
+	&.alert-success {
+		@include dismissible-variation($alert-success-bg);
+	}
+
+	&.alert-info {
+		@include dismissible-variation($alert-info-bg);
+	}
+
+	&.alert-warning {
+		@include dismissible-variation($alert-warning-bg);
+	}
+
+	&.alert-danger {
+		@include dismissible-variation($alert-danger-bg);
+	}
+
+	&.alert-primary {
+		@include dismissible-variation($alert-primary-bg);
+	}
+}
+
+.alert-dark {
+	background-color: theme-color("noir");
+	color: theme-color("light");
+
+	&.alert-dismissible {
+
+		> .close { 
+			color: lighten($black, 48%);
+			opacity: 0.7;
+
+			&:hover {
+				color: lighten($black, 48%);
+				opacity: 1;
+			}
+		}
+	}
+
+	&.alert-success {
+		@include icon-colored-variation($alert-success-bg);
+	}
+
+	&.alert-info {
+		@include icon-colored-variation($alert-info-bg);
+	}
+
+	&.alert-warning {
+		@include icon-colored-variation($alert-warning-bg);
+	}
+
+	&.alert-danger {
+		@include icon-colored-variation($alert-danger-bg);
+	}
+
+	&.alert-primary {
+		@include icon-colored-variation($alert-primary-bg);
+	}
+}
+
+.alert-icon {
+	background-color: theme-color("light");
+	border: 0;
+	padding: 0;
+	position: relative;
+	width: 100%;
+	display: table;
+	table-layout: fixed;
+
+	> .icon {
+		display: table-cell;
+		width: $alert-icon-width;
+		text-align: center;
+		vertical-align: middle;
+		cursor: default;
+	}
+
+	> .message {
+		display: table-cell;
+		padding: $alert-padding-y $alert-padding-x;
+		color: $body-color;
+		border: 1px solid darken(theme-color("light"), 17%);
+		border-left-width: 0;
+
+		@include phone {
+			padding: $alert-padding-y ($alert-padding-x + 1.154rem) $alert-padding-y $alert-padding-x;			
+		}
+	}
+
+	&.alert-dismissible {
+
+		.close { 
+			color: $body-color;
+			opacity: 0.5;
+
+			&:not(:disabled):not(.disabled):hover, &:hover {
+				opacity: 0.6;
+			}
+		}
+	}
+}
+
+.alert-icon.alert-icon-colored {
+	border: 1px solid darken(theme-color("light"), 17%);
+
+	> .icon {
+		position: relative;
+		background-color: darken(theme-color("light"), 2.8%);
+		border-width: 0;
+
+		&:after {
+			position: absolute;
+			display: block;
+			top: 50%;
+			right: -11px;
+			margin-top: -11px;
+			@include triangle(right, darken(theme-color("light"), 2.8%), 11px);
+		}
+	}
+
+	> .message {
+		border-width: 0;
+	}
+
+	&.alert-success {
+		@include icon-colored-variation($alert-success-bg);
+	}
+
+	&.alert-info {
+		@include icon-colored-variation($alert-info-bg);
+	}
+
+	&.alert-warning {
+		@include icon-colored-variation($alert-warning-bg);
+	}
+
+	&.alert-danger {
+		@include icon-colored-variation($alert-danger-bg);
+	}
+
+	&.alert-primary {
+		@include icon-colored-variation($alert-primary-bg);
+	}
+}
+
+.alert-simple {
+	border: 1px solid darken(theme-color("light"), 17%);
+	background-color: theme-color("light");
+	color: $body-color;
+
+	&.alert-dismissible {
+
+		.close { 
+			color: $body-color;
+			opacity: 0.5;
+
+			&:not(:disabled):not(.disabled):hover, &:hover {
+				opacity: 0.6;
+			}
+		}
+	}
+	
+	&.alert-success {
+		@include icon-colored-variation($alert-success-bg);
+	}
+
+	&.alert-info {
+		@include icon-colored-variation($alert-info-bg);
+	}
+
+	&.alert-warning {
+		@include icon-colored-variation($alert-warning-bg);
+	}
+
+	&.alert-danger {
+		@include icon-colored-variation($alert-danger-bg);
+	}
+
+	&.alert-primary {
+		@include icon-colored-variation($alert-primary-bg);
+	}
+}

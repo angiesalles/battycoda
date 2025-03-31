@@ -1,0 +1,60 @@
+/*------------------------------------------------------------------
+  [Color swatch]
+*/
+.color-swatch{
+	margin-top: 20px;
+	display: inline-block;
+	min-width: 230px;
+  overflow: hidden;
+
+  .state-names{
+    margin: 0;
+    border: 1px solid $gray-lighter;
+
+  	> div{
+  		text-align: center;
+  		background-color: theme-color("light");
+  		line-height: 27px;
+  		color: lighten($body-color, 7.5%);
+  	}
+  }
+
+  .colors {
+    margin: 0;
+
+    .state {
+      min-height: 35px;
+     }
+
+    .normal-state {
+      background-color: $gray;
+    }
+
+    .hover-state {
+      background-color: lighten($gray, 4%);
+    }
+  }
+
+  .color-description {
+    padding: 0 .6154rem;
+    border: 1px solid $gray-lighter;
+    line-height: 27px;
+    color: lighten($body-color, 7.5%);
+  }
+}
+
+.color-swatch-primary {
+  @include color-swatch-variation(theme-color("primary"));
+}
+.color-swatch-info {
+  @include color-swatch-variation(theme-color("info"));
+}
+.color-swatch-warning {
+  @include color-swatch-variation(theme-color("warning"));
+}
+.color-swatch-danger {
+  @include color-swatch-variation(theme-color("danger"));
+}
+.color-swatch-dark {
+  @include color-swatch-variation(theme-color("dark"));
+}

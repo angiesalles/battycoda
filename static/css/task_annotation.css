@@ -5,8 +5,8 @@
  * spectrogram visualization, axis styling, and responsive layout.
  */
 
-/* Apply dark theme */
-body {
+/* Apply dark theme only to annotation page */
+body.annotation-page {
     background-color: #121212;
     color: #e0e0e0;
     min-height: 100vh;

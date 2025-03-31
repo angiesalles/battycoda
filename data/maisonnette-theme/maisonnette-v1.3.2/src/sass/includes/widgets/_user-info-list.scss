@@ -1,0 +1,55 @@
+// User info list widget
+
+.user-info-list{
+
+	.card-header {
+		font-weight: $font-weight-light;
+		text-transform: uppercase;
+
+
+		&-divider {
+			border-color: darken(theme-color("light"), 18%);
+		}
+	}
+
+	table{
+		width: 100%;
+		table-layout: fixed;
+
+		tr{
+
+			td{
+				padding: 0.615385rem 0;
+
+				&.icon{
+					font-size: 1.53846rem;
+					width: 28px;
+					line-height: 1;
+
+					> span{
+						vertical-align: middle;
+					}
+				}
+
+				&.item{
+					font-size: $paragraph-size;
+					width: 34%;
+				}
+			}
+		}
+	}
+
+	table.social {
+	
+		tr {
+
+			td{
+
+				&.icon {
+					font-size: $paragraph-size;
+					width: 10px;
+				}
+			}
+		}
+	}
+}

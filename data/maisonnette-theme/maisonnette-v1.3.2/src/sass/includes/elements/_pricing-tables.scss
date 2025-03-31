@@ -1,0 +1,105 @@
+/*------------------------------------------------------------------
+  [Pricing tables]
+*/
+
+//Pricing tables container
+.pricing-tables {
+	margin: $pricing-tables-margin;
+
+	> div {
+		padding-left: $pricing-table-horizontal-space;
+		padding-right: $pricing-table-horizontal-space;
+	}
+}
+
+//Individual element
+.pricing-table {
+	box-shadow: 0 1px 0 rgba(0, 0, 0, 0.05);
+	padding: $pricing-table-padding;
+	background-color: theme-color("light");
+	text-align: center;
+	margin: $pricing-table-margin;
+
+	&-title {
+		font-size: 1.69231rem;
+		font-weight: 600;
+		text-transform: capitalize;
+		margin-bottom: 2.30769rem;
+		color: theme-color("primary");
+	}
+
+	&-price {
+		color: hsl(0, 0%, 32%);
+		padding-bottom: 0.615385rem;
+
+		.currency {
+			font-size: $pricing-table-currency-size;
+			font-weight: 300;
+			display: inline-block;
+			margin-top: 4px;
+			vertical-align: top;
+		}
+
+		.value {
+			font-size: $pricing-table-value-size;
+			line-height: 1;
+			letter-spacing: -3px;
+		}
+	}
+
+	&-frecuency {
+		color: hsl(0, 0%, 52%);
+		padding-bottom: 5px;
+		font-size: 1.38462rem;
+	}
+
+	&-features {
+		margin: 0 0 30px;
+		padding: 0;
+		list-style: none;
+
+		> li {
+			font-size: 14px;
+			line-height: 25px;
+			font-weight: 300;
+			line-height: $pricing-table-fatures-line-height;
+
+			b {
+				font-weight: 600;
+			}
+		}
+	}
+
+	.btn {
+		min-width: $pricing-table-button-min-width;
+		margin-bottom: 10px;
+	}
+
+	.card-divider {
+		border-color: darken(theme-color("light"), 15%);
+	}
+}
+
+.pricing-table-dark {
+	background-color: theme-color("dark");
+
+	.pricing-table-price {
+		color: theme-color("light");
+	}
+
+	.card-divider {
+		border-color: lighten($black, 26%);
+	}
+
+	.pricing-table-features {
+		color: theme-color("light");
+
+		b {
+			color: theme-color("primary");
+		}
+	}
+}
+
+.pricing-table-primary {
+	@include pricing-tables-variation(theme-color("primary"));
+}

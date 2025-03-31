@@ -1,0 +1,67 @@
+/*------------------------------------------------------------------
+  [Pagination]
+*/
+.pagination{
+  padding-left: 0;
+  border-radius: 0;
+}
+
+.page-item {
+
+  &:first-child {
+    .page-link {
+      border-radius: 0;
+      padding: ($pagination-padding-y - 0.1) ($pagination-padding-x - 0.4) ($pagination-padding-y + 0.1);
+    }
+  }
+  &:last-child {
+    .page-link {
+      border-radius: 0;
+       padding: ($pagination-padding-y - 0.1) ($pagination-padding-x - 0.4) ($pagination-padding-y + 0.1);
+    }
+  }
+
+  .pagination-rounded & {
+
+    &:first-child {
+      .page-link {
+        border-radius: 50%;
+        padding: ($pagination-padding-y - 0.15) 0 ($pagination-padding-y + 0.05);
+      }
+    }
+
+    &:last-child {
+      .page-link {
+        border-radius: 50%;
+        padding: ($pagination-padding-y - 0.15) 0 ($pagination-padding-y + 0.05);
+      }
+    }
+  }
+}
+
+.page-link {
+  color: $pagination-color;
+  background-color: $pagination-bg;
+  border: $pagination-border-width solid $pagination-border-color;
+  margin-left: .4923rem;
+
+
+  > span {
+    font-size: 1.846rem;
+    line-height: 0.5;
+    vertical-align: middle;
+  }
+}
+
+.pagination-rounded{
+
+	.page-link{
+    border-radius: 50%;	    
+    width: 2.492rem;
+    height: 2.492rem;
+    padding: $pagination-padding-y 0;
+    text-align: center;
+    line-height: 1.4;
+    vertical-align: middle;
+	}
+}

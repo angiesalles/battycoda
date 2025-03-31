@@ -1,0 +1,130 @@
+// Button groups
+
+// Button group
+.btn-group, .input-group-btn, .input-group-prepend, .input-group-append {
+
+  > .btn {
+
+    &.btn-primary {
+      @include colored-btn-group($btn-primary-bg);
+    }
+
+    &.btn-success {
+      @include colored-btn-group($btn-success-bg);
+    }
+
+    &.btn-info {
+      @include colored-btn-group($btn-info-bg);
+    }
+
+    &.btn-warning {
+      @include colored-btn-group($btn-warning-bg);
+    }
+
+    &.btn-danger {
+      @include colored-btn-group($btn-danger-bg);
+    }    
+
+    &.btn-dark {
+      @include colored-btn-group($btn-dark-bg);
+    }    
+  }
+
+  &:first-child{
+    border-right-color: transparent;
+  }
+
+  &:last-child{
+    border-right-color: transparent;
+  }
+
+  &.open {
+
+    > .btn {
+
+      & + .btn-primary,
+      & + .btn-success,
+      & + .btn-warning,
+      & + .btn-danger {
+        border-left-color: rgba(0, 0, 0, 0.15);
+      }
+    }
+  }
+}
+
+//Vertical Button groups Style
+.btn-group-vertical {
+
+  > .btn {
+
+    &.btn-primary {
+      @include colored-vertical-btn-group($btn-primary-bg);
+    }
+
+    &.btn-success {
+      @include colored-vertical-btn-group($btn-success-bg);
+    }    
+
+    &.btn-info {
+      @include colored-vertical-btn-group($btn-info-bg);
+    }
+
+    &.btn-warning {
+      @include colored-vertical-btn-group($btn-warning-bg);
+    }
+
+    &.btn-danger {
+      @include colored-vertical-btn-group($btn-danger-bg);
+    }
+
+    &.btn-dark {
+      @include colored-vertical-btn-group($btn-dark-bg);
+    }    
+  }
+}
+
+// Split button dropdowns
+
+.btn + .dropdown-toggle-split {
+  z-index: 3;
+  
+	> span {
+    line-height: 0.2;
+    font-size: 1.538rem;
+    display: inline-block;
+    vertical-align: middle;
+    width: 1rem;
+    margin-left: -7px;
+	}
+}
+
+// Justified button groups
+// ----------------------
+
+.btn-group-justified {
+  display: table;
+  width: 100%;
+  table-layout: fixed;
+  border-collapse: separate;
+
+  .btn,
+  .btn-group {
+    float: none;
+    display: table-cell;
+    width: 1%;
+    .btn {
+      width: 100%;
+    }
+    .dropdown-menu {
+      left: auto;
+    }
+  }
+  
+  > .btn {
+    border-right-width: 0;
+
+    &:last-child {
+      border-right-width: 1px;
+    }
+  }
+}

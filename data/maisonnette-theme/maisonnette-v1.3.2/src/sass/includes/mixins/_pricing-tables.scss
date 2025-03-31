@@ -1,0 +1,24 @@
+@mixin pricing-tables-variation($bg-color) {
+
+	background-color: $bg-color;
+
+	.pricing-table-title {
+		color: desaturate( darken($bg-color, 15%), 20% );
+	}
+
+	.pricing-table-price {
+		color: theme-color("light");
+	}
+
+	.pricing-table-frecuency {
+		color: desaturate( darken($bg-color, 15%), 20% );
+	}
+
+	.card-divider {
+		border-color: rgba(0,0,0,0.08);
+	}
+
+	.pricing-table-features {
+		color: theme-color("light");
+	}
+}

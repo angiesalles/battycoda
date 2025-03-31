@@ -1,0 +1,46 @@
+/*------------------------------------------------------------------
+  [Icons]
+*/
+.icon-container {
+	background-color: theme-color("light");
+	padding: 20px;
+	cursor: default;
+	text-align:center;
+
+	&:hover {
+
+		.icon {
+
+			span {
+				color: theme-color("primary");
+			}
+		}
+
+		.icon-class {
+			color: theme-color("primary");
+		}
+	}
+
+	.icon {
+		display: block;
+		height: 60px;
+		width: 60px;
+		margin: 0 auto;
+		padding: 12px;
+		text-align: center;
+		vertical-align: middle;
+
+		span {
+			transition: color 300ms ease-in-out;
+			font-size: 2.769rem;
+		}
+	}
+
+	.icon-class {
+		transition: color 300ms ease-in-out;
+		font-size: 1.385rem;
+		font-weight: 300;
+		vertical-align: middle;
+		color: lighten(theme-color("dark"), 17%);
+	}
+}

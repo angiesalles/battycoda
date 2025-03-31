@@ -1,0 +1,322 @@
+.docs {
+  margin: 0;
+
+  p {
+    font-size: inherit;
+  }
+
+  .aside-container {
+    background: darken(theme-color("light"), 6%);
+    padding-right: 0;
+    padding-left: 0;
+    width: $email-aside-width + 15px;
+    flex: 0 0 $email-aside-width + 15px;
+  }
+
+  // Aside docs style
+  .page-aside {
+    background: darken(theme-color("light"), 6%);
+    padding: 0;
+    border-right: 1px solid darken(theme-color("light"), 9%);
+  
+    @include tablet {
+      position: relative;
+      width: 100%;
+      flex: 0 0 100%;
+      display: block;
+      height: auto;
+      margin-top: 0;
+      padding-bottom: 0;
+      left: 0;
+      border-right: 0;
+      border-bottom: 2px solid darken(theme-color("light"), 5%);
+    }
+
+    .navbar-toggler {
+      padding: 0;
+      padding-right: 11px;
+      text-align: right;
+      margin: 0;
+      width: 100%;
+      height: 100%;
+      top: 0;
+      left: 0;
+      position: absolute;
+      outline: none;
+  
+      .icon {
+        font-size: 2.07692rem;
+        color: $body-color;
+      }
+    }
+
+    .mai-scroller-aside {
+      position: relative;
+      height: 100%;
+      width: 100%;
+    }
+
+    .aside-header {
+
+      .title {
+        word-wrap: break-word;
+      }
+    }
+
+    .aside-content {
+      position: relative;
+      height: 100%;
+
+      @include tablet {
+        width: 100%;
+      }
+
+      &.affix-top {
+        position: fixed;
+        top: 0;
+
+        @include tablet {
+          position: relative;
+        }
+      }
+
+      .mai-scroller {
+        position: relative;
+        width: 100%;
+        height: 100%;
+      }
+
+      .aside-nav {
+        padding: 0;
+
+        .navbar-nav {
+          padding: 0;
+          font-size: 1rem;
+          line-height: 20px;
+
+          > .nav-item {
+
+            > .nav-link {
+
+              &:hover {
+                background-color: darken(theme-color("light"), 3%);
+              }
+
+              &.active {
+                color: $primary;
+
+                & + ul {
+                  display: block;
+                }
+              }
+            }
+
+            > ul {
+              padding: 10px 0;
+              display: none;
+              background-color: darken(theme-color("light"), 10%);
+              border-top: 1px solid darken(theme-color("light"), 13%);
+              border-bottom: 1px solid darken(theme-color("light"), 13%);
+              font-size: 1rem;
+              line-height: 20px;
+
+              .nav-link {
+                padding: 8px 22px;
+
+                &:hover {
+                  background-color: darken(theme-color("light"), 6%);
+                }
+
+                &.active {
+                  color: $primary;
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+
+  .shareable-anchor {
+    &:before {
+      display: block;
+      height: 3.077rem;
+      margin-top: -3.077rem;
+      visibility: hidden;
+      content: "";
+    }
+
+    div {
+      a {
+        display: none;
+      }
+
+      &:hover {
+        a {
+          display: inline-block;
+        }
+      }
+    }
+  }
+
+  // Main content docs style
+
+  .page-content {
+    background-color:darken($white, 5%);
+    padding-left: 35px;
+    padding-right: 35px;
+    padding-top: 35px;
+
+    @include tablet{
+      padding-left: 10px;
+      padding-right: 10px;
+      padding-top: 0;
+    }
+  }
+
+  section {
+    > h1, > h2 {
+      margin-top: 60px;
+      margin-bottom: 25px;
+      padding-bottom: 15px;
+      border-bottom: 1px solid #ededed;
+    }
+
+    > h1, >.h1 {
+      font-size: 36px;
+    }
+
+    > h2, > .h2 {
+      font-size: 30px;
+    }
+
+    > h3, > .h3 {
+      margin-top: 45px;
+      margin-bottom: 10px;
+      font-size: 27px;
+    }
+
+    > h4, > .h4 {
+      margin-top: 20px;
+      margin-bottom: 10px;
+      font-size: 24px;
+    }
+
+    > p {
+      // font-family: "Nunito","Open Sans",sans-serif;
+      font-size: 17px;
+      line-height: 33px;
+      font-weight: 300;
+      margin-bottom: 25px;
+
+      b, strong {
+        font-weight: 400;
+      }
+    }
+
+    > ul, > ol {
+      font-size: 17px;
+      font-weight: 300;
+      line-height: 33px;
+    }
+
+    > img {
+      max-width: 100%;
+    }
+  }
+
+  .gallery-container{
+
+    .item{
+      width: 50%;      
+    }
+  }
+
+  /* Pretty printing styles. Used with prettify.js. */
+  .prettyprint {
+    font-size: 13px;
+    line-height: 1.5;
+  }
+
+  pre {
+    border: 0;
+    padding: 20px;
+    margin-bottom: 0;
+  }
+
+  .code-panel {
+    margin-bottom: 30px;
+  }
+
+  .code-panel__heading {
+    background: #5A5775;
+    color: #cecece;
+    font-size: 15px;
+    padding: 11px 16px;
+  }
+
+  pre {
+    background-color: #4F4A68;
+    color: #EDEBE6;
+
+    .pln {
+      color: #eeeeee;
+    }
+    .str {
+      color: #92CF78;
+    }
+    .kwd {
+      color: #f386ac;
+    }
+    .com {
+      color: #8275E7;
+    }
+    .typ {
+      color: #97f6fb;
+    }
+    .lit {
+      color: #dcc175;
+    }
+    .pun,
+    .opn,
+    .clo {
+      color: #e3e2e0;
+    }
+    .tag {
+      color: #f386ac;
+    }
+    .atn {
+      color: #1DFDC0;
+    }
+    .atv {
+      color: #F2C770;
+    }
+    .dec,
+    .var {
+      color: #E86493;
+    }
+    .fun {
+      color: #445588;
+    }
+  }
+
+  /* Specify class=linenums on a pre to get line numbering */
+  ol.linenums { margin-top: 0; margin-bottom: 0 } /* IE indents via margin-left */
+  
+  li.L0,
+  li.L1,
+  li.L2,
+  li.L3,
+  li.L5,
+  li.L6,
+  li.L7,
+  li.L8 { list-style-type: none }
+
+  /* Alternate shading for lines */
+  li.L1,
+  li.L3,
+  li.L5,
+  li.L7,
+  li.L9 { background: #eee }
+}

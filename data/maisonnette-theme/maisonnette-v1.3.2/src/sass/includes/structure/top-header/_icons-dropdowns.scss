@@ -1,0 +1,382 @@
+// Icons nav style
+
+.mai-top-header .mai-icons-nav {
+	margin-right: 10px;
+	flex: 0 0 auto;
+
+	@include tablet {
+		order: 2;
+	}
+
+	> .nav-item.dropdown {
+
+		@include tablet {
+			position: static;
+		}
+
+		@include phone {
+			position: static;
+		}
+
+		> .nav-link {
+			padding: 0 9px;
+			position: relative;
+
+			.icon {
+				font-size: $icons-nav-icons-size;
+				vertical-align: middle;
+				color: lighten(theme-color("dark"), 24.5%);
+
+				@include tablet {
+					color: theme-color("light");
+				}				
+
+				@include phone {
+					color: theme-color("light");
+				}
+			}
+
+			.indicator {
+				background: theme-color("primary");
+				border-radius: 50%;
+				display: block;
+				height: 6px;
+				width: 6px;
+				position: absolute;
+				top: 19px;
+				right: 7px;
+
+				@include tablet {
+					background-color: theme-color("light");
+				}				
+
+				@include phone {
+					background-color: theme-color("light");
+				}
+			}
+
+			&:hover {
+
+				.icon {
+					color: lighten(theme-color("dark"), 30%);
+
+					@include tablet {
+						color: theme-color("light");
+					}
+
+					@include phone {
+						color: theme-color("light");
+					}
+				}
+			}
+		}
+
+		&.show, 
+		&.show:hover {
+
+			> a {
+				background-color: transparent;
+
+				.icon {
+					color: darken(theme-color("primary"), 3%);
+
+					@include tablet {
+						color: theme-color("light");
+					}
+
+					@include phone {
+						color: theme-color("light");
+					}
+				}
+
+				&:after {
+					position: absolute;
+					content: "";
+					display: inline-block;
+					border-bottom: 10px solid lighten(theme-color("dark"), 3.5%);
+			    border-left: 10px solid transparent;
+			    border-right: 10px solid transparent;
+			    border-top: 0;
+			    right: 50%;
+			    bottom: -1px;
+			    margin-right: -10px;
+				}
+			}
+		}
+	}
+
+	.mai-messages, .mai-notifications, .mai-settings {
+
+		> .dropdown-menu {
+			width: $icons-nav-dropdown-width;
+			border-radius: 5px;
+			left: auto;
+			margin-right: -($icons-nav-dropdown-width / 2);
+			right: 50%;
+			padding: 0;
+
+			@include tablet {
+				right: 0;
+				margin-right: 0;
+			}
+
+			@include phone {
+				width: 100%;
+				left: 0;
+			}
+
+			.title {
+				font-family: $raleway;
+				font-size: 1.154rem;
+				color: lighten(theme-color("dark"), 38.5%);
+				background-color: lighten(theme-color("dark"), 3.5%);
+				text-align: center;
+				padding: 14px 0 14px;
+			}
+
+			.footer {
+
+				a {
+					font-family: $raleway;
+					font-size: 1rem;
+					color: lighten(theme-color("dark"), 38.5%);
+					background-color: lighten(theme-color("dark"), 3.5%);
+					text-align: center;
+					padding: 10px 0 10px;
+					display: block;
+
+					&:hover {
+						background-color: lighten(theme-color("dark"), 2.5%);
+						color: lighten(theme-color("dark"), 50%);
+					}
+				}	
+			}
+		}
+	}
+
+	.mai-notifications, .mai-messages {
+
+		.mai-scroller-notifications, .mai-scroller-messages {
+			position: relative;
+			width: 100%;
+			height: 252px;
+
+			> .content {
+
+				> ul {
+					list-style: none;
+					padding-left: 0;
+
+					> li {
+						overflow: hidden;
+						border-bottom: 1px solid lighten(theme-color("dark"), 6%);
+						background-color: lighten(theme-color("dark"), 4.5%);
+
+						> a {
+							padding: 15px;
+							display: block;
+							overflow: hidden;
+
+							.icon, .img {
+								margin-top: 3px;
+								height: 36px;
+								width: 36px;
+								border-radius: 50%;
+								background-color: darken(theme-color("dark"), 1.5%);
+								float: left;												
+								text-align: center;
+
+								> span {
+									font-size: 1.846rem;
+									color: theme-color("primary");
+									line-height: 34px;
+								}
+							}
+
+							.content {
+								padding-left: 50px;
+								line-height: 14px;
+
+								.desc {
+									color: lighten(theme-color("dark"), 60%);
+									font-size: 1rem;
+									line-height: 17px;
+
+									strong {
+										font-weight: 600;
+									}
+								}
+
+								.date {
+									color: darken($white, 45.7%);
+									display: block;
+									font-size: 0.9231rem;
+									font-style: italic;
+									font-weight: 300;
+									margin-top: 5px;
+								}
+							}
+						}
+
+						&:hover {
+							background-color: darken(theme-color("primary"), 2%);
+
+							> a {
+								color: $white;
+
+								.icon {
+									background-color: darken(theme-color("primary"), 6%);
+
+									> span {
+										color: $white;
+									}
+								}
+
+								.content {
+
+									.desc {
+										color: $white;
+									}
+
+									.date {
+										color: darken(theme-color("primary"), 17%);
+									}
+								}
+							}
+						}
+
+						&:last-child {
+							border-bottom: 0;
+						}
+					}
+				}
+			}
+		}
+	}
+
+	.mai-messages {
+
+		.mai-scroller-messages {
+
+			> .content {
+
+				> ul {
+
+					> li {
+
+						> a {
+
+							.img {
+								width: 36px;
+								height: 36px;	
+								background-color: transparent;	
+								border-radius: 2px;
+								overflow: hidden;
+								margin-top: 1px;					
+
+								> img {
+									max-width: 100%;
+								}
+							}
+
+							> .content {
+								
+								.date {
+									float: right;
+									margin-top: 1px;
+								}
+
+								.name {
+									font-family: $raleway;
+									font-size: 1.077rem;
+									font-weight: 500;
+									color: lighten(theme-color("dark"), 60%);
+									display: block;
+									margin-bottom: 5px;
+								}
+
+								.desc {
+									color: lighten(theme-color("dark"), 42.5%);
+								}
+							}
+						}
+
+						&:hover {
+
+							> a {
+
+								.content {
+
+									.name {
+										color: $white;
+									}
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+	}
+
+	.mai-settings {
+
+		.dropdown-menu {
+
+			.content {
+
+				ul {
+					padding: 0;
+
+					li {
+						display: block;
+						overflow: hidden;
+						list-style: none;
+						padding: 15px 20px;
+						line-height: 34px;
+						border-bottom: 1px solid lighten(theme-color("dark"), 6.3%);
+						vertical-align: middle;
+						background-color: lighten(theme-color("dark"), 4.5%);
+
+						> span {
+							font-family: $raleway;
+							color: lighten(theme-color("dark"), 60%);
+							font-weight: 500;
+							font-size: 1.154rem;
+						}
+
+						.switch-button {
+							vertical-align: middle;
+							background-color: theme-color("dark");
+
+							label:before {
+								color: lighten(theme-color("dark"), 60%);
+							}
+
+							input[type="checkbox"]:checked + span label:before {
+								color: theme-color("light");
+							}
+						}
+
+
+						&:hover {
+							background-color: lighten(theme-color("dark"), 5.6%);
+						}	
+
+						&:last-child {
+							border-bottom: 0;
+						}						
+					}
+				}
+			}
+		}
+	}
+}
+
+// Logo mobile layout
+.mai-top-header-show-logo .mai-icons-nav {
+	
+	@include tablet {
+		display: none;
+	}
+}

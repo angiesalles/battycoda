@@ -1,0 +1,170 @@
+.user-display {
+	margin-bottom: 30px;
+	background-color: theme-color("light");
+}
+
+.user-display-cover {
+	max-height: $user-display-cover-size;
+	overflow: hidden;
+
+	@include tablet {
+		max-height: $user-display-cover-size / 2;
+	}
+
+	img {
+		width: 100%;
+	}
+}
+
+.user-display-bottom {
+	position: relative;
+	padding: 20px;
+
+	@include tablet {
+		padding: 0;
+	}
+}
+
+.user-display-id{
+	position: absolute;
+	left: ($user-profile-avatar-size / 2);
+	top: -($user-profile-avatar-size / 1.5);
+	border-radius: 50%;
+	
+	@include laptop {
+		left: ($user-profile-avatar-size / 5);
+		top: -($user-profile-avatar-size / 1.35);
+	}
+
+	@include tablet {
+		left: ($user-profile-avatar-size / 3);
+		top: - (( ($user-profile-avatar-size / 2) / 2) + ( ($user-display-cover-size / 2) / 2 ));
+	}
+
+	@include phone {
+		text-align: center;
+		margin-right: 0;
+		left: 50%;
+		margin-left: -( ($user-profile-avatar-size / 2) / 2);
+		top: - ((( ($user-profile-avatar-size / 2) / 2) + ( ($user-display-cover-size / 2) / 2 )) + 10px);
+	}
+}
+
+.user-display-avatar{
+	width: $user-profile-avatar-size;
+	height: $user-profile-avatar-size;
+	border-radius: 50%;
+	margin-bottom: 0.769231rem;
+
+	@include tablet {
+		width: $user-profile-avatar-size / 2;
+		height: $user-profile-avatar-size / 2;
+		margin-right: 10px;
+		margin-bottom: 0;
+
+	}
+
+	@include phone {
+		margin-bottom: 0.769231rem;
+	}
+}
+
+.user-display-name {
+	font-size: 2.30769rem;
+	line-height: 1;
+	color: lighten($black, 25%);
+
+	@include tablet {
+		display: inline-block;
+		color: theme-color("light");
+    text-shadow: 0 0 3px rgba(0,0,0,.8);
+	}
+
+	@include phone {
+		display: block;
+		font-size: 1.23077rem;
+		font-weight: $font-weight-bold;
+	}
+}
+
+.user-display-stats {
+ display: flex;
+ flex-direction: row;
+ justify-content: flex-end;
+
+ @include phone {
+ 	display: block;
+ }
+}
+
+.user-display-stat {
+	border-right: 1px solid darken(theme-color("light"), 15%);
+	min-width: 153px;
+	text-align: center;
+	padding: 20px 0;
+
+	@include laptop {
+		min-width: 0;
+		width: 17%;
+		padding: 15px 0;
+	}
+
+	@include tablet {		
+		width: 25%;
+	}
+
+	@include phone {
+		border-right: 0;
+		width: 100%;
+		display: flex;
+		justify-content: space-between;
+		padding: 10px 20px;
+	}
+
+	&:last-child {
+		border-right-width: 0;
+	}
+}
+
+.user-display-stat-counter {
+	display: block;
+	text-align: center;
+	font-size: 2.76923rem;
+	color: theme-color("primary");
+	line-height: 1;
+	margin-bottom: 0.5rem;
+
+	@include laptop {
+		font-size: 2.077rem;
+	}
+
+	@include tablet {
+		font-size: 1.38462rem;
+		order: 1;
+	}
+
+	@include phone {
+		margin-top: 0.2rem;
+	}
+}
+
+.user-display-stat-title {
+	display: block;
+	text-align: center;
+	font-size: 1.3rem;
+	text-transform: uppercase;
+	line-height: 1;
+
+	@include laptop {
+		font-size: 1.154rem;
+	}
+
+	@include tablet {
+		font-size: $paragraph-size;
+	}
+
+	@include phone {
+		font-size: 0.923077rem;
+		margin-top: 0.6rem;
+	}
+}

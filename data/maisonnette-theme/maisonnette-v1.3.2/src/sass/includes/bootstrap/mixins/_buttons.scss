@@ -1,0 +1,272 @@
+// Button variants
+//
+
+@mixin mai-button-variant($color, $background, $border) {
+  $active-background: darken($background, 5%);
+  $active-border: transparent;
+
+  color: $color;
+  background-color: $background;
+  border-color: $border;
+
+  &:hover,
+  &.hover {
+    @if $background == $btn-secondary-bg {
+      color: $color;
+      border-color: $border;
+      background-color: darken(theme-color("light"), 4%);
+    } @else {
+      color: $color;
+      border-color: $active-border;
+      background-color: lighten($background, 4%);
+    }
+  }
+
+  .show > &.dropdown-toggle {
+    &:focus,
+    &.focus {
+      color: $color;
+      background-color: $background;
+      box-shadow: none;
+
+      @if $background == $btn-secondary-bg {
+        border-color: $border;
+      } @else {
+        border-color: $active-border;
+      }
+
+      &:hover,
+      &.hover {
+        @if $background == $btn-secondary-bg {
+          border-color: $border;
+          background-color: darken(theme-color("light"), 4%);
+        } @else {
+          border-color: $active-border;
+          background-color: lighten($background, 4%);
+        }
+      }
+    }
+  }
+
+  &.disabled,
+  &:disabled {
+    background-color: $background;
+    border-color: $border;
+    color: $color;
+  }
+
+  &:not([disabled]):not(.disabled):active,
+  &:not([disabled]):not(.disabled).active,
+  .show > &.dropdown-toggle {
+
+    @if $background == $btn-secondary-bg {
+      color: $color;
+      border-color: $border;
+      background-color: darken($active-background, 5%);
+    } @else {
+      color: $color;
+      border-color: $active-border;
+      background-color: $active-background;
+    }
+
+    &:hover,
+    &:focus,
+    &.focus {
+      @if $background == $btn-secondary-bg {
+        color: $color;
+        border-color: $border;
+        background-color: darken($active-background, 5%);
+      } @else {
+        color: $color;
+        border-color: $active-border;
+        background-color: $active-background;
+      }
+    }
+  }
+
+  @if $background == $btn-dark-bg {
+
+    &:not([disabled]):not(.disabled).active,
+    .open > &.dropdown-toggle, {
+      color: theme-color("primary");
+
+      &:hover,
+      &:focus,
+      &.focus {
+        color: theme-color("primary");
+      }
+    }
+  }
+}
+
+//Colored buttons in buttons groups
+@mixin colored-btn-group($bg) {
+  border-left-color: darken($bg, 4%);
+  border-right-color: darken($bg, 4%);
+
+  &:first-child {
+    border-left-color: transparent;
+  }
+
+  &:last-child {
+    border-right-color: transparent;
+  }
+
+  @if $bg != $btn-secondary-bg {
+    &.dropdown-toggle-split {
+      border-right-width: 0;
+    }
+  }
+}
+
+// Colored buttons in buttons groups
+@mixin colored-vertical-btn-group($bg) {
+  border-top-color: darken($bg, 4%);
+  border-bottom-color: darken($bg, 4%);
+
+  &:first-child {
+    border-top-color: transparent;
+  }
+
+  &:last-child {
+    border-bottom-color: transparent;
+  }
+}
+
+@mixin button-outline-variant($color, $color-hover: theme-color("light")) {
+
+  background-image: none;
+  background-color: transparent;
+  border-color: $color;
+
+  @include hover {
+    color: $color-hover;
+    background-color: $color;
+    border-color: $color;
+
+  }
+
+  &:focus,
+  &.focus {
+    box-shadow: none;
+  }
+
+  &.disabled,
+  &:disabled {
+    color: $color;
+    background-color: transparent;
+  }
+
+  &:active,
+  &.active,
+  .show > &.dropdown-toggle {
+    color: $color-hover;
+    background-color: $color;
+    border-color: $color;
+  }
+}
+
+@mixin button-icon-active-color($color) {
+
+  &:active,
+  &.active,
+  .open > &.dropdown-toggle {
+
+    .icon{
+      color: $color;
+    }
+
+    &:hover,
+    &:focus,
+    &.focus {
+
+      .icon{
+        color: $color;
+      }
+    }
+  }
+}
+
+@mixin social-button-variant($color, $background, $border) {
+  $active-background: darken($background, 5%);
+  $hover-background: lighten($background, 5%);
+  $active-border: transparent;
+
+  color: $color;
+  background-color: $background;
+  border-color: $border;
+
+  @include hover {
+    color: $color;
+    background-color: $hover-background;
+    border-color: $active-border;
+  }
+
+  &:focus,
+  &.focus {
+    color: $color;
+    background-color: $background;
+    border-color: $border;
+
+    @include hover {
+      color: $color;
+      background-color: $hover-background;
+      border-color: $active-border;
+    }
+  }
+
+  &:active,
+  &.active,
+  .open > &.dropdown-toggle {
+    color: $color;
+    background-color: $active-background;
+    border-color: $active-border;
+    // Remove the gradient for the pressed/active state
+    background-image: none;
+
+    &:hover,
+    &:focus,
+    &.focus {
+      color: $color;
+      background-color: $active-background;
+      border-color: $active-border;
+
+      > .icon {
+        color: $color;
+      }
+    }
+  }
+}
+
+@mixin button-link-variant($color) {
+  $hover-color: darken($color, 10%);
+  $disabled-color: lighten($color, 15%);
+  color: $color;
+
+  @include hover {
+    @if $color == $btn-link-color {
+      color: lighten($btn-link-color, 15%);
+    } @else {
+      color: $hover-color;
+    }
+  }
+
+  &:focus,
+  &.focus {
+    color: $color;
+
+    @include hover {
+      @if $color == $btn-link-color {
+        color: lighten($btn-link-color, 15%);
+      } @else {
+        color: $hover-color;
+      }
+    }
+  }
+
+  &.disabled,
+  &:disabled {
+    color: $disabled-color;
+    cursor: not-allowed;
+  }
+}

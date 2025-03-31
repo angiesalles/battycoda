@@ -1,0 +1,109 @@
+.user-stats {
+	padding:  0;
+	background-color: theme-color("light");
+	margin-bottom: $widget-margin-bottom;
+}
+
+.user-stats-id {
+	padding: $user-stats-padding;
+	display: flex;
+	align-items: center;
+}
+
+.user-stats-avatar {
+	position: relative;
+	margin-right: 12px;
+
+	img {	
+		border-radius: 50%;
+		width: $user-stats-avatar-size;
+		height: $user-stats-avatar-size;
+	}
+}
+
+.user-stats-status-indicator {
+   position: absolute;
+   display: block;
+	background-color: theme-color("noir");
+   border-radius: 50%;
+   height: 13px;
+   width: 13px;
+   top: 0;
+   right: 2px;
+   border: 2px solid theme-color("light");
+
+   &.online {
+   	background-color: theme-color("success");
+   }
+
+   &.away {
+   	background-color: theme-color("warning");
+   }
+
+   &.busy {
+   	background-color: theme-color("danger");
+   }
+}
+
+.user-stats-info {
+	display: flex;
+	flex-direction: column;
+}
+
+.user-stats-name {
+	color: lighten($black, 24%);
+	font-size: 1.38462rem;
+}
+
+.user-stats-position {
+	color: darken(theme-color("light"), 33%);
+}
+
+.user-stats-indicators {
+	padding: $user-stats-padding;
+	padding-top: 5px;
+}
+
+.user-stats-indicator {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	padding: .615385rem 0;
+}
+
+.user-stats-indicator-title {
+	font-weight: $font-weight-light;
+}
+
+.user-stats-indicator-counter {
+	font-size: 1.23077rem;
+	color: theme-color("primary");
+}
+
+.user-stats-milestone {
+	padding: 6px $user-stats-padding ($user-stats-padding * 1.6);
+
+	span {
+		display: block;
+		margin-bottom: 10px;
+	}
+
+	.progress {
+		border-radius: 0.25rem;
+		height: auto;
+	}
+
+	.progress-bar {
+		height: 8px;
+		border-radius: 0.25rem;
+	}
+}
+
+.user-stats-more-details {
+	display: block;
+	padding: 18px $user-stats-padding;
+	font-size: $paragraph-size;
+	text-align: center;
+	color: $body-color;
+	background-color: darken(theme-color("light"), 2%);
+}

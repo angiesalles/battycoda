@@ -1,0 +1,228 @@
+{
+  "options": {
+    "destPrefix": "src/assets/lib/"
+  },
+  "bootstrap": {
+    "files": {
+      "bootstrap/scss": "bootstrap/scss/*",
+      "bootstrap/dist": "bootstrap/dist/*"
+    }
+  },
+  "bs4-breakpoint-check": {
+    "files": {
+      "bs4-breakpoint-check": "bs4-breakpoint-check/js/*"
+    }
+  },
+  "chart.js": {
+    "files": {
+      "chartjs": "chart.js/dist/*"
+    }
+  },
+  "countup.js": {
+    "files": {
+      "countup": "countup.js/dist/*"
+    }
+  },
+  "datatables": {
+    "files": {
+      "datatables/datatables.net/js": "datatables.net/js/*",
+      "datatables/datatables.net-bs4/js": "datatables.net-bs4/js/*",
+      "datatables/datatables.net-bs4/css": "datatables.net-bs4/css/*"
+    }
+  },
+  "datatables-buttons": {
+    "files": {
+      "datatables/datatables.net-buttons/js": "datatables.net-buttons/js/*",
+      "datatables/datatables.net-buttons-bs4/js": "datatables.net-buttons-bs4/js/*",
+      "datatables/datatables.net-buttons-bs4/css": "datatables.net-buttons-bs4/css/*"
+    }
+  },
+  "datepicker": {
+    "files": {
+      "datepicker": "bootstrap-datepicker/dist/*"
+    }
+  },
+  "dropzone": {
+    "files": {
+      "dropzone": "dropzone/dist/*"
+    }
+  },
+  "flot.curvedlines": {
+    "files": {
+      "jquery-flot/plugins": "flot.curvedlines/curvedLines.js"
+    }
+  },
+  "flot.tooltip": {
+    "files": {
+      "jquery-flot/plugins": "jquery.flot.tooltip/js/jquery.flot.tooltip.js"
+    }
+  },
+  "font-awesome": {
+    "files": {
+      "font-awesome/css": "font-awesome/css/*",
+      "font-awesome/fonts": "font-awesome/fonts/*"
+    }
+  },
+  "foxythemes-gritter": {
+    "files": {
+      "jquery.gritter": "@foxythemes/gritter/*"
+    }
+  },
+  "fuelux": {
+    "files": {
+      "fuelux/js": "fuelux/js/wizard.js"
+    }
+  },
+  "fullcalendar": {
+    "files": {
+      "jquery.fullcalendar": "fullcalendar/dist/*"
+    }
+  },
+  "google-code-prettify": {
+    "files": {
+      "prettify": "code-prettify/src/*"
+    }
+  },
+  "jquery": {
+    "files": {
+      "jquery": "jquery/dist/*"
+    }
+  },
+  "jquery.countdown": {
+    "files": {
+      "countdown": "jquery-countdown/dist/*"
+    }
+  },
+  "jquery-flot": {
+    "files": {
+      "jquery-flot": "jquery-flot/*"
+    }
+  },
+  "jquery.maskedinput": {
+    "files": {
+      "jquery.maskedinput": "jquery.maskedinput/src/*"
+    }
+  },
+  "jquery-nestable": {
+    "files": {
+      "jquery.nestable": "@foxythemes/jquery-nestable/*"
+    }
+  },
+  "jquery-niftymodals-methods": {
+    "files": {
+      "jquery.niftymodals": "jquery.niftymodals/src/*"
+    }
+  },
+  "jquery-ui": {
+    "files": {
+      "jquery-ui": "components-jqueryui/jquery-ui.min.js"
+    }
+  },
+  "jvectormap": {
+    "files": {
+      "jquery.vectormap": "@foxythemes/jvectormap/*"
+    }
+  },
+  "jqvmap": {
+    "files": {
+      "jqvmap": "jqvmap/dist/*"
+    }
+  },
+  "kapusta-jquery.sparkline": {
+    "files": {
+      "jquery.sparkline": "@foxythemes/sparkline/dist/*"
+    }
+  },
+  "maisonnette-resources": {
+    "files": {
+      "dropzone": "maisonnette-resources/dropzone/*",
+      "fuelux/css": "maisonnette-resources/fuelux/*",
+      "jquery-flot/plugins": "maisonnette-resources/jquery-flot/jquery.flot.orderBars.js",
+      "jquery.vectormap": "maisonnette-resources/jquery.vectormap/*",
+      "jquery.gritter/images": "maisonnette-resources/jquery.gritter/images/*"
+    }
+  },
+  "magnific-popup": {
+    "files": {
+      "jquery.magnific-popup": "magnific-popup/dist/*"
+    }
+  },
+  "masonry": {
+    "files": {
+      "masonry-layout": "masonry-layout/dist/*"
+    }
+  },
+  "moment": {
+    "files": {
+      "moment.js": "moment/*"
+    }
+  },
+  "morris.js": {
+    "files": {
+      "morrisjs": "@foxythemes/morris.js/*"
+    }
+  },
+  "multiselect": {
+    "files": {
+      "multiselect/css": "multiselect/css/multi-select.css",
+      "multiselect/js": "multiselect/js/jquery.multi-select.js",
+      "multiselect/img": "multiselect/img/*"
+    }
+  },
+  "open-sans": {
+    "files": {
+      "open-sans": "@foxythemes/open-sans/fonts/*"
+    }
+  },
+  "parsleyjs": {
+    "files": {
+      "parsley": "parsleyjs/dist/*"
+    }
+  },
+  "perfect-scrollbar": {
+    "files": {
+      "perfect-scrollbar/js": "perfect-scrollbar/dist/*",
+      "perfect-scrollbar/css": "perfect-scrollbar/css/*"
+    }
+  },
+  "quicksearch": {
+    "files": {
+      "quicksearch": "jquery.quicksearch/dist/*"
+    }
+  },
+  "raphael": {
+    "files": {
+      "raphael": "raphael/raphael.min.js"
+    }
+  },
+  "raleway-fontface": {
+    "files": {
+      "raleway": "@foxythemes/raleway/fonts/*"
+    }
+  },
+  "select2": {
+    "files": {
+      "select2": "select2/dist/*"
+    }
+  },
+  "seiyria-bootstrap-slider": {
+    "files": {
+      "bootstrap-slider": "bootstrap-slider/dist/*"
+    }
+  },
+  "sweetalert2": {
+    "files": {
+      "sweetalert2": "sweetalert2/dist/*"
+    }
+  },
+  "stroke-7": {
+    "files": {
+      "stroke-7": "@foxythemes/stroke7/*"
+    }
+  },
+  "tinycolor": {
+    "files": {
+      "tinycolor": "tinycolor2/dist/*"
+    }
+  }
+}

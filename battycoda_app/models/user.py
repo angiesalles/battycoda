@@ -56,9 +56,13 @@ class UserProfile(models.Model):
 
     # Theme choices
     THEME_CHOICES = (
-        ("dark", "Dark - Red"),
-        ("blue", "Dark - Blue/Green"),
-        ("light", "Light - Modern Business"),
+        ("default", "Default Green"),
+        ("blue-sky", "Blue Sky"),
+        ("little-fox", "Little Fox"),
+        ("night-city", "Night City"),
+        ("orange-juice", "Orange Juice"),
+        ("passion", "Passion"),
+        ("pink-love", "Pink Love"),
     )
 
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name="profile")
@@ -68,7 +72,7 @@ class UserProfile(models.Model):
     )
     # User preferences
     theme = models.CharField(
-        max_length=20, choices=THEME_CHOICES, default="light", help_text="Color theme preference"
+        max_length=20, choices=THEME_CHOICES, default="default", help_text="Color theme preference"
     )
     # Authentication fields (previously Cloudflare fields, kept for data compatibility)
     cloudflare_id = models.CharField(

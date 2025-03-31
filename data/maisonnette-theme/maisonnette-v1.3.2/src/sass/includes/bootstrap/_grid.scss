@@ -1,0 +1,9 @@
+// Container widths
+//
+
+@include tablet {
+	.container {
+		width: 100%;
+		max-width: 100%;
+	}
+}

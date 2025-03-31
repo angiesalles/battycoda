@@ -1,0 +1,21 @@
+.breadcrumb-item {
+
+  .icon {
+    font-size: 1.4rem;
+  }
+
+  // The separator between breadcrumbs (by default, a forward-slash: "/")
+  + .breadcrumb-item {
+    padding-left: 0;
+  
+    &:before {
+      position: relative;
+      top: -.07692rem;
+      font-family: $icon-font;
+      font-size: 1.8rem;
+      line-height: .4;
+      vertical-align: middle;
+      padding: 0;
+    }
+  }
+}

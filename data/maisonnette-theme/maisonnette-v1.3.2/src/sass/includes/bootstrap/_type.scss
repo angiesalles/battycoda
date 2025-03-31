@@ -1,0 +1,20 @@
+// Typography
+
+// Headings
+h1, h2, h3, h4, h5, h6,
+.h1, .h2, .h3, .h4, .h5, .h6 {
+  // margin-top: $headings-margin-top;
+}
+
+// Lead
+.lead {
+  line-height: 1.4;
+}
+
+// Blockquotes
+.blockquote {
+  
+  p {	
+  	font-size: $blockquote-font-size;
+  }
+}
