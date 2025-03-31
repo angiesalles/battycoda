@@ -1,11 +1,34 @@
 /**
  * BattyCoda Theme Switcher
  * Allows users to switch between different Maisonnette themes
+ * Works for both authenticated and non-authenticated users
  */
 
 document.addEventListener('DOMContentLoaded', function() {
+    // Constants
+    const LOCAL_STORAGE_THEME_KEY = 'battycoda_theme';
+    const mainBody = document.getElementById('main-body');
+    
     // Get theme switcher links
     const themeSwitcherLinks = document.querySelectorAll('.theme-switcher-link');
+    
+    // Check if user is authenticated (look for logout link)
+    const isAuthenticated = document.getElementById('logoutLink') !== null;
+    
+    // If not authenticated, apply theme from localStorage if available
+    if (!isAuthenticated) {
+        const savedTheme = localStorage.getItem(LOCAL_STORAGE_THEME_KEY);
+        if (savedTheme) {
+            applyTheme(savedTheme);
+            
+            // Update active state in dropdown
+            themeSwitcherLinks.forEach(link => {
+                if (link.dataset.theme === savedTheme) {
+                    link.classList.add('active');
+                }
+            });
+        }
+    }
     
     // Add click event to each theme switcher link
     themeSwitcherLinks.forEach(link => {
@@ -15,8 +38,13 @@ document.addEventListener('DOMContentLoaded', function() {
             // Get theme name from data attribute
             const themeName = this.dataset.theme;
             
-            // Update theme preference via Ajax
-            updateThemePreference(themeName);
+            if (isAuthenticated) {
+                // For authenticated users, update theme preference via Ajax
+                updateThemePreference(themeName);
+            } else {
+                // For non-authenticated users, save theme to localStorage
+                localStorage.setItem(LOCAL_STORAGE_THEME_KEY, themeName);
+            }
             
             // Apply theme immediately
             applyTheme(themeName);
@@ -28,7 +56,7 @@ document.addEventListener('DOMContentLoaded', function() {
     });
     
     /**
-     * Update theme preference in user profile via Ajax
+     * Update theme preference in user profile via Ajax (for authenticated users)
      */
     function updateThemePreference(themeName) {
         // Get CSRF token from cookie
@@ -60,12 +88,12 @@ document.addEventListener('DOMContentLoaded', function() {
      */
     function applyTheme(themeName) {
         // Remove all theme classes from body
-        document.body.className = document.body.className
+        mainBody.className = mainBody.className
             .replace(/theme-[a-z-]+/g, '')
             .trim();
         
         // Add new theme class to body
-        document.body.classList.add(`theme-${themeName}`);
+        mainBody.classList.add(`theme-${themeName}`);
         
         // Only load theme CSS if it's not the default theme
         if (themeName !== 'default') {

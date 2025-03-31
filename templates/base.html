@@ -15,198 +15,187 @@
     <link rel="apple-touch-icon" sizes="76x76" href="{% static 'img/favicon/apple-touch-icon-76x76.png' %}">
     <link rel="apple-touch-icon" sizes="120x120" href="{% static 'img/favicon/apple-touch-icon-120x120.png' %}">
     
+    <!-- Bootstrap 4.3.1 CSS (required by Maisonnette) -->
+    <link rel="stylesheet" type="text/css" href="{% static 'lib/bootstrap/dist/css/bootstrap.min.css' %}">
+    
     <!-- Maisonnette Core CSS -->
     <link rel="stylesheet" type="text/css" href="{% static 'lib/stroke-7/style.css' %}">
     <link rel="stylesheet" type="text/css" href="{% static 'lib/perfect-scrollbar/css/perfect-scrollbar.css' %}">
     <link rel="stylesheet" type="text/css" href="{% static 'lib/font-awesome/css/font-awesome.min.css' %}">
-    <link rel="stylesheet" type="text/css" href="{% static 'css/app.min.css' %}">
+    <link rel="stylesheet" type="text/css" href="{% static 'css/app.css' %}">
     
     <!-- Custom BattyCoda CSS -->
+    <link href="{% static 'css/fonts.css' %}" rel="stylesheet">
     <link href="{% static 'css/main.css' %}" rel="stylesheet">
     <link href="{% static 'css/themes.css' %}" rel="stylesheet">
     
     <!-- Load theme CSS based on user preference (only if not using default theme) -->
-    {% if user.profile.theme != 'default' %}
-    <link id="theme-css-{{ user.profile.theme }}" rel="stylesheet" href="{% static 'css/themes/'|add:user.profile.theme|add:'.css' %}">
+    {% if user.is_authenticated %}
+      {% with current_theme=user.profile.theme|default:'default' %}
+        {% if current_theme != 'default' %}
+          <link id="theme-css-{{ current_theme }}" rel="stylesheet" href="{% static 'css/themes/'|add:current_theme|add:'.css' %}">
+        {% endif %}
+      {% endwith %}
     {% endif %}
     
     {% block extra_css %}{% endblock %}
 </head>
-<body class="theme-{{ user.profile.theme|default:'default' }} {% block body_class %}{% endblock %}">
-<nav id="mainNavbar" class="navbar navbar-expand-lg navbar-dark mai-top-header mb-3">
-    <div id="navContainer" class="container-fluid px-4 ms-0">
-        <!-- Logo and brand name -->
-        <a id="navBrand" class="navbar-brand d-flex align-items-center" href="{% url 'battycoda_app:index' %}">
-            <img id="navLogo" src="{% static 'img/brandmark-design.png' %}" alt="BattyCoda Logo" class="me-2" style="height: 40px;">
-            <div id="navBrandText">
-                <h2 id="navTitle" class="mb-0 fs-4">BattyCoda</h2>
-                <p id="navSubtitle" class="small text-muted mb-0">Animal Vocalization Analysis Tool</p>
-            </div>
+<body class="theme-{% if user.is_authenticated %}{{ user.profile.theme|default:'default' }}{% else %}default{% endif %} {% block body_class %}{% endblock %}" id="main-body">
+<nav id="mainNavbar" class="navbar navbar-expand navbar-dark mai-top-header">
+    <div id="navContainer" class="container-fluid">
+        <a id="navBrand" class="navbar-brand" href="{% url 'battycoda_app:index' %}">
+            <img id="navLogo" src="{% static 'img/brandmark-design.png' %}" alt="BattyCoda Logo" style="height: 40px; width: auto;">
+            <span id="navTitle" class="h4 mb-0 ml-2">BattyCoda</span>
         </a>
         
-        <!-- Hamburger menu for mobile -->
-        <button id="navToggler" class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarContent" 
-                aria-controls="navbarContent" aria-expanded="false" aria-label="Toggle navigation">
-            <span class="navbar-toggler-icon"></span>
-        </button>
-        
-        <!-- Navigation links and user controls -->
-        <div id="navbarContent" class="collapse navbar-collapse">
-            <!-- Navigation links using Maisonnette classes -->
-            <ul id="navLinks" class="nav navbar-nav mai-top-nav">
+        <!-- Navigation links using Maisonnette classes -->
+        <ul id="navLinks" class="nav navbar-nav mai-top-nav">
                 {% if user.is_authenticated %}
                 <li class="nav-item">
-                    <a id="navHome" class="nav-link px-3" href="{% url 'battycoda_app:index' %}">
-                        <span class="s7-home me-1"></span> Home
+                    <a id="navHome" class="nav-link" href="{% url 'battycoda_app:index' %}">
+                        <span class="s7-home mr-1"></span> Home
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a id="navRecordings" class="nav-link px-3" href="{% url 'battycoda_app:recording_list' %}">
-                        <span class="s7-micro me-1"></span> Recordings
+                    <a id="navRecordings" class="nav-link" href="{% url 'battycoda_app:recording_list' %}">
+                        <span class="s7-micro mr-1"></span> Recordings
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a id="navSegmentation" class="nav-link px-3" href="{% url 'battycoda_app:batch_segmentation' %}">
-                        <span class="s7-scissors me-1"></span> Segmentation
+                    <a id="navSegmentation" class="nav-link" href="{% url 'battycoda_app:batch_segmentation' %}">
+                        <span class="s7-scissors mr-1"></span> Segmentation
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a id="navClassification" class="nav-link px-3" href="{% url 'battycoda_app:automation_home' %}">
-                        <span class="s7-display1 me-1"></span> Classification
+                    <a id="navClassification" class="nav-link" href="{% url 'battycoda_app:automation_home' %}">
+                        <span class="s7-display1 mr-1"></span> Classification
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a id="navTaskBatches" class="nav-link px-3" href="{% url 'battycoda_app:task_batch_list' %}">
-                        <span class="s7-box1 me-1"></span> Task Batches
+                    <a id="navTaskBatches" class="nav-link" href="{% url 'battycoda_app:task_batch_list' %}">
+                        <span class="s7-box1 mr-1"></span> Task Batches
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a id="navProjects" class="nav-link px-3" href="{% url 'battycoda_app:project_list' %}">
-                        <span class="s7-portfolio me-1"></span> Projects
+                    <a id="navProjects" class="nav-link" href="{% url 'battycoda_app:project_list' %}">
+                        <span class="s7-portfolio mr-1"></span> Projects
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a id="navSpecies" class="nav-link px-3" href="{% url 'battycoda_app:species_list' %}">
-                        <span class="s7-leaf me-1"></span> Species
+                    <a id="navSpecies" class="nav-link" href="{% url 'battycoda_app:species_list' %}">
+                        <span class="s7-leaf mr-1"></span> Species
                     </a>
                 </li>
                 {% if user.profile.is_admin and user.profile.group %}
                 <li class="nav-item">
-                    <a id="navUsers" class="nav-link px-3" href="{% url 'battycoda_app:group_users' %}">
-                        <span class="s7-users me-1"></span> Users
+                    <a id="navUsers" class="nav-link" href="{% url 'battycoda_app:group_users' %}">
+                        <span class="s7-users mr-1"></span> Users
                     </a>
                 </li>
                 {% endif %}
                 {% if user.is_staff %}
                 <li class="nav-item">
-                    <a id="navAdmin" class="nav-link px-3" href="{% url 'admin:index' %}">
-                        <span class="s7-tools me-1"></span> Admin
+                    <a id="navAdmin" class="nav-link" href="{% url 'admin:index' %}">
+                        <span class="s7-tools mr-1"></span> Admin
                     </a>
                 </li>
                 {% endif %}
                 {% endif %}
             </ul>
+
+        <!-- User controls using Maisonnette classes -->
+        <ul id="userControls" class="navbar-nav float-lg-right mai-icons-nav mai-settings">
+            {% if user.is_authenticated %}
+            <li class="nav-item d-flex align-items-center">
+                <a id="getTaskBtn" href="{% url 'battycoda_app:get_next_task' %}" class="btn btn-success btn-sm mr-3">
+                    <span class="s7-next mr-1"></span> Get Task
+                </a>
+            </li>
+            {% endif %}
             
-            <!-- User controls using Maisonnette classes -->
-            <ul id="userControls" class="navbar-nav float-lg-right mai-icons-nav">
-                {% if user.is_authenticated %}
-                <li class="nav-item">
-                    <a id="getTaskBtn" href="{% url 'battycoda_app:get_next_task' %}" class="btn btn-success btn-sm me-3">
-                        <span class="s7-next me-1"></span> Get Task
+            <!-- Theme Selector Dropdown (available for all users) -->
+            <li class="dropdown nav-item">
+                <a id="themeSelector" class="nav-link dropdown-toggle" href="#" data-toggle="dropdown" role="button" aria-expanded="false">
+                    <span class="s7-paint-bucket"></span><span class="angle-down s7-angle-down"></span>
+                </a>
+                <ul id="themeSelectorMenu" class="dropdown-menu dropdown-menu-right" aria-labelledby="themeSelector">
+                    <li>
+                        <div id="themeSelectorHeader" class="title">Choose Theme</div>
+                        <div class="content">
+                            <ul>
+                                {% for theme_id, theme_name in THEME_CHOICES %}
+                                <li>
+                                    <a id="theme-{{ theme_id }}" class="theme-switcher-link {% if user.is_authenticated and user.profile.theme == theme_id %}active{% endif %}" href="#" data-theme="{{ theme_id }}">
+                                        <span class="theme-name theme-color-{{ theme_id }}">{{ theme_name }}</span>
+                                    </a>
+                                </li>
+                                {% endfor %}
+                            </ul>
+                        </div>
+                    </li>
+                </ul>
+            </li>
+        </ul>
+        
+        <!-- User profile dropdown -->
+        <ul class="nav navbar-nav float-lg-right mai-user-nav">
+            {% if user.is_authenticated %}
+            <li class="dropdown nav-item">
+                <a id="userDropdown" class="dropdown-toggle nav-link" href="#" data-toggle="dropdown" role="button" aria-expanded="false">
+                    <span class="s7-user"></span>
+                    <span class="user-name">{{ user.username }}</span>
+                    <span class="angle-down s7-angle-down"></span>
+                </a>
+                <div class="dropdown-menu" role="menu">
+                    <a class="dropdown-item" href="{% url 'battycoda_app:edit_profile' %}">
+                        <span class="icon s7-user"></span>Profile
                     </a>
-                </li>
-                <li class="nav-item">
-                    <a id="profileButton" href="{% url 'battycoda_app:edit_profile' %}" class="btn btn-outline-light btn-sm me-3">
-                        <span class="s7-user me-1"></span> {{ user.username }}
+                    
+                    <!-- Group Dropdown Menu Items -->
+                    <div class="dropdown-divider"></div>
+                    <h6 id="groupDropdownHeader" class="dropdown-header">Your Groups</h6>
+                    {% for membership in user.group_memberships.all %}
+                    <a id="group-{{ membership.group.id }}" class="dropdown-item {% if user.profile.group == membership.group %}active{% endif %}" 
+                        href="{% url 'battycoda_app:switch_group' group_id=membership.group.id %}">
+                        {{ membership.group.name }}
+                        {% if membership.is_admin %}<span class="s7-shield ml-1" title="Admin"></span>{% endif %}
+                        {% if user.profile.group == membership.group %}<span class="s7-check ml-2"></span>{% endif %}
                     </a>
-                </li>
-                
-                <!-- Theme Selector Dropdown -->
-                <li class="dropdown nav-item">
-                    <a id="themeSelector" class="nav-link dropdown-toggle" href="#" data-bs-toggle="dropdown" role="button" aria-expanded="false">
-                        <span class="s7-paint-bucket"></span><span class="angle-down s7-angle-down"></span>
+                    {% empty %}
+                    <span id="noGroupsMessage" class="dropdown-item">No groups available</span>
+                    {% endfor %}
+                    
+                    <div class="dropdown-divider"></div>
+                    <a id="createGroupLink" class="dropdown-item" href="{% url 'battycoda_app:create_group' %}">
+                        <span class="s7-plus mr-1"></span> Create New Group
                     </a>
-                    <ul id="themeSelectorMenu" class="dropdown-menu dropdown-menu-end" aria-labelledby="themeSelector">
-                        <li><h6 id="themeSelectorHeader" class="dropdown-header">Choose Theme</h6></li>
-                        
-                        <li><a id="theme-default" class="dropdown-item theme-switcher-link {% if user.profile.theme == 'default' %}active{% endif %}" href="#" data-theme="default">
-                            <span class="theme-color-preview"></span> Default Green
-                        </a></li>
-                        
-                        <li><a id="theme-blue-sky" class="dropdown-item theme-switcher-link {% if user.profile.theme == 'blue-sky' %}active{% endif %}" href="#" data-theme="blue-sky">
-                            <span class="theme-color-preview"></span> Blue Sky
-                        </a></li>
-                        
-                        <li><a id="theme-little-fox" class="dropdown-item theme-switcher-link {% if user.profile.theme == 'little-fox' %}active{% endif %}" href="#" data-theme="little-fox">
-                            <span class="theme-color-preview"></span> Little Fox
-                        </a></li>
-                        
-                        <li><a id="theme-night-city" class="dropdown-item theme-switcher-link {% if user.profile.theme == 'night-city' %}active{% endif %}" href="#" data-theme="night-city">
-                            <span class="theme-color-preview"></span> Night City
-                        </a></li>
-                        
-                        <li><a id="theme-orange-juice" class="dropdown-item theme-switcher-link {% if user.profile.theme == 'orange-juice' %}active{% endif %}" href="#" data-theme="orange-juice">
-                            <span class="theme-color-preview"></span> Orange Juice
-                        </a></li>
-                        
-                        <li><a id="theme-passion" class="dropdown-item theme-switcher-link {% if user.profile.theme == 'passion' %}active{% endif %}" href="#" data-theme="passion">
-                            <span class="theme-color-preview"></span> Passion
-                        </a></li>
-                        
-                        <li><a id="theme-pink-love" class="dropdown-item theme-switcher-link {% if user.profile.theme == 'pink-love' %}active{% endif %}" href="#" data-theme="pink-love">
-                            <span class="theme-color-preview"></span> Pink Love
-                        </a></li>
-                    </ul>
-                </li>
-                
-                <!-- Group Dropdown -->
-                <li class="dropdown nav-item">
-                    <a id="groupDropdown" class="nav-link dropdown-toggle" href="#" data-bs-toggle="dropdown" role="button" aria-expanded="false">
-                        <span class="s7-users"></span><span class="angle-down s7-angle-down"></span>
+                    
+                    <div class="dropdown-divider"></div>
+                    <a id="logoutLink" class="dropdown-item" href="{% url 'battycoda_app:logout' %}">
+                        <span class="s7-power mr-1"></span> Logout
                     </a>
-                    <ul id="groupDropdownMenu" class="dropdown-menu dropdown-menu-end" aria-labelledby="groupDropdown">
-                        <li><h6 id="groupDropdownHeader" class="dropdown-header">Your Groups</h6></li>
-                        {% for membership in user.group_memberships.all %}
-                        <li id="group-{{ membership.group.id }}">
-                            <a class="dropdown-item {% if user.profile.group == membership.group %}active{% endif %}" 
-                               href="{% url 'battycoda_app:switch_group' group_id=membership.group.id %}">
-                                {{ membership.group.name }}
-                                {% if membership.is_admin %}<span class="s7-shield ms-1" title="Admin"></span>{% endif %}
-                                {% if user.profile.group == membership.group %}<span class="s7-check ms-2"></span>{% endif %}
-                            </a>
-                        </li>
-                        {% empty %}
-                        <li id="noGroupsMessage"><span class="dropdown-item">No groups available</span></li>
-                        {% endfor %}
-                        <li><hr class="dropdown-divider"></li>
-                        <li id="createGroupLink"><a class="dropdown-item" href="{% url 'battycoda_app:create_group' %}">
-                            <span class="s7-plus me-1"></span> Create New Group
-                        </a></li>
-                        <li><hr class="dropdown-divider"></li>
-                        <li id="logoutLink"><a class="dropdown-item" href="{% url 'battycoda_app:logout' %}">
-                            <span class="s7-power me-1"></span> Logout
-                        </a></li>
-                    </ul>
-                </li>
-                {% else %}
-                <li class="nav-item">
-                    <a id="loginBtn" href="{% url 'battycoda_app:login' %}" class="nav-link">
-                        <span class="s7-user me-1"></span> Login
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a id="registerBtn" href="{% url 'battycoda_app:register' %}" class="nav-link">
-                        <span class="s7-add-user me-1"></span> Register
-                    </a>
-                </li>
-                {% endif %}
-            </ul>
-        </div>
+                </div>
+            </li>
+            {% else %}
+            <li class="nav-item">
+                <a id="loginBtn" href="{% url 'battycoda_app:login' %}" class="nav-link">
+                    <span class="s7-user mr-1"></span> Login
+                </a>
+            </li>
+            <li class="nav-item">
+                <a id="registerBtn" href="{% url 'battycoda_app:register' %}" class="nav-link">
+                    <span class="s7-add-user mr-1"></span> Register
+                </a>
+            </li>
+            {% endif %}
+        </ul>
     </div>
 </nav>
 
-<div id="mainContent" class="container py-3">
-    {% block content %}{% endblock %}
+<div class="main-content container">
+    <div id="mainContent" class="py-3">
+        {% block content %}{% endblock %}
+    </div>
 </div>
 
 
@@ -215,10 +204,12 @@
 <!-- Maisonnette Core JS -->
 <script src="{% static 'lib/jquery/jquery.min.js' %}" type="text/javascript"></script>
 <script src="{% static 'lib/perfect-scrollbar/js/perfect-scrollbar.min.js' %}" type="text/javascript"></script>
-<script src="{% static 'js/app.min.js' %}" type="text/javascript"></script>
 
-<!-- Bootstrap JS Bundle with Popper -->
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js"></script>
+<!-- Bootstrap 4.3.1 JS with Popper (required by Maisonnette) -->
+<script src="{% static 'lib/popper.js/popper.min.js' %}" type="text/javascript"></script>
+<script src="{% static 'lib/bootstrap/dist/js/bootstrap.min.js' %}" type="text/javascript"></script>
+
+<script src="{% static 'js/app.min.js' %}" type="text/javascript"></script>
 
 <!-- Custom Scripts -->
 <script src="{% static 'js/datetime_formatter.js' %}"></script>

@@ -3,14 +3,15 @@
  * Core application-specific styles that complement the Maisonnette theme
  */
 
-/* Domain-specific styles */
-@import url('audio.css');
-@import url('task_annotation.css');
-@import url('waveform_viewer.css');
-@import url('debug.css');
+/* Modifying the theme selector styling is still included in base.html */
+/* @import url('themes.css'); - now loaded directly in base.html */
 
-/* Modifying the theme selector styling */
-@import url('themes.css');
+/* Domain-specific styles are now loaded only in templates that need them:
+ * - audio.css: for recording pages
+ * - task_annotation.css: for task annotation page
+ * - waveform_viewer.css: for waveform visualization
+ * - debug.css: for debug pages
+ */
 
 /* Custom form overrides if needed */
 /* @import url('forms.css'); */

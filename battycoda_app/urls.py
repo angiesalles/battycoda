@@ -27,6 +27,7 @@ from . import (
     views_debug,
     views_group,
     views_invitations,
+    views_landing,
     views_project,
     views_recording_core,
     views_species,
@@ -41,6 +42,7 @@ app_name = "battycoda_app"
 
 urlpatterns = [
     path("", views_dashboard.index, name="index"),
+    path("welcome/", views_landing.landing_page, name="landing"),
     # Authentication URLs
     path("accounts/login/", views_auth.login_view, name="login"),
     path("accounts/register/", views_auth.register_view, name="register"),
