@@ -3,27 +3,62 @@
 {% block title %}Enter Login Code | BattyCoda{% endblock %}
 
 {% block content %}
-<div class="section">
-    <h2>Enter Login Code</h2>
-    <p>A one-time login code has been sent to your email. Enter it below to login.</p>
-    
-    <form method="post" action="{% url 'battycoda_app:enter_login_code' username=username %}">
-        {% csrf_token %}
-        
-        <div style="margin-bottom: 15px;">
-            <label for="id_username" style="display: block; margin-bottom: 5px;">Username or Email:</label>
-            <input type="text" name="username" id="id_username" value="{{ username }}" readonly class="input-field" style="width: 100%; padding: 8px; border: 1px solid #333; background-color: #2a2a2a; color: #fff; border-radius: 3px;">
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-md-7">
+            <div class="card card-default my-5 shadow-sm">
+                <div class="card-header bg-primary text-white py-3">
+                    <h2 class="text-center mb-0" style="font-size: 2.2rem;">Enter Login Code</h2>
+                </div>
+                <div class="card-body p-5" style="font-size: 1.15rem;">
+                    <p class="text-center mb-4">A one-time login code has been sent to your email. Enter it below to login.</p>
+                    
+                    <form method="post" action="{% url 'battycoda_app:enter_login_code' username=username %}">
+                        {% csrf_token %}
+                        
+                        <div class="form-group mb-4">
+                            <label for="id_username" class="form-control-label">Username or Email</label>
+                            <div class="input-group">
+                                <div class="input-group-prepend">
+                                    <span class="input-group-text bg-primary text-white"><i class="s7-user" style="font-size: 1.25rem;"></i></span>
+                                </div>
+                                <input type="text" name="username" id="id_username" value="{{ username }}" readonly class="form-control form-control-lg bg-light">
+                            </div>
+                        </div>
+                        
+                        <div class="form-group mb-4">
+                            <label for="id_login_code" class="form-control-label">Login Code</label>
+                            <div class="input-group">
+                                <div class="input-group-prepend">
+                                    <span class="input-group-text bg-primary text-white"><i class="s7-key" style="font-size: 1.25rem;"></i></span>
+                                </div>
+                                <input type="text" name="login_code" id="id_login_code" required autofocus class="form-control form-control-lg text-center" style="letter-spacing: 2px; font-size: 1.2em;" placeholder="Enter code from email">
+                            </div>
+                        </div>
+                        
+                        {% if messages %}
+                        <div class="mb-4">
+                            {% for message in messages %}
+                            <div class="alert alert-{{ message.tags }}">{{ message }}</div>
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+                        
+                        <div class="mt-5">
+                            <button type="submit" class="btn btn-primary btn-lg btn-block font-weight-bold" style="padding: 12px 0; font-size: 1.2rem;">
+                                <span class="s7-check mr-2" style="font-size: 1.3rem; vertical-align: middle;"></span>Login with Code
+                            </button>
+                        </div>
+                    </form>
+                    
+                    <div class="mt-5 text-center">
+                        <a href="{% url 'battycoda_app:login' %}" class="btn btn-link text-primary" style="font-size: 1.15rem;">
+                            <span class="s7-back mr-1" style="font-size: 1.3rem; vertical-align: middle;"></span> Back to Login
+                        </a>
+                    </div>
+                </div>
+            </div>
         </div>
-
-        <div style="margin-bottom: 15px;">
-            <label for="id_login_code" style="display: block; margin-bottom: 5px;">Login Code:</label>
-            <input type="text" name="login_code" id="id_login_code" required autofocus class="input-field" style="width: 100%; padding: 12px; border: 1px solid #333; background-color: #2a2a2a; color: #fff; border-radius: 3px; font-size: 1.1em; letter-spacing: 2px; text-align: center;" placeholder="Enter code from email">
-        </div>
-        
-        <div style="margin-top: 20px;">
-            <button type="submit" class="button" style="width: 100%; padding: 10px 0; font-size: 1.1em;">Login</button>
-        </div>
-    </form>
-    
+    </div>
 </div>
 {% endblock %}

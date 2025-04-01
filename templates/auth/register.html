@@ -3,179 +3,204 @@
 {% block title %}Register | BattyCoda{% endblock %}
 
 {% block content %}
-<div class="section">
-    <h2>Register</h2>
-    <form method="post" action="{% url 'battycoda_app:register' %}">
-        {% csrf_token %}
-        
-        <div style="margin-bottom: 15px;">
-            <label for="id_username" style="display: block; margin-bottom: 5px;">Username:</label>
-            {% if request.GET.username %}
-                <input type="text" name="username" id="id_username" value="{{ request.GET.username }}" maxlength="150" required class="input-field" style="width: 100%; padding: 8px; border: 1px solid #333; background-color: #2a2a2a; color: #fff; border-radius: 3px;">
-            {% else %}
-                {{ form.username }}
-            {% endif %}
-            {% if form.username.errors %}
-            <span style="color: #e57373; font-size: 0.9em;">
-                {{ form.username.errors }}
-            </span>
-            {% endif %}
-        </div>
-        
-        <div style="margin-bottom: 15px;">
-            <label for="id_email" style="display: block; margin-bottom: 5px;">Email:</label>
-            {% if request.GET.email %}
-                <input type="email" name="email" id="id_email" value="{{ request.GET.email }}" required class="input-field" style="width: 100%; padding: 8px; border: 1px solid #333; background-color: #2a2a2a; color: #fff; border-radius: 3px;">
-            {% else %}
-                {{ form.email }}
-            {% endif %}
-            {% if form.email.errors %}
-            <span style="color: #e57373; font-size: 0.9em;">
-                {{ form.email.errors }}
-            </span>
-            {% endif %}
-        </div>
-        
-        <div style="margin-bottom: 15px;">
-            <label for="id_password1" style="display: block; margin-bottom: 5px;">Password:</label>
-            {{ form.password1 }}
-            {% if form.password1.errors %}
-            <span style="color: #e57373; font-size: 0.9em;">
-                {{ form.password1.errors }}
-            </span>
-            {% endif %}
-        </div>
-        
-        <div style="margin-bottom: 15px;">
-            <label for="id_password2" style="display: block; margin-bottom: 5px;">Confirm Password:</label>
-            {{ form.password2 }}
-            {% if form.password2.errors %}
-            <span style="color: #e57373; font-size: 0.9em;">
-                {{ form.password2.errors }}
-            </span>
-            {% endif %}
-        </div>
-        
-        {% if form.non_field_errors %}
-        <div style="margin-bottom: 15px; color: #e57373;">
-            {{ form.non_field_errors }}
-        </div>
-        {% endif %}
-        
-        <div style="margin-top: 20px;">
-            <button type="submit" class="button">Register</button>
-        </div>
-    </form>
-    
-    <div style="margin-top: 20px;">
-        <p>Already have an account? <a href="{% url 'battycoda_app:login' %}">Login</a></p>
-    </div>
-    
-    <div style="margin-top: 20px;">
-        <h3>Username Requirements</h3>
-        <ul style="list-style: disc; padding-left: 20px;">
-            <li>Username cannot contain the @ symbol.</li>
-            <li>Username can only contain letters, numbers, and the following characters: _.-</li>
-        </ul>
-    </div>
-    
-    <div style="margin-top: 20px;">
-        <h3>Password Requirements</h3>
-        <ul style="list-style: disc; padding-left: 20px;">
-            <li>Your password can't be too similar to your other personal information.</li>
-            <li>Your password must contain at least 8 characters.</li>
-            <li>Your password can't be a commonly used password.</li>
-            <li>Your password can't be entirely numeric.</li>
-        </ul>
-    </div>
-    
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            const usernameField = document.getElementById('id_username');
-            const submitButton = document.querySelector('button[type="submit"]');
-            let typingTimer; // Timer identifier
-            const doneTypingInterval = 500; // Time in ms (0.5 seconds)
-            
-            if (usernameField) {
-                // Create the warning element if it doesn't exist
-                let warningElement = document.getElementById('username-warning');
-                if (!warningElement) {
-                    warningElement = document.createElement('div');
-                    warningElement.id = 'username-warning';
-                    warningElement.style.color = '#e57373';
-                    warningElement.style.fontSize = '0.9em';
-                    warningElement.style.marginTop = '5px';
-                    usernameField.parentNode.appendChild(warningElement);
-                }
-                
-                // On input event, validate characters and remove @ symbols
-                usernameField.addEventListener('input', function(e) {
-                    // Clear any typing timer
-                    clearTimeout(typingTimer);
-                    
-                    // Remove @ symbol if present
-                    if (this.value.includes('@')) {
-                        this.value = this.value.replace(/@/g, '');
-                        warningElement.textContent = 'Username cannot contain the @ symbol.';
-                    }
-                    
-                    // Only letters, numbers, and ._-
-                    const regex = /^[\w.-]*$/;
-                    if (!regex.test(this.value)) {
-                        this.value = this.value.replace(/[^\w.-]/g, '');
-                        warningElement.textContent = 'Username can only contain letters, numbers, and the characters ._-';
-                    }
-                    
-                    // Start timer to check if username exists (wait for user to finish typing)
-                    if (this.value.length > 0) {
-                        typingTimer = setTimeout(checkUsername, doneTypingInterval);
-                    } else {
-                        warningElement.textContent = '';
-                    }
-                });
-                
-                // Define the function to check if username exists
-                function checkUsername() {
-                    const username = usernameField.value;
-                    
-                    if (username.length > 0) {
-                        // Create form data
-                        const formData = new FormData();
-                        formData.append('username', username);
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-md-7">
+            <div class="card card-default my-5 shadow-sm">
+                <div class="card-header bg-primary text-white py-3">
+                    <h2 class="text-center mb-0" style="font-size: 2.2rem;">Create Account</h2>
+                </div>
+                <div class="card-body p-5" style="font-size: 1.15rem;">
+                    <form method="post" action="{% url 'battycoda_app:register' %}">
+                        {% csrf_token %}
                         
-                        // Send AJAX request
-                        fetch('{% url "battycoda_app:check_username" %}', {
-                            method: 'POST',
-                            body: formData
-                        })
-                        .then(response => response.json())
-                        .then(data => {
-                            if (!data.valid) {
-                                warningElement.textContent = data.message;
-                                submitButton.disabled = true;
-                            } else if (data.exists) {
-                                warningElement.textContent = data.message;
-                                submitButton.disabled = true;
-                            } else {
-                                warningElement.textContent = '';
-                                submitButton.disabled = false;
-                            }
-                        })
-                        .catch(error => {
-                            console.error('Error checking username:', error);
-                        });
-                    }
+                        <div class="form-group mb-4">
+                            <label for="id_username" class="form-control-label">Username</label>
+                            <div class="input-group">
+                                <div class="input-group-prepend">
+                                    <span class="input-group-text bg-primary text-white"><i class="s7-user" style="font-size: 1.25rem;"></i></span>
+                                </div>
+                                {% if request.GET.username %}
+                                    <input type="text" name="username" id="id_username" value="{{ request.GET.username }}" maxlength="150" required class="form-control form-control-lg">
+                                {% else %}
+                                    {{ form.username }}
+                                {% endif %}
+                            </div>
+                            {% if form.username.errors %}
+                            <span class="text-danger small">
+                                {{ form.username.errors }}
+                            </span>
+                            {% endif %}
+                            <div id="username-warning" class="text-danger small mt-1"></div>
+                        </div>
+                        
+                        <div class="form-group mb-4">
+                            <label for="id_email" class="form-control-label">Email</label>
+                            <div class="input-group">
+                                <div class="input-group-prepend">
+                                    <span class="input-group-text bg-primary text-white"><i class="s7-mail" style="font-size: 1.25rem;"></i></span>
+                                </div>
+                                {% if request.GET.email %}
+                                    <input type="email" name="email" id="id_email" value="{{ request.GET.email }}" required class="form-control form-control-lg">
+                                {% else %}
+                                    {{ form.email }}
+                                {% endif %}
+                            </div>
+                            {% if form.email.errors %}
+                            <span class="text-danger small">
+                                {{ form.email.errors }}
+                            </span>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="form-group mb-4">
+                            <label for="id_password1" class="form-control-label">Password</label>
+                            <div class="input-group">
+                                <div class="input-group-prepend">
+                                    <span class="input-group-text bg-primary text-white"><i class="s7-lock" style="font-size: 1.25rem;"></i></span>
+                                </div>
+                                {{ form.password1 }}
+                            </div>
+                            {% if form.password1.errors %}
+                            <span class="text-danger small">
+                                {{ form.password1.errors }}
+                            </span>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="form-group mb-4">
+                            <label for="id_password2" class="form-control-label">Confirm Password</label>
+                            <div class="input-group">
+                                <div class="input-group-prepend">
+                                    <span class="input-group-text bg-primary text-white"><i class="s7-check" style="font-size: 1.25rem;"></i></span>
+                                </div>
+                                {{ form.password2 }}
+                            </div>
+                            {% if form.password2.errors %}
+                            <span class="text-danger small">
+                                {{ form.password2.errors }}
+                            </span>
+                            {% endif %}
+                        </div>
+                        
+                        {% if form.non_field_errors %}
+                        <div class="alert alert-danger mb-4" role="alert">
+                            {{ form.non_field_errors }}
+                        </div>
+                        {% endif %}
+                        
+                        <div class="mt-5">
+                            <button type="submit" class="btn btn-primary btn-lg btn-block font-weight-bold" style="padding: 12px 0; font-size: 1.2rem;">
+                                <span class="s7-add-user mr-2" style="font-size: 1.3rem; vertical-align: middle;"></span>Create Account
+                            </button>
+                        </div>
+                    </form>
+                    
+                    <div class="mt-5 text-center">
+                        <a href="{% url 'battycoda_app:login' %}" class="btn btn-link text-primary" style="font-size: 1.15rem;">
+                            <span class="s7-back mr-1" style="font-size: 1.3rem; vertical-align: middle;"></span> Back to Login
+                        </a>
+                    </div>
+                    
+                    <div class="mt-5">
+                        <h5 class="mb-3">Username Requirements</h5>
+                        <ul class="mb-4">
+                            <li>Username cannot contain the @ symbol</li>
+                            <li>Username can only contain letters, numbers, and the following characters: _.-</li>
+                        </ul>
+                        
+                        <h5 class="mb-3">Password Requirements</h5>
+                        <ul>
+                            <li>Your password must contain at least 8 characters</li>
+                            <li>Your password can't be too similar to your other personal information</li>
+                            <li>Your password can't be a commonly used password</li>
+                            <li>Your password can't be entirely numeric</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const usernameField = document.getElementById('id_username');
+        const submitButton = document.querySelector('button[type="submit"]');
+        let typingTimer; // Timer identifier
+        const doneTypingInterval = 500; // Time in ms (0.5 seconds)
+        
+        if (usernameField) {
+            // Get the warning element
+            const warningElement = document.getElementById('username-warning');
+            
+            // On input event, validate characters and remove @ symbols
+            usernameField.addEventListener('input', function(e) {
+                // Clear any typing timer
+                clearTimeout(typingTimer);
+                
+                // Remove @ symbol if present
+                if (this.value.includes('@')) {
+                    this.value = this.value.replace(/@/g, '');
+                    warningElement.textContent = 'Username cannot contain the @ symbol.';
                 }
                 
-                // Also run the check when the field loses focus
-                usernameField.addEventListener('blur', function() {
-                    clearTimeout(typingTimer);
-                    if (this.value.length > 0) {
-                        checkUsername();
-                    }
-                });
+                // Only letters, numbers, and ._-
+                const regex = /^[\w.-]*$/;
+                if (!regex.test(this.value)) {
+                    this.value = this.value.replace(/[^\w.-]/g, '');
+                    warningElement.textContent = 'Username can only contain letters, numbers, and the characters ._-';
+                }
+                
+                // Start timer to check if username exists (wait for user to finish typing)
+                if (this.value.length > 0) {
+                    typingTimer = setTimeout(checkUsername, doneTypingInterval);
+                } else {
+                    warningElement.textContent = '';
+                }
+            });
+            
+            // Define the function to check if username exists
+            function checkUsername() {
+                const username = usernameField.value;
+                
+                if (username.length > 0) {
+                    // Create form data
+                    const formData = new FormData();
+                    formData.append('username', username);
+                    
+                    // Send AJAX request
+                    fetch('{% url "battycoda_app:check_username" %}', {
+                        method: 'POST',
+                        body: formData
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (!data.valid) {
+                            warningElement.textContent = data.message;
+                            submitButton.disabled = true;
+                        } else if (data.exists) {
+                            warningElement.textContent = data.message;
+                            submitButton.disabled = true;
+                        } else {
+                            warningElement.textContent = '';
+                            submitButton.disabled = false;
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error checking username:', error);
+                    });
+                }
             }
-        });
-    </script>
-</div>
+            
+            // Also run the check when the field loses focus
+            usernameField.addEventListener('blur', function() {
+                clearTimeout(typingTimer);
+                if (this.value.length > 0) {
+                    checkUsername();
+                }
+            });
+        }
+    });
+</script>
 {% endblock %}

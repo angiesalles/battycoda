@@ -29,6 +29,9 @@
     <link id="googleFontsPreconnect2" rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link id="googleFonts" href="https://fonts.googleapis.com/css2?family=Open+Sans:ital,wght@0,300;0,400;0,600;0,700;0,800;1,300;1,400;1,600;1,700;1,800&family=Raleway:wght@100;200;300;400;500;600;700;800;900&display=swap" rel="stylesheet">
     
+    <!-- Toastr CSS -->
+    <link id="toastrCSS" rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css">
+    
     <link id="appCSS" rel="stylesheet" type="text/css" href="{% static 'css/app.css' %}">
     
     <!-- Font fixes for Google Fonts -->
@@ -196,6 +199,7 @@
 <!-- Maisonnette Core JS from CDN -->
 <script id="jqueryScript" src="https://code.jquery.com/jquery-3.3.1.min.js" integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8=" crossorigin="anonymous"></script>
 <script id="perfectScrollbarScript" src="https://cdn.jsdelivr.net/npm/perfect-scrollbar@1.5.0/dist/perfect-scrollbar.min.js"></script>
+<script id="toastrScript" src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
 
 <!-- Bootstrap 4.3.1 JS with Popper (required by Maisonnette) from CDN -->
 <script id="popperScript" src="https://cdn.jsdelivr.net/npm/popper.js@1.14.7/dist/umd/popper.min.js" integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous"></script>
@@ -211,6 +215,42 @@
     $(document).ready(function(){
         // Initialize Maisonnette
         App.init();
+        
+        // Configure toastr options
+        toastr.options = {
+            "closeButton": true,
+            "debug": false,
+            "newestOnTop": true,
+            "progressBar": true,
+            "positionClass": "toast-top-right",
+            "preventDuplicates": false,
+            "onclick": null,
+            "showDuration": "300",
+            "hideDuration": "1000",
+            "timeOut": "5000",
+            "extendedTimeOut": "1000",
+            "showEasing": "swing",
+            "hideEasing": "linear",
+            "showMethod": "fadeIn",
+            "hideMethod": "fadeOut"
+        };
+        
+        // Display Django messages using toastr
+        {% if messages %}
+            {% for message in messages %}
+                {% if message.tags == 'success' %}
+                    toastr.success('{{ message|escapejs }}');
+                {% elif message.tags == 'info' %}
+                    toastr.info('{{ message|escapejs }}');
+                {% elif message.tags == 'warning' %}
+                    toastr.warning('{{ message|escapejs }}');
+                {% elif message.tags == 'error' %}
+                    toastr.error('{{ message|escapejs }}');
+                {% else %}
+                    toastr.info('{{ message|escapejs }}');
+                {% endif %}
+            {% endfor %}
+        {% endif %}
     });
 </script>
 </body>
