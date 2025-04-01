@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+
+{% block title %}Notifications | BattyCoda{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-header">
+        <div class="d-flex justify-content-between align-items-center">
+            <h4 class="mb-0">Notifications</h4>
+            {% if notifications %}
+                <a href="{% url 'battycoda_app:mark_all_read' %}" class="btn btn-primary btn-sm">
+                    <i class="s7-check mr-1"></i> Mark All As Read
+                </a>
+            {% endif %}
+        </div>
+    </div>
+    <div class="card-body">
+        {% if notifications %}
+            <div class="list-group">
+                {% for notification in notifications %}
+                    <div class="list-group-item {% if not notification.is_read %}list-group-item-primary{% endif %}">
+                        <div class="d-flex justify-content-between align-items-center mb-1">
+                            <h5 class="mb-0">
+                                <span class="icon {{ notification.icon }} mr-2"></span>
+                                {{ notification.title }}
+                            </h5>
+                            <small>{{ notification.created_at|date:"M d, Y g:i A" }}</small>
+                        </div>
+                        <p class="mb-1">{{ notification.message }}</p>
+                        <div class="d-flex justify-content-between align-items-center mt-2">
+                            <div>
+                                <span class="badge badge-secondary">{{ notification.get_notification_type_display }}</span>
+                                {% if not notification.is_read %}
+                                    <span class="badge badge-primary ml-1">New</span>
+                                {% endif %}
+                            </div>
+                            <div>
+                                {% if notification.link %}
+                                    <a href="{% url 'battycoda_app:mark_notification_read' notification_id=notification.id %}" class="btn btn-sm btn-outline-secondary">
+                                        <i class="s7-angle-right"></i> View
+                                    </a>
+                                {% endif %}
+                                {% if not notification.is_read %}
+                                    <a href="{% url 'battycoda_app:mark_notification_read' notification_id=notification.id %}" class="btn btn-sm btn-outline-primary ml-2">
+                                        <i class="s7-check"></i> Mark as Read
+                                    </a>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="text-center py-5">
+                <span class="icon s7-bell" style="font-size: 3rem;"></span>
+                <h5 class="mt-3">No notifications</h5>
+                <p class="text-muted">You don't have any notifications yet.</p>
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

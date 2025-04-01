@@ -17,6 +17,16 @@ from .views_automation.runs_management import (
     automation_home_view, create_detection_run_view, delete_detection_run_view
 )
 from .views_automation.task_creation import create_task_batch_from_detection_run
+from .views_automation.classifier_training import (
+    classifier_list_view, create_classifier_training_job_view, 
+    classifier_training_job_detail_view, classifier_training_job_status_view,
+    delete_classifier_training_job_view
+)
+
+# Notification views
+from .views_notifications import (
+    notification_list_view, mark_notification_read, mark_all_read, get_navbar_notifications
+)
 
 from . import (
     views_audio,
@@ -109,6 +119,33 @@ urlpatterns = [
     ),
     path(
         "automation/runs/<int:run_id>/delete/", delete_detection_run_view, name="delete_detection_run"
+    ),
+    # Classifier training routes
+    path("automation/classifiers/", classifier_list_view, name="classifier_list"),
+    path(
+        "automation/classifiers/create/", 
+        create_classifier_training_job_view, 
+        name="create_classifier_training_job"
+    ),
+    path(
+        "automation/classifiers/create/<int:batch_id>/",
+        create_classifier_training_job_view,
+        name="create_classifier_training_job_for_batch"
+    ),
+    path(
+        "automation/classifiers/<int:job_id>/",
+        classifier_training_job_detail_view,
+        name="classifier_training_job_detail"
+    ),
+    path(
+        "automation/classifiers/<int:job_id>/status/",
+        classifier_training_job_status_view,
+        name="classifier_training_job_status"
+    ),
+    path(
+        "automation/classifiers/<int:job_id>/delete/",
+        delete_classifier_training_job_view,
+        name="delete_classifier_training_job"
     ),
     # Species management routes
     path("species/", views_species.species_list_view, name="species_list"),
@@ -204,4 +241,10 @@ urlpatterns = [
     path("segments/<int:recording_id>/add/", add_segment_view, name="add_segment"),
     path("segments/<int:segment_id>/edit/", edit_segment_view, name="edit_segment"),
     path("segments/<int:segment_id>/delete/", delete_segment_view, name="delete_segment"),
+    
+    # Notification routes
+    path("notifications/", notification_list_view, name="notifications"),
+    path("notifications/<int:notification_id>/read/", mark_notification_read, name="mark_notification_read"),
+    path("notifications/mark-all-read/", mark_all_read, name="mark_all_read"),
+    path("notifications/navbar/", get_navbar_notifications, name="get_navbar_notifications"),
 ]

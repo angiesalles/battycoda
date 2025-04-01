@@ -4,6 +4,7 @@ from django.contrib.auth.models import User
 from django.db import models
 
 from .organization import Call
+from .task import TaskBatch
 from .user import Group
 
 class Classifier(models.Model):
@@ -34,9 +35,35 @@ class Classifier(models.Model):
     )
     endpoint = models.CharField(max_length=255, blank=True, null=True, help_text="Endpoint path for the service")
 
+    # Source task batch (if this classifier was created from a task batch)
+    source_task_batch = models.ForeignKey(
+        "battycoda_app.TaskBatch",
+        on_delete=models.SET_NULL,
+        related_name="derived_classifiers",
+        null=True,
+        blank=True,
+        help_text="The task batch that was used to train this classifier",
+    )
+
+    # Model file path if this is a custom trained classifier
+    model_file = models.CharField(
+        max_length=512, 
+        blank=True, 
+        null=True, 
+        help_text="Path to the model file for custom trained classifiers"
+    )
+
     # Admin only flag
     is_active = models.BooleanField(default=True, help_text="Whether this classifier is currently active")
     created_at = models.DateTimeField(auto_now_add=True)
+    created_by = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name="created_classifiers",
+        null=True,
+        blank=True,
+        help_text="User who created this classifier",
+    )
     group = models.ForeignKey(
         Group,
         on_delete=models.SET_NULL,
@@ -126,3 +153,61 @@ class CallProbability(models.Model):
 
     def __str__(self):
         return f"{self.call.short_name}: {self.probability:.2f}"
+
+
+class ClassifierTrainingJob(models.Model):
+    """Model for tracking the training of custom classifiers from task batches."""
+
+    name = models.CharField(max_length=255, help_text="Name for this training job")
+    description = models.TextField(blank=True, null=True, help_text="Description of the training job")
+    task_batch = models.ForeignKey(
+        "battycoda_app.TaskBatch", 
+        on_delete=models.CASCADE, 
+        related_name="training_jobs",
+        help_text="The task batch used for training this classifier"
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+    created_by = models.ForeignKey(User, on_delete=models.CASCADE, related_name="training_jobs")
+    group = models.ForeignKey(Group, on_delete=models.CASCADE, related_name="training_jobs", null=True)
+    
+    # Classifier settings
+    response_format = models.CharField(
+        max_length=20, 
+        choices=Classifier.RESPONSE_FORMAT_CHOICES,
+        default="highest_only",
+        help_text="Format of the response returned by this classifier"
+    )
+    
+    # Reference to resulting classifier (set when training completes)
+    classifier = models.ForeignKey(
+        Classifier,
+        on_delete=models.SET_NULL,
+        related_name="training_job",
+        null=True,
+        blank=True,
+        help_text="The classifier created by this training job (set after successful completion)"
+    )
+    
+    # Training parameters (can be extended as needed)
+    parameters = models.JSONField(
+        blank=True, 
+        null=True, 
+        help_text="JSON with training parameters"
+    )
+    
+    # Status tracking
+    STATUS_CHOICES = (
+        ("pending", "Pending"),
+        ("in_progress", "In Progress"),
+        ("completed", "Completed"),
+        ("failed", "Failed"),
+    )
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default="pending")
+    progress = models.FloatField(default=0.0, help_text="Progress percentage from 0-100")
+    error_message = models.TextField(blank=True, null=True)
+    
+    class Meta:
+        ordering = ["-created_at"]
+        
+    def __str__(self):
+        return f"{self.name} - {self.task_batch.name}"

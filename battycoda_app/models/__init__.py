@@ -7,4 +7,5 @@ This package contains all the application models organized into logical modules:
 - recording.py: Recording, segments, and segmentation models
 - task.py: Task and task batch models
 - detection.py: Detection and classification models
+- notification.py: User notification models
 """
