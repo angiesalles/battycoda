@@ -20,7 +20,7 @@
 
     <div class="row">
         <div class="col-md-12">
-            <div class="card bg-dark text-white">
+            <div class="card">
                 <div class="card-header">
                     <h4 class="mb-0">New Classification Run</h4>
                 </div>
@@ -32,7 +32,7 @@
                         
                         <div class="mb-3">
                             <label for="name" class="form-label">Run Name</label>
-                            <input type="text" class="form-control bg-dark text-white border-secondary" 
+                            <input type="text" class="form-control" 
                                    id="name" name="name" 
                                    placeholder="Classification Run for {{ segmentation.recording.name }}" 
                                    value="Classification Run for {{ segmentation.recording.name }}">
@@ -41,7 +41,7 @@
                         
                         <div class="mb-3">
                             <label for="classifier_id" class="form-label">Classifier</label>
-                            <select class="form-select bg-dark text-white border-secondary" 
+                            <select class="form-select" 
                                    id="classifier_id" name="classifier_id" required>
                                 {% for classifier in classifiers %}
                                     <option value="{{ classifier.id }}" 
@@ -61,7 +61,7 @@
                         
                         <div class="mb-4">
                             <h5>Segmentation Information</h5>
-                            <table class="table table-dark">
+                            <table class="table">
                                 <tr>
                                     <th>Recording</th>
                                     <td>
