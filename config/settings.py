@@ -177,6 +177,7 @@ MEDIA_ROOT = BASE_DIR / "media"
 # Make sure the media directory exists
 os.makedirs(MEDIA_ROOT / "audio_cache", exist_ok=True)
 os.makedirs(MEDIA_ROOT / "home", exist_ok=True)
+os.makedirs(MEDIA_ROOT / "profile_images", exist_ok=True)
 
 # File upload settings - read from same environment variable as Nginx
 MAX_UPLOAD_SIZE_MB = int(os.environ.get("MAX_UPLOAD_SIZE_MB", 100))

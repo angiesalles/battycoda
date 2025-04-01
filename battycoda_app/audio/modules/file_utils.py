@@ -4,6 +4,7 @@ Utility functions for file handling and caching in BattyCoda audio processing.
 
 import os
 import pickle
+import logging
 
 from django.conf import settings
 

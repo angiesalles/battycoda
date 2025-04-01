@@ -242,8 +242,28 @@ def edit_profile_view(request):
     profile, created = UserProfile.objects.get_or_create(user=request.user)
 
     if request.method == "POST":
-        form = UserProfileForm(request.POST, instance=profile, user=request.user)
+        # Check if the user is removing their profile image
+        if request.POST.get("remove_profile_image") == "1" and profile.profile_image:
+            # Delete the image file from storage
+            profile.profile_image.delete(save=False)
+            # Clear the profile_image field
+            profile.profile_image = None
+            profile.save()
+            messages.success(request, "Profile image removed successfully!")
+            return redirect("battycoda_app:edit_profile")
+            
+        form = UserProfileForm(request.POST, request.FILES, instance=profile, user=request.user)
         if form.is_valid():
+            # Handle profile image upload - using a simpler approach
+            if 'profile_image' in request.FILES:
+                # If there's an existing image, delete it first
+                if profile.profile_image:
+                    profile.profile_image.delete(save=False)
+                
+                # Assign the uploaded file directly
+                profile.profile_image = request.FILES['profile_image']
+                
+            # Save the form
             form.save()
 
             # Update user email if provided
@@ -253,14 +273,16 @@ def edit_profile_view(request):
                 request.user.save()
 
             messages.success(request, "Profile updated successfully!")
-            return redirect("battycoda_app:profile")
+            return redirect("battycoda_app:edit_profile")
     else:
         form = UserProfileForm(instance=profile, user=request.user)
 
+    import random
     context = {
         "form": form,
         "user": request.user,
         "profile": profile,
+        "random": random.randint(1, 1000000)  # To prevent image caching
     }
 
     return render(request, "auth/edit_profile.html", context)
@@ -532,3 +554,88 @@ def update_theme_preference(request):
         return JsonResponse({'status': 'success'})
     except Exception as e:
         return JsonResponse({'status': 'error', 'message': str(e)}, status=500)
+
+
+@login_required
+@require_POST
+def update_profile_ajax(request):
+    """Handle profile updates via AJAX for email and profile image"""
+    try:
+        profile = request.user.profile
+        action = request.POST.get('action')
+        
+        if action == 'update_email':
+            # Update email address
+            email = request.POST.get('email')
+            if not email:
+                return JsonResponse({'success': False, 'message': 'Email is required'})
+            
+            # Validate email format
+            from django.core.validators import validate_email
+            from django.core.exceptions import ValidationError
+            try:
+                validate_email(email)
+            except ValidationError:
+                return JsonResponse({'success': False, 'message': 'Please enter a valid email address'})
+            
+            # Update user's email
+            request.user.email = email
+            request.user.save(update_fields=['email'])
+            
+            return JsonResponse({
+                'success': True,
+                'message': 'Email updated successfully'
+            })
+            
+        elif action == 'upload_image':
+            # Process profile image upload
+            if 'profile_image' not in request.FILES:
+                return JsonResponse({'success': False, 'message': 'No image file provided'})
+            
+            # Get the uploaded file
+            image_file = request.FILES['profile_image']
+            
+            # Validate file type
+            import imghdr
+            image_type = imghdr.what(image_file)
+            if image_type not in ['jpeg', 'png', 'gif']:
+                return JsonResponse({'success': False, 'message': 'Invalid image format. Please upload a JPEG, PNG, or GIF.'})
+            
+            # Delete existing image if present
+            if profile.profile_image:
+                profile.profile_image.delete(save=False)
+            
+            # Set the new profile image
+            profile.profile_image = image_file
+            profile.save()
+            
+            return JsonResponse({
+                'success': True,
+                'message': 'Profile image uploaded successfully',
+                'image_url': profile.profile_image.url,
+                'has_image': bool(profile.profile_image)
+            })
+            
+        elif action == 'remove_image':
+            # Remove profile image
+            if not profile.profile_image:
+                return JsonResponse({'success': False, 'message': 'No profile image to remove'})
+            
+            # Delete the image
+            profile.profile_image.delete(save=False)
+            profile.profile_image = None
+            profile.save()
+            
+            return JsonResponse({
+                'success': True,
+                'message': 'Profile image removed successfully',
+                'has_image': False
+            })
+            
+        else:
+            return JsonResponse({'success': False, 'message': 'Invalid action'})
+            
+    except Exception as e:
+        import traceback
+        traceback.print_exc()
+        return JsonResponse({'success': False, 'message': f'An error occurred: {str(e)}'}, status=500)

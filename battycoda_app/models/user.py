@@ -74,6 +74,13 @@ class UserProfile(models.Model):
     theme = models.CharField(
         max_length=20, choices=THEME_CHOICES, default="default", help_text="Color theme preference"
     )
+    # Profile image
+    profile_image = models.ImageField(
+        upload_to="profile_images/", 
+        blank=True, 
+        null=True,
+        help_text="Profile image"
+    )
     # Authentication fields (previously Cloudflare fields, kept for data compatibility)
     cloudflare_id = models.CharField(
         max_length=255, blank=True, null=True, help_text="Deprecated - kept for data compatibility"
