@@ -51,12 +51,21 @@
             <span id="navTitle" class="h4 mb-0 ml-2">BattyCoda</span>
         </a>
         <ul class="nav navbar-nav mai-top-nav">
-          <li class="nav-item"><a class="nav-link" href="index.php">Home</a></li>
-          <li class="nav-item"><a class="nav-link" href="#">About</a></li>
-          <li class="nav-item dropdown"><a class="nav-link dropdown-toggle" href="#" data-toggle="dropdown" role="button" aria-expanded="false">Services<span class="angle-down s7-angle-down"></span></a>
-            <div class="dropdown-menu" role="menu"><a class="dropdown-item" href="#">Information</a><a class="dropdown-item" href="#">Company</a><a class="dropdown-item" href="#">Documentation</a><a class="dropdown-item" href="#">API Settings</a><a class="dropdown-item" href="#">Export Info</a></div>
-          </li>
-          <li class="nav-item"><a class="nav-link" href="#">Support</a></li>
+          {% if user.is_authenticated %}
+          <li class="nav-item"><a class="nav-link" href="{% url 'battycoda_app:index' %}"><span class="s7-home mr-1"></span> Home</a></li>
+          <li class="nav-item"><a class="nav-link" href="{% url 'battycoda_app:recording_list' %}"><span class="s7-micro mr-1"></span> Recordings</a></li>
+          <li class="nav-item"><a class="nav-link" href="{% url 'battycoda_app:batch_segmentation' %}"><span class="s7-scissors mr-1"></span> Segmentation</a></li>
+          <li class="nav-item"><a class="nav-link" href="{% url 'battycoda_app:automation_home' %}"><span class="s7-display1 mr-1"></span> Classification</a></li>
+          <li class="nav-item"><a class="nav-link" href="{% url 'battycoda_app:task_batch_list' %}"><span class="s7-box1 mr-1"></span> Task Batches</a></li>
+          <li class="nav-item"><a class="nav-link" href="{% url 'battycoda_app:project_list' %}"><span class="s7-portfolio mr-1"></span> Projects</a></li>
+          <li class="nav-item"><a class="nav-link" href="{% url 'battycoda_app:species_list' %}"><span class="s7-leaf mr-1"></span> Species</a></li>
+          {% if user.profile.is_admin and user.profile.group %}
+          <li class="nav-item"><a class="nav-link" href="{% url 'battycoda_app:group_users' %}"><span class="s7-users mr-1"></span> Users</a></li>
+          {% endif %}
+          {% if user.is_staff %}
+          <li class="nav-item"><a class="nav-link" href="{% url 'admin:index' %}"><span class="s7-tools mr-1"></span> Admin</a></li>
+          {% endif %}
+          {% endif %}
         </ul>
         <ul class="navbar-nav float-lg-right mai-icons-nav">
           {% if user.is_authenticated %}
