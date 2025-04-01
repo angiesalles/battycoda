@@ -27,7 +27,7 @@ class UserLoginForm(AuthenticationForm):
 class UserProfileForm(forms.ModelForm):
     class Meta:
         model = UserProfile
-        fields = ["theme"]  # Only theme
+        fields = ["theme", "profile_image"]  # Added profile_image
 
     def __init__(self, *args, **kwargs):
         # Get the user making the request
@@ -39,6 +39,15 @@ class UserProfileForm(forms.ModelForm):
             self.fields["theme"].widget.attrs.update(
                 {"class": "form-control"}
             )
+            
+        # Add styling to the profile image field
+        if "profile_image" in self.fields:
+            self.fields["profile_image"].widget.attrs.update({
+                "class": "form-control",
+                "accept": "image/*"  # Only accept image files
+            })
+            self.fields["profile_image"].required = False
+            self.fields["profile_image"].help_text = "Upload a profile image (JPG, PNG, etc.)"
 
 class TaskBatchForm(forms.ModelForm):
     wav_file = forms.FileField(

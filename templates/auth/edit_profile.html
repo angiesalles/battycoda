@@ -13,50 +13,274 @@
     </div>
     <div class="card-body">
     
-    <form method="post" action="{% url 'battycoda_app:edit_profile' %}">
+    <div id="profile-form">
         {% csrf_token %}
         
-        <div class="mb-3">
-            <label for="id_email" class="form-label">Email:</label>
-            <input type="email" name="email" id="id_email" value="{{ user.email }}" class="form-control">
-        </div>
-        
-        <!-- Replace the generic form.as_p with specific field rendering for better control -->
-        {% for field in form %}
-            {% if field.name == 'theme' %}
-                <div class="mb-3">
-                    <label for="{{ field.id_for_label }}" class="form-label">{{ field.label }}:</label>
-                    {{ field }}
-                    {% if field.help_text %}
-                        <small class="form-text text-muted">{{ field.help_text }}</small>
-                    {% endif %}
+        <div class="row mb-4">
+            <div class="col-md-4 text-center">
+                <div class="profile-image-container mb-3">
+                    <div id="profile-image-display">
+                        {% if profile.profile_image %}
+                            <img src="{{ profile.profile_image.url }}?v={{ random }}" alt="Profile Image" class="img-fluid rounded-circle" style="width: 150px; height: 150px; object-fit: cover;">
+                        {% else %}
+                            <div class="profile-placeholder rounded-circle d-flex align-items-center justify-content-center bg-primary" style="width: 150px; height: 150px; margin: 0 auto;">
+                                <span class="s7-user text-white" style="font-size: 4rem;"></span>
+                            </div>
+                        {% endif %}
+                    </div>
                 </div>
-            {% else %}
+                
                 <div class="mb-3">
-                    <label for="{{ field.id_for_label }}" class="form-label">{{ field.label }}:</label>
-                    {{ field }}
-                    {% if field.help_text %}
-                        <small class="form-text text-muted">{{ field.help_text }}</small>
-                    {% endif %}
+                    <label for="profile_image_upload" class="form-label">Profile Image:</label>
+                    <input type="file" name="profile_image" id="profile_image_upload" accept="image/*" class="form-control">
+                    <small class="text-muted d-block mt-1">Select an image to update your profile picture</small>
+                    
+                    <div class="mt-2">
+                        <button type="button" id="upload-image-btn" class="btn btn-sm btn-primary">
+                            <i class="fa fa-upload me-1"></i> Upload Image
+                        </button>
+                        
+                        {% if profile.profile_image %}
+                            <button type="button" id="remove-image-btn" class="btn btn-sm btn-outline-danger ml-2">
+                                <i class="fa fa-trash me-1"></i> Remove Image
+                            </button>
+                        {% endif %}
+                    </div>
+                    
+                    <div id="image-upload-status" class="mt-2"></div>
                 </div>
-            {% endif %}
-        {% endfor %}
-        
-        {% if form.non_field_errors %}
-        <div class="alert alert-danger mb-3">
-            {{ form.non_field_errors }}
+            </div>
+            
+            <div class="col-md-8">
+                <div class="mb-3">
+                    <label for="id_email" class="form-label">Email:</label>
+                    <input type="email" name="email" id="id_email" value="{{ user.email }}" class="form-control">
+                    
+                    <div class="mt-3">
+                        <button type="button" id="update-email-btn" class="btn btn-sm btn-primary">
+                            <i class="fa fa-save me-1"></i> Update Email
+                        </button>
+                    </div>
+                    
+                    <div id="email-update-status" class="mt-2"></div>
+                </div>
+                
+                <!-- Hidden theme field since we're using the theme selector in the navbar -->
+                <input type="hidden" name="theme" value="{{ profile.theme }}" id="id_theme">
+            </div>
         </div>
-        {% endif %}
         
-        <div class="mt-4">
-            <button type="submit" class="btn btn-primary">
-                <i class="fas fa-save me-1"></i> Save Changes
-            </button>
-        </div>
-    </form>
+        <div id="form-status" class="mt-3"></div>
+    </div>
     </div>
 </div>
 {% endblock %}
 
 {% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+    const profileImageUpload = document.getElementById('profile_image_upload');
+    const uploadImageBtn = document.getElementById('upload-image-btn');
+    const removeImageBtn = document.getElementById('remove-image-btn');
+    const updateEmailBtn = document.getElementById('update-email-btn');
+    const emailInput = document.getElementById('id_email');
+    const imageUploadStatus = document.getElementById('image-upload-status');
+    const emailUpdateStatus = document.getElementById('email-update-status');
+    
+    // Function to show status messages
+    function showStatus(element, message, isSuccess) {
+        element.innerHTML = `<div class="alert alert-${isSuccess ? 'success' : 'danger'} py-2">${message}</div>`;
+        
+        // Clear message after 5 seconds
+        setTimeout(() => {
+            element.innerHTML = '';
+        }, 5000);
+    }
+    
+    // Handle profile image upload
+    uploadImageBtn.addEventListener('click', function() {
+        if (!profileImageUpload.files.length) {
+            showStatus(imageUploadStatus, 'Please select an image file first.', false);
+            return;
+        }
+        
+        const file = profileImageUpload.files[0];
+        
+        // Validate file type
+        if (!file.type.match('image.*')) {
+            showStatus(imageUploadStatus, 'Please select a valid image file.', false);
+            return;
+        }
+        
+        // Create FormData object and append the file
+        const formData = new FormData();
+        formData.append('profile_image', file);
+        formData.append('action', 'upload_image');
+        
+        // Show loading state
+        uploadImageBtn.disabled = true;
+        uploadImageBtn.innerHTML = '<i class="fa fa-spinner fa-spin me-1"></i> Uploading...';
+        
+        // Send AJAX request
+        fetch('{% url "battycoda_app:update_profile_ajax" %}', {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': csrfToken
+            },
+            body: formData
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                showStatus(imageUploadStatus, data.message, true);
+                
+                // Update the profile image on the page
+                const imageDisplay = document.getElementById('profile-image-display');
+                imageDisplay.innerHTML = `<img src="${data.image_url}?v=${new Date().getTime()}" alt="Profile Image" class="img-fluid rounded-circle" style="width: 150px; height: 150px; object-fit: cover;">`;
+                
+                // Add remove button if it doesn't exist
+                if (!removeImageBtn && data.has_image) {
+                    const removeBtn = document.createElement('button');
+                    removeBtn.id = 'remove-image-btn';
+                    removeBtn.className = 'btn btn-sm btn-outline-danger ml-2';
+                    removeBtn.innerHTML = '<i class="fa fa-trash me-1"></i> Remove Image';
+                    document.querySelector('.mt-2').appendChild(removeBtn);
+                    
+                    // Add event listener to newly created button
+                    removeBtn.addEventListener('click', handleRemoveImage);
+                }
+                
+                // Update navbar profile image if it exists
+                const navbarProfileImage = document.querySelector('.nav.navbar-nav a.dropdown-toggle img');
+                if (navbarProfileImage) {
+                    navbarProfileImage.src = data.image_url + '?v=' + new Date().getTime();
+                }
+                
+                // Clear the file input
+                profileImageUpload.value = '';
+            } else {
+                showStatus(imageUploadStatus, data.message || 'An error occurred.', false);
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            showStatus(imageUploadStatus, 'An error occurred while uploading the image.', false);
+        })
+        .finally(() => {
+            // Reset button state
+            uploadImageBtn.disabled = false;
+            uploadImageBtn.innerHTML = '<i class="fa fa-upload me-1"></i> Upload Image';
+        });
+    });
+    
+    // Handle remove profile image
+    function handleRemoveImage() {
+        if (!confirm('Are you sure you want to remove your profile image?')) {
+            return;
+        }
+        
+        // Create FormData and append action
+        const formData = new FormData();
+        formData.append('action', 'remove_image');
+        
+        // Show loading state
+        if (removeImageBtn) {
+            removeImageBtn.disabled = true;
+            removeImageBtn.innerHTML = '<i class="fa fa-spinner fa-spin me-1"></i> Removing...';
+        }
+        
+        // Send AJAX request
+        fetch('{% url "battycoda_app:update_profile_ajax" %}', {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': csrfToken
+            },
+            body: formData
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                showStatus(imageUploadStatus, data.message, true);
+                
+                // Update the profile image display
+                const imageDisplay = document.getElementById('profile-image-display');
+                imageDisplay.innerHTML = `
+                    <div class="profile-placeholder rounded-circle d-flex align-items-center justify-content-center bg-primary" style="width: 150px; height: 150px; margin: 0 auto;">
+                        <span class="s7-user text-white" style="font-size: 4rem;"></span>
+                    </div>
+                `;
+                
+                // Remove the remove button
+                if (removeImageBtn) {
+                    removeImageBtn.remove();
+                }
+                
+                // Update navbar image
+                const navbarProfileImage = document.querySelector('.nav.navbar-nav a.dropdown-toggle img');
+                if (navbarProfileImage) {
+                    const navbarUserIcon = navbarProfileImage.parentNode;
+                    navbarUserIcon.innerHTML = '<span class="icon s7-user"></span>';
+                }
+            } else {
+                showStatus(imageUploadStatus, data.message || 'An error occurred.', false);
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            showStatus(imageUploadStatus, 'An error occurred while removing the image.', false);
+        });
+    }
+    
+    // Add event listener to remove image button if it exists
+    if (removeImageBtn) {
+        removeImageBtn.addEventListener('click', handleRemoveImage);
+    }
+    
+    // Handle email update
+    updateEmailBtn.addEventListener('click', function() {
+        const email = emailInput.value.trim();
+        
+        if (!email) {
+            showStatus(emailUpdateStatus, 'Please enter a valid email address.', false);
+            return;
+        }
+        
+        // Create FormData and append email
+        const formData = new FormData();
+        formData.append('email', email);
+        formData.append('action', 'update_email');
+        
+        // Show loading state
+        updateEmailBtn.disabled = true;
+        updateEmailBtn.innerHTML = '<i class="fa fa-spinner fa-spin me-1"></i> Updating...';
+        
+        // Send AJAX request
+        fetch('{% url "battycoda_app:update_profile_ajax" %}', {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': csrfToken
+            },
+            body: formData
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                showStatus(emailUpdateStatus, data.message, true);
+            } else {
+                showStatus(emailUpdateStatus, data.message || 'An error occurred.', false);
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            showStatus(emailUpdateStatus, 'An error occurred while updating email.', false);
+        })
+        .finally(() => {
+            // Reset button state
+            updateEmailBtn.disabled = false;
+            updateEmailBtn.innerHTML = '<i class="fa fa-save me-1"></i> Update Email';
+        });
+    });
+});
+</script>
 {% endblock %}
