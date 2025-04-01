@@ -87,44 +87,21 @@
             </ul>
           </li>
           {% endif %}
-          <li class="dropdown nav-item mai-settings"><a class="nav-link dropdown-toggle" href="#" data-toggle="dropdown" role="button" aria-expanded="false"><span class="icon s7-settings"></span> <span class="ml-1">Choose Theme</span></a>
+          <li class="dropdown nav-item mai-settings"><a class="nav-link dropdown-toggle" href="#" data-toggle="dropdown" role="button" aria-expanded="false"><span class="icon s7-paint-bucket"></span> <span class="ml-1">Choose Theme</span></a>
             <ul class="dropdown-menu">
               <li>
-                <div class="title">Settings</div>
+                {% if user.is_authenticated %}
+                <div class="title">Choose Theme</div>
+                {% endif %}
                 <div class="content">
                   <ul>
-                    <li><span>Enable Notifications</span>
-                      <div class="float-right">
-                        <div class="switch-button switch-button-sm">
-                          <input type="checkbox" checked="" name="check" id="switch1"><span>
-                            <label for="switch1"></label></span>
-                        </div>
-                      </div>
+                    {% for theme_id, theme_name in THEME_CHOICES %}
+                    <li>
+                      <a id="theme-{{ theme_id }}" class="theme-switcher-link {% if user.is_authenticated and user.profile.theme == theme_id %}active{% endif %}" href="#" data-theme="{{ theme_id }}">
+                        <span class="theme-name theme-color-{{ theme_id }}">{{ theme_name }}</span>
+                      </a>
                     </li>
-                    <li><span>Auto Commit</span>
-                      <div class="float-right">
-                        <div class="switch-button switch-button-sm">
-                          <input type="checkbox" checked="" name="check2" id="switch2"><span>
-                            <label for="switch2"></label></span>
-                        </div>
-                      </div>
-                    </li>
-                    <li><span>Sidebar</span>
-                      <div class="float-right">
-                        <div class="switch-button switch-button-sm">
-                          <input type="checkbox" name="check3" id="switch3"><span>
-                            <label for="switch3"></label></span>
-                        </div>
-                      </div>
-                    </li>
-                    <li><span>Full-width Layout</span>
-                      <div class="float-right">
-                        <div class="switch-button switch-button-sm">
-                          <input type="checkbox" checked="" name="check4" id="switch4"><span>
-                            <label for="switch4"></label></span>
-                        </div>
-                      </div>
-                    </li>
+                    {% endfor %}
                   </ul>
                 </div>
               </li>
@@ -132,9 +109,55 @@
           </li>
         </ul>
         <ul class="nav navbar-nav float-lg-right mai-user-nav">
-          <li class="dropdown nav-item"><a class="dropdown-toggle nav-link" href="#" data-toggle="dropdown" role="button" aria-expanded="false"><img src="assets/img/avatar.jpg" alt="Avatar"><span class="user-name">Violeta Parra</span><span class="angle-down s7-angle-down"></span></a>
-            <div class="dropdown-menu" role="menu"><a class="dropdown-item" href="#"><span class="icon s7-home"></span>My Account</a><a class="dropdown-item" href="pages-profile.php"><span class="icon s7-user"></span>Profile</a><a class="dropdown-item" href="#"><span class="icon s7-cash"></span>Billing</a><a class="dropdown-item" href="#"><span class="icon s7-tools"></span>Settings</a><a class="dropdown-item" href="pages-login.php"><span class="icon s7-power"></span>Log Out</a></div>
+          {% if user.is_authenticated %}
+          <li class="dropdown nav-item">
+            <a class="dropdown-toggle nav-link" href="#" data-toggle="dropdown" role="button" aria-expanded="false">
+              <span class="icon s7-user"></span>
+              <span class="user-name">{{ user.username }}</span>
+              <span class="angle-down s7-angle-down"></span>
+            </a>
+            <div class="dropdown-menu" role="menu">
+              <a class="dropdown-item" href="{% url 'battycoda_app:edit_profile' %}">
+                <span class="icon s7-user"></span>Profile
+              </a>
+              
+              <!-- Group Dropdown Menu Items -->
+              <div class="dropdown-divider"></div>
+              <h6 class="dropdown-header">Your Groups</h6>
+              {% for membership in user.group_memberships.all %}
+              <a class="dropdown-item {% if user.profile.group == membership.group %}active{% endif %}" 
+                href="{% url 'battycoda_app:switch_group' group_id=membership.group.id %}">
+                {{ membership.group.name }}
+                {% if membership.is_admin %}<span class="s7-shield ml-1" title="Admin"></span>{% endif %}
+                {% if user.profile.group == membership.group %}<span class="s7-check ml-2"></span>{% endif %}
+              </a>
+              {% empty %}
+              <span class="dropdown-item">No groups available</span>
+              {% endfor %}
+              
+              <div class="dropdown-divider"></div>
+              <a class="dropdown-item" href="{% url 'battycoda_app:create_group' %}">
+                <span class="s7-plus mr-1"></span> Create New Group
+              </a>
+              
+              <div class="dropdown-divider"></div>
+              <a class="dropdown-item" href="{% url 'battycoda_app:logout' %}">
+                <span class="s7-power mr-1"></span> Logout
+              </a>
+            </div>
           </li>
+          {% else %}
+          <li class="nav-item">
+            <a href="{% url 'battycoda_app:login' %}" class="nav-link">
+              <span class="s7-user mr-1"></span> Login
+            </a>
+          </li>
+          <li class="nav-item">
+            <a href="{% url 'battycoda_app:register' %}" class="nav-link">
+              <span class="s7-add-user mr-1"></span> Register
+            </a>
+          </li>
+          {% endif %}
         </ul>
       </div>
     </nav>
