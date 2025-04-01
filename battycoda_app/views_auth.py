@@ -314,7 +314,7 @@ def password_reset_request(request):
             return redirect("battycoda_app:login")
 
         # Generate password reset token
-        from .models import PasswordResetToken
+        from .models.user import PasswordResetToken
         from .email_utils import send_password_reset_email
         
         # Create new password reset token
@@ -338,7 +338,7 @@ def password_reset_request(request):
 
 def password_reset(request, token):
     """Reset password with token"""
-    from .models import PasswordResetToken
+    from .models.user import PasswordResetToken
     from django.contrib.auth.password_validation import validate_password
     from django.core.exceptions import ValidationError
     
