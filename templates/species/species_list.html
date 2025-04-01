@@ -8,8 +8,8 @@
 
 {% block action_buttons %}
 <a href="{% url 'battycoda_app:create_species' %}" class="btn btn-primary" 
-   data-bs-toggle="tooltip" data-bs-placement="bottom" title="Add a new species">
-    <i class="fas fa-plus"></i> New Species
+   data-toggle="tooltip" data-placement="bottom" title="Add a new species">
+    <span class="s7-plus mr-1"></span> New Species
 </a>
 {% endblock %}
 
@@ -35,11 +35,13 @@
 {% block item_fields %}
 <td>{{ item.calls.count }}</td>
 <td>{{ item.tasks.count }}</td>
-<td>{{ item.created_at|date:"M d, Y" }}</td>
+<td data-utc-date="{{ item.created_at|date:'c' }}" data-date-format="date">{{ item.created_at|date:"M d, Y" }}</td>
 {% endblock %}
 
-{% block empty_icon %}fas fa-spider{% endblock %}
+{% block empty_icon %}s7-leaf{% endblock %}
 {% block empty_title %}No Species Found{% endblock %}
 {% block empty_text %}Create your first species to get started.{% endblock %}
 {% block create_url %}{% url 'battycoda_app:create_species' %}{% endblock %}
 {% block create_text %}Add New Species{% endblock %}
+
+{% block all_items_url %}{% url 'battycoda_app:species_list' %}{% endblock %}
