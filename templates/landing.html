@@ -8,13 +8,13 @@
 {% endblock %}
 
 {% block content %}
-<div id="landingHero" class="bg-primary text-white text-center py-5 mb-4">
+<div id="landingHero" class="bg-primary text-white text-center py-5 mb-4" style="padding-bottom: 3rem !important;">
     <div id="heroContainer" class="container">
         <h1 id="heroTitle" class="display-4 mb-3">Welcome to BattyCoda</h1>
         <p id="heroSubtitle" class="lead mb-4">An advanced platform for bat vocalization analysis and research</p>
         <div id="heroButtons">
-            <a id="loginHeroBtn" href="{% url 'battycoda_app:login' %}" class="btn btn-light btn-lg mr-3">Login</a>
-            <a id="registerHeroBtn" href="{% url 'battycoda_app:register' %}" class="btn btn-outline-light btn-lg">Register</a>
+            <a id="loginHeroBtn" href="{% url 'battycoda_app:login' %}" class="btn btn-primary btn-lg px-4 py-3 mr-4 font-weight-bold" style="font-size: 1.2rem; min-width: 150px; border: 2px solid white; box-shadow: 0 4px 6px rgba(0,0,0,0.2);">Login</a>
+            <a id="registerHeroBtn" href="{% url 'battycoda_app:register' %}" class="btn btn-primary btn-lg px-4 py-3 font-weight-bold" style="font-size: 1.2rem; min-width: 150px; border: 2px solid white; box-shadow: 0 4px 6px rgba(0,0,0,0.2);">Register</a>
         </div>
     </div>
 </div>
@@ -103,7 +103,7 @@
         <div class="card-body text-center py-5">
             <h2 id="ctaTitle" class="text-primary mb-3">Ready to start analyzing bat vocalizations?</h2>
             <p id="ctaText" class="lead mb-4">Join researchers worldwide who use BattyCoda for their audio analysis needs.</p>
-            <a id="ctaButton" href="{% url 'battycoda_app:register' %}" class="btn btn-success btn-lg px-4 py-2 font-weight-bold">Create Your Account</a>
+            <a id="ctaButton" href="{% url 'battycoda_app:register' %}" class="btn btn-primary btn-lg px-5 py-3 font-weight-bold" style="font-size: 1.25rem;">Create Your Account</a>
         </div>
     </div>
 
