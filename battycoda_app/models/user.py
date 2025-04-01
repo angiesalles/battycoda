@@ -156,6 +156,25 @@ def create_user_profile(sender, instance, created, **kwargs):
         # Create a demo task batch with sample bat calls
         from ..utils_modules.demo_utils import create_demo_task_batch
         batch = create_demo_task_batch(instance)
+        
+        # Create welcome notification
+        from .notification import UserNotification
+        from django.urls import reverse
+        
+        # Generate welcome message with link to dashboard
+        dashboard_link = reverse('battycoda_app:index')
+        
+        UserNotification.add_notification(
+            user=instance,
+            title="Welcome to BattyCoda!",
+            message=(
+                "Thanks for joining BattyCoda! We've set up a demo project and sample bat calls "
+                "for you to explore. Check out the dashboard to get started."
+            ),
+            notification_type="system",
+            icon="s7-like",
+            link=dashboard_link
+        )
 
 @receiver(post_save, sender=User)
 def save_user_profile(sender, instance, **kwargs):

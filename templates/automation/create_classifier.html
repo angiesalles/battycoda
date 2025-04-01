@@ -1,0 +1,133 @@
+{% extends 'base.html' %}
+
+{% block title %}Train New Classifier | BattyCoda{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <h1 class="mb-4">Train New Classifier</h1>
+            
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{% url 'battycoda_app:automation_home' %}">Classification</a></li>
+                    <li class="breadcrumb-item"><a href="{% url 'battycoda_app:classifier_list' %}">Custom Classifiers</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">Train New Classifier</li>
+                </ol>
+            </nav>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-header">
+                    <h4 class="mb-0">Train a Classifier from {{ task_batch.name }}</h4>
+                </div>
+                <div class="card-body">
+                    {% if labeled_task_count < 5 %}
+                    <div class="alert alert-danger">
+                        <h5 class="alert-heading">Insufficient Training Data</h5>
+                        <p>This batch only has {{ labeled_task_count }} labeled tasks. At least 5 labeled tasks are required for training a classifier.</p>
+                        <hr>
+                        <p class="mb-0">Please go back to the <a href="{% url 'battycoda_app:task_batch_detail' batch_id=task_batch.id %}" class="alert-link">task batch</a> and complete more task annotations before training a classifier.</p>
+                    </div>
+                    {% else %}
+                    <form method="post" action="{% url 'battycoda_app:create_classifier_training_job' %}">
+                        {% csrf_token %}
+                        
+                        <input type="hidden" name="batch_id" value="{{ task_batch.id }}">
+                        
+                        <div class="mb-3">
+                            <label for="name" class="form-label">Classifier Name</label>
+                            <input type="text" class="form-control" 
+                                   id="name" name="name" 
+                                   placeholder="Custom Classifier for {{ task_batch.name }}" 
+                                   value="Custom Classifier for {{ task_batch.name }}">
+                            <div class="form-text text-muted">Give your classifier a descriptive name</div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="description" class="form-label">Description</label>
+                            <textarea class="form-control" id="description" name="description" rows="3" 
+                                     placeholder="Classifier trained on {{ task_batch.name }} task batch">Classifier trained on {{ task_batch.name }} task batch with {{ labeled_task_count }} labeled tasks.</textarea>
+                            <div class="form-text text-muted">Provide details about this classifier for future reference</div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="response_format" class="form-label">Response Format</label>
+                            <select class="form-select" id="response_format" name="response_format">
+                                {% for value, label in response_format_choices %}
+                                <option value="{{ value }}">{{ label }}</option>
+                                {% endfor %}
+                            </select>
+                            <div class="form-text text-muted">
+                                <ul class="mb-0">
+                                    <li><strong>Highest Probability Only:</strong> Only returns the most likely call type (faster)</li>
+                                    <li><strong>Full Probability Distribution:</strong> Returns probabilities for all call types (more detailed)</li>
+                                </ul>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-4">
+                            <h5>Task Batch Information</h5>
+                            <table class="table">
+                                <tr>
+                                    <th>Batch Name</th>
+                                    <td>{{ task_batch.name }}</td>
+                                </tr>
+                                <tr>
+                                    <th>Species</th>
+                                    <td>{{ task_batch.species.name }}</td>
+                                </tr>
+                                <tr>
+                                    <th>WAV File</th>
+                                    <td>{{ task_batch.wav_file_name }}</td>
+                                </tr>
+                                <tr>
+                                    <th>Task Count</th>
+                                    <td>{{ task_batch.tasks.count }}</td>
+                                </tr>
+                                <tr>
+                                    <th>Labeled Tasks</th>
+                                    <td>
+                                        <span class="badge bg-success">{{ labeled_task_count }}</span>
+                                        {% if labeled_task_count < 20 %}
+                                        <span class="badge bg-warning text-dark ms-2">Low</span>
+                                        {% elif labeled_task_count < 50 %}
+                                        <span class="badge bg-info ms-2">Medium</span>
+                                        {% else %}
+                                        <span class="badge bg-success ms-2">Good</span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                            </table>
+                        </div>
+                        
+                        <div class="alert alert-info">
+                            <h5 class="alert-heading">Training Process</h5>
+                            <p>When you start a classifier training job:</p>
+                            <ol class="mb-0">
+                                <li>The system extracts features from labeled tasks in the batch</li>
+                                <li>A machine learning model is trained on these features</li>
+                                <li>The model is saved and made available for future classification runs</li>
+                                <li>You can use this classifier for any recordings of the same species</li>
+                            </ol>
+                        </div>
+                        
+                        <div class="text-end">
+                            <a href="{% url 'battycoda_app:classifier_list' %}" class="btn btn-secondary me-2">
+                                Cancel
+                            </a>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-graduation-cap me-1"></i> Start Training
+                            </button>
+                        </div>
+                    </form>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -90,13 +90,14 @@
                 <div id="notificationsScroller" class="mai-scroller-notifications">
                   <div id="notificationsContent" class="content">
                     <ul id="notificationsList">
-                      <li id="welcomeNotification"><a href="#">
-                          <div class="icon"><span class="s7-check"></span></div>
-                          <div class="content"><span class="desc">Welcome to BattyCoda!</span><span class="date">Just now</span></div></a></li>
+                      <!-- Notification items will be loaded dynamically via JavaScript -->
+                      <li id="loadingNotification"><a href="#">
+                          <div class="icon"><span class="s7-reload"></span></div>
+                          <div class="content"><span class="desc">Loading notifications...</span><span class="date">Please wait</span></div></a></li>
                     </ul>
                   </div>
                 </div>
-                <div id="notificationsFooter" class="footer"><a id="viewAllNotifications" href="#">View all notifications</a></div>
+                <div id="notificationsFooter" class="footer"><a id="viewAllNotifications" href="{% url 'battycoda_app:notifications' %}">View all notifications</a></div>
               </li>
             </ul>
           </li>
@@ -210,6 +211,14 @@
 <!-- Custom Scripts -->
 <script id="datetimeFormatterScript" src="{% static 'js/datetime_formatter.js' %}"></script>
 <script id="themeSwitcherScript" src="{% static 'js/theme-switcher.js' %}"></script>
+{% if user.is_authenticated %}
+<script type="text/javascript">
+    // Set notification URLs for JavaScript
+    var navbarNotificationsUrl = "{% url 'battycoda_app:get_navbar_notifications' %}";
+    var markNotificationReadUrl = "{% url 'battycoda_app:mark_notification_read' notification_id=0 %}";
+</script>
+<script id="notificationsScript" src="{% static 'js/notifications.js' %}"></script>
+{% endif %}
 
 <script id="appInitScript" type="text/javascript">
     $(document).ready(function(){
