@@ -1,0 +1,94 @@
+{% extends 'base.html' %}
+
+{% block title %}Delete Classifier Training Job | BattyCoda{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <h1 class="mb-4">Delete Classifier Training Job</h1>
+            
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{% url 'battycoda_app:automation_home' %}">Classification</a></li>
+                    <li class="breadcrumb-item"><a href="{% url 'battycoda_app:classifier_list' %}">Custom Classifiers</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">Delete</li>
+                </ol>
+            </nav>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-8 mx-auto">
+            <div class="card">
+                <div class="card-header bg-danger text-white">
+                    <h4 class="mb-0">Confirm Deletion</h4>
+                </div>
+                <div class="card-body">
+                    <h5 class="card-title">Delete Classifier Training Job: {{ job.name }}</h5>
+                    <p class="card-text">Are you sure you want to delete this classifier training job?</p>
+                    
+                    <table class="table">
+                        <tr>
+                            <th>Job Name</th>
+                            <td>{{ job.name }}</td>
+                        </tr>
+                        <tr>
+                            <th>Task Batch</th>
+                            <td>{{ job.task_batch.name }}</td>
+                        </tr>
+                        <tr>
+                            <th>Status</th>
+                            <td>
+                                {% if job.status == 'pending' %}
+                                <span class="badge bg-warning text-dark">Pending</span>
+                                {% elif job.status == 'in_progress' %}
+                                <span class="badge bg-info">In Progress</span>
+                                {% elif job.status == 'completed' %}
+                                <span class="badge bg-success">Completed</span>
+                                {% elif job.status == 'failed' %}
+                                <span class="badge bg-danger">Failed</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        <tr>
+                            <th>Created At</th>
+                            <td>{{ job.created_at|date:"M d, Y H:i" }}</td>
+                        </tr>
+                    </table>
+                    
+                    {% if job.classifier %}
+                    <div class="alert alert-warning">
+                        <h5 class="alert-heading">Classifier Created</h5>
+                        <p>This training job has created a classifier: <strong>{{ job.classifier.name }}</strong></p>
+                    </div>
+                    {% endif %}
+                    
+                    <form method="post">
+                        {% csrf_token %}
+                        
+                        {% if job.classifier %}
+                        <div class="form-check mb-3">
+                            <input class="form-check-input" type="checkbox" id="delete_classifier" name="delete_classifier">
+                            <label class="form-check-label" for="delete_classifier">
+                                Also delete the generated classifier
+                            </label>
+                            <div class="form-text">If unchecked, the classifier will remain available even after deleting this training job.</div>
+                        </div>
+                        {% endif %}
+                        
+                        <div class="d-flex justify-content-end mt-4">
+                            <a href="{% url 'battycoda_app:classifier_list' %}" class="btn btn-secondary me-2">
+                                Cancel
+                            </a>
+                            <button type="submit" class="btn btn-danger">
+                                <i class="fas fa-trash-alt me-1"></i> Delete Training Job
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

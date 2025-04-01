@@ -37,14 +37,14 @@
 
     <div class="row mb-4">
         <div class="col-md-12">
-            <div class="card bg-dark text-white">
+            <div class="card">
                 <div class="card-header">
                     <h4 class="mb-0">Run Details</h4>
                 </div>
                 <div class="card-body">
                     <div class="row">
                         <div class="col-md-6">
-                            <table class="table table-dark">
+                            <table class="table">
                                 <tr>
                                     <th>Name</th>
                                     <td>{{ run.name }}</td>
@@ -79,7 +79,7 @@
                                 </tr>
                                 <tr>
                                     <th>Created</th>
-                                    <td>{{ run.created_at }}</td>
+                                    <td data-utc-date="{{ run.created_at|date:'c' }}" data-date-format="datetime">{{ run.created_at }}</td>
                                 </tr>
                                 <tr>
                                     <th>Created By</th>
@@ -130,22 +130,22 @@
 
     <div class="row">
         <div class="col-md-12">
-            <div class="card bg-dark text-white">
+            <div class="card">
                 <div class="card-header d-flex justify-content-between align-items-center">
                     <h4 class="mb-0">Classification Results</h4>
                     
                     <div class="input-group" style="max-width: 300px;">
-                        <span class="input-group-text bg-dark text-white border-secondary">
+                        <span class="input-group-text">
                             <i class="fas fa-search"></i>
                         </span>
-                        <input type="text" id="resultsSearch" class="form-control bg-dark text-white border-secondary" 
+                        <input type="text" id="resultsSearch" class="form-control" 
                                placeholder="Search results...">
                     </div>
                 </div>
                 <div class="card-body">
                     {% if results %}
                     <div class="table-responsive">
-                        <table class="table table-dark table-hover" id="resultsTable">
+                        <table class="table table-hover" id="resultsTable">
                             <thead>
                                 <tr>
                                     <th>Segment</th>

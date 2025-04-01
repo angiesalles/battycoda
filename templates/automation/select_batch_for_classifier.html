@@ -1,0 +1,99 @@
+{% extends 'base.html' %}
+
+{% block title %}Select Task Batch for Classifier | BattyCoda{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <h1 class="mb-4">{{ title }}</h1>
+            
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{% url 'battycoda_app:automation_home' %}">Classification</a></li>
+                    <li class="breadcrumb-item"><a href="{% url parent_url %}">{{ parent_name }}</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">Select Task Batch</li>
+                </ol>
+            </nav>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-12">
+            <div class="alert alert-info">
+                <h5 class="alert-heading"><i class="fas fa-info-circle me-2"></i> About Classifier Training</h5>
+                <p>{{ info_message }}</p>
+                <hr>
+                <p class="mb-0">Task batches with less than 5 labeled tasks cannot be used for training. For best results, aim for 100+ labeled tasks with a diverse range of call types.</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-header">
+                    <h4 class="mb-0">{{ list_title }}</h4>
+                </div>
+                <div class="card-body">
+                    {% if items %}
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>{{ th1 }}</th>
+                                    <th>{{ th2 }}</th>
+                                    <th>{{ th3 }}</th>
+                                    <th>Created</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for item in items %}
+                                <tr>
+                                    <td>{{ item.name }}</td>
+                                    <td>{{ item.type_name }}</td>
+                                    <td>
+                                        {% if item.labeled_count %}
+                                        <span class="badge bg-success me-1">{{ item.labeled_count }}</span> / {{ item.count }}
+                                        {% if item.labeled_count < 5 %}
+                                        <span class="badge bg-danger ms-1">Too Few</span>
+                                        {% elif item.labeled_count < 20 %}
+                                        <span class="badge bg-warning text-dark ms-1">Low</span>
+                                        {% elif item.labeled_count < 50 %}
+                                        <span class="badge bg-info ms-1">Medium</span>
+                                        {% else %}
+                                        <span class="badge bg-success ms-1">Good</span>
+                                        {% endif %}
+                                        {% else %}
+                                        {{ item.count }}
+                                        {% endif %}
+                                    </td>
+                                    <td>{{ item.created_at|date:"M d, Y" }}</td>
+                                    <td>
+                                        <div class="btn-group" role="group">
+                                            <a href="{{ item.detail_url }}" class="btn btn-sm btn-secondary">
+                                                <i class="fas fa-eye"></i> View
+                                            </a>
+                                            <a href="{{ item.action_url }}" class="btn btn-sm btn-primary {% if item.disabled %}disabled{% endif %}"
+                                               {% if item.disabled %}aria-disabled="true"{% endif %}>
+                                                <i class="fas fa-{{ action_icon }}"></i> {{ action_text }}
+                                            </a>
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <div class="alert alert-warning">
+                        <p class="mb-0">{{ empty_message }} <a href="{% url create_url %}" class="alert-link">Create a task batch</a> first.</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

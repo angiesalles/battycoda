@@ -1,6 +1,16 @@
 {% extends 'base.html' %}
+{% load static %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/audio.css' %}">
+{% endblock %}
 
 {% block title %}BattyCoda - Batch Upload Recordings{% endblock %}
+
+{% block extra_head %}
+<!-- Include upload progress script -->
+<script src="{% static 'js/upload_progress.js' %}"></script>
+{% endblock %}
 
 {% block content %}
 <div class="container py-4">
@@ -24,7 +34,7 @@
     </div>
     {% endif %}
 
-    <div class="card bg-dark">
+    <div class="card">
         <div class="card-header">
             <h5 class="mb-0">Simple Batch Upload</h5>
         </div>
@@ -41,22 +51,18 @@
                 <div class="row mb-4">
                     <div class="col-md-6 mb-3">
                         <label for="wav_zip" class="form-label">WAV Files ZIP*</label>
-                        <input type="file" name="wav_zip" id="wav_zip" class="form-control bg-dark text-light border-secondary" accept=".zip">
+                        <input type="file" name="wav_zip" id="wav_zip" class="form-control" accept=".zip">
                         <small class="form-text text-muted">Upload a ZIP file containing WAV audio files</small>
                     </div>
                     
                     <div class="col-md-6 mb-3">
                         <label for="pickle_zip" class="form-label">Pickle Files ZIP <small class="text-muted">(Optional)</small></label>
-                        <input type="file" name="pickle_zip" id="pickle_zip" class="form-control bg-dark text-light border-secondary" accept=".zip">
+                        <input type="file" name="pickle_zip" id="pickle_zip" class="form-control" accept=".zip">
                         <small class="form-text text-muted">Upload a ZIP file containing matching pickle files</small>
                     </div>
                 </div>
                 
                 <!-- Shared Metadata Section -->
-                <div class="alert alert-info">
-                    <i class="fas fa-info-circle"></i> The following metadata will be applied to all uploaded recordings.
-                </div>
-                
                 <div class="alert alert-primary mb-4">
                     <h6 class="mb-2"><i class="fas fa-lightbulb"></i> Tips for batch uploads:</h6>
                     <ul class="mb-0">
@@ -66,19 +72,10 @@
                     </ul>
                 </div>
                 
-                <!-- Description Section -->
-                <h6 class="text-muted mb-3">Description</h6>
-                <div class="row mb-4">
-                    <div class="col-12 mb-3">
-                        <label for="{{ form.description.id_for_label }}" class="form-label">Description (Optional)</label>
-                        {{ form.description }}
-                        {% if form.description.errors %}
-                        <div class="invalid-feedback d-block">
-                            {{ form.description.errors }}
-                        </div>
-                        {% endif %}
-                    </div>
+                <div class="alert alert-info">
+                    <i class="fas fa-info-circle"></i> The following metadata will be applied to all uploaded recordings.
                 </div>
+                
                 
                 <!-- Classification Section -->
                 <h6 class="text-muted mb-3">Classification</h6>

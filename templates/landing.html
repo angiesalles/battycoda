@@ -1,0 +1,142 @@
+{% extends 'base.html' %}
+
+{% load static %}
+
+{% block title %}Welcome to BattyCoda - Animal Vocalization Analysis Tool{% endblock %}
+
+{% block extra_css %}
+{% endblock %}
+
+{% block content %}
+<div id="landingHero" class="bg-primary text-white text-center py-5 mb-4" style="padding-bottom: 3rem !important;">
+    <div id="heroContainer" class="container">
+        <h1 id="heroTitle" class="display-4 mb-3">Welcome to BattyCoda</h1>
+        <p id="heroSubtitle" class="lead mb-4">An advanced platform for bat vocalization analysis and research</p>
+        <div id="heroButtons">
+            <a id="loginHeroBtn" href="{% url 'battycoda_app:login' %}" class="btn btn-primary btn-lg px-4 py-3 mr-4 font-weight-bold" style="font-size: 1.2rem; min-width: 150px; border: 2px solid white; box-shadow: 0 4px 6px rgba(0,0,0,0.2);">Login</a>
+            <a id="registerHeroBtn" href="{% url 'battycoda_app:register' %}" class="btn btn-primary btn-lg px-4 py-3 font-weight-bold" style="font-size: 1.2rem; min-width: 150px; border: 2px solid white; box-shadow: 0 4px 6px rgba(0,0,0,0.2);">Register</a>
+        </div>
+    </div>
+</div>
+
+<div id="mainContent" class="container">
+    <div id="introSection" class="row text-center mb-5">
+        <div id="introCol" class="col-md-12">
+            <h2 id="introTitle" class="text-primary">Analyze, Annotate, and Discover</h2>
+            <p id="introText" class="lead">BattyCoda provides researchers with powerful tools to process, visualize, and analyze bat vocalizations.</p>
+        </div>
+    </div>
+
+    <div id="featuresRow1" class="row mb-5">
+        <div id="featureCol1" class="col-md-4">
+            <div id="featureCard1" class="card card-default mb-4">
+                <div id="featureCardBody1" class="card-body text-center">
+                    <div id="featureIcon1" class="mb-3 text-primary">
+                        <span class="s7-micro" style="font-size: 2.5rem;"></span>
+                    </div>
+                    <h3 id="featureTitle1" class="text-primary">Audio Recording Management</h3>
+                    <p id="featureDesc1">Upload, organize, and manage bat vocalization recordings with ease. Support for WAV files with automatic spectrogram generation.</p>
+                </div>
+            </div>
+        </div>
+        <div id="featureCol2" class="col-md-4">
+            <div id="featureCard2" class="card card-default mb-4">
+                <div id="featureCardBody2" class="card-body text-center">
+                    <div id="featureIcon2" class="mb-3 text-primary">
+                        <span class="s7-scissors" style="font-size: 2.5rem;"></span>
+                    </div>
+                    <h3 id="featureTitle2" class="text-primary">Automated Segmentation</h3>
+                    <p id="featureDesc2">Advanced algorithms automatically detect and segment bat calls from recordings, saving valuable research time.</p>
+                </div>
+            </div>
+        </div>
+        <div id="featureCol3" class="col-md-4">
+            <div id="featureCard3" class="card card-default mb-4">
+                <div id="featureCardBody3" class="card-body text-center">
+                    <div id="featureIcon3" class="mb-3 text-primary">
+                        <span class="s7-display1" style="font-size: 2.5rem;"></span>
+                    </div>
+                    <h3 id="featureTitle3" class="text-primary">Species Classification</h3>
+                    <p id="featureDesc3">Machine learning models help identify bat species from audio recordings with high accuracy.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="featuresRow2" class="row mb-5">
+        <div id="featureCol4" class="col-md-4">
+            <div id="featureCard4" class="card card-default mb-4">
+                <div id="featureCardBody4" class="card-body text-center">
+                    <div id="featureIcon4" class="mb-3 text-primary">
+                        <span class="s7-box1" style="font-size: 2.5rem;"></span>
+                    </div>
+                    <h3 id="featureTitle4" class="text-primary">Task Management</h3>
+                    <p id="featureDesc4">Organize research tasks into batches, assign to team members, and track progress through a unified interface.</p>
+                </div>
+            </div>
+        </div>
+        <div id="featureCol5" class="col-md-4">
+            <div id="featureCard5" class="card card-default mb-4">
+                <div id="featureCardBody5" class="card-body text-center">
+                    <div id="featureIcon5" class="mb-3 text-primary">
+                        <span class="s7-portfolio" style="font-size: 2.5rem;"></span>
+                    </div>
+                    <h3 id="featureTitle5" class="text-primary">Project Organization</h3>
+                    <p id="featureDesc5">Group recordings, tasks, and analyses into projects for better organization and collaboration.</p>
+                </div>
+            </div>
+        </div>
+        <div id="featureCol6" class="col-md-4">
+            <div id="featureCard6" class="card card-default mb-4">
+                <div id="featureCardBody6" class="card-body text-center">
+                    <div id="featureIcon6" class="mb-3 text-primary">
+                        <span class="s7-users" style="font-size: 2.5rem;"></span>
+                    </div>
+                    <h3 id="featureTitle6" class="text-primary">Team Collaboration</h3>
+                    <p id="featureDesc6">Share your work with colleagues, collaborate on projects, and manage group permissions.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="ctaSection" class="card card-default mb-5">
+        <div class="card-body text-center py-5">
+            <h2 id="ctaTitle" class="text-primary mb-3">Ready to start analyzing bat vocalizations?</h2>
+            <p id="ctaText" class="lead mb-4">Join researchers worldwide who use BattyCoda for their audio analysis needs.</p>
+            <a id="ctaButton" href="{% url 'battycoda_app:register' %}" class="btn btn-primary btn-lg px-5 py-3 font-weight-bold" style="font-size: 1.25rem;">Create Your Account</a>
+        </div>
+    </div>
+
+    <div id="infoSection" class="row mb-5">
+        <div id="aboutCol" class="col-md-6">
+            <div class="card card-default h-100">
+                <div class="card-header card-header-divider">
+                    <h3 id="aboutTitle" class="text-primary mb-0">About BattyCoda</h3>
+                </div>
+                <div class="card-body">
+                    <p id="aboutText1">BattyCoda was developed to assist researchers in analyzing bat vocalizations and identifying species based on their calls. The platform combines advanced signal processing, machine learning, and a user-friendly interface to streamline the analysis workflow.</p>
+                    <p id="aboutText2">Our tools help save research time while providing accurate results for ecological surveys, monitoring programs, and conservation efforts.</p>
+                </div>
+            </div>
+        </div>
+        <div id="featuresCol" class="col-md-6">
+            <div class="card card-default h-100">
+                <div class="card-header card-header-divider">
+                    <h3 id="featuresTitle" class="text-primary mb-0">Key Features</h3>
+                </div>
+                <div class="card-body">
+                    <ul id="featuresList" class="list-unstyled">
+                        <li id="featureItem1" class="mb-2"><span class="text-primary s7-check mr-2"></span> Upload and manage audio recordings</li>
+                        <li id="featureItem2" class="mb-2"><span class="text-primary s7-check mr-2"></span> Automatic and manual segmentation of bat calls</li>
+                        <li id="featureItem3" class="mb-2"><span class="text-primary s7-check mr-2"></span> Spectrogram visualization with adjustable parameters</li>
+                        <li id="featureItem4" class="mb-2"><span class="text-primary s7-check mr-2"></span> Species identification through machine learning</li>
+                        <li id="featureItem5" class="mb-2"><span class="text-primary s7-check mr-2"></span> Collaborative workspaces for research teams</li>
+                        <li id="featureItem6" class="mb-2"><span class="text-primary s7-check mr-2"></span> Data organization through projects and task batches</li>
+                        <li id="featureItem7" class="mb-2"><span class="text-primary s7-check mr-2"></span> Customizable theming with Maisonnette design system</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

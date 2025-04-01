@@ -3,123 +3,142 @@
 
 {% block title %}BattyCoda - {{ recording.name }}{% endblock %}
 
+{% block extra_css %}
+<link id="waveformViewerCSS" rel="stylesheet" href="{% static 'css/waveform_viewer.css' %}">
+{% endblock %}
+
 {% block content %}
-<div class="container py-4">
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <nav aria-label="breadcrumb">
-            <ol class="breadcrumb">
-                <li class="breadcrumb-item"><a href="{% url 'battycoda_app:recording_list' %}">Recordings</a></li>
-                <li class="breadcrumb-item active" aria-current="page">{{ recording.name }}</li>
-            </ol>
-        </nav>
-        <div class="btn-group" role="group">
-            <a href="{% url 'battycoda_app:edit_recording' recording_id=recording.id %}" class="btn btn-outline-secondary">
-                <i class="fas fa-edit"></i> Edit Recording
-            </a>
+<div id="recordingDetailContainer" class="main-content container-fluid">
+    <div id="recordingTitleRow" class="row">
+        <div id="recordingTitleCol" class="col-12">
+            <div id="recordingTitleBox" class="page-title-box d-flex justify-content-between align-items-center">
+                <div id="recordingBreadcrumbContainer">
+                    <h4 id="recordingTitle" class="page-title">{{ recording.name }}</h4>
+                    <nav id="recordingBreadcrumb" aria-label="breadcrumb">
+                        <ol id="breadcrumbList" class="breadcrumb mb-0">
+                            <li id="recordingListItem" class="breadcrumb-item"><a id="recordingListLink" href="{% url 'battycoda_app:recording_list' %}">Recordings</a></li>
+                            <li id="currentRecordingItem" class="breadcrumb-item active" aria-current="page">{{ recording.name }}</li>
+                        </ol>
+                    </nav>
+                </div>
+                <div id="recordingActionButtons" class="d-flex">
+                    <a id="editRecordingBtn" href="{% url 'battycoda_app:edit_recording' recording_id=recording.id %}" class="btn btn-info">
+                        <span id="editRecordingIcon" class="s7-pen mr-1"></span> Edit Recording
+                    </a>
+                </div>
+            </div>
         </div>
     </div>
 
     {% if messages %}
-    <div class="messages mb-4">
-        {% for message in messages %}
-        <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
-            {{ message }}
-            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    <div id="messagesRow" class="row">
+        <div id="messagesCol" class="col-12">
+            <div id="messagesContainer" class="messages mb-4">
+                {% for message in messages %}
+                <div id="message-{{ forloop.counter }}" class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                    <span id="messageText-{{ forloop.counter }}">{{ message }}</span>
+                    <button id="messageCloseBtn-{{ forloop.counter }}" type="button" class="close" data-dismiss="alert" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                {% endfor %}
+            </div>
         </div>
-        {% endfor %}
     </div>
     {% endif %}
 
-    <div class="row">
+    <div id="recordingContentRow" class="row">
         <!-- Recording information card -->
-        <div class="col-md-4">
-            <div class="card bg-dark mb-4">
-                <div class="card-header">
-                    <h5 class="mb-0">Recording Information</h5>
+        <div id="recordingInfoCol" class="col-md-4 mb-4">
+            <div id="recordingInfoCard" class="card">
+                <div id="recordingInfoHeader" class="card-header">
+                    <h5 id="recordingInfoTitle" class="card-title mb-0"><span class="s7-micro mr-2"></span>Recording Information</h5>
                 </div>
-                <div class="card-body">
-                    <h2 class="h3 card-title mb-3">{{ recording.name }}</h2>
+                <div id="recordingInfoBody" class="card-body">
+                    <h2 id="recordingNameHeader" class="h4 card-title mb-3">{{ recording.name }}</h2>
                     {% if recording.description %}
-                    <p class="card-text">{{ recording.description }}</p>
-                    <hr class="my-3">
+                    <p id="recordingDescription" class="card-text mb-3">{{ recording.description }}</p>
+                    <hr id="descriptionDivider" class="my-3">
                     {% endif %}
                     
-                    <div class="mb-3">
-                        <div class="fw-bold text-muted small mb-1">File Details</div>
-                        <p class="mb-0"><strong>Duration:</strong> {{ recording.duration|default:"Unknown"|floatformat:2 }} seconds</p>
-                        <p class="mb-0"><strong>Sample Rate:</strong> {{ recording.sample_rate|default:"Unknown" }} Hz</p>
+                    <div id="fileDetailsSection" class="mb-3">
+                        <div id="fileDetailsLabel" class="text-muted small mb-1 font-weight-bold">File Details</div>
+                        <p id="durationInfo" class="mb-1"><strong>Duration:</strong> {{ recording.duration|default:"Unknown"|floatformat:2 }} seconds</p>
+                        <p id="sampleRateInfo" class="mb-2"><strong>Sample Rate:</strong> {{ recording.sample_rate|default:"Unknown" }} Hz</p>
+                        <a id="recalculateAudioBtn" href="{% url 'battycoda_app:recalculate_audio_info' recording_id=recording.id %}" class="btn btn-sm btn-secondary mt-1">
+                            <span id="recalculateIcon" class="s7-refresh mr-1"></span> Recalculate Audio Info
+                        </a>
                     </div>
                     
-                    <div class="mb-3">
-                        <div class="fw-bold text-muted small mb-1">Recording Metadata</div>
-                        <p class="mb-0"><strong>Species:</strong> {{ recording.species.name }}</p>
-                        <p class="mb-0"><strong>Project:</strong> {{ recording.project.name }}</p>
+                    <div id="metadataSection" class="mb-3">
+                        <div id="metadataLabel" class="text-muted small mb-1 font-weight-bold">Recording Metadata</div>
+                        <p id="speciesInfo" class="mb-1"><strong>Species:</strong> {{ recording.species.name }}</p>
+                        <p id="projectInfo" class="mb-1"><strong>Project:</strong> {{ recording.project.name }}</p>
                         {% if recording.recorded_date %}
-                        <p class="mb-0"><strong>Date:</strong> {{ recording.recorded_date|date:"M d, Y" }}</p>
+                        <p id="dateInfo" class="mb-1"><strong>Date:</strong> {{ recording.recorded_date|date:"M d, Y" }}</p>
                         {% endif %}
                         {% if recording.location %}
-                        <p class="mb-0"><strong>Location:</strong> {{ recording.location }}</p>
+                        <p id="locationInfo" class="mb-1"><strong>Location:</strong> {{ recording.location }}</p>
                         {% endif %}
                         {% if recording.equipment %}
-                        <p class="mb-0"><strong>Equipment:</strong> {{ recording.equipment }}</p>
+                        <p id="equipmentInfo" class="mb-1"><strong>Equipment:</strong> {{ recording.equipment }}</p>
                         {% endif %}
                     </div>
                     
                     {% if recording.environmental_conditions %}
-                    <div class="mb-3">
-                        <div class="fw-bold text-muted small mb-1">Environmental Conditions</div>
-                        <p class="mb-0">{{ recording.environmental_conditions }}</p>
+                    <div id="environmentalSection" class="mb-3">
+                        <div id="environmentalLabel" class="text-muted small mb-1 font-weight-bold">Environmental Conditions</div>
+                        <p id="environmentalInfo" class="mb-1">{{ recording.environmental_conditions }}</p>
                     </div>
                     {% endif %}
                     
-                    <div>
-                        <div class="fw-bold text-muted small mb-1">Created By</div>
-                        <p class="mb-0">{{ recording.created_by.username }} on {{ recording.created_at|date:"M d, Y" }}</p>
+                    <div id="creationSection">
+                        <div id="creationLabel" class="text-muted small mb-1 font-weight-bold">Created By</div>
+                        <p id="creationInfo" class="mb-0">{{ recording.created_by.username }} on <span id="creationDate" data-utc-date="{{ recording.created_at|date:'c' }}" data-date-format="date">{{ recording.created_at|date:"M d, Y" }}</span></p>
                     </div>
                 </div>
-                <div class="card-footer d-grid gap-2">
-                    <a href="{{ recording.wav_file.url }}" class="btn btn-outline-primary" target="_blank">
-                        <i class="fas fa-download"></i> Download Recording
+                <div id="recordingInfoFooter" class="card-footer text-center">
+                    <a id="downloadRecordingBtn" href="{{ recording.wav_file.url }}" class="btn btn-primary" target="_blank">
+                        <span id="downloadIcon" class="s7-download mr-1"></span> Download Recording
                     </a>
                 </div>
             </div>
             
             <!-- Integrated audio player note -->
-            <div class="card bg-dark mb-2">
-                <div class="card-body py-2">
-                    <small class="text-muted"><i class="fas fa-info-circle"></i> Note: The audio player is integrated with the waveform visualization above. Click the waveform to seek or use the playback controls below.</small>
+            <div id="playerNoteCard" class="card mt-3 mb-4">
+                <div id="playerNoteBody" class="card-body py-2">
+                    <small id="playerNoteText" class="text-muted"><span class="s7-info mr-1"></span> Note: The audio player is integrated with the waveform visualization. Click the waveform to seek or use the playback controls.</small>
                 </div>
             </div>
-            
         </div>
         
         <!-- Spectrogram and segments section -->
-        <div class="col-md-8">
+        <div id="spectrogramCol" class="col-md-8 mb-4">
             <!-- Include the reusable waveform player -->
             {% include "recordings/includes/waveform_player.html" with recording=recording container_id="detail-waveform" %}
             
             <!-- Segmentation links card -->
-            <div class="card bg-dark">
-                <div class="card-header">
-                    <h5 class="mb-0">Segmentation Options</h5>
+            <div id="segmentationCard" class="card mt-4">
+                <div id="segmentationHeader" class="card-header">
+                    <h5 id="segmentationTitle" class="card-title mb-0"><span class="s7-scissors mr-2"></span>Segmentation Options</h5>
                 </div>
-                <div class="card-body">
-                    <p class="text-muted">
+                <div id="segmentationBody" class="card-body">
+                    <p id="segmentationDescription" class="text-muted mb-3">
                         To view and manage segments for this recording, use the segmentation tool.
                     </p>
-                    <div class="d-flex gap-2 flex-wrap">
-                        <a href="{% url 'battycoda_app:segment_recording' recording_id=recording.id %}" class="btn btn-primary">
-                            <i class="fas fa-cut"></i> Segment Recording
+                    <div id="segmentationButtons" class="d-flex flex-wrap">
+                        <a id="segmentRecordingBtn" href="{% url 'battycoda_app:segment_recording' recording_id=recording.id %}" class="btn btn-primary mr-2 mb-2">
+                            <span id="segmentIcon" class="s7-scissors mr-1"></span> Segment Recording
                         </a>
-                        <a href="{% url 'battycoda_app:upload_pickle_segments' recording_id=recording.id %}" class="btn btn-outline-primary">
-                            <i class="fas fa-file-upload"></i> Upload Pickle File
+                        <a id="uploadPickleBtn" href="{% url 'battycoda_app:upload_pickle_segments' recording_id=recording.id %}" class="btn btn-outline-primary mr-2 mb-2">
+                            <span id="uploadIcon" class="s7-upload mr-1"></span> Upload Pickle File
                         </a>
-                        <a href="{% url 'battycoda_app:auto_segment_recording' recording_id=recording.id %}" class="btn btn-outline-primary">
-                            <i class="fas fa-magic"></i> Auto-Segment
+                        <a id="autoSegmentBtn" href="{% url 'battycoda_app:auto_segment_recording' recording_id=recording.id %}" class="btn btn-outline-primary mr-2 mb-2">
+                            <span id="magicIcon" class="s7-wand mr-1"></span> Auto-Segment
                         </a>
                         {% if recording.segmentation %}
-                        <a href="{% url 'battycoda_app:create_detection_run_for_segmentation' segmentation_id=recording.segmentation.id %}" class="btn btn-outline-success">
-                            <i class="fas fa-tag"></i> Run Classification
+                        <a id="runClassificationBtn" href="{% url 'battycoda_app:create_detection_run_for_segmentation' segmentation_id=recording.segmentation.id %}" class="btn btn-outline-success mb-2">
+                            <span id="classifyIcon" class="s7-display1 mr-1"></span> Run Classification
                         </a>
                         {% endif %}
                     </div>
@@ -131,7 +150,7 @@
 
 {% block extra_scripts %}
 <!-- Include the waveform player script -->
-<script src="{% static 'js/waveform_player.js' %}"></script>
+<script id="waveformPlayerScript" src="{% static 'js/waveform_player.js' %}"></script>
 {% endblock %}
 
 {% endblock %}

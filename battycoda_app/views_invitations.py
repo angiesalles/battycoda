@@ -1,20 +1,18 @@
-import logging
+
 import uuid
 from datetime import timedelta
 
 from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
+from django.contrib.auth.models import User
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
 from django.utils import timezone
 
 from .email_utils import send_invitation_email
 from .forms import GroupInvitationForm
-from .models import Group, GroupInvitation, GroupMembership, User, UserProfile
-
-logger = logging.getLogger("battycoda.invitations")
-
+from .models.user import Group, GroupInvitation, GroupMembership, UserProfile
 
 @login_required
 def group_users_view(request):
@@ -31,7 +29,9 @@ def group_users_view(request):
     group_memberships = GroupMembership.objects.filter(group=group).select_related("user", "user__profile")
 
     # Get active invitations for this group
-    active_invitations = GroupInvitation.objects.filter(group=group, accepted=False).exclude(expires_at__lt=timezone.now())
+    active_invitations = GroupInvitation.objects.filter(group=group, accepted=False).exclude(
+        expires_at__lt=timezone.now()
+    )
 
     context = {
         "group": group,
@@ -40,7 +40,6 @@ def group_users_view(request):
     }
 
     return render(request, "groups/group_users.html", context)
-
 
 @login_required
 def invite_user_view(request):
@@ -107,11 +106,11 @@ def invite_user_view(request):
 
             if email_sent:
                 messages.success(request, f"Invitation sent successfully to {email}.")
-                logger.info(f"Invitation sent to {email} for group {group.name} by {request.user.username}")
+
             else:
                 # If email sending fails, delete the invitation and show error
                 invitation.delete()
-                logger.error(f"Failed to send invitation email to {email}")
+
                 messages.error(request, "Failed to send invitation email. Check the email settings.")
 
             return redirect("battycoda_app:group_users")
@@ -125,7 +124,6 @@ def invite_user_view(request):
 
     return render(request, "groups/invite_user.html", context)
 
-
 def accept_invitation_view(request, token):
     """Accept a group invitation using the token from the email"""
     # Try to find the invitation
@@ -133,16 +131,25 @@ def accept_invitation_view(request, token):
 
     # Check if invitation is already accepted
     if invitation.accepted:
-        messages.info(request, "This invitation has already been accepted.")
-        if request.user.is_authenticated:
-            return redirect("battycoda_app:index")
-        else:
-            return redirect("battycoda_app:login")
+        context = {
+            "invitation": invitation,
+            "status": "already_accepted",
+            "message": "This invitation has already been accepted.",
+            "action_url": reverse("battycoda_app:login") if not request.user.is_authenticated else reverse("battycoda_app:index"),
+            "action_text": "Log in" if not request.user.is_authenticated else "Go to Dashboard"
+        }
+        return render(request, "groups/invitation_status.html", context)
 
     # Check if invitation is expired
     if invitation.is_expired:
-        messages.error(request, "This invitation has expired.")
-        return redirect("battycoda_app:index")
+        context = {
+            "invitation": invitation,
+            "status": "expired",
+            "message": "This invitation has expired.",
+            "action_url": reverse("battycoda_app:index"),
+            "action_text": "Go to Dashboard"
+        }
+        return render(request, "groups/invitation_status.html", context)
 
     # If user is logged in
     if request.user.is_authenticated:
@@ -172,8 +179,6 @@ def accept_invitation_view(request, token):
         messages.info(request, "Please register or log in to accept your group invitation.")
 
         # If the invitation email matches an existing user, suggest login
-        from django.contrib.auth.models import User
-
         if User.objects.filter(email=invitation.email).exists():
             return redirect("battycoda_app:login")
         else:

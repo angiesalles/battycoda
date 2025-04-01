@@ -18,14 +18,12 @@ from battycoda_app.models import (
 )
 from battycoda_app.tests.test_base import BattycodaTestCase
 
-
 class GroupModelTest(BattycodaTestCase):
     def setUp(self):
         self.group = Group.objects.create(name="Test Group", description="A test group")
 
     def test_group_str_method(self):
         self.assertEqual(str(self.group), "Test Group")
-
 
 class UserProfileModelTest(BattycodaTestCase):
     def setUp(self):
@@ -68,7 +66,6 @@ class UserProfileModelTest(BattycodaTestCase):
         # Verify demo project was created
         self.assertTrue(Project.objects.filter(created_by=new_user).exists())
 
-
 class GroupInvitationModelTest(BattycodaTestCase):
     def setUp(self):
         self.user = User.objects.create_user(username="testuser", email="test@example.com", password="password123")
@@ -99,7 +96,6 @@ class GroupInvitationModelTest(BattycodaTestCase):
         self.assertFalse(self.invitation.is_expired)
         self.assertTrue(self.expired_invitation.is_expired)
 
-
 class SpeciesModelTest(BattycodaTestCase):
     def setUp(self):
         self.user = User.objects.create_user(username="testuser", email="test@example.com", password="password123")
@@ -115,24 +111,23 @@ class SpeciesModelTest(BattycodaTestCase):
     def test_species_meta_options(self):
         self.assertEqual(Species._meta.verbose_name_plural, "Species")
         self.assertEqual(Species._meta.ordering, ["name"])
-        
+
     def test_species_unique_together_constraint(self):
         """Test that species names must be unique within a group but can be duplicated across groups"""
         # Create a second group
         group2 = Group.objects.create(name="Second Group", description="Another test group")
-        
+
         # Create a species with the same name in a different group (should work)
         species2 = Species.objects.create(
             name="Test Species", description="Same name, different group", created_by=self.user, group=group2
         )
         self.assertEqual(species2.name, self.species.name)
-        
+
         # Try to create a species with the same name in the same group (should fail)
         with self.assertRaises(IntegrityError):
             Species.objects.create(
                 name="Test Species", description="Duplicate in same group", created_by=self.user, group=self.group
             )
-
 
 class CallModelTest(BattycodaTestCase):
     def setUp(self):
@@ -151,7 +146,6 @@ class CallModelTest(BattycodaTestCase):
     def test_call_meta_options(self):
         self.assertEqual(Call._meta.ordering, ["short_name"])
 
-
 class ProjectModelTest(BattycodaTestCase):
     def setUp(self):
         self.user = User.objects.create_user(username="testuser", email="test@example.com", password="password123")
@@ -163,7 +157,6 @@ class ProjectModelTest(BattycodaTestCase):
 
     def test_project_str_method(self):
         self.assertEqual(str(self.project), "Test Project")
-
 
 class TaskBatchModelTest(BattycodaTestCase):
     def setUp(self):
@@ -190,7 +183,6 @@ class TaskBatchModelTest(BattycodaTestCase):
 
     def test_batch_str_method(self):
         self.assertEqual(str(self.batch), "Test Batch")
-
 
 class TaskModelTest(BattycodaTestCase):
     def setUp(self):

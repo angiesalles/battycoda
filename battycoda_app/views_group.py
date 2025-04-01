@@ -1,4 +1,3 @@
-import logging
 
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
@@ -8,11 +7,11 @@ from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
 
 from .forms import GroupForm
-from .models import Group, GroupMembership, Project, Species, TaskBatch, UserProfile
+from .models.organization import Project, Species
+from .models.task import TaskBatch
+from .models.user import Group, GroupMembership, UserProfile
 
 # Set up logging
-logger = logging.getLogger("battycoda.views_group")
-
 
 @login_required
 def group_list_view(request):
@@ -20,7 +19,9 @@ def group_list_view(request):
     # Get all groups the user is a member of through GroupMembership
 
     # Get user's memberships and related groups
-    user_groups = Group.objects.filter(group_memberships__user=request.user).select_related().distinct().order_by("name")
+    user_groups = (
+        Group.objects.filter(group_memberships__user=request.user).select_related().distinct().order_by("name")
+    )
 
     # Debug output
     print(f"Found {user_groups.count()} groups for user {request.user.username}")
@@ -32,7 +33,6 @@ def group_list_view(request):
     }
 
     return render(request, "groups/group_list.html", context)
-
 
 @login_required
 def group_detail_view(request, group_id):
@@ -78,7 +78,6 @@ def group_detail_view(request, group_id):
         messages.error(request, "You do not have permission to view this group.")
         return redirect("battycoda_app:group_list")
 
-
 @login_required
 def create_group_view(request):
     """Handle creation of a group"""
@@ -120,7 +119,6 @@ def create_group_view(request):
 
     return render(request, "groups/create_group.html", context)
 
-
 @login_required
 def edit_group_view(request, group_id):
     """Handle editing of a group (group admin only)"""
@@ -148,7 +146,6 @@ def edit_group_view(request, group_id):
     }
 
     return render(request, "groups/edit_group.html", context)
-
 
 @login_required
 def manage_group_members_view(request, group_id):
@@ -250,7 +247,6 @@ def manage_group_members_view(request, group_id):
     }
 
     return render(request, "groups/manage_members.html", context)
-
 
 @login_required
 def switch_group_view(request, group_id):

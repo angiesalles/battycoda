@@ -1,0 +1,228 @@
+{% extends 'base.html' %}
+
+{% block title %}Classifier Training Job | BattyCoda{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <h1 class="mb-4">Classifier Training Job</h1>
+            
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{% url 'battycoda_app:automation_home' %}">Classification</a></li>
+                    <li class="breadcrumb-item"><a href="{% url 'battycoda_app:classifier_list' %}">Custom Classifiers</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">{{ job.name }}</li>
+                </ol>
+            </nav>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-8">
+            <!-- Main job information -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h4 class="mb-0">Job Details</h4>
+                </div>
+                <div class="card-body">
+                    <h5 class="card-title">{{ job.name }}</h5>
+                    <p class="card-text">{{ job.description }}</p>
+                    
+                    <div class="mb-4">
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <h6 class="mb-0">Status: 
+                                {% if job.status == 'pending' %}
+                                <span class="badge bg-warning text-dark">Pending</span>
+                                {% elif job.status == 'in_progress' %}
+                                <span class="badge bg-info">In Progress</span>
+                                {% elif job.status == 'completed' %}
+                                <span class="badge bg-success">Completed</span>
+                                {% elif job.status == 'failed' %}
+                                <span class="badge bg-danger">Failed</span>
+                                {% endif %}
+                            </h6>
+                            <span>{{ job.progress|floatformat:1 }}%</span>
+                        </div>
+                        <div class="progress" style="height: 25px;">
+                            <div class="progress-bar {% if job.status == 'failed' %}bg-danger{% endif %}" 
+                                 role="progressbar" 
+                                 style="width: {{ job.progress }}%;" 
+                                 aria-valuenow="{{ job.progress }}" 
+                                 aria-valuemin="0" 
+                                 aria-valuemax="100">
+                                {{ job.progress|floatformat:1 }}%
+                            </div>
+                        </div>
+                    </div>
+                    
+                    {% if job.error_message %}
+                    <div class="alert alert-danger">
+                        <h5 class="alert-heading">Error</h5>
+                        <p>{{ job.error_message }}</p>
+                    </div>
+                    {% endif %}
+                    
+                    <table class="table">
+                        <tr>
+                            <th>Created By</th>
+                            <td>{{ job.created_by.username }}</td>
+                        </tr>
+                        <tr>
+                            <th>Created At</th>
+                            <td>{{ job.created_at|date:"M d, Y H:i" }}</td>
+                        </tr>
+                        <tr>
+                            <th>Response Format</th>
+                            <td>{{ job.get_response_format_display }}</td>
+                        </tr>
+                        {% if job.parameters %}
+                        <tr>
+                            <th>Parameters</th>
+                            <td>
+                                <pre>{{ job.parameters|pprint }}</pre>
+                            </td>
+                        </tr>
+                        {% endif %}
+                    </table>
+                    
+                    {% if job.status == 'completed' and job.classifier %}
+                    <div class="alert alert-success">
+                        <h5 class="alert-heading">Classifier Created Successfully</h5>
+                        <p>Your custom classifier "{{ job.classifier.name }}" has been created and is ready to use!</p>
+                        <hr>
+                        <a href="{% url 'battycoda_app:create_detection_run' %}" class="btn btn-success">
+                            <i class="fas fa-play"></i> Use Classifier
+                        </a>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <!-- Training data summary -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h4 class="mb-0">Training Data</h4>
+                </div>
+                <div class="card-body">
+                    <h5>Label Distribution</h5>
+                    <p>This classifier was trained using the following distribution of labels:</p>
+                    
+                    <div class="table-responsive">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>Label</th>
+                                    <th>Count</th>
+                                    <th>Percentage</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for label, count in label_distribution %}
+                                <tr>
+                                    <td>{{ label }}</td>
+                                    <td>{{ count }}</td>
+                                    <td>{{ count|floatformat:1 }}%</td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="3" class="text-center">No labeled tasks available</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-4">
+            <!-- Task batch information -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h4 class="mb-0">Task Batch</h4>
+                </div>
+                <div class="card-body">
+                    <h5 class="card-title">{{ task_batch.name }}</h5>
+                    <p class="text-muted">Source data for this classifier</p>
+                    
+                    <table class="table">
+                        <tr>
+                            <th>Species</th>
+                            <td>{{ task_batch.species.name }}</td>
+                        </tr>
+                        <tr>
+                            <th>Project</th>
+                            <td>{{ task_batch.project.name }}</td>
+                        </tr>
+                        <tr>
+                            <th>Total Tasks</th>
+                            <td>{{ task_batch.tasks.count }}</td>
+                        </tr>
+                        <tr>
+                            <th>Labeled Tasks</th>
+                            <td>{{ labeled_tasks.count }}</td>
+                        </tr>
+                    </table>
+                    
+                    <a href="{% url 'battycoda_app:task_batch_detail' batch_id=task_batch.id %}" class="btn btn-primary w-100">
+                        <i class="fas fa-list"></i> View Task Batch
+                    </a>
+                </div>
+            </div>
+            
+            <!-- Actions -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h4 class="mb-0">Actions</h4>
+                </div>
+                <div class="card-body">
+                    <div class="d-grid gap-2">
+                        {% if job.status == 'completed' %}
+                        <a href="{% url 'battycoda_app:create_detection_run' %}" class="btn btn-success">
+                            <i class="fas fa-play"></i> Use Classifier
+                        </a>
+                        {% endif %}
+                        <a href="{% url 'battycoda_app:delete_classifier_training_job' job_id=job.id %}" class="btn btn-danger">
+                            <i class="fas fa-trash"></i> Delete Training Job
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Auto-refresh for in-progress jobs
+document.addEventListener('DOMContentLoaded', function() {
+    {% if job.status == 'pending' or job.status == 'in_progress' %}
+    // Check status every 5 seconds
+    const statusInterval = setInterval(function() {
+        fetch('/automation/classifiers/{{ job.id }}/status/')
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Update progress bar
+                    const progressBar = document.querySelector('.progress-bar');
+                    const progressText = document.querySelector('.d-flex span');
+                    
+                    progressBar.style.width = `${data.progress}%`;
+                    progressBar.setAttribute('aria-valuenow', data.progress);
+                    progressBar.textContent = `${data.progress.toFixed(1)}%`;
+                    progressText.textContent = `${data.progress.toFixed(1)}%`;
+                    
+                    // If status changed, reload page
+                    if (data.status !== '{{ job.status }}') {
+                        clearInterval(statusInterval);
+                        window.location.reload();
+                    }
+                }
+            });
+    }, 5000);
+    {% endif %}
+});
+</script>
+{% endblock %}

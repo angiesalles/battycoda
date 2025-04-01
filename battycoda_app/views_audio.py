@@ -1,12 +1,8 @@
-import logging
 
 from django.contrib.auth.decorators import login_required
-from django.http import FileResponse, HttpResponse, JsonResponse
-from django.shortcuts import get_object_or_404, redirect, render
+from django.http import HttpResponse, JsonResponse
 
 # Set up logging
-logger = logging.getLogger("battycoda.views_audio")
-
 
 @login_required
 def spectrogram_view(request):
@@ -15,7 +11,6 @@ def spectrogram_view(request):
 
     return handle_spectrogram(request)
 
-
 @login_required
 def audio_snippet_view(request):
     """Handle audio snippet generation and serving"""
@@ -23,20 +18,18 @@ def audio_snippet_view(request):
 
     return handle_audio_snippet(request)
 
-
 @login_required
-def test_static_view(request, filename):
-    """Test static file serving"""
-    import os
+def task_status(request, task_id):
+    """
+    Check the status of a task.
 
-    from django.conf import settings
+    Args:
+        request: Django request
+        task_id: ID of the Celery task
 
-    # Handle empty filename case
-    if not filename:
-        return HttpResponse("No filename provided", status=400)
+    Returns:
+        JSON response with task status
+    """
+    from .audio.views import task_status as audio_task_status
 
-    file_path = os.path.join(settings.STATIC_ROOT, filename)
-    if os.path.exists(file_path):
-        return FileResponse(open(file_path, "rb"))
-    else:
-        return HttpResponse(f"File not found: {filename}", status=404)
+    return audio_task_status(request, task_id)

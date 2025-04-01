@@ -8,7 +8,6 @@ from django.utils import timezone
 from battycoda_app.models import Group, GroupInvitation, GroupMembership, UserProfile
 from battycoda_app.tests.test_base import BattycodaTestCase
 
-
 class AuthViewsTest(BattycodaTestCase):
     def setUp(self):
         self.client = Client()

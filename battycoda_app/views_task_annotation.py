@@ -1,5 +1,5 @@
 import hashlib
-import logging
+
 import os
 
 from django.conf import settings
@@ -7,12 +7,11 @@ from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import get_object_or_404, redirect, render
 
-from .models import Species, Task
-from .utils import convert_path_to_os_specific
+from .models.organization import Species
+from .models.task import Task
+from .utils_modules.path_utils import convert_path_to_os_specific
 
 # Set up logging
-logger = logging.getLogger("battycoda.views_task_annotation")
-
 
 @login_required
 def task_annotation_view(request, task_id):
@@ -64,7 +63,6 @@ def task_annotation_view(request, task_id):
 
     # Create hash
     file_hash = hashlib.md5(os_path.encode()).hexdigest()
-    logger.info(f"Generated hash {file_hash} for path {os_path}")
 
     # Set up onset and offset as a "call"
     # In our case, we'll treat each task as one "call"
@@ -76,37 +74,29 @@ def task_annotation_view(request, task_id):
 
     # First, get the species object directly from the task's species field
     species_obj = task.species
-    
+
     # If the task has a pre-selected label from classification, put it first in the list
     if task.label:
         call_types.append(task.label)
         call_descriptions[task.label] = "Automatic classification result"
-        logger.info(f"Using pre-classified label: {task.label}")
 
     # Get call types from the species
-    try:
-        # Get calls from the database
-        calls = species_obj.calls.all()
-        if calls.exists():
-            for call in calls:
-                # Skip if this call type was already added from the task label
-                if call.short_name in call_types:
-                    continue
-                    
-                call_types.append(call.short_name)
-                # Use long_name as the description if available
-                description = call.long_name if call.long_name else ""
-                call_descriptions[call.short_name] = description
+    # Get calls from the database
+    calls = species_obj.calls.all()
+    if calls.exists():
+        for call in calls:
+            # Skip if this call type was already added from the task label
+            if call.short_name in call_types:
+                continue
 
-            logger.info(f"Loaded {len(call_types)} call types from database for species {species_obj.name}")
-        else:
-            logger.warning(f"No call types found for species {species_obj.name}")
-    except Exception as e:
-        logger.error(f"Error loading call types from database: {str(e)}")
+            call_types.append(call.short_name)
+            # Use long_name as the description if available
+            description = call.long_name if call.long_name else ""
+            call_descriptions[call.short_name] = description
 
-    # If no call types were loaded from the database, log a warning
+    # If no call types were loaded from the database
     if not call_types:
-        logger.warning(f"No call types found in database for species {species}")
+
         # Add a default "Unknown" call type to ensure the interface has at least one option
         call_types.append("Unknown")
         call_descriptions["Unknown"] = "Unspecified call type"
@@ -138,7 +128,7 @@ def task_annotation_view(request, task_id):
             # Check if the file exists, if not, trigger generation
             if not os.path.exists(cache_path):
                 # Trigger spectrogram generation
-                logger.info(f"Pre-generating spectrogram: channel={channel}, overview={is_overview}")
+
                 task.generate_spectrograms()
 
             # Create a URL for the spectrogram (that will be handled by spectrogram_view)
@@ -152,37 +142,26 @@ def task_annotation_view(request, task_id):
     midpoint_time = (task.onset + task.offset) / 2
 
     # Get window sizes for the spectrogram
-    from .audio.utils import normal_hwin, overview_hwin, get_spectrogram_ticks
+    from .audio.utils import get_spectrogram_ticks, normal_hwin, overview_hwin
 
     normal_window_size = normal_hwin()
     overview_window_size = overview_hwin()
-    
+
     # Try to get sample rate from the source if this task has a source segment with a recording
     sample_rate = None
-    try:
-        # First, try to get from source segment if it exists
-        if hasattr(task, 'source_segment') and task.source_segment and task.source_segment.recording:
-            sample_rate = task.source_segment.recording.sample_rate
-            logger.info(f"Using sample rate from source segment's recording: {sample_rate}Hz")
-    except Exception as e:
-        logger.debug(f"No sample rate from source segment: {str(e)}")
-    
-    # If we couldn't get the sample rate from the source segment, use a default
-    if not sample_rate:
-        logger.debug("Using default sample rate for spectrograms")
-    
+    # First, try to get from source segment if it exists
+    if hasattr(task, "source_segment") and task.source_segment and task.source_segment.recording:
+        sample_rate = task.source_segment.recording.sample_rate
+
     # Generate tick marks for the spectrogram using our utility function
     tick_data = get_spectrogram_ticks(
-        task, 
-        sample_rate=sample_rate,
-        normal_window_size=normal_window_size,
-        overview_window_size=overview_window_size
+        task, sample_rate=sample_rate, normal_window_size=normal_window_size, overview_window_size=overview_window_size
     )
-    
+
     # Extract the tick data
-    x_ticks_detail = tick_data['x_ticks_detail']
-    x_ticks_overview = tick_data['x_ticks_overview']
-    y_ticks = tick_data['y_ticks']
+    x_ticks_detail = tick_data["x_ticks_detail"]
+    x_ticks_overview = tick_data["x_ticks_overview"]
+    y_ticks = tick_data["y_ticks"]
 
     # Create context for the template
     context = {
@@ -206,7 +185,7 @@ def task_annotation_view(request, task_id):
         # Add tick mark data
         "x_ticks_detail": x_ticks_detail,
         "x_ticks_overview": x_ticks_overview,
-        "y_ticks": y_ticks
+        "y_ticks": y_ticks,
     }
 
     # Return the annotation interface

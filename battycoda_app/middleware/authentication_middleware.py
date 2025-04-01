@@ -4,14 +4,10 @@ Standard authentication middleware for BattyCoda Django application
 This middleware ensures users are authenticated and handles redirects to login page.
 """
 
-import logging
-
 from django.http import HttpResponseRedirect
 from django.urls import reverse
 
 # Set up logging
-logger = logging.getLogger("battycoda.auth")
-
 
 class AuthenticationMiddleware:
     """
@@ -31,6 +27,13 @@ class AuthenticationMiddleware:
             "/media/",
             "/accounts/register/",
             "/register/",
+            "/invitation/",
+            "/accounts/request-login-code/",
+            "/accounts/enter-login-code/",
+            "/accounts/login-with-token/",
+            "/accounts/password-reset/",
+            "/accounts/reset-password/",
+            "/welcome/",  # Allow access to the landing page
         ]
 
         # Skip for Let's Encrypt ACME challenges
@@ -43,9 +46,15 @@ class AuthenticationMiddleware:
 
         # Check if the user is authenticated
         if not request.user.is_authenticated:
-            logger.info(f"Redirecting unauthenticated user from {request.path} to login page")
-
-            # Redirect to login page
+            # If this is the root URL, redirect to landing page instead of login
+            if request.path == '/' or request.path == '':
+                try:
+                    landing_url = reverse("battycoda_app:landing")
+                    return HttpResponseRedirect(landing_url)
+                except:
+                    pass
+                    
+            # Otherwise redirect to login page
             try:
                 login_url = reverse("battycoda_app:login")
             except:

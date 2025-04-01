@@ -11,7 +11,7 @@
    data-bs-toggle="tooltip" data-bs-placement="bottom" title="Upload a single audio recording">
     <i class="fas fa-plus"></i> New Recording
 </a>
-<a href="{% url 'battycoda_app:batch_upload_recordings' %}" class="btn btn-success"
+<a href="{% url 'battycoda_app:batch_upload_recordings' %}" class="btn btn-primary"
    data-bs-toggle="tooltip" data-bs-placement="bottom" title="Upload multiple recordings at once">
     <i class="fas fa-cloud-upload-alt"></i> Batch Upload
 </a>
@@ -22,7 +22,6 @@
 <th>Species</th>
 <th>Duration</th>
 <th>Sample Rate</th>
-<th>Segments</th>
 <th>Created</th>
 <th>Actions</th>
 {% endblock %}
@@ -42,15 +41,14 @@
 <td>{{ item.species.name }}</td>
 <td>{{ item.duration|default:"Unknown"|floatformat:2 }} sec</td>
 <td>{{ item.sample_rate|default:"Unknown" }} Hz</td>
-<td>{{ item.segments.count }}</td>
-<td>{{ item.created_at|date:"M d, Y" }}</td>
+<td data-utc-date="{{ item.created_at|date:'c' }}" data-date-format="datetime">{{ item.created_at|date:"M d, Y H:i" }}</td>
 {% endblock %}
 
 {% block item_actions %}
 {{ block.super }}
 <!-- Additional segment button -->
 <a href="{% url 'battycoda_app:segment_recording' recording_id=item.id %}" 
-   class="btn btn-outline-success" 
+   class="btn btn-outline-primary" 
    data-bs-toggle="tooltip" data-bs-placement="top" 
    title="Create segments to identify bat calls">
     <i class="fas fa-cut"></i>

@@ -1,0 +1,50 @@
+{% extends 'base.html' %}
+
+{% block title %}Invitation Status{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow">
+                <div class="card-header">
+                    <h4 class="mb-0">Invitation Status</h4>
+                </div>
+                <div class="card-body text-center">
+                    {% if status == 'already_accepted' %}
+                        <div class="mb-4">
+                            <i class="fas fa-check-circle text-success" style="font-size: 4rem;"></i>
+                        </div>
+                        <h3 class="mb-3">Invitation Already Accepted</h3>
+                        <p class="lead">This invitation to join <strong>{{ invitation.group.name }}</strong> has already been accepted.</p>
+                        <p>The invitation for <strong>{{ invitation.email }}</strong> was created by {{ invitation.invited_by.username }}.</p>
+                    {% elif status == 'expired' %}
+                        <div class="mb-4">
+                            <i class="fas fa-clock text-warning" style="font-size: 4rem;"></i>
+                        </div>
+                        <h3 class="mb-3">Invitation Expired</h3>
+                        <p class="lead">This invitation to join <strong>{{ invitation.group.name }}</strong> has expired.</p>
+                        <p>The invitation for <strong>{{ invitation.email }}</strong> was created by {{ invitation.invited_by.username }}.</p>
+                        <p>It expired on {{ invitation.expires_at|date:"F j, Y, H:i" }}.</p>
+                    {% else %}
+                        <div class="mb-4">
+                            <i class="fas fa-exclamation-triangle text-danger" style="font-size: 4rem;"></i>
+                        </div>
+                        <h3 class="mb-3">Invitation Status</h3>
+                        <p class="lead">{{ message }}</p>
+                    {% endif %}
+                    
+                    <div class="mt-4">
+                        <a href="{{ action_url }}" class="btn btn-primary btn-lg">
+                            {{ action_text }}
+                        </a>
+                    </div>
+                </div>
+                <div class="card-footer text-center bg-light">
+                    <p class="mb-0 text-muted">If you need a new invitation, please contact the group administrator.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -2,8 +2,8 @@ from django.contrib.auth.models import User
 from django.core.management.base import BaseCommand
 from django.db.utils import IntegrityError
 
-from battycoda_app.models import Call, Project, Species
-
+from battycoda_app.models.organization import Call, Species
+from battycoda_app.models.task import Project
 
 class Command(BaseCommand):
     help = "Initialize default data for BattyCoda"

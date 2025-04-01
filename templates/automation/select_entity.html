@@ -1,0 +1,115 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ title }} | BattyCoda{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <h1 class="mb-4">{{ title }}</h1>
+            
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    {% if parent_url %}
+                    <li class="breadcrumb-item"><a href="{% url parent_url %}">{{ parent_name }}</a></li>
+                    {% else %}
+                    <li class="breadcrumb-item"><a href="{% url 'battycoda_app:index' %}">Home</a></li>
+                    {% endif %}
+                    <li class="breadcrumb-item active" aria-current="page">{{ title }}</li>
+                </ol>
+            </nav>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h4 class="mb-0">{{ list_title|default:"Available Items" }}</h4>
+                    
+                    <div class="input-group" style="max-width: 300px;">
+                        <span class="input-group-text">
+                            <i class="fas fa-search"></i>
+                        </span>
+                        <input type="text" id="entitySearch" class="form-control" 
+                               placeholder="Search...">
+                    </div>
+                </div>
+                <div class="card-body">
+                    {% if items %}
+                    <div class="alert alert-info">
+                        <p class="mb-0">{{ info_message|default:"Select an item from the list below." }}</p>
+                    </div>
+                    
+                    <div class="table-responsive">
+                        <table class="table table-hover table-striped" id="entityTable">
+                            <thead>
+                                <tr>
+                                    <th>{{ th1|default:"Name" }}</th>
+                                    <th>{{ th2|default:"Type" }}</th>
+                                    {% if show_count %}<th>{{ th3|default:"Count" }}</th>{% endif %}
+                                    <th>Created</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for item in items %}
+                                <tr>
+                                    <td>
+                                        <a href="{{ item.detail_url }}">
+                                            {{ item.name }}
+                                        </a>
+                                    </td>
+                                    <td>{{ item.type_name }}</td>
+                                    {% if show_count %}<td>{{ item.count }}</td>{% endif %}
+                                    <td><span data-utc-date="{{ item.created_at|date:'c' }}" data-date-format="datetime"></span></td>
+                                    <td>
+                                        <a href="{{ item.action_url }}" 
+                                           class="btn btn-primary btn-sm">
+                                            <i class="fas fa-{{ action_icon|default:'play' }} me-1"></i> {{ action_text }}
+                                        </a>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <div class="alert alert-warning">
+                        <p class="mb-0">
+                            {{ empty_message|default:"No items available." }}
+                            {% if create_url %}
+                            <a href="{% url create_url %}" class="alert-link">Create one</a> first.
+                            {% endif %}
+                        </p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Search functionality for entity table
+    const searchInput = document.getElementById('entitySearch');
+    const entityTable = document.getElementById('entityTable');
+    
+    if (searchInput && entityTable) {
+        searchInput.addEventListener('keyup', function() {
+            const searchTerm = this.value.toLowerCase();
+            const rows = entityTable.querySelectorAll('tbody tr');
+            
+            rows.forEach(function(row) {
+                const text = row.textContent.toLowerCase();
+                const display = text.includes(searchTerm) ? '' : 'none';
+                row.style.display = display;
+            });
+        });
+    }
+});
+</script>
+{% endblock %}

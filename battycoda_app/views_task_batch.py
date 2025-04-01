@@ -1,5 +1,5 @@
 import csv
-import logging
+
 import pickle
 import traceback
 from datetime import datetime
@@ -15,11 +15,11 @@ import numpy as np
 
 from .audio.utils import process_pickle_file
 from .forms import TaskBatchForm
-from .models import Recording, Segment, Task, TaskBatch, UserProfile
+from .models.recording import Recording, Segment
+from .models.task import Task, TaskBatch
+from .models.user import UserProfile
 
 # Set up logging
-logger = logging.getLogger("battycoda.views_task_batch")
-
 
 @login_required
 def task_batch_list_view(request):
@@ -45,7 +45,6 @@ def task_batch_list_view(request):
 
     return render(request, "tasks/batch_list.html", context)
 
-
 @login_required
 def task_batch_detail_view(request, batch_id):
     """Display details of a specific task batch"""
@@ -69,7 +68,6 @@ def task_batch_detail_view(request, batch_id):
 
     return render(request, "tasks/batch_detail.html", context)
 
-
 @login_required
 def export_task_batch_view(request, batch_id):
     """Export task batch results to CSV"""
@@ -91,51 +89,54 @@ def export_task_batch_view(request, batch_id):
     filename = f"taskbatch_{batch.id}_{batch.name.replace(' ', '_')}_{timestamp}.csv"
     response = HttpResponse(content_type="text/csv")
     response["Content-Disposition"] = f'attachment; filename="{filename}"'
-    
+
     # Create CSV writer
     writer = csv.writer(response)
-    
+
     # Write header row
-    writer.writerow([
-        "Task ID", 
-        "Onset (s)", 
-        "Offset (s)", 
-        "Duration (s)",
-        "Status", 
-        "Label", 
-        "Classification Result", 
-        "Confidence", 
-        "Notes",
-        "WAV File", 
-        "Species", 
-        "Project", 
-        "Created By", 
-        "Created At", 
-        "Updated At"
-    ])
-    
+    writer.writerow(
+        [
+            "Task ID",
+            "Onset (s)",
+            "Offset (s)",
+            "Duration (s)",
+            "Status",
+            "Label",
+            "Classification Result",
+            "Confidence",
+            "Notes",
+            "WAV File",
+            "Species",
+            "Project",
+            "Created By",
+            "Created At",
+            "Updated At",
+        ]
+    )
+
     # Write data rows
     for task in tasks:
-        writer.writerow([
-            task.id,
-            task.onset,
-            task.offset,
-            task.offset - task.onset,
-            task.status,
-            task.label if task.label else "",
-            task.classification_result if task.classification_result else "",
-            task.confidence if task.confidence is not None else "",
-            task.notes.replace('\n', ' ').replace('\r', '') if task.notes else "",
-            task.wav_file_name,
-            task.species.name,
-            task.project.name,
-            task.created_by.username,
-            task.created_at.strftime("%Y-%m-%d %H:%M:%S"),
-            task.updated_at.strftime("%Y-%m-%d %H:%M:%S"),
-        ])
-    
-    return response
+        writer.writerow(
+            [
+                task.id,
+                task.onset,
+                task.offset,
+                task.offset - task.onset,
+                task.status,
+                task.label if task.label else "",
+                task.classification_result if task.classification_result else "",
+                task.confidence if task.confidence is not None else "",
+                task.notes.replace("\n", " ").replace("\r", "") if task.notes else "",
+                task.wav_file_name,
+                task.species.name,
+                task.project.name,
+                task.created_by.username,
+                task.created_at.strftime("%Y-%m-%d %H:%M:%S"),
+                task.updated_at.strftime("%Y-%m-%d %H:%M:%S"),
+            ]
+        )
 
+    return response
 
 @login_required
 def create_task_batch_view(request):
@@ -145,8 +146,8 @@ def create_task_batch_view(request):
         request,
         "Task batches can now only be created from classification results. "
         "Please create a recording, segment it, run classification, and then create a task batch "
-        "from the classification results for manual review."
+        "from the classification results for manual review.",
     )
-    
+
     # Redirect to the task batch list
     return redirect("battycoda_app:task_batch_list")

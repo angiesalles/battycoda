@@ -1,12 +1,13 @@
-import logging
+
 from django.contrib.auth.models import User
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 
-from .models import UserProfile, Recording
+from .models.recording import Recording, Segmentation
+from .models.detection import DetectionRun, ClassifierTrainingJob
+from .models.notification import UserNotification
+from .models.user import UserProfile
 from .tasks import calculate_audio_duration
-
-logger = logging.getLogger("battycoda.signals")
 
 # NOTE: These signals are commented out because they duplicate functionality in models.py
 # @receiver(post_save, sender=User)
@@ -22,14 +23,75 @@ logger = logging.getLogger("battycoda.signals")
 def trigger_audio_info_calculation(sender, instance, **kwargs):
     """
     Signal handler to asynchronously calculate audio duration and sample rate after a recording is saved
-    
+
     This ensures the file is fully committed to disk before trying to access it.
     """
     # Skip if both duration and sample rate are already set
     if instance.duration and instance.sample_rate:
         return
-        
-    logger.info(f"Triggering audio info calculation for recording {instance.id}: {instance.name}")
-    
+
     # Trigger the Celery task
     calculate_audio_duration.delay(instance.id)
+
+@receiver(post_save, sender=Segmentation)
+def segmentation_status_changed(sender, instance, **kwargs):
+    """
+    Signal handler to create notifications when segmentation status changes to completed or failed
+    """
+    # Only create notifications for status transitions to completed or failed
+    if instance.status == 'completed':
+        # Create success notification
+        UserNotification.add_segmentation_notification(
+            user=instance.created_by,
+            segmentation=instance,
+            success=True
+        )
+    elif instance.status == 'failed':
+        # Create failure notification
+        UserNotification.add_segmentation_notification(
+            user=instance.created_by,
+            segmentation=instance,
+            success=False
+        )
+
+@receiver(post_save, sender=DetectionRun)
+def detection_run_status_changed(sender, instance, **kwargs):
+    """
+    Signal handler to create notifications when detection run status changes to completed or failed
+    """
+    # Only create notifications for status transitions to completed or failed
+    if instance.status == 'completed':
+        # Create success notification
+        UserNotification.add_classification_notification(
+            user=instance.created_by,
+            detection_run=instance,
+            success=True
+        )
+    elif instance.status == 'failed':
+        # Create failure notification
+        UserNotification.add_classification_notification(
+            user=instance.created_by,
+            detection_run=instance,
+            success=False
+        )
+
+@receiver(post_save, sender=ClassifierTrainingJob)
+def training_job_status_changed(sender, instance, **kwargs):
+    """
+    Signal handler to create notifications when classifier training job status changes to completed or failed
+    """
+    # Only create notifications for status transitions to completed or failed
+    if instance.status == 'completed':
+        # Create success notification
+        UserNotification.add_training_notification(
+            user=instance.created_by,
+            training_job=instance,
+            success=True
+        )
+    elif instance.status == 'failed':
+        # Create failure notification
+        UserNotification.add_training_notification(
+            user=instance.created_by,
+            training_job=instance,
+            success=False
+        )

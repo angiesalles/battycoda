@@ -4,78 +4,45 @@
 {% block title %}BattyCoda - Dashboard{% endblock %}
 
 {% block content %}
-<div class="container py-4">
-    <h1 class="mb-4">Dashboard</h1>
-    
-    <!-- Stats overview section -->
-    <div class="row mb-4">
-        <div class="col-md-3 col-sm-6 mb-4">
-            <div class="card bg-dark h-100">
-                <div class="card-body text-center">
-                    <h1 class="display-4 text-primary mb-2">{{ total_recordings }}</h1>
-                    <h5>Recordings</h5>
-                    <a href="{% url 'battycoda_app:recording_list' %}" class="btn btn-sm btn-outline-primary mt-2">View All</a>
-                </div>
-            </div>
-        </div>
-        
-        <div class="col-md-3 col-sm-6 mb-4">
-            <div class="card bg-dark h-100">
-                <div class="card-body text-center">
-                    <h1 class="display-4 text-success mb-2">{{ total_batches }}</h1>
-                    <h5>Task Batches</h5>
-                    <a href="{% url 'battycoda_app:task_batch_list' %}" class="btn btn-sm btn-outline-success mt-2">View All</a>
-                </div>
-            </div>
-        </div>
-        
-        <div class="col-md-3 col-sm-6 mb-4">
-            <div class="card bg-dark h-100">
-                <div class="card-body text-center">
-                    <h1 class="display-4 text-info mb-2">{{ total_species }}</h1>
-                    <h5>Species</h5>
-                    <a href="{% url 'battycoda_app:species_list' %}" class="btn btn-sm btn-outline-info mt-2">View All</a>
-                </div>
-            </div>
-        </div>
-        
-        <div class="col-md-3 col-sm-6 mb-4">
-            <div class="card bg-dark h-100">
-                <div class="card-body text-center">
-                    <h1 class="display-4 text-warning mb-2">{{ total_projects }}</h1>
-                    <h5>Projects</h5>
-                    <a href="{% url 'battycoda_app:project_list' %}" class="btn btn-sm btn-outline-warning mt-2">View All</a>
-                </div>
+<div id="dashboardContainer" class="main-content container-fluid">
+    <div id="dashboardTitleRow" class="row">
+        <div id="dashboardTitleCol" class="col-12">
+            <div id="dashboardTitleBox" class="page-title-box">
+                <h4 id="dashboardTitle" class="page-title">Dashboard</h4>
             </div>
         </div>
     </div>
-    
-    <!-- Active Jobs -->
-    <div class="row mb-4">
-        <div class="col-md-6">
-            <div class="card bg-dark mb-4">
-                <div class="card-header bg-primary bg-opacity-25">
-                    <h4 class="mb-0"><i class="fas fa-tasks me-2"></i>Active Jobs</h4>
+
+    <!-- Stats overview section -->
+    <div id="statsOverviewRow" class="row">
+        <div id="statsOverviewCol" class="col-lg-7 mb-4">
+            <div id="statsWidgetCard" class="card">
+                <div id="statsWidgetHeader" class="card-header">
+                    <h5 id="statsWidgetTitle" class="card-title"><span class="s7-display2 mr-2"></span>Stats Overview</h5>
                 </div>
-                <div class="card-body">
-                    <div class="row">
-                        <div class="col-md-6">
-                            <div class="text-center p-3 border border-secondary rounded mb-3">
-                                <h4 class="text-primary-emphasis">{{ active_segmentations }}</h4>
-                                <p class="mb-1">Segmentations in Progress</p>
-                                {% if active_segmentations > 0 %}
-                                <a href="{% url 'battycoda_app:batch_segmentation' %}" class="btn btn-sm btn-outline-primary">View</a>
-                                {% endif %}
-                            </div>
-                        </div>
-                        <div class="col-md-6">
-                            <div class="text-center p-3 border border-secondary rounded mb-3">
-                                <h4 class="text-info-emphasis">{{ active_classifications }}</h4>
-                                <p class="mb-1">Classifications in Progress</p>
-                                {% if active_classifications > 0 %}
-                                <a href="{% url 'battycoda_app:automation_home' %}" class="btn btn-sm btn-outline-info">View</a>
-                                {% endif %}
-                            </div>
+                <div id="statsWidgetBody" class="card-body">
+                    <div id="statsWidgetIndicators" class="widget-indicators">
+                        <div class="list-group">
+                            <a id="recordingsIndicator" class="list-group-item d-flex list-group-item-action py-3" href="{% url 'battycoda_app:recording_list' %}">
+                                <span class="s7-micro mr-3" style="font-size: 24px;"></span>
+                                <span id="recordingsTitle" class="text h5 mb-0 flex-grow-1">Recordings</span>
+                                <span id="recordingsCounter" class="badge badge-pill badge-primary h5 mb-0 align-self-center">{{ total_recordings }}</span>
+                            </a>
+                            <a id="batchesIndicator" class="list-group-item d-flex list-group-item-action py-3" href="{% url 'battycoda_app:task_batch_list' %}">
+                                <span class="s7-box1 mr-3" style="font-size: 24px;"></span>
+                                <span id="batchesTitle" class="text h5 mb-0 flex-grow-1">Task Batches</span>
+                                <span id="batchesCounter" class="badge badge-pill badge-primary h5 mb-0 align-self-center">{{ total_batches }}</span>
+                            </a>
+                            <a id="speciesIndicator" class="list-group-item d-flex list-group-item-action py-3" href="{% url 'battycoda_app:species_list' %}">
+                                <span class="s7-leaf mr-3" style="font-size: 24px;"></span>
+                                <span id="speciesTitle" class="text h5 mb-0 flex-grow-1">Species</span>
+                                <span id="speciesCounter" class="badge badge-pill badge-primary h5 mb-0 align-self-center">{{ total_species }}</span>
+                            </a>
+                            <a id="projectsIndicator" class="list-group-item d-flex list-group-item-action py-3" href="{% url 'battycoda_app:project_list' %}">
+                                <span class="s7-portfolio mr-3" style="font-size: 24px;"></span>
+                                <span id="projectsTitle" class="text h5 mb-0 flex-grow-1">Projects</span>
+                                <span id="projectsCounter" class="badge badge-pill badge-primary h5 mb-0 align-self-center">{{ total_projects }}</span>
+                            </a>
                         </div>
                     </div>
                 </div>
@@ -83,25 +50,80 @@
         </div>
         
         <!-- Quick Actions -->
-        <div class="col-md-6">
-            <div class="card bg-dark mb-4">
-                <div class="card-header bg-success bg-opacity-25">
-                    <h4 class="mb-0"><i class="fas fa-bolt me-2"></i>Quick Actions</h4>
+        <div id="quickActionsCol" class="col-lg-5 mb-4">
+            <div id="quickActionsCard" class="card">
+                <div id="quickActionsHeader" class="card-header">
+                    <h5 id="quickActionsTitle" class="card-title"><span class="s7-rocket mr-2"></span>Quick Actions</h5>
                 </div>
-                <div class="card-body">
-                    <div class="d-grid gap-3">
-                        <a href="{% url 'battycoda_app:recording_list' %}" class="btn btn-lg btn-outline-primary">
-                            <i class="fas fa-file-audio me-2"></i>Manage Recordings
-                        </a>
-                        <a href="{% url 'battycoda_app:batch_segmentation' %}" class="btn btn-lg btn-outline-secondary">
-                            <i class="fas fa-cut me-2"></i>Segmentation
-                        </a>
-                        <a href="{% url 'battycoda_app:automation_home' %}" class="btn btn-lg btn-outline-info">
-                            <i class="fas fa-robot me-2"></i>Run Classification
-                        </a>
-                        <a href="{% url 'battycoda_app:get_next_task' %}" class="btn btn-lg btn-success">
-                            <i class="fas fa-tasks me-2"></i>Get Next Task
-                        </a>
+                <div id="quickActionsBody" class="card-body">
+                    <div id="quickActionsRow" class="row">
+                        <div id="quickActionsCol1" class="col-md-6 mb-3">
+                            <a id="manageRecordingsBtn" href="{% url 'battycoda_app:recording_list' %}" class="btn btn-primary btn-block mb-3">
+                                <span class="s7-micro mr-2"></span>Manage Recordings
+                            </a>
+                            <a id="segmentationBtn" href="{% url 'battycoda_app:batch_segmentation' %}" class="btn btn-primary btn-block">
+                                <span class="s7-scissors mr-2"></span>Segmentation
+                            </a>
+                        </div>
+                        <div id="quickActionsCol2" class="col-md-6 mb-3">
+                            <a id="classificationBtn" href="{% url 'battycoda_app:automation_home' %}" class="btn btn-primary btn-block mb-3">
+                                <span class="s7-display1 mr-2"></span>Run Classification
+                            </a>
+                            <a id="nextTaskBtn" href="{% url 'battycoda_app:get_next_task' %}" class="btn btn-primary btn-block">
+                                <span class="s7-next mr-2"></span>Get Next Task
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Active Jobs -->
+    <div id="activeJobsRow" class="row">
+        <div id="activeJobsCol" class="col-12 mb-4">
+            <div id="activeJobsCard" class="card">
+                <div id="activeJobsHeader" class="card-header">
+                    <h5 id="activeJobsTitle" class="card-title"><span class="s7-display mr-2"></span>Active Jobs</h5>
+                </div>
+                <div id="activeJobsBody" class="card-body">
+                    <div id="activeJobsItemsRow" class="row">
+                        <div id="segmentationsJobsCol" class="col-md-6 mb-3">
+                            <div id="segmentationsIndicator" class="widget-indicator">
+                                <div id="segmentationsIndicatorItem" class="indicator-item">
+                                    <div id="segmentationsIconContainer" class="indicator-item-icon">
+                                        <div id="segmentationsIcon" class="icon"><span class="s7-scissors"></span></div>
+                                    </div>
+                                    <div id="segmentationsValueContainer" class="indicator-item-value">
+                                        <span id="segmentationsCounter" class="indicator-value-counter">{{ active_segmentations }}</span>
+                                        <span id="segmentationsTitle" class="indicator-value-title">Segmentations</span>
+                                    </div>
+                                </div>
+                                {% if active_segmentations > 0 %}
+                                <div id="segmentationsLinkContainer" class="indicator-link text-right">
+                                    <a id="segmentationsViewLink" href="{% url 'battycoda_app:batch_segmentation' %}">View <span class="s7-angle-right"></span></a>
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div id="classificationsJobsCol" class="col-md-6 mb-3">
+                            <div id="classificationsIndicator" class="widget-indicator">
+                                <div id="classificationsIndicatorItem" class="indicator-item">
+                                    <div id="classificationsIconContainer" class="indicator-item-icon">
+                                        <div id="classificationsIcon" class="icon"><span class="s7-display1"></span></div>
+                                    </div>
+                                    <div id="classificationsValueContainer" class="indicator-item-value">
+                                        <span id="classificationsCounter" class="indicator-value-counter">{{ active_classifications }}</span>
+                                        <span id="classificationsTitle" class="indicator-value-title">Classifications</span>
+                                    </div>
+                                </div>
+                                {% if active_classifications > 0 %}
+                                <div id="classificationsLinkContainer" class="indicator-link text-right">
+                                    <a id="classificationsViewLink" href="{% url 'battycoda_app:automation_home' %}">View <span class="s7-angle-right"></span></a>
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -109,148 +131,247 @@
     </div>
     
     <!-- Recent Items -->
-    <div class="row">
+    <div id="recentItemsRow1" class="row">
         <!-- Recent Recordings -->
-        <div class="col-lg-6 mb-4">
-            <div class="card bg-dark h-100">
-                <div class="card-header bg-primary bg-opacity-25 d-flex justify-content-between align-items-center">
-                    <h4 class="mb-0"><i class="fas fa-file-audio me-2"></i>Recent Recordings</h4>
-                    <a href="{% url 'battycoda_app:recording_list' %}" class="btn btn-sm btn-outline-light">View All</a>
+        <div id="recentRecordingsCol" class="col-lg-6 mb-4">
+            <div id="recentRecordingsCard" class="card">
+                <div id="recentRecordingsHeader" class="card-header">
+                    <h5 id="recentRecordingsTitle" class="card-title"><span class="s7-micro mr-2"></span>Recent Recordings</h5>
                 </div>
-                <div class="card-body p-0">
-                    <div class="list-group list-group-flush bg-dark">
-                        {% for recording in recent_recordings %}
-                        <a href="{% url 'battycoda_app:recording_detail' recording.id %}" class="list-group-item list-group-item-action bg-dark text-light border-secondary">
-                            <div class="d-flex w-100 justify-content-between">
-                                <h5 class="mb-1">{{ recording.name }}</h5>
-                                <small class="text-muted">{{ recording.created_at|date:"M d, Y" }}</small>
-                            </div>
-                            <p class="mb-1 text-truncate">{% if recording.description %}{{ recording.description }}{% else %}No description{% endif %}</p>
-                            <small class="text-muted">{{ recording.species.name }} - {{ recording.segments.count }} segments</small>
-                        </a>
-                        {% empty %}
-                        <div class="list-group-item bg-dark text-light border-secondary">
-                            <p class="mb-0 text-center">No recordings yet</p>
-                        </div>
-                        {% endfor %}
+                <div id="recentRecordingsBody" class="card-body p-0">
+                    <div id="recentRecordingsTableContainer" class="table-responsive">
+                        <table id="recentRecordingsTable" class="table table-hover table-dark-header">
+                            <thead id="recentRecordingsTableHead">
+                                <tr id="recentRecordingsTableHeaderRow">
+                                    <th id="recordingHeaderCol">Recording</th>
+                                    <th id="speciesHeaderCol">Species</th>
+                                    <th id="segmentsHeaderCol">Segments</th>
+                                    <th id="dateHeaderCol">Date</th>
+                                </tr>
+                            </thead>
+                            <tbody id="recentRecordingsTableBody">
+                                {% for recording in recent_recordings %}
+                                <tr id="recording-{{ recording.id }}-row">
+                                    <td id="recording-{{ recording.id }}-name"><a id="recording-{{ recording.id }}-link" href="{% url 'battycoda_app:recording_detail' recording.id %}">{{ recording.name }}</a></td>
+                                    <td id="recording-{{ recording.id }}-species">{{ recording.species.name }}</td>
+                                    <td id="recording-{{ recording.id }}-segments">{{ recording.segments.count }}</td>
+                                    <td id="recording-{{ recording.id }}-date">{{ recording.created_at|date:"M d, Y" }}</td>
+                                </tr>
+                                {% empty %}
+                                <tr id="noRecordingsRow">
+                                    <td id="noRecordingsMessage" colspan="4" class="text-center">No recordings yet</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
                     </div>
+                </div>
+                <div id="recentRecordingsFooter" class="card-footer text-right">
+                    <a id="viewAllRecordingsBtn" href="{% url 'battycoda_app:recording_list' %}" class="btn btn-sm btn-primary">View All <span class="s7-angle-right"></span></a>
                 </div>
             </div>
         </div>
         
         <!-- Recent Task Batches -->
-        <div class="col-lg-6 mb-4">
-            <div class="card bg-dark h-100">
-                <div class="card-header bg-success bg-opacity-25 d-flex justify-content-between align-items-center">
-                    <h4 class="mb-0"><i class="fas fa-layer-group me-2"></i>Recent Task Batches</h4>
-                    <a href="{% url 'battycoda_app:task_batch_list' %}" class="btn btn-sm btn-outline-light">View All</a>
+        <div id="recentBatchesCol" class="col-lg-6 mb-4">
+            <div id="recentBatchesCard" class="card">
+                <div id="recentBatchesHeader" class="card-header">
+                    <h5 id="recentBatchesTitle" class="card-title"><span class="s7-box1 mr-2"></span>Recent Task Batches</h5>
                 </div>
-                <div class="card-body p-0">
-                    <div class="list-group list-group-flush bg-dark">
-                        {% for batch in recent_batches %}
-                        <a href="{% url 'battycoda_app:task_batch_detail' batch.id %}" class="list-group-item list-group-item-action bg-dark text-light border-secondary">
-                            <div class="d-flex w-100 justify-content-between">
-                                <h5 class="mb-1">{{ batch.name }}</h5>
-                                <small class="text-muted">{{ batch.created_at|date:"M d, Y" }}</small>
-                            </div>
-                            <p class="mb-1 text-truncate">{% if batch.description %}{{ batch.description }}{% else %}No description{% endif %}</p>
-                            <small class="text-muted">{{ batch.species.name }} - {{ batch.tasks.count }} tasks</small>
-                        </a>
-                        {% empty %}
-                        <div class="list-group-item bg-dark text-light border-secondary">
-                            <p class="mb-0 text-center">No task batches yet</p>
-                        </div>
-                        {% endfor %}
+                <div id="recentBatchesBody" class="card-body p-0">
+                    <div id="recentBatchesTableContainer" class="table-responsive">
+                        <table id="recentBatchesTable" class="table table-hover table-dark-header">
+                            <thead id="recentBatchesTableHead">
+                                <tr id="recentBatchesTableHeaderRow">
+                                    <th id="batchHeaderCol">Batch</th>
+                                    <th id="batchSpeciesHeaderCol">Species</th>
+                                    <th id="batchTasksHeaderCol">Tasks</th>
+                                    <th id="batchDateHeaderCol">Date</th>
+                                </tr>
+                            </thead>
+                            <tbody id="recentBatchesTableBody">
+                                {% for batch in recent_batches %}
+                                <tr id="batch-{{ batch.id }}-row">
+                                    <td id="batch-{{ batch.id }}-name"><a id="batch-{{ batch.id }}-link" href="{% url 'battycoda_app:task_batch_detail' batch.id %}">{{ batch.name }}</a></td>
+                                    <td id="batch-{{ batch.id }}-species">{{ batch.species.name }}</td>
+                                    <td id="batch-{{ batch.id }}-tasks">{{ batch.tasks.count }}</td>
+                                    <td id="batch-{{ batch.id }}-date">{{ batch.created_at|date:"M d, Y" }}</td>
+                                </tr>
+                                {% empty %}
+                                <tr id="noBatchesRow">
+                                    <td id="noBatchesMessage" colspan="4" class="text-center">No task batches yet</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
                     </div>
+                </div>
+                <div id="recentBatchesFooter" class="card-footer text-right">
+                    <a id="viewAllBatchesBtn" href="{% url 'battycoda_app:task_batch_list' %}" class="btn btn-sm btn-primary">View All <span class="s7-angle-right"></span></a>
                 </div>
             </div>
         </div>
     </div>
     
-    <div class="row">
-        <!-- Recent Classifications -->
-        <div class="col-lg-6 mb-4">
-            <div class="card bg-dark h-100">
-                <div class="card-header bg-info bg-opacity-25 d-flex justify-content-between align-items-center">
-                    <h4 class="mb-0"><i class="fas fa-robot me-2"></i>Recent Classifications</h4>
-                    <a href="{% url 'battycoda_app:automation_home' %}" class="btn btn-sm btn-outline-light">View All</a>
+    <div id="recentItemsRow2" class="row">
+        <!-- Recent Segmentations -->
+        <div id="recentSegmentationsCol" class="col-lg-6 mb-4">
+            <div id="recentSegmentationsCard" class="card">
+                <div id="recentSegmentationsHeader" class="card-header">
+                    <h5 id="recentSegmentationsTitle" class="card-title"><span class="s7-scissors mr-2"></span>Recent Segmentations</h5>
                 </div>
-                <div class="card-body p-0">
-                    <div class="list-group list-group-flush bg-dark">
-                        {% for run in recent_runs %}
-                        <a href="{% url 'battycoda_app:detection_run_detail' run.id %}" class="list-group-item list-group-item-action bg-dark text-light border-secondary">
-                            <div class="d-flex w-100 justify-content-between">
-                                <h5 class="mb-1">{{ run.name }}</h5>
-                                <small class="text-muted">{{ run.created_at|date:"M d, Y" }}</small>
-                            </div>
-                            <div class="d-flex justify-content-between align-items-center">
-                                <small class="text-muted">{{ run.classifier.name }}</small>
-                                <span class="badge {% if run.status == 'completed' %}bg-success{% elif run.status == 'failed' %}bg-danger{% else %}bg-warning{% endif %}">
-                                    {{ run.status|title }}
-                                </span>
-                            </div>
-                        </a>
-                        {% empty %}
-                        <div class="list-group-item bg-dark text-light border-secondary">
-                            <p class="mb-0 text-center">No classification runs yet</p>
-                        </div>
-                        {% endfor %}
+                <div id="recentSegmentationsBody" class="card-body p-0">
+                    <div id="recentSegmentationsTableContainer" class="table-responsive">
+                        <table id="recentSegmentationsTable" class="table table-hover table-dark-header">
+                            <thead id="recentSegmentationsTableHead">
+                                <tr id="recentSegmentationsTableHeaderRow">
+                                    <th id="segmentationRecordingHeaderCol">Recording</th>
+                                    <th id="segmentationAlgorithmHeaderCol">Algorithm</th>
+                                    <th id="segmentationStatusHeaderCol">Status</th>
+                                    <th id="segmentationDateHeaderCol">Date</th>
+                                </tr>
+                            </thead>
+                            <tbody id="recentSegmentationsTableBody">
+                                {% for segmentation in recent_segmentations %}
+                                <tr id="segmentation-{{ segmentation.id }}-row">
+                                    <td id="segmentation-{{ segmentation.id }}-recording"><a id="segmentation-{{ segmentation.id }}-link" href="{% url 'battycoda_app:recording_detail' segmentation.recording.id %}">{{ segmentation.recording.name }}</a></td>
+                                    <td id="segmentation-{{ segmentation.id }}-algorithm">{{ segmentation.algorithm.name }}</td>
+                                    <td id="segmentation-{{ segmentation.id }}-status">
+                                        <span id="segmentation-{{ segmentation.id }}-badge" class="badge badge-pill {% if segmentation.status == 'completed' %}badge-success{% elif segmentation.status == 'failed' %}badge-danger{% else %}badge-warning{% endif %}">
+                                            {{ segmentation.status|title }}
+                                        </span>
+                                    </td>
+                                    <td id="segmentation-{{ segmentation.id }}-date">{{ segmentation.created_at|date:"M d, Y" }}</td>
+                                </tr>
+                                {% empty %}
+                                <tr id="noSegmentationsRow">
+                                    <td id="noSegmentationsMessage" colspan="4" class="text-center">No segmentations yet</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
                     </div>
+                </div>
+                <div id="recentSegmentationsFooter" class="card-footer text-right">
+                    <a id="viewAllSegmentationsBtn" href="{% url 'battycoda_app:batch_segmentation' %}" class="btn btn-sm btn-primary">View All <span class="s7-angle-right"></span></a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Recent Classifications -->
+        <div id="recentClassificationsCol" class="col-lg-6 mb-4">
+            <div id="recentClassificationsCard" class="card">
+                <div id="recentClassificationsHeader" class="card-header">
+                    <h5 id="recentClassificationsTitle" class="card-title"><span class="s7-display1 mr-2"></span>Recent Classifications</h5>
+                </div>
+                <div id="recentClassificationsBody" class="card-body p-0">
+                    <div id="recentClassificationsTableContainer" class="table-responsive">
+                        <table id="recentClassificationsTable" class="table table-hover table-dark-header">
+                            <thead id="recentClassificationsTableHead">
+                                <tr id="recentClassificationsTableHeaderRow">
+                                    <th id="runHeaderCol">Run</th>
+                                    <th id="classifierHeaderCol">Classifier</th>
+                                    <th id="statusHeaderCol">Status</th>
+                                    <th id="runDateHeaderCol">Date</th>
+                                </tr>
+                            </thead>
+                            <tbody id="recentClassificationsTableBody">
+                                {% for run in recent_runs %}
+                                <tr id="run-{{ run.id }}-row">
+                                    <td id="run-{{ run.id }}-name"><a id="run-{{ run.id }}-link" href="{% url 'battycoda_app:detection_run_detail' run.id %}">{{ run.name }}</a></td>
+                                    <td id="run-{{ run.id }}-classifier">{{ run.classifier.name }}</td>
+                                    <td id="run-{{ run.id }}-status">
+                                        <span id="run-{{ run.id }}-badge" class="badge {% if run.status == 'completed' %}badge-success{% elif run.status == 'failed' %}badge-danger{% else %}badge-warning{% endif %}">
+                                            {{ run.status|title }}
+                                        </span>
+                                    </td>
+                                    <td id="run-{{ run.id }}-date">{{ run.created_at|date:"M d, Y" }}</td>
+                                </tr>
+                                {% empty %}
+                                <tr id="noRunsRow">
+                                    <td id="noRunsMessage" colspan="4" class="text-center">No classification runs yet</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                <div id="recentClassificationsFooter" class="card-footer text-right">
+                    <a id="viewAllClassificationsBtn" href="{% url 'battycoda_app:automation_home' %}" class="btn btn-sm btn-primary">View All <span class="s7-angle-right"></span></a>
                 </div>
             </div>
         </div>
         
-        <!-- Recent Species & Projects -->
-        <div class="col-lg-6 mb-4">
-            <div class="row">
-                <!-- Recent Species -->
-                <div class="col-12 mb-4">
-                    <div class="card bg-dark">
-                        <div class="card-header bg-warning bg-opacity-25 d-flex justify-content-between align-items-center">
-                            <h4 class="mb-0"><i class="fas fa-paw me-2"></i>Recent Species</h4>
-                            <a href="{% url 'battycoda_app:species_list' %}" class="btn btn-sm btn-outline-light">View All</a>
-                        </div>
-                        <div class="card-body p-0">
-                            <div class="list-group list-group-flush bg-dark">
-                                {% for species in recent_species %}
-                                <a href="{% url 'battycoda_app:species_detail' species.id %}" class="list-group-item list-group-item-action bg-dark text-light border-secondary py-2">
-                                    <div class="d-flex w-100 justify-content-between align-items-center">
-                                        <h6 class="mb-0">{{ species.name }}</h6>
-                                        <small class="text-muted">{{ species.calls.count }} call types</small>
-                                    </div>
-                                </a>
-                                {% empty %}
-                                <div class="list-group-item bg-dark text-light border-secondary">
-                                    <p class="mb-0 text-center">No species yet</p>
-                                </div>
-                                {% endfor %}
-                            </div>
-                        </div>
-                    </div>
+        <!-- Recent Species & Projects Tabs -->
+        <div id="speciesProjectsCol" class="col-lg-6 mb-4">
+            <div class="card">
+                <div class="card-header">
+                    <ul class="nav nav-pills card-header-pills" role="tablist">
+                        <li class="nav-item"><a class="nav-link active" href="#p-species" data-toggle="tab" role="tab" aria-expanded="true"><span class="s7-leaf mr-1"></span>Species</a></li>
+                        <li class="nav-item"><a class="nav-link" href="#p-projects" data-toggle="tab" role="tab" aria-expanded="false"><span class="s7-portfolio mr-1"></span>Projects</a></li>
+                    </ul>
                 </div>
-                
-                <!-- Recent Projects -->
-                <div class="col-12">
-                    <div class="card bg-dark">
-                        <div class="card-header bg-danger bg-opacity-25 d-flex justify-content-between align-items-center">
-                            <h4 class="mb-0"><i class="fas fa-folder me-2"></i>Recent Projects</h4>
-                            <a href="{% url 'battycoda_app:project_list' %}" class="btn btn-sm btn-outline-light">View All</a>
-                        </div>
-                        <div class="card-body p-0">
-                            <div class="list-group list-group-flush bg-dark">
-                                {% for project in recent_projects %}
-                                <a href="{% url 'battycoda_app:project_detail' project.id %}" class="list-group-item list-group-item-action bg-dark text-light border-secondary py-2">
-                                    <div class="d-flex w-100 justify-content-between align-items-center">
-                                        <h6 class="mb-0">{{ project.name }}</h6>
-                                        <small class="text-muted">{{ project.recordings.count }} recordings</small>
-                                    </div>
-                                </a>
-                                {% empty %}
-                                <div class="list-group-item bg-dark text-light border-secondary">
-                                    <p class="mb-0 text-center">No projects yet</p>
-                                </div>
-                                {% endfor %}
+                <div class="card-body">
+                    <div class="tab-content">
+                        <div class="tab-pane active" id="p-species" role="tabpanel">
+                            {% if recent_species %}
+                            <div class="table-responsive">
+                                <table class="table">
+                                    <thead>
+                                        <tr>
+                                            <th>Species</th>
+                                            <th>Call Types</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for species in recent_species %}
+                                        <tr>
+                                            <td><a href="{% url 'battycoda_app:species_detail' species.id %}">{{ species.name }}</a></td>
+                                            <td>{{ species.calls.count }}</td>
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
                             </div>
+                            <div class="text-right mt-3">
+                                <a href="{% url 'battycoda_app:species_list' %}" class="btn btn-sm btn-primary">View All <span class="s7-angle-right"></span></a>
+                            </div>
+                            {% else %}
+                            <p class="text-center">No species available yet.</p>
+                            <div class="text-center mt-3">
+                                <a href="{% url 'battycoda_app:species_list' %}" class="btn btn-primary">Add Species <span class="s7-plus"></span></a>
+                            </div>
+                            {% endif %}
+                        </div>
+                        <div class="tab-pane" id="p-projects" role="tabpanel">
+                            {% if recent_projects %}
+                            <div class="table-responsive">
+                                <table class="table">
+                                    <thead>
+                                        <tr>
+                                            <th>Project</th>
+                                            <th>Recordings</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for project in recent_projects %}
+                                        <tr>
+                                            <td><a href="{% url 'battycoda_app:project_detail' project.id %}">{{ project.name }}</a></td>
+                                            <td>{{ project.recordings.count }}</td>
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                            <div class="text-right mt-3">
+                                <a href="{% url 'battycoda_app:project_list' %}" class="btn btn-sm btn-primary">View All <span class="s7-angle-right"></span></a>
+                            </div>
+                            {% else %}
+                            <p class="text-center">No projects available yet.</p>
+                            <div class="text-center mt-3">
+                                <a href="{% url 'battycoda_app:project_list' %}" class="btn btn-primary">Create Project <span class="s7-plus"></span></a>
+                            </div>
+                            {% endif %}
                         </div>
                     </div>
                 </div>

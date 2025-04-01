@@ -3,53 +3,140 @@
 {% block title %}Login | BattyCoda{% endblock %}
 
 {% block content %}
-<div class="section">
-    <h2>Login</h2>
-    <form method="post" action="{% url 'battycoda_app:login' %}">
-        {% csrf_token %}
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-md-7">
+            <div class="card card-default my-5 shadow-sm">
+                <div class="card-header bg-primary text-white py-3">
+                    <h2 class="text-center mb-0" style="font-size: 2.2rem;">Login to BattyCoda</h2>
+                </div>
+                <div class="card-body p-5" style="font-size: 1.15rem;">
+                    <form method="post" action="{% url 'battycoda_app:login' %}">
+                        {% csrf_token %}
+                        
+                        <div class="form-group mb-4">
+                            <label for="id_username" class="form-control-label">Username or Email</label>
+                            <div class="input-group">
+                                <div class="input-group-prepend">
+                                    <span class="input-group-text bg-primary text-white"><i class="s7-user" style="font-size: 1.25rem;"></i></span>
+                                </div>
+                                {% if username_or_email %}
+                                    <input type="text" name="username" id="id_username" value="{{ username_or_email }}" required class="form-control form-control-lg">
+                                {% else %}
+                                    <input type="text" name="username" id="id_username" required class="form-control form-control-lg" placeholder="Enter username or email">
+                                {% endif %}
+                            </div>
+                            {% if form.username.errors %}
+                            <span class="text-danger small">
+                                {{ form.username.errors }}
+                            </span>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="form-group mb-5">
+                            <label for="id_password" class="form-control-label">Password</label>
+                            <div class="input-group">
+                                <div class="input-group-prepend">
+                                    <span class="input-group-text bg-primary text-white"><i class="s7-lock" style="font-size: 1.25rem;"></i></span>
+                                </div>
+                                <input type="password" name="password" id="id_password" class="form-control form-control-lg" required placeholder="Enter your password">
+                            </div>
+                            {% if form.password.errors %}
+                            <span class="text-danger small">
+                                {{ form.password.errors }}
+                            </span>
+                            {% endif %}
+                        </div>
+                        
+                        {% if form.non_field_errors %}
+                        <div class="alert alert-danger mb-3" role="alert">
+                            {{ form.non_field_errors }}
+                        </div>
+                        {% endif %}
+                        
+                        <div class="row mt-4">
+                            <div class="col-md-6 mb-2">
+                                <button type="submit" class="btn btn-primary btn-lg btn-block font-weight-bold" style="padding: 12px 0; font-size: 1.2rem;">
+                                    <span class="s7-lock mr-2" style="font-size: 1.3rem; vertical-align: middle;"></span>Login with Password
+                                </button>
+                            </div>
+                            <div class="col-md-6">
+                                <a href="{% url 'battycoda_app:request_login_code' %}" id="codeLoginBtn" class="btn btn-outline-secondary btn-lg btn-block font-weight-bold" style="padding: 12px 0; font-size: 1.2rem;">
+                                    <span class="s7-mail mr-2" style="font-size: 1.3rem; vertical-align: middle;"></span>Login with Code
+                                </a>
+                            </div>
+                        </div>
+                    </form>
         
-        <div style="margin-bottom: 15px;">
-            <label for="id_username" style="display: block; margin-bottom: 5px;">Username:</label>
-            {{ form.username }}
-            {% if form.username.errors %}
-            <span style="color: #e57373; font-size: 0.9em;">
-                {{ form.username.errors }}
-            </span>
-            {% endif %}
+                        <script>
+                            // Script to pass username to the login code page
+                            document.addEventListener('DOMContentLoaded', function() {
+                                const codeLoginBtn = document.getElementById('codeLoginBtn');
+                                const usernameField = document.getElementById('id_username');
+                                
+                                codeLoginBtn.addEventListener('click', function(e) {
+                                    if (usernameField && usernameField.value) {
+                                        e.preventDefault();
+                                        const username = encodeURIComponent(usernameField.value);
+                                        window.location.href = "{% url 'battycoda_app:request_login_code' %}?username=" + username;
+                                    }
+                                });
+                            });
+                        </script>
+                    </form>
+                    
+                    <div class="mt-5 text-center">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <a href="{% url 'battycoda_app:register' %}" id="registerLink" class="btn btn-link text-primary" style="font-size: 1.15rem;">
+                                    <span class="s7-add-user mr-1" style="font-size: 1.3rem; vertical-align: middle;"></span> Create Account
+                                </a>
+                            </div>
+                            <div class="col-md-6">
+                                <a href="{% url 'battycoda_app:password_reset_request' %}" id="resetPasswordLink" class="btn btn-link text-primary" style="font-size: 1.15rem;">
+                                    <span class="s7-key mr-1" style="font-size: 1.3rem; vertical-align: middle;"></span> Forgot Password?
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <script>
+                        // Script to pass username to other pages
+                        document.addEventListener('DOMContentLoaded', function() {
+                            const resetPasswordLink = document.getElementById('resetPasswordLink');
+                            const registerLink = document.getElementById('registerLink');
+                            const usernameField = document.getElementById('id_username');
+                            
+                            // Handle password reset link
+                            resetPasswordLink.addEventListener('click', function(e) {
+                                if (usernameField && usernameField.value) {
+                                    e.preventDefault();
+                                    const username = encodeURIComponent(usernameField.value);
+                                    window.location.href = "{% url 'battycoda_app:password_reset_request' %}?username=" + username;
+                                }
+                            });
+                            
+                            // Handle register link
+                            registerLink.addEventListener('click', function(e) {
+                                if (usernameField && usernameField.value) {
+                                    e.preventDefault();
+                                    const identifier = usernameField.value;
+                                    
+                                    // Check if it looks like an email
+                                    if (identifier.includes('@')) {
+                                        // Transfer as email
+                                        window.location.href = "{% url 'battycoda_app:register' %}?email=" + encodeURIComponent(identifier);
+                                    } else {
+                                        // Transfer as username
+                                        window.location.href = "{% url 'battycoda_app:register' %}?username=" + encodeURIComponent(identifier);
+                                    }
+                                }
+                            });
+                        });
+                    </script>
+                </div>
+            </div>
         </div>
-        
-        <div style="margin-bottom: 15px;">
-            <label for="id_password" style="display: block; margin-bottom: 5px;">Password:</label>
-            {{ form.password }}
-            {% if form.password.errors %}
-            <span style="color: #e57373; font-size: 0.9em;">
-                {{ form.password.errors }}
-            </span>
-            {% endif %}
-        </div>
-        
-        <div style="margin-bottom: 15px;">
-            <label for="id_remember" style="display: inline-block;">
-                <input type="checkbox" name="remember" id="id_remember">
-                Remember me
-            </label>
-        </div>
-        
-        {% if form.non_field_errors %}
-        <div style="margin-bottom: 15px; color: #e57373;">
-            {{ form.non_field_errors }}
-        </div>
-        {% endif %}
-        
-        <div style="margin-top: 20px;">
-            <button type="submit" class="button">Login</button>
-        </div>
-    </form>
-    
-    <div style="margin-top: 20px;">
-        <p>Don't have an account? <a href="{% url 'battycoda_app:register' %}">Register</a></p>
-        <p>Forgot your password? <a href="{% url 'battycoda_app:password_reset_request' %}">Reset Password</a></p>
-        <p>Need a login code? <a href="{% url 'battycoda_app:request_login_code' %}">Request Login Code</a></p>
     </div>
 </div>
 {% endblock %}
