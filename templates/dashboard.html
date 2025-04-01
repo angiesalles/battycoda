@@ -15,44 +15,37 @@
 
     <!-- Stats overview section -->
     <div id="statsOverviewRow" class="row">
-        <div id="statsOverviewCol" class="col-lg-7 mb-4 ms-container">
-            <div id="statsWidgetIndicators" class="widget-indicators ms-selectable">
-                <a id="recordingsIndicator" class="indicator-item ms-elem-selectable" href="{% url 'battycoda_app:recording_list' %}">
-                    <div id="recordingsIconContainer" class="indicator-item-icon">
-                        <div id="recordingsIcon" class="icon"><span class="s7-micro"></span></div>
+        <div id="statsOverviewCol" class="col-lg-7 mb-4">
+            <div id="statsWidgetCard" class="card">
+                <div id="statsWidgetHeader" class="card-header">
+                    <h5 id="statsWidgetTitle" class="card-title"><span class="s7-display2 mr-2"></span>Stats Overview</h5>
+                </div>
+                <div id="statsWidgetBody" class="card-body">
+                    <div id="statsWidgetIndicators" class="widget-indicators">
+                        <div class="list-group">
+                            <a id="recordingsIndicator" class="list-group-item d-flex list-group-item-action py-3" href="{% url 'battycoda_app:recording_list' %}">
+                                <span class="s7-micro mr-3" style="font-size: 24px;"></span>
+                                <span id="recordingsTitle" class="text h5 mb-0 flex-grow-1">Recordings</span>
+                                <span id="recordingsCounter" class="badge badge-pill badge-primary h5 mb-0 align-self-center">{{ total_recordings }}</span>
+                            </a>
+                            <a id="batchesIndicator" class="list-group-item d-flex list-group-item-action py-3" href="{% url 'battycoda_app:task_batch_list' %}">
+                                <span class="s7-box1 mr-3" style="font-size: 24px;"></span>
+                                <span id="batchesTitle" class="text h5 mb-0 flex-grow-1">Task Batches</span>
+                                <span id="batchesCounter" class="badge badge-pill badge-primary h5 mb-0 align-self-center">{{ total_batches }}</span>
+                            </a>
+                            <a id="speciesIndicator" class="list-group-item d-flex list-group-item-action py-3" href="{% url 'battycoda_app:species_list' %}">
+                                <span class="s7-leaf mr-3" style="font-size: 24px;"></span>
+                                <span id="speciesTitle" class="text h5 mb-0 flex-grow-1">Species</span>
+                                <span id="speciesCounter" class="badge badge-pill badge-primary h5 mb-0 align-self-center">{{ total_species }}</span>
+                            </a>
+                            <a id="projectsIndicator" class="list-group-item d-flex list-group-item-action py-3" href="{% url 'battycoda_app:project_list' %}">
+                                <span class="s7-portfolio mr-3" style="font-size: 24px;"></span>
+                                <span id="projectsTitle" class="text h5 mb-0 flex-grow-1">Projects</span>
+                                <span id="projectsCounter" class="badge badge-pill badge-primary h5 mb-0 align-self-center">{{ total_projects }}</span>
+                            </a>
+                        </div>
                     </div>
-                    <div id="recordingsValueContainer" class="indicator-item-value">
-                        <span id="recordingsCounter" class="indicator-value-counter">{{ total_recordings }}</span>
-                        <div id="recordingsTitle" class="indicator-value-title">Recordings</div>
-                    </div>
-                </a>
-                <a id="batchesIndicator" class="indicator-item ms-elem-selectable" href="{% url 'battycoda_app:task_batch_list' %}">
-                    <div id="batchesIconContainer" class="indicator-item-icon">
-                        <div id="batchesIcon" class="icon"><span class="s7-box1"></span></div>
-                    </div>
-                    <div id="batchesValueContainer" class="indicator-item-value">
-                        <span id="batchesCounter" class="indicator-value-counter">{{ total_batches }}</span>
-                        <div id="batchesTitle" class="indicator-value-title">Task Batches</div>
-                    </div>
-                </a>
-                <a id="speciesIndicator" class="indicator-item ms-elem-selectable" href="{% url 'battycoda_app:species_list' %}">
-                    <div id="speciesIconContainer" class="indicator-item-icon">
-                        <div id="speciesIcon" class="icon"><span class="s7-leaf"></span></div>
-                    </div>
-                    <div id="speciesValueContainer" class="indicator-item-value">
-                        <span id="speciesCounter" class="indicator-value-counter">{{ total_species }}</span>
-                        <div id="speciesTitle" class="indicator-value-title">Species</div>
-                    </div>
-                </a>
-                <a id="projectsIndicator" class="indicator-item ms-elem-selectable" href="{% url 'battycoda_app:project_list' %}">
-                    <div id="projectsIconContainer" class="indicator-item-icon">
-                        <div id="projectsIcon" class="icon"><span class="s7-portfolio"></span></div>
-                    </div>
-                    <div id="projectsValueContainer" class="indicator-item-value">
-                        <span id="projectsCounter" class="indicator-value-counter">{{ total_projects }}</span>
-                        <div id="projectsTitle" class="indicator-value-title">Projects</div>
-                    </div>
-                </a>
+                </div>
             </div>
         </div>
         
@@ -68,15 +61,15 @@
                             <a id="manageRecordingsBtn" href="{% url 'battycoda_app:recording_list' %}" class="btn btn-primary btn-block mb-3">
                                 <span class="s7-micro mr-2"></span>Manage Recordings
                             </a>
-                            <a id="segmentationBtn" href="{% url 'battycoda_app:batch_segmentation' %}" class="btn btn-secondary btn-block">
+                            <a id="segmentationBtn" href="{% url 'battycoda_app:batch_segmentation' %}" class="btn btn-primary btn-block">
                                 <span class="s7-scissors mr-2"></span>Segmentation
                             </a>
                         </div>
                         <div id="quickActionsCol2" class="col-md-6 mb-3">
-                            <a id="classificationBtn" href="{% url 'battycoda_app:automation_home' %}" class="btn btn-info btn-block mb-3">
+                            <a id="classificationBtn" href="{% url 'battycoda_app:automation_home' %}" class="btn btn-primary btn-block mb-3">
                                 <span class="s7-display1 mr-2"></span>Run Classification
                             </a>
-                            <a id="nextTaskBtn" href="{% url 'battycoda_app:get_next_task' %}" class="btn btn-success btn-block">
+                            <a id="nextTaskBtn" href="{% url 'battycoda_app:get_next_task' %}" class="btn btn-primary btn-block">
                                 <span class="s7-next mr-2"></span>Get Next Task
                             </a>
                         </div>
@@ -214,7 +207,7 @@
                     </div>
                 </div>
                 <div id="recentBatchesFooter" class="card-footer text-right">
-                    <a id="viewAllBatchesBtn" href="{% url 'battycoda_app:task_batch_list' %}" class="btn btn-sm btn-success">View All <span class="s7-angle-right"></span></a>
+                    <a id="viewAllBatchesBtn" href="{% url 'battycoda_app:task_batch_list' %}" class="btn btn-sm btn-primary">View All <span class="s7-angle-right"></span></a>
                 </div>
             </div>
         </div>
@@ -260,7 +253,7 @@
                     </div>
                 </div>
                 <div id="recentClassificationsFooter" class="card-footer text-right">
-                    <a id="viewAllClassificationsBtn" href="{% url 'battycoda_app:automation_home' %}" class="btn btn-sm btn-info">View All <span class="s7-angle-right"></span></a>
+                    <a id="viewAllClassificationsBtn" href="{% url 'battycoda_app:automation_home' %}" class="btn btn-sm btn-primary">View All <span class="s7-angle-right"></span></a>
                 </div>
             </div>
         </div>
@@ -308,7 +301,7 @@
                                 </table>
                             </div>
                             <div id="recentSpeciesFooter" class="card-footer text-right">
-                                <a id="viewAllSpeciesBtn" href="{% url 'battycoda_app:species_list' %}" class="btn btn-sm btn-warning">View All <span class="s7-angle-right"></span></a>
+                                <a id="viewAllSpeciesBtn" href="{% url 'battycoda_app:species_list' %}" class="btn btn-sm btn-primary">View All <span class="s7-angle-right"></span></a>
                             </div>
                         </div>
                         <div id="projects-tab-content" class="tab-pane fade" role="tabpanel" aria-labelledby="projects-tab">
@@ -335,7 +328,7 @@
                                 </table>
                             </div>
                             <div id="recentProjectsFooter" class="card-footer text-right">
-                                <a id="viewAllProjectsBtn" href="{% url 'battycoda_app:project_list' %}" class="btn btn-sm btn-danger">View All <span class="s7-angle-right"></span></a>
+                                <a id="viewAllProjectsBtn" href="{% url 'battycoda_app:project_list' %}" class="btn btn-sm btn-primary">View All <span class="s7-angle-right"></span></a>
                             </div>
                         </div>
                     </div>
