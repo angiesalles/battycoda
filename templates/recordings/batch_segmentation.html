@@ -51,7 +51,7 @@
     
     <div id="jobs-content" style="display: none;">
         <div class="table-responsive" id="jobs-table" style="display: none;">
-            <table class="table table-hover table-dark-header mb-0">
+            <table class="table table-hover mb-0">
                 <thead>
                     <tr>
                         <th>Recording</th>
@@ -274,14 +274,7 @@
                     data.jobs.forEach(job => {
                         const row = document.createElement('tr');
                         
-                        // Set row class based on status
-                        if (job.status === 'completed') {
-                            row.classList.add('table-success');
-                        } else if (job.status === 'failed') {
-                            row.classList.add('table-danger');
-                        } else if (job.status === 'in_progress') {
-                            row.classList.add('table-primary');
-                        }
+                        // No longer applying color class to the entire row
                         
                         // Format progress bar
                         const progressBar = `
@@ -297,16 +290,16 @@
                             </div>
                         `;
                         
-                        // Format status badge
+                        // Format status badge - making them larger and more prominent
                         let statusBadge;
                         if (job.status === 'completed') {
-                            statusBadge = `<span class="badge badge-success">Completed</span>`;
+                            statusBadge = `<span class="badge badge-success badge-pill px-3 py-2">Completed</span>`;
                         } else if (job.status === 'failed') {
-                            statusBadge = `<span class="badge badge-danger">Failed</span>`;
+                            statusBadge = `<span class="badge badge-danger badge-pill px-3 py-2">Failed</span>`;
                         } else if (job.status === 'in_progress') {
-                            statusBadge = `<span class="badge badge-primary">In Progress</span>`;
+                            statusBadge = `<span class="badge badge-primary badge-pill px-3 py-2">In Progress</span>`;
                         } else {
-                            statusBadge = `<span class="badge badge-secondary">Unknown</span>`;
+                            statusBadge = `<span class="badge badge-secondary badge-pill px-3 py-2">Unknown</span>`;
                         }
                         
                         // Add active badge if this is the active segmentation

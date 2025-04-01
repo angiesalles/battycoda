@@ -21,7 +21,8 @@
     <!-- Maisonnette Core CSS -->
     <link id="stroke7CSS" rel="stylesheet" type="text/css" href="{% static 'lib/stroke-7/style.css' %}">
     <link id="perfectScrollbarCSS" rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/perfect-scrollbar@1.5.0/css/perfect-scrollbar.min.css">
-    <link id="fontAwesomeCSS" rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css">
+    <!-- Font Awesome from static files -->
+    <link id="fontAwesomeCSS" rel="stylesheet" type="text/css" href="{% static 'fontawesomefree/css/all.min.css' %}">
     
     <!-- Load Google Fonts directly -->
     <link id="googleFontsPreconnect1" rel="preconnect" href="https://fonts.googleapis.com">
@@ -110,10 +111,10 @@
                 <div id="themeSelectorTitle" class="title">Choose Theme</div>
                 {% endif %}
                 <div id="themeSelectorContent" class="content">
-                  <ul id="themeList">
+                  <ul id="themeList" class="list-unstyled m-0">
                     {% for theme_id, theme_name in THEME_CHOICES %}
-                    <li id="themeItem-{{ theme_id }}">
-                      <a id="theme-{{ theme_id }}" class="theme-switcher-link {% if user.is_authenticated and user.profile.theme == theme_id %}active{% endif %}" href="#" data-theme="{{ theme_id }}">
+                    <li id="themeItem-{{ theme_id }}" class="theme-list-item">
+                      <a id="theme-{{ theme_id }}" class="theme-switcher-link dropdown-item py-2 {% if user.is_authenticated and user.profile.theme == theme_id %}active{% endif %}" href="#" data-theme="{{ theme_id }}">
                         <span id="themeName-{{ theme_id }}" class="theme-name theme-color-{{ theme_id }}">{{ theme_name }}</span>
                       </a>
                     </li>

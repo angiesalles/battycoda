@@ -214,6 +214,50 @@
     </div>
     
     <div id="recentItemsRow2" class="row">
+        <!-- Recent Segmentations -->
+        <div id="recentSegmentationsCol" class="col-lg-6 mb-4">
+            <div id="recentSegmentationsCard" class="card">
+                <div id="recentSegmentationsHeader" class="card-header">
+                    <h5 id="recentSegmentationsTitle" class="card-title"><span class="s7-scissors mr-2"></span>Recent Segmentations</h5>
+                </div>
+                <div id="recentSegmentationsBody" class="card-body p-0">
+                    <div id="recentSegmentationsTableContainer" class="table-responsive">
+                        <table id="recentSegmentationsTable" class="table table-hover table-dark-header">
+                            <thead id="recentSegmentationsTableHead">
+                                <tr id="recentSegmentationsTableHeaderRow">
+                                    <th id="segmentationRecordingHeaderCol">Recording</th>
+                                    <th id="segmentationAlgorithmHeaderCol">Algorithm</th>
+                                    <th id="segmentationStatusHeaderCol">Status</th>
+                                    <th id="segmentationDateHeaderCol">Date</th>
+                                </tr>
+                            </thead>
+                            <tbody id="recentSegmentationsTableBody">
+                                {% for segmentation in recent_segmentations %}
+                                <tr id="segmentation-{{ segmentation.id }}-row">
+                                    <td id="segmentation-{{ segmentation.id }}-recording"><a id="segmentation-{{ segmentation.id }}-link" href="{% url 'battycoda_app:recording_detail' segmentation.recording.id %}">{{ segmentation.recording.name }}</a></td>
+                                    <td id="segmentation-{{ segmentation.id }}-algorithm">{{ segmentation.algorithm.name }}</td>
+                                    <td id="segmentation-{{ segmentation.id }}-status">
+                                        <span id="segmentation-{{ segmentation.id }}-badge" class="badge badge-pill {% if segmentation.status == 'completed' %}badge-success{% elif segmentation.status == 'failed' %}badge-danger{% else %}badge-warning{% endif %}">
+                                            {{ segmentation.status|title }}
+                                        </span>
+                                    </td>
+                                    <td id="segmentation-{{ segmentation.id }}-date">{{ segmentation.created_at|date:"M d, Y" }}</td>
+                                </tr>
+                                {% empty %}
+                                <tr id="noSegmentationsRow">
+                                    <td id="noSegmentationsMessage" colspan="4" class="text-center">No segmentations yet</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                <div id="recentSegmentationsFooter" class="card-footer text-right">
+                    <a id="viewAllSegmentationsBtn" href="{% url 'battycoda_app:batch_segmentation' %}" class="btn btn-sm btn-primary">View All <span class="s7-angle-right"></span></a>
+                </div>
+            </div>
+        </div>
+
         <!-- Recent Classifications -->
         <div id="recentClassificationsCol" class="col-lg-6 mb-4">
             <div id="recentClassificationsCard" class="card">
@@ -258,78 +302,76 @@
             </div>
         </div>
         
-        <!-- Recent Species & Projects -->
+        <!-- Recent Species & Projects Tabs -->
         <div id="speciesProjectsCol" class="col-lg-6 mb-4">
-            <div id="speciesProjectsCard" class="card">
-                <div id="speciesProjectsHeader" class="card-header">
-                    <ul id="speciesProjectsTabs" class="nav nav-tabs card-header-tabs" role="tablist">
-                        <li id="speciesTabItem" class="nav-item">
-                            <a id="speciesTab" class="nav-link active" data-toggle="tab" href="#species-tab-content" role="tab" aria-controls="species-tab-content" aria-selected="true">
-                                <span class="s7-leaf mr-2"></span>Species
-                            </a>
-                        </li>
-                        <li id="projectsTabItem" class="nav-item">
-                            <a id="projectsTab" class="nav-link" data-toggle="tab" href="#projects-tab-content" role="tab" aria-controls="projects-tab-content" aria-selected="false">
-                                <span class="s7-portfolio mr-2"></span>Projects
-                            </a>
-                        </li>
+            <div class="card">
+                <div class="card-header">
+                    <ul class="nav nav-pills card-header-pills" role="tablist">
+                        <li class="nav-item"><a class="nav-link active" href="#p-species" data-toggle="tab" role="tab" aria-expanded="true"><span class="s7-leaf mr-1"></span>Species</a></li>
+                        <li class="nav-item"><a class="nav-link" href="#p-projects" data-toggle="tab" role="tab" aria-expanded="false"><span class="s7-portfolio mr-1"></span>Projects</a></li>
                     </ul>
                 </div>
-                <div id="speciesProjectsBody" class="card-body p-0">
-                    <div id="tabContent" class="tab-content">
-                        <div id="species-tab-content" class="tab-pane fade show active" role="tabpanel" aria-labelledby="species-tab">
-                            <div id="recentSpeciesTableContainer" class="table-responsive">
-                                <table id="recentSpeciesTable" class="table table-hover table-dark-header">
-                                    <thead id="recentSpeciesTableHead">
-                                        <tr id="recentSpeciesTableHeaderRow">
-                                            <th id="speciesNameHeaderCol">Species</th>
-                                            <th id="speciesCallsHeaderCol">Call Types</th>
+                <div class="card-body">
+                    <div class="tab-content">
+                        <div class="tab-pane active" id="p-species" role="tabpanel">
+                            {% if recent_species %}
+                            <div class="table-responsive">
+                                <table class="table">
+                                    <thead>
+                                        <tr>
+                                            <th>Species</th>
+                                            <th>Call Types</th>
                                         </tr>
                                     </thead>
-                                    <tbody id="recentSpeciesTableBody">
+                                    <tbody>
                                         {% for species in recent_species %}
-                                        <tr id="species-{{ species.id }}-row">
-                                            <td id="species-{{ species.id }}-name"><a id="species-{{ species.id }}-link" href="{% url 'battycoda_app:species_detail' species.id %}">{{ species.name }}</a></td>
-                                            <td id="species-{{ species.id }}-calls">{{ species.calls.count }}</td>
-                                        </tr>
-                                        {% empty %}
-                                        <tr id="noSpeciesRow">
-                                            <td id="noSpeciesMessage" colspan="2" class="text-center">No species yet</td>
+                                        <tr>
+                                            <td><a href="{% url 'battycoda_app:species_detail' species.id %}">{{ species.name }}</a></td>
+                                            <td>{{ species.calls.count }}</td>
                                         </tr>
                                         {% endfor %}
                                     </tbody>
                                 </table>
                             </div>
-                            <div id="recentSpeciesFooter" class="card-footer text-right">
-                                <a id="viewAllSpeciesBtn" href="{% url 'battycoda_app:species_list' %}" class="btn btn-sm btn-primary">View All <span class="s7-angle-right"></span></a>
+                            <div class="text-right mt-3">
+                                <a href="{% url 'battycoda_app:species_list' %}" class="btn btn-sm btn-primary">View All <span class="s7-angle-right"></span></a>
                             </div>
+                            {% else %}
+                            <p class="text-center">No species available yet.</p>
+                            <div class="text-center mt-3">
+                                <a href="{% url 'battycoda_app:species_list' %}" class="btn btn-primary">Add Species <span class="s7-plus"></span></a>
+                            </div>
+                            {% endif %}
                         </div>
-                        <div id="projects-tab-content" class="tab-pane fade" role="tabpanel" aria-labelledby="projects-tab">
-                            <div id="recentProjectsTableContainer" class="table-responsive">
-                                <table id="recentProjectsTable" class="table table-hover table-dark-header">
-                                    <thead id="recentProjectsTableHead">
-                                        <tr id="recentProjectsTableHeaderRow">
-                                            <th id="projectNameHeaderCol">Project</th>
-                                            <th id="projectRecordingsHeaderCol">Recordings</th>
+                        <div class="tab-pane" id="p-projects" role="tabpanel">
+                            {% if recent_projects %}
+                            <div class="table-responsive">
+                                <table class="table">
+                                    <thead>
+                                        <tr>
+                                            <th>Project</th>
+                                            <th>Recordings</th>
                                         </tr>
                                     </thead>
-                                    <tbody id="recentProjectsTableBody">
+                                    <tbody>
                                         {% for project in recent_projects %}
-                                        <tr id="project-{{ project.id }}-row">
-                                            <td id="project-{{ project.id }}-name"><a id="project-{{ project.id }}-link" href="{% url 'battycoda_app:project_detail' project.id %}">{{ project.name }}</a></td>
-                                            <td id="project-{{ project.id }}-recordings">{{ project.recordings.count }}</td>
-                                        </tr>
-                                        {% empty %}
-                                        <tr id="noProjectsRow">
-                                            <td id="noProjectsMessage" colspan="2" class="text-center">No projects yet</td>
+                                        <tr>
+                                            <td><a href="{% url 'battycoda_app:project_detail' project.id %}">{{ project.name }}</a></td>
+                                            <td>{{ project.recordings.count }}</td>
                                         </tr>
                                         {% endfor %}
                                     </tbody>
                                 </table>
                             </div>
-                            <div id="recentProjectsFooter" class="card-footer text-right">
-                                <a id="viewAllProjectsBtn" href="{% url 'battycoda_app:project_list' %}" class="btn btn-sm btn-primary">View All <span class="s7-angle-right"></span></a>
+                            <div class="text-right mt-3">
+                                <a href="{% url 'battycoda_app:project_list' %}" class="btn btn-sm btn-primary">View All <span class="s7-angle-right"></span></a>
                             </div>
+                            {% else %}
+                            <p class="text-center">No projects available yet.</p>
+                            <div class="text-center mt-3">
+                                <a href="{% url 'battycoda_app:project_list' %}" class="btn btn-primary">Create Project <span class="s7-plus"></span></a>
+                            </div>
+                            {% endif %}
                         </div>
                     </div>
                 </div>

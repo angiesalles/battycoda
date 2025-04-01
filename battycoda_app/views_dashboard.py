@@ -76,6 +76,20 @@ def index(request):
             recent_projects = Project.objects.filter(created_by=request.user).order_by("-created_at")[:5]
 
         context["recent_projects"] = recent_projects
+        
+        # Get recent segmentations
+        if profile.group:
+            if profile.is_admin:
+                # Admin sees all segmentations in their group
+                recent_segmentations = Segmentation.objects.filter(recording__group=profile.group).order_by("-created_at")[:5]
+            else:
+                # Regular user only sees their own segmentations
+                recent_segmentations = Segmentation.objects.filter(created_by=request.user).order_by("-created_at")[:5]
+        else:
+            # Fallback to showing only user's segmentations if no group is assigned
+            recent_segmentations = Segmentation.objects.filter(created_by=request.user).order_by("-created_at")[:5]
+            
+        context["recent_segmentations"] = recent_segmentations
 
         # Get stats
         if profile.group:
