@@ -63,9 +63,14 @@ def login_view(request):
 
             return redirect(next_page)
         else:
-            messages.error(request, "Please check your login details and try again.")
-            # Re-render form with username_or_email to maintain its value
-            return render(request, "auth/login.html", {"form": UserLoginForm(), "username_or_email": username_or_email})
+            # Special case for login errors - display in form instead of toast
+            login_error = "Invalid login credentials. Please check your username/email and password and try again."
+            # Re-render form with username_or_email to maintain its value and the error message
+            return render(request, "auth/login.html", {
+                "form": UserLoginForm(), 
+                "username_or_email": username_or_email,
+                "login_error": login_error
+            })
     else:
         form = UserLoginForm()
 
@@ -512,7 +517,6 @@ def enter_login_code(request, username):
     return render(request, "auth/enter_login_code.html", {"username": username})
 
 
-@csrf_exempt
 def check_username(request):
     """
     AJAX endpoint to check if a username is valid and available
@@ -523,11 +527,13 @@ def check_username(request):
     """
     if request.method == "POST":
         username = request.POST.get("username", "")
+        email = request.POST.get("email", "")
         
         response = {
             "exists": False,
             "valid": True,
-            "message": ""
+            "message": "",
+            "email_exists": False
         }
         
         # Check for empty username
@@ -554,6 +560,44 @@ def check_username(request):
         if user_exists:
             response["exists"] = True
             response["message"] = "This username is already taken."
+            
+        # Check if email exists (if provided)
+        if email:
+            email_exists = User.objects.filter(email=email).exists()
+            if email_exists:
+                response["email_exists"] = True
+                response["email_message"] = "This email is already in use."
+            
+        return JsonResponse(response)
+        
+    return JsonResponse({"error": "Method not allowed"}, status=405)
+
+
+def check_email(request):
+    """
+    AJAX endpoint to check if an email is already in use
+    Returns:
+        - exists: True/False if the email exists
+        - message: Error message if any
+    """
+    if request.method == "POST":
+        email = request.POST.get("email", "")
+        
+        response = {
+            "exists": False,
+            "message": ""
+        }
+        
+        # Check for empty email
+        if not email:
+            response["exists"] = False
+            return JsonResponse(response)
+        
+        # Check if email exists
+        email_exists = User.objects.filter(email=email).exists()
+        if email_exists:
+            response["exists"] = True
+            response["message"] = "This email is already in use."
             
         return JsonResponse(response)
         

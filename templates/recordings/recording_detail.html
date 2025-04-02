@@ -30,22 +30,7 @@
         </div>
     </div>
 
-    {% if messages %}
-    <div id="messagesRow" class="row">
-        <div id="messagesCol" class="col-12">
-            <div id="messagesContainer" class="messages mb-4">
-                {% for message in messages %}
-                <div id="message-{{ forloop.counter }}" class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
-                    <span id="messageText-{{ forloop.counter }}">{{ message }}</span>
-                    <button id="messageCloseBtn-{{ forloop.counter }}" type="button" class="close" data-dismiss="alert" aria-label="Close">
-                        <span aria-hidden="true">&times;</span>
-                    </button>
-                </div>
-                {% endfor %}
-            </div>
-        </div>
-    </div>
-    {% endif %}
+    {# Messages are now handled by toastr in base.html #}
 
     <div id="recordingContentRow" class="row">
         <!-- Recording information card -->
@@ -98,7 +83,7 @@
                     </div>
                 </div>
                 <div id="recordingInfoFooter" class="card-footer text-center">
-                    <a id="downloadRecordingBtn" href="{{ recording.wav_file.url }}" class="btn btn-primary" target="_blank">
+                    <a id="downloadRecordingBtn" href="{{ recording.wav_file.url }}" class="btn btn-outline-primary" target="_blank">
                         <span id="downloadIcon" class="s7-download mr-1"></span> Download Recording
                     </a>
                 </div>
@@ -130,14 +115,14 @@
                         <a id="segmentRecordingBtn" href="{% url 'battycoda_app:segment_recording' recording_id=recording.id %}" class="btn btn-primary mr-2 mb-2">
                             <span id="segmentIcon" class="s7-scissors mr-1"></span> Segment Recording
                         </a>
-                        <a id="uploadPickleBtn" href="{% url 'battycoda_app:upload_pickle_segments' recording_id=recording.id %}" class="btn btn-outline-primary mr-2 mb-2">
+                        <a id="uploadPickleBtn" href="{% url 'battycoda_app:upload_pickle_segments' recording_id=recording.id %}" class="btn btn-primary mr-2 mb-2">
                             <span id="uploadIcon" class="s7-upload mr-1"></span> Upload Pickle File
                         </a>
-                        <a id="autoSegmentBtn" href="{% url 'battycoda_app:auto_segment_recording' recording_id=recording.id %}" class="btn btn-outline-primary mr-2 mb-2">
+                        <a id="autoSegmentBtn" href="{% url 'battycoda_app:auto_segment_recording' recording_id=recording.id %}" class="btn btn-primary mr-2 mb-2">
                             <span id="magicIcon" class="s7-wand mr-1"></span> Auto-Segment
                         </a>
                         {% if recording.segmentation %}
-                        <a id="runClassificationBtn" href="{% url 'battycoda_app:create_detection_run_for_segmentation' segmentation_id=recording.segmentation.id %}" class="btn btn-outline-success mb-2">
+                        <a id="runClassificationBtn" href="{% url 'battycoda_app:create_detection_run_for_segmentation' segmentation_id=recording.segmentation.id %}" class="btn btn-primary mb-2">
                             <span id="classifyIcon" class="s7-display1 mr-1"></span> Run Classification
                         </a>
                         {% endif %}

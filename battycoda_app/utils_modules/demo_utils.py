@@ -20,7 +20,7 @@ def create_demo_task_batch(user):
     Returns:
         TaskBatch or None: The created TaskBatch object, or None if creation failed
     """
-    from battycoda_app.audio.task_modules.detection_tasks import run_dummy_classifier
+    from battycoda_app.audio.task_modules.classification_tasks import run_dummy_classifier
     from battycoda_app.audio.utils import process_pickle_file
     # Import from specific model modules
     from battycoda_app.models.detection import CallProbability, Classifier, DetectionResult, DetectionRun
@@ -238,7 +238,7 @@ def _run_demo_classification(user, group, segmentation):
     Returns:
         DetectionRun: The created DetectionRun object or None if creation failed
     """
-    from battycoda_app.audio.task_modules.detection_tasks import run_dummy_classifier
+    from battycoda_app.audio.task_modules.classification_tasks import run_dummy_classifier
     from battycoda_app.models.detection import Classifier, DetectionRun
 
     try:

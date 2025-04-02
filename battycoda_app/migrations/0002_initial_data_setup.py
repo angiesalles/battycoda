@@ -38,14 +38,60 @@ def create_default_classifiers(apps, schema_editor):
     """
     Classifier = apps.get_model('battycoda_app', 'Classifier')
     
-    # Create the R-direct classifier
+    # Get necessary species
+    Species = apps.get_model('battycoda_app', 'Species')
+    efuscus = Species.objects.filter(name="Eptesicus fuscus").first()
+    carollia = Species.objects.filter(name="Carollia perspicillata").first()
+    
+    # Create the KNN E. fuscus classifier
     Classifier.objects.create(
-        name="R-direct Classifier",
-        description="Uses R to process audio segments and classify bat calls based on spectral features.",
+        name="KNN E. fuscus",
+        description="K-Nearest Neighbors classifier for Eptesicus fuscus bat calls. Processes audio segments to classify calls based on spectral features.",
         response_format="full_probability",
-        celery_task="battycoda_app.audio.task_modules.detection_tasks.run_call_detection",
-        service_url="http://r-server:8000",
-        endpoint="/classify",
+        celery_task="battycoda_app.audio.task_modules.classification_tasks.run_call_detection",
+        service_url="http://localhost:8000",
+        endpoint="/predict/knn",
+        model_file="data/models/efuscus_knn_model.RData",
+        species=efuscus,
+        is_active=True
+    )
+    
+    # Create the LDA E. fuscus classifier
+    Classifier.objects.create(
+        name="LDA E. fuscus",
+        description="Linear Discriminant Analysis classifier for Eptesicus fuscus bat calls. Provides efficient classification based on linear discriminants of spectral features.",
+        response_format="full_probability",
+        celery_task="battycoda_app.audio.task_modules.classification_tasks.run_call_detection",
+        service_url="http://localhost:8000",
+        endpoint="/predict/lda",
+        model_file="data/models/efuscus_lda_model.RData",
+        species=efuscus,
+        is_active=True
+    )
+    
+    # Create the KNN Carollia classifier
+    Classifier.objects.create(
+        name="KNN Carollia",
+        description="K-Nearest Neighbors classifier for Carollia perspicillata bat calls. Processes audio segments to classify calls based on spectral features.",
+        response_format="full_probability",
+        celery_task="battycoda_app.audio.task_modules.classification_tasks.run_call_detection",
+        service_url="http://localhost:8000",
+        endpoint="/predict/knn",
+        model_file="data/models/carollia_knn_model.RData",
+        species=carollia,
+        is_active=True
+    )
+    
+    # Create the LDA Carollia classifier
+    Classifier.objects.create(
+        name="LDA Carollia",
+        description="Linear Discriminant Analysis classifier for Carollia perspicillata bat calls. Provides efficient classification based on linear discriminants of spectral features.",
+        response_format="full_probability",
+        celery_task="battycoda_app.audio.task_modules.classification_tasks.run_call_detection",
+        service_url="http://localhost:8000",
+        endpoint="/predict/lda",
+        model_file="data/models/carollia_lda_model.RData",
+        species=carollia,
         is_active=True
     )
     
@@ -151,6 +197,6 @@ class Migration(migrations.Migration):
 
     operations = [
         migrations.RunPython(create_default_segmentation_algorithms),
-        migrations.RunPython(create_default_classifiers),
         migrations.RunPython(create_system_species),
+        migrations.RunPython(create_default_classifiers),
     ]

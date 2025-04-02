@@ -3,6 +3,7 @@ Core views for handling recording CRUD operations.
 """
 from .views_common import *
 from .tasks import calculate_audio_duration
+from .forms_edit import RecordingEditForm
 
 # Set up logging
 
@@ -117,13 +118,13 @@ def edit_recording_view(request, recording_id):
         return redirect("battycoda_app:recording_list")
 
     if request.method == "POST":
-        form = RecordingForm(request.POST, request.FILES, instance=recording, user=request.user)
+        form = RecordingEditForm(request.POST, instance=recording, user=request.user)
         if form.is_valid():
             form.save()
             messages.success(request, f"Successfully updated recording: {recording.name}")
             return redirect("battycoda_app:recording_detail", recording_id=recording.id)
     else:
-        form = RecordingForm(instance=recording, user=request.user)
+        form = RecordingEditForm(instance=recording, user=request.user)
 
     context = {
         "form": form,

@@ -101,7 +101,7 @@ def create_classifier_training_job_view(request, batch_id=None):
             )
             
             # Launch the training task
-            from battycoda_app.audio.task_modules.detection_tasks import train_classifier
+            from battycoda_app.audio.task_modules.training_tasks import train_classifier
             train_classifier.delay(job.id)
             
             messages.success(

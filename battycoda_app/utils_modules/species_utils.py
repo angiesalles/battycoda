@@ -76,7 +76,7 @@ def import_default_species(user):
         # Create the species with its normal name
         species = Species.objects.create(
             name=species_name, 
-            description="Saccopteryx bilineata, known as the greater sac-winged bat, is a bat species in the family Emballonuridae.", 
+            description="Saccopteryx bilineata, known as the greater sac-winged bat, is a bat species in the family Emballonuridae. Figure and call types from Christian C. Voigt, Oliver Behr, Barbara Caspers, Otto von Helversen, Mirjam Knörnschild, Frieder Mayer, Martina Nagy, Songs, Scents, and Senses: Sexual Selection in the Greater Sac-Winged Bat, Saccopteryx bilineata, Journal of Mammalogy, Volume 89, Issue 6, 16 December 2008, Pages 1401–1410, https://doi.org/10.1644/08-MAMM-S-060.1", 
             created_by=user, 
             group=group
         )

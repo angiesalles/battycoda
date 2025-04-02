@@ -60,7 +60,7 @@ RUN R -e 'options(repos = c(CRAN = "https://cloud.r-project.org")); \
     # Detect number of available CPUs \
     num_cpus <- parallel::detectCores(); \
     # Install all packages with their dependencies \
-    install.packages(c("redux","rush","mlflow","git2r","class", "plumber", "warbleR", "mlr3", "mlr3learners", "mlr3tuning", "viridis", "stringr", "kknn"), dependencies = TRUE, quiet = FALSE, Ncpus = num_cpus)'
+    install.packages(c("caret","redux","rush","mlflow","git2r","class", "plumber", "warbleR", "mlr3", "mlr3learners", "mlr3tuning", "viridis", "stringr", "kknn"), dependencies = TRUE, quiet = FALSE, Ncpus = num_cpus)'
 
 # Expose port for the R plumber API
 EXPOSE 8000
