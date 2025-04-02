@@ -44,9 +44,11 @@
     {% if selected_algorithm %}
         <strong>{{ selected_algorithm.name }}</strong>: {{ selected_algorithm.description }}
     {% else %}
-        This tool automatically segments recordings by taking the absolute value of the audio signal,
-        smoothing it using a moving average filter, applying a threshold to detect segments, and 
-        rejecting segments shorter than the minimum duration.
+        {% if algorithms %}
+            <strong>{{ algorithms.first.name }}</strong>: {{ algorithms.first.description }}
+        {% else %}
+            No segmentation algorithms are available.
+        {% endif %}
     {% endif %}
 </div>
 
@@ -67,7 +69,6 @@
                             value="{{ algo.id }}" {% if algo.id == selected_algorithm.id or forloop.first and not selected_algorithm %}checked{% endif %}>
                         <label class="form-check-label" for="algorithm-{{ algo.id }}">
                             <strong>{{ algo.name }}</strong>
-                            <span class="badge bg-secondary ms-2">{{ algo.get_algorithm_type_display }}</span>
                         </label>
                         <small class="d-block text-muted mt-1">{{ algo.description }}</small>
                     </div>

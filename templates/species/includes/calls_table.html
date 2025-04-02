@@ -14,9 +14,15 @@
                 <td>{{ call.short_name }}</td>
                 <td>{{ call.long_name|default:'' }}</td>
                 <td class="text-center">
+                    {% if can_modify|default:True %}
                     <button type="button" class="btn btn-sm btn-danger delete-call-btn" data-call-id="{{ call.id }}">
                         <i class="fas fa-trash"></i> Delete
                     </button>
+                    {% else %}
+                    <button type="button" class="btn btn-sm btn-secondary" disabled title="Cannot delete call types when species is used by classifiers">
+                        <i class="fas fa-lock"></i> Locked
+                    </button>
+                    {% endif %}
                 </td>
             </tr>
             {% endfor %}

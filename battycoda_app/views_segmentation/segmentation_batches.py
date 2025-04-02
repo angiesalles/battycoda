@@ -2,6 +2,7 @@
 Views for managing batch segmentation operations.
 """
 import os
+import fnmatch
 
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
@@ -90,8 +91,8 @@ def segmentation_jobs_status_view(request):
     # Format the segmentations for the response
     formatted_jobs = []
     for segmentation in segmentations[:20]:  # Limit to 20 most recent segmentations
-        # Count segments
-        segments_count = segmentation.recording.segments.count()
+        # Count segments for this specific segmentation
+        segments_count = segmentation.segments.count()
 
         # Basic job information
         formatted_job = {
@@ -107,7 +108,8 @@ def segmentation_jobs_status_view(request):
             "algorithm_type": segmentation.algorithm.get_algorithm_type_display()
             if segmentation.algorithm
             else "Manual",
-            "view_url": reverse("battycoda_app:segment_recording", kwargs={"recording_id": segmentation.recording.id}),
+            "view_url": reverse("battycoda_app:segment_recording", kwargs={"recording_id": segmentation.recording.id}) + 
+                        f"?segmentation_id={segmentation.id}",
             "retry_url": reverse(
                 "battycoda_app:auto_segment_recording", kwargs={"recording_id": segmentation.recording.id}
             ),

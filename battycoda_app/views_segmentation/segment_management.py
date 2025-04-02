@@ -2,7 +2,10 @@
 Views for managing individual recording segments (CRUD operations).
 """
 import json
+import os
+import hashlib
 
+from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.db import transaction
@@ -24,35 +27,68 @@ def segment_recording_view(request, recording_id):
         messages.error(request, "You don't have permission to segment this recording.")
         return redirect("battycoda_app:recording_list")
 
-    # Get active segmentation for this recording
-    try:
-        active_segmentation = Segmentation.objects.get(recording=recording, is_active=True)
-
-        # Get segments from the active segmentation
-        segments = Segment.objects.filter(segmentation=active_segmentation).order_by("onset")
-
-        # Add segmentation info to context
-        segmentation_info = {
-            "id": active_segmentation.id,
-            "name": active_segmentation.name,
-            "algorithm": active_segmentation.algorithm.name if active_segmentation.algorithm else "Manual",
-            "created_at": active_segmentation.created_at,
-            "manually_edited": active_segmentation.manually_edited,
-        }
-    except Segmentation.DoesNotExist:
-        # No active segmentation, return empty queryset
-        segments = Segment.objects.none()
-        segmentation_info = None
-
-        # Check if there are any segmentations at all
-        if Segmentation.objects.filter(recording=recording).exists():
-            # Activate the most recent segmentation
-            latest_segmentation = Segmentation.objects.filter(recording=recording).order_by("-created_at").first()
-            latest_segmentation.is_active = True
-            latest_segmentation.save()
-
-            # Redirect to refresh the page with the newly activated segmentation
+    # Check if a specific segmentation ID is requested in the query parameters
+    requested_segmentation_id = request.GET.get('segmentation_id')
+    
+    if requested_segmentation_id:
+        try:
+            # Try to get the requested segmentation
+            requested_segmentation = Segmentation.objects.get(id=requested_segmentation_id, recording=recording)
+            
+            # Automatically make it active
+            if not requested_segmentation.is_active:
+                # Deactivate all other segmentations for this recording
+                Segmentation.objects.filter(recording=recording).update(is_active=False)
+                
+                # Activate the requested one
+                requested_segmentation.is_active = True
+                requested_segmentation.save()
+                
+            # Use this segmentation
+            active_segmentation = requested_segmentation
+            segments = Segment.objects.filter(segmentation=active_segmentation).order_by("onset")
+            
+            # Add segmentation info to context
+            segmentation_info = {
+                "id": active_segmentation.id,
+                "name": active_segmentation.name,
+                "algorithm": active_segmentation.algorithm.name if active_segmentation.algorithm else "Manual",
+                "created_at": active_segmentation.created_at,
+                "manually_edited": active_segmentation.manually_edited,
+            }
+        except Segmentation.DoesNotExist:
+            # If the requested segmentation doesn't exist, fall back to the active one
             return redirect("battycoda_app:segment_recording", recording_id=recording.id)
+    else:
+        # No specific segmentation requested, use the active one
+        try:
+            active_segmentation = Segmentation.objects.get(recording=recording, is_active=True)
+
+            # Get segments from the active segmentation
+            segments = Segment.objects.filter(segmentation=active_segmentation).order_by("onset")
+
+            # Add segmentation info to context
+            segmentation_info = {
+                "id": active_segmentation.id,
+                "name": active_segmentation.name,
+                "algorithm": active_segmentation.algorithm.name if active_segmentation.algorithm else "Manual",
+                "created_at": active_segmentation.created_at,
+                "manually_edited": active_segmentation.manually_edited,
+            }
+        except Segmentation.DoesNotExist:
+            # No active segmentation, return empty queryset
+            segments = Segment.objects.none()
+            segmentation_info = None
+
+            # Check if there are any segmentations at all
+            if Segmentation.objects.filter(recording=recording).exists():
+                # Activate the most recent segmentation
+                latest_segmentation = Segmentation.objects.filter(recording=recording).order_by("-created_at").first()
+                latest_segmentation.is_active = True
+                latest_segmentation.save()
+
+                # Redirect to refresh the page with the newly activated segmentation
+                return redirect("battycoda_app:segment_recording", recording_id=recording.id)
 
     # Generate spectrogram if needed
     try:

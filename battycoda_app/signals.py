@@ -2,6 +2,7 @@
 from django.contrib.auth.models import User
 from django.db.models.signals import post_save
 from django.dispatch import receiver
+from django.utils import timezone
 
 from .models.recording import Recording, Segmentation
 from .models.detection import DetectionRun, ClassifierTrainingJob
@@ -38,6 +39,15 @@ def segmentation_status_changed(sender, instance, **kwargs):
     """
     Signal handler to create notifications when segmentation status changes to completed or failed
     """
+    # Skip notifications for segmentations created in the last minute with initial completed status
+    # This avoids generating notifications for demo data during user creation
+    created_just_now = instance.created_at > timezone.now() - timezone.timedelta(minutes=1)
+    first_save = kwargs.get('created', False)
+    
+    # Only notify about real segmentation jobs, not demo data being created initially as completed
+    if created_just_now and first_save and instance.status == 'completed':
+        return
+        
     # Only create notifications for status transitions to completed or failed
     if instance.status == 'completed':
         # Create success notification
@@ -59,6 +69,15 @@ def detection_run_status_changed(sender, instance, **kwargs):
     """
     Signal handler to create notifications when detection run status changes to completed or failed
     """
+    # Skip notifications for detection runs created in the last minute with initial completed status
+    # This avoids generating notifications for demo data during user creation
+    created_just_now = instance.created_at > timezone.now() - timezone.timedelta(minutes=1)
+    first_save = kwargs.get('created', False)
+    
+    # Only notify about real detection runs, not demo data being created initially as completed
+    if created_just_now and first_save and instance.status == 'completed':
+        return
+        
     # Only create notifications for status transitions to completed or failed
     if instance.status == 'completed':
         # Create success notification
@@ -80,6 +99,15 @@ def training_job_status_changed(sender, instance, **kwargs):
     """
     Signal handler to create notifications when classifier training job status changes to completed or failed
     """
+    # Skip notifications for training jobs created in the last minute with initial completed status
+    # This avoids generating notifications for demo data during user creation
+    created_just_now = instance.created_at > timezone.now() - timezone.timedelta(minutes=1)
+    first_save = kwargs.get('created', False)
+    
+    # Only notify about real training jobs, not demo data being created initially as completed
+    if created_just_now and first_save and instance.status == 'completed':
+        return
+        
     # Only create notifications for status transitions to completed or failed
     if instance.status == 'completed':
         # Create success notification

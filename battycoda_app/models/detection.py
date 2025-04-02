@@ -1,9 +1,10 @@
 """Detection models for BattyCoda application."""
 
 from django.contrib.auth.models import User
+from django.core.exceptions import ValidationError
 from django.db import models
 
-from .organization import Call
+from .organization import Call, Species
 from .task import TaskBatch
 from .user import Group
 
@@ -52,6 +53,16 @@ class Classifier(models.Model):
         null=True, 
         help_text="Path to the model file for custom trained classifiers"
     )
+    
+    # Species this classifier is trained for
+    species = models.ForeignKey(
+        Species,
+        on_delete=models.PROTECT,  # Prevent deletion of species used by a classifier
+        related_name="classifiers",
+        null=True,
+        blank=True,
+        help_text="Species this classifier is trained for. Once set, this cannot be changed."
+    )
 
     # Admin only flag
     is_active = models.BooleanField(default=True, help_text="Whether this classifier is currently active")
@@ -75,6 +86,23 @@ class Classifier(models.Model):
 
     def __str__(self):
         return self.name
+        
+    def clean(self):
+        """Validate the model before saving"""
+        # If this is an existing classifier with a species already set
+        if self.pk:
+            original = Classifier.objects.get(pk=self.pk)
+            # Check if species is being changed and was previously set
+            if original.species and self.species != original.species:
+                raise ValidationError({
+                    'species': "Cannot change the species of an existing classifier. "
+                               "The classifier is tied to the call types of its species."
+                })
+    
+    def save(self, *args, **kwargs):
+        """Override save to enforce validation"""
+        self.clean()
+        super().save(*args, **kwargs)
 
     class Meta:
         ordering = ["name"]

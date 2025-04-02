@@ -38,6 +38,68 @@
 <td data-utc-date="{{ item.created_at|date:'c' }}" data-date-format="date">{{ item.created_at|date:"M d, Y" }}</td>
 {% endblock %}
 
+{% block table_body %}
+{% for item in items %}
+<tr>
+    <td>
+        <a href="{% url 'battycoda_app:species_detail' item.id %}" class="text-decoration-none">
+            {{ item.name }}{% if item.is_system %} <span class="badge badge-secondary">System</span>{% endif %}
+        </a>
+    </td>
+    
+    <td>{{ item.calls.count }}</td>
+    <td>{{ item.tasks.count }}</td>
+    <td data-utc-date="{{ item.created_at|date:'c' }}" data-date-format="date">{{ item.created_at|date:"M d, Y" }}</td>
+    
+    <td>
+        <div class="btn-group">
+            <!-- View button -->
+            <a href="{% url 'battycoda_app:species_detail' item.id %}" 
+               class="btn btn-sm btn-primary mr-1"
+               data-toggle="tooltip" data-placement="top" 
+               title="View details">
+                <span class="s7-look"></span>
+            </a>
+            
+            {% if item.is_system %}
+            <!-- Disabled edit button for system species -->
+            <a href="javascript:void(0)" 
+               class="btn btn-sm btn-secondary mr-1 disabled"
+               data-toggle="tooltip" data-placement="top" 
+               title="System species cannot be edited">
+                <span class="s7-pen"></span>
+            </a>
+            
+            <!-- Disabled delete button for system species -->
+            <a href="javascript:void(0)" 
+               class="btn btn-sm btn-secondary disabled"
+               data-toggle="tooltip" data-placement="top" 
+               title="System species cannot be deleted">
+                <span class="s7-trash"></span>
+            </a>
+            {% else %}
+            <!-- Edit button for regular species -->
+            <a href="{% url 'battycoda_app:edit_species' item.id %}" 
+               class="btn btn-sm btn-info mr-1"
+               data-toggle="tooltip" data-placement="top" 
+               title="Edit">
+                <span class="s7-pen"></span>
+            </a>
+            
+            <!-- Delete button for regular species -->
+            <a href="{% url 'battycoda_app:delete_species' item.id %}" 
+               class="btn btn-sm btn-danger"
+               data-toggle="tooltip" data-placement="top" 
+               title="Delete">
+                <span class="s7-trash"></span>
+            </a>
+            {% endif %}
+        </div>
+    </td>
+</tr>
+{% endfor %}
+{% endblock %}
+
 {% block empty_icon %}s7-leaf{% endblock %}
 {% block empty_title %}No Species Found{% endblock %}
 {% block empty_text %}Create your first species to get started.{% endblock %}
