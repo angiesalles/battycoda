@@ -25,7 +25,7 @@
     </div>
     {% endif %}
 
-    <div class="card bg-dark">
+    <div class="card">
         <div class="card-header">
             <h5 class="mb-0">Create New Recording</h5>
         </div>
@@ -160,9 +160,6 @@ document.addEventListener('DOMContentLoaded', function() {
     formInputs.forEach(input => {
         if (!input.classList.contains('form-check-input')) {
             input.classList.add('form-control');
-            input.classList.add('bg-dark');
-            input.classList.add('text-light');
-            input.classList.add('border-secondary');
         }
     });
     

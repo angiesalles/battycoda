@@ -54,6 +54,12 @@
                         </div>
                         {% endif %}
                         
+                        {% if login_error %}
+                        <div class="alert alert-danger mb-3" role="alert">
+                            <strong><i class="s7-attention mr-2"></i>Login Failed:</strong> {{ login_error }}
+                        </div>
+                        {% endif %}
+                        
                         <div class="row mt-4">
                             <div class="col-md-6 mb-2">
                                 <button type="submit" class="btn btn-primary btn-lg btn-block font-weight-bold" style="padding: 12px 0; font-size: 1.2rem;">

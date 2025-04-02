@@ -92,6 +92,16 @@ def create_detection_run_view(request, segmentation_id=None):
             except Classifier.DoesNotExist:
                 messages.error(request, "Default classifier not found. Please select a classifier.")
                 return redirect("battycoda_app:create_detection_run", segmentation_id=segmentation_id)
+                
+        # Check if classifier species matches the recording species
+        if classifier.species and segmentation.recording.species != classifier.species:
+            error_message = (
+                f"The selected classifier ({classifier.name}) is trained for {classifier.species.name}, "
+                f"but the recording is for {segmentation.recording.species.name}. "
+                f"Please select a classifier that matches the recording's species."
+            )
+            messages.error(request, error_message)
+            return redirect("battycoda_app:create_detection_run", segmentation_id=segmentation_id)
 
         # Create the detection run
         try:
@@ -109,12 +119,12 @@ def create_detection_run_view(request, segmentation_id=None):
             # Launch the appropriate Celery task based on the classifier
             if classifier.name == "Dummy Classifier":
                 # Use the dummy classifier task directly
-                from battycoda_app.audio.task_modules.detection_tasks import run_dummy_classifier
+                from battycoda_app.audio.task_modules.classification_tasks import run_dummy_classifier
 
                 run_dummy_classifier.delay(run.id)
             else:
                 # For other classifiers, use the standard task
-                from battycoda_app.audio.task_modules.detection_tasks import run_call_detection
+                from battycoda_app.audio.task_modules.classification_tasks import run_call_detection
 
                 run_call_detection.delay(run.id)
 
@@ -146,24 +156,52 @@ def create_detection_run_view(request, segmentation_id=None):
             messages.error(request, "You don't have permission to create a classification run for this segmentation.")
             return redirect("battycoda_app:recording_list")
 
+        # Get recording species
+        recording_species = segmentation.recording.species
+        
+        # Get all classifiers first (for debugging)
+        all_classifiers = Classifier.objects.filter(is_active=True)
+        
+        # Log all classifiers and their species
+        print(f"DEBUG: All classifiers: {len(all_classifiers)}")
+        for c in all_classifiers:
+            print(f"DEBUG: Classifier: {c.name}, Species: {c.species.name if c.species else 'None'}")
+        
+        print(f"DEBUG: Recording species: {recording_species.name}")
+            
         # Get available classifiers (group's classifiers and global classifiers)
+        # Filter by matching species or null species (like dummy classifier)
         if profile.group:
             classifiers = (
                 Classifier.objects.filter(is_active=True)
                 .filter(models.Q(group=profile.group) | models.Q(group__isnull=True))
+                .filter(models.Q(species=recording_species) | models.Q(species__isnull=True))
                 .order_by("name")
             )
         else:
-            classifiers = Classifier.objects.filter(is_active=True, group__isnull=True).order_by("name")
+            classifiers = (
+                Classifier.objects.filter(is_active=True, group__isnull=True)
+                .filter(models.Q(species=recording_species) | models.Q(species__isnull=True))
+                .order_by("name")
+            )
+            
+        # Log filtered classifiers
+        print(f"DEBUG: Filtered classifiers: {len(classifiers)}")
+        for c in classifiers:
+            print(f"DEBUG: Filtered classifier: {c.name}, Species: {c.species.name if c.species else 'None'}")
 
         # If no classifiers are available, show a message and redirect
         if not classifiers.exists():
-            messages.error(request, "No classifiers available. Please contact an administrator.")
+            messages.error(
+                request, 
+                f"No classifiers available for {recording_species.name}. Please contact an administrator."
+            )
             return redirect("battycoda_app:recording_detail", recording_id=segmentation.recording.id)
 
         context = {
             "segmentation": segmentation,
             "classifiers": classifiers,
+            "recording_species": recording_species,
             "default_classifier": classifiers.filter(name="R-direct Classifier").first(),
         }
 
@@ -201,7 +239,7 @@ def create_detection_run_view(request, segmentation_id=None):
         })
 
     context = {
-        "title": "Create Detection Run",
+        "title": "Create Classification Run",
         "list_title": "Available Segmentations",
         "action_text": "Create Run",
         "action_icon": "bolt",
@@ -211,7 +249,6 @@ def create_detection_run_view(request, segmentation_id=None):
         "th2": "Algorithm",
         "th3": "Segments",
         "show_count": True,
-        "info_message": "Select a segmentation to create a detection run for.",
         "empty_message": "No segmentations available. You need to create segmentations first.",
         "create_url": "battycoda_app:batch_segmentation",
         "items": items,

@@ -26,7 +26,7 @@
     </div>
     {% endif %}
 
-    <div class="card bg-dark">
+    <div class="card">
         <div class="card-header">
             <h5 class="mb-0">Edit Recording: {{ recording.name }}</h5>
         </div>
@@ -51,22 +51,12 @@
                     </div>
                     
                     <div class="col-md-6 mb-3">
-                        <label for="{{ form.wav_file.id_for_label }}" class="form-label">WAV File</label>
-                        {% if recording.wav_file %}
-                        <div class="d-flex align-items-center mb-2">
+                        <label class="form-label">WAV File</label>
+                        <div class="d-flex align-items-center">
                             <span class="badge bg-success me-2">File Uploaded</span>
+                            <small>{{ recording.wav_file.name|default:"Recording file" }}</small>
                         </div>
-                        {% endif %}
-                        {{ form.wav_file }}
-                        {% if form.wav_file.errors %}
-                        <div class="invalid-feedback d-block">
-                            {{ form.wav_file.errors }}
-                        </div>
-                        {% endif %}
-                        {% if form.wav_file.help_text %}
-                        <small class="form-text text-muted">{{ form.wav_file.help_text }}</small>
-                        {% endif %}
-                        <small class="text-muted">Leave blank to keep current file.</small>
+                        <small class="text-muted">Cannot be changed once a recording is created</small>
                     </div>
                     
                     <div class="col-12 mb-3">
@@ -84,13 +74,9 @@
                 <h6 class="text-muted mb-3">Classification</h6>
                 <div class="row mb-4">
                     <div class="col-md-6 mb-3">
-                        <label for="{{ form.species.id_for_label }}" class="form-label">Species*</label>
-                        {{ form.species }}
-                        {% if form.species.errors %}
-                        <div class="invalid-feedback d-block">
-                            {{ form.species.errors }}
-                        </div>
-                        {% endif %}
+                        <label class="form-label">Species</label>
+                        <div class="form-control-plaintext">{{ recording.species.name }}</div>
+                        <small class="text-muted">Cannot be changed once a recording is created</small>
                     </div>
                     
                     <div class="col-md-6 mb-3">
@@ -167,9 +153,6 @@ document.addEventListener('DOMContentLoaded', function() {
     formInputs.forEach(input => {
         if (!input.classList.contains('form-check-input')) {
             input.classList.add('form-control');
-            input.classList.add('bg-dark');
-            input.classList.add('text-light');
-            input.classList.add('border-secondary');
         }
     });
 });

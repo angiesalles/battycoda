@@ -51,6 +51,7 @@
                                 {{ form.email.errors }}
                             </span>
                             {% endif %}
+                            <div id="email-warning" class="text-danger small mt-1"></div>
                         </div>
                         
                         <div class="form-group mb-4">
@@ -96,11 +97,7 @@
                         </div>
                     </form>
                     
-                    <div class="mt-5 text-center">
-                        <a href="{% url 'battycoda_app:login' %}" class="btn btn-link text-primary" style="font-size: 1.15rem;">
-                            <span class="s7-back mr-1" style="font-size: 1.3rem; vertical-align: middle;"></span> Back to Login
-                        </a>
-                    </div>
+                    <!-- "Back to Login" link removed as requested -->
                     
                     <div class="mt-5">
                         <h5 class="mb-3">Username Requirements</h5>
@@ -126,37 +123,40 @@
 <script>
     document.addEventListener('DOMContentLoaded', function() {
         const usernameField = document.getElementById('id_username');
+        const emailField = document.getElementById('id_email');
         const submitButton = document.querySelector('button[type="submit"]');
-        let typingTimer; // Timer identifier
+        let usernameTypingTimer; // Timer identifier for username
+        let emailTypingTimer; // Timer identifier for email
         const doneTypingInterval = 500; // Time in ms (0.5 seconds)
         
+        // Username validation and checking
         if (usernameField) {
             // Get the warning element
-            const warningElement = document.getElementById('username-warning');
+            const usernameWarningElement = document.getElementById('username-warning');
             
             // On input event, validate characters and remove @ symbols
             usernameField.addEventListener('input', function(e) {
                 // Clear any typing timer
-                clearTimeout(typingTimer);
+                clearTimeout(usernameTypingTimer);
                 
                 // Remove @ symbol if present
                 if (this.value.includes('@')) {
                     this.value = this.value.replace(/@/g, '');
-                    warningElement.textContent = 'Username cannot contain the @ symbol.';
+                    usernameWarningElement.textContent = 'Username cannot contain the @ symbol.';
                 }
                 
                 // Only letters, numbers, and ._-
                 const regex = /^[\w.-]*$/;
                 if (!regex.test(this.value)) {
                     this.value = this.value.replace(/[^\w.-]/g, '');
-                    warningElement.textContent = 'Username can only contain letters, numbers, and the characters ._-';
+                    usernameWarningElement.textContent = 'Username can only contain letters, numbers, and the characters ._-';
                 }
                 
                 // Start timer to check if username exists (wait for user to finish typing)
                 if (this.value.length > 0) {
-                    typingTimer = setTimeout(checkUsername, doneTypingInterval);
+                    usernameTypingTimer = setTimeout(checkUsername, doneTypingInterval);
                 } else {
-                    warningElement.textContent = '';
+                    usernameWarningElement.textContent = '';
                 }
             });
             
@@ -168,36 +168,109 @@
                     // Create form data
                     const formData = new FormData();
                     formData.append('username', username);
+                    formData.append('csrfmiddlewaretoken', '{{ csrf_token }}');
                     
                     // Send AJAX request
                     fetch('{% url "battycoda_app:check_username" %}', {
                         method: 'POST',
-                        body: formData
+                        body: formData,
+                        headers: {
+                            'X-Requested-With': 'XMLHttpRequest'
+                        }
                     })
                     .then(response => response.json())
                     .then(data => {
                         if (!data.valid) {
-                            warningElement.textContent = data.message;
+                            usernameWarningElement.textContent = data.message;
                             submitButton.disabled = true;
                         } else if (data.exists) {
-                            warningElement.textContent = data.message;
+                            usernameWarningElement.textContent = data.message;
                             submitButton.disabled = true;
                         } else {
-                            warningElement.textContent = '';
-                            submitButton.disabled = false;
+                            usernameWarningElement.textContent = '';
+                            // Only enable submit if email check is also OK
+                            if (!document.getElementById('email-warning').textContent) {
+                                submitButton.disabled = false;
+                            }
                         }
                     })
                     .catch(error => {
                         console.error('Error checking username:', error);
+                        usernameWarningElement.textContent = 'Error checking username. Please try again.';
                     });
                 }
             }
             
             // Also run the check when the field loses focus
             usernameField.addEventListener('blur', function() {
-                clearTimeout(typingTimer);
+                clearTimeout(usernameTypingTimer);
                 if (this.value.length > 0) {
                     checkUsername();
+                }
+            });
+        }
+        
+        // Email validation and checking
+        if (emailField) {
+            // Get the warning element
+            const emailWarningElement = document.getElementById('email-warning');
+            
+            // On input event for email
+            emailField.addEventListener('input', function(e) {
+                // Clear any typing timer
+                clearTimeout(emailTypingTimer);
+                
+                // Start timer to check if email exists (wait for user to finish typing)
+                if (this.value.length > 0) {
+                    emailTypingTimer = setTimeout(checkEmail, doneTypingInterval);
+                } else {
+                    emailWarningElement.textContent = '';
+                }
+            });
+            
+            // Define the function to check if email exists
+            function checkEmail() {
+                const email = emailField.value;
+                
+                if (email.length > 0) {
+                    // Create form data
+                    const formData = new FormData();
+                    formData.append('email', email);
+                    formData.append('csrfmiddlewaretoken', '{{ csrf_token }}');
+                    
+                    // Send AJAX request
+                    fetch('{% url "battycoda_app:check_email" %}', {
+                        method: 'POST',
+                        body: formData,
+                        headers: {
+                            'X-Requested-With': 'XMLHttpRequest'
+                        }
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.exists) {
+                            emailWarningElement.textContent = data.message;
+                            submitButton.disabled = true;
+                        } else {
+                            emailWarningElement.textContent = '';
+                            // Only enable submit if username check is also OK
+                            if (!document.getElementById('username-warning').textContent) {
+                                submitButton.disabled = false;
+                            }
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error checking email:', error);
+                        emailWarningElement.textContent = 'Error checking email. Please try again.';
+                    });
+                }
+            }
+            
+            // Also run the check when the field loses focus
+            emailField.addEventListener('blur', function() {
+                clearTimeout(emailTypingTimer);
+                if (this.value.length > 0) {
+                    checkEmail();
                 }
             });
         }
