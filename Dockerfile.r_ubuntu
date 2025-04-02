@@ -14,6 +14,8 @@ RUN apt-get update && apt-get install -y \
 RUN apt-get update && apt-get install -y --no-install-recommends \
     cmake \
     pkg-config \
+    libhiredis-dev\
+    libhiredis1.1.0\
     libfftw3-dev \
     libfftw3-double3 \
     libfftw3-bin \
@@ -40,6 +42,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     libfribidi0 \
     libsndfile1-dev \
     libsox-dev \
+    libgit2-dev\
+    libgit2-1.7\
     ffmpeg \
     libasound2-dev \
     && apt-get clean \
@@ -56,11 +60,14 @@ RUN R -e 'options(repos = c(CRAN = "https://cloud.r-project.org")); \
     # Detect number of available CPUs \
     num_cpus <- parallel::detectCores(); \
     # Install all packages with their dependencies \
-    install.packages(c("class", "plumber", "warbleR", "mlr3", "mlr3learners", "mlr3tuning"), dependencies = TRUE, quiet = FALSE, Ncpus = num_cpus)'
+    install.packages(c("redux","rush","mlflow","git2r","class", "plumber", "warbleR", "mlr3", "mlr3learners", "mlr3tuning", "viridis", "stringr", "kknn"), dependencies = TRUE, quiet = FALSE, Ncpus = num_cpus)'
 
 # Expose port for the R plumber API
-EXPOSE 8100
+EXPOSE 8000
 
-# Default command to run the R server
-CMD ["Rscript", "/app/r_server_direct.R"]
+# Make sure to run from the correct directory
+WORKDIR /app/R_code
+
+# Default command to run the R server 
+CMD ["Rscript", "server.R", "--port=8000"]
 

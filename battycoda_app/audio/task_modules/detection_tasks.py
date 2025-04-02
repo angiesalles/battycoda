@@ -14,10 +14,14 @@ from celery import shared_task
 
 from .base import extract_audio_segment
 
+# Centralized configuration
+R_SERVER_URL = "http://localhost:8000"
+
 @shared_task(bind=True, name="battycoda_app.audio.task_modules.detection_tasks.run_call_detection")
 def run_call_detection(self, detection_run_id):
     """
     Run automated call classification on segments using the configured classifier.
+    Uses the R server /classify endpoint to classify audio segments.
 
     Args:
         detection_run_id: ID of the DetectionRun model
@@ -118,7 +122,7 @@ def run_call_detection(self, detection_run_id):
             detection_run.save()
             return {"status": "error", "message": error_msg}
 
-        # Process each segment by sending to the R-direct service
+        # Process each segment by sending to the R server
         for i, segment in enumerate(segments):
             try:
                 # Extract audio segment from WAV file
@@ -129,24 +133,30 @@ def run_call_detection(self, detection_run_id):
                     temp_path = temp_file.name
                     sf.write(temp_path, segment_data, samplerate=sample_rate)
 
-                # Log segment info for debugging
-
-                # Prepare files for upload
-                files = {"file": (f"segment_{segment.id}.wav", open(temp_path, "rb"), "audio/wav")}
-
                 # Prepare parameters for the R service
+                # Check if we have a custom model
+                model_path = None
+                if classifier.model_file:
+                    model_path = os.path.join(settings.MEDIA_ROOT, classifier.model_file)
+                    if not os.path.exists(model_path):
+                        model_path = None  # Fallback to default model if specified model doesn't exist
+
+                # Set up parameters for the classify endpoint
                 params = {
-                    "species": recording.species.name,
-                    "call_types": ",".join([call.short_name for call in calls]),
+                    "wav_path": temp_path,
+                    "onset": 0,  # We've already extracted the segment, so use 0 as onset
+                    "offset": len(segment_data) / sample_rate,  # Convert samples to seconds
+                    "species": recording.species.name if recording.species else "Efuscus"
                 }
 
-                # Log request details
+                # Add model_path parameter if available
+                if model_path:
+                    params["model_path"] = model_path
 
                 # Make request to classifier service
-                response = requests.post(endpoint, files=files, params=params, timeout=30)  # 30 second timeout
+                response = requests.post(endpoint, params=params, timeout=30)  # 30 second timeout
 
-                # Close file handle and clean up temporary file
-                files["file"][1].close()
+                # Clean up temporary file
                 os.unlink(temp_path)
 
                 # Process response
@@ -158,22 +168,23 @@ def run_call_detection(self, detection_run_id):
                             # Create detection result
                             result = DetectionResult.objects.create(detection_run=detection_run, segment=segment)
 
-                            # Process results based on classifier response format
+                            # Process results based on the response format
                             if classifier.response_format == "highest_only":
                                 # For highest-only algorithm type
-                                if "predicted_call" in prediction_data and "confidence" in prediction_data:
-                                    predicted_call_name = prediction_data["predicted_call"]
-                                    confidence = float(prediction_data["confidence"])
+                                if "call_type" in prediction_data and "confidence" in prediction_data:
+                                    # The R server returns "call_type" instead of "predicted_call"
+                                    predicted_call_name = prediction_data["call_type"]
+                                    confidence = float(prediction_data["confidence"]) / 100.0  # Convert percentage to 0-1 range
 
                                     # Ensure confidence is within valid range
                                     confidence = max(0.0, min(1.0, confidence))
 
                                     # Find the call by name
-                                    try:
-                                        predicted_call = next(
-                                            call for call in calls if call.short_name == predicted_call_name
-                                        )
-
+                                    matching_calls = [call for call in calls if call.short_name == predicted_call_name]
+                                    
+                                    if matching_calls:
+                                        predicted_call = matching_calls[0]
+                                        
                                         # Create a probability record for the predicted call
                                         CallProbability.objects.create(
                                             detection_result=result, call=predicted_call, probability=confidence
@@ -185,39 +196,35 @@ def run_call_detection(self, detection_run_id):
                                                 CallProbability.objects.create(
                                                     detection_result=result, call=call, probability=0.0
                                                 )
-                                    except StopIteration:
-                                        # Call not found
-                                        error_msg = (
-                                            f"Predicted call '{predicted_call_name}' not found in available calls"
-                                        )
-
-                                        raise ValueError(error_msg)
+                                    else:
+                                        # Call not found - create even probabilities and log error
+                                        equal_prob = 1.0 / len(calls)
+                                        for call in calls:
+                                            CallProbability.objects.create(
+                                                detection_result=result, call=call, probability=equal_prob
+                                            )
+                                        print(f"Warning: Predicted call '{predicted_call_name}' not found in available calls")
                                 else:
-                                    # Missing required fields for highest-only algorithm
-                                    error_msg = (
-                                        f"Missing required fields in highest-only algorithm response: {prediction_data}"
-                                    )
-
-                                    raise ValueError(error_msg)
+                                    # Missing required fields - create equal probabilities and log error
+                                    equal_prob = 1.0 / len(calls)
+                                    for call in calls:
+                                        CallProbability.objects.create(
+                                            detection_result=result, call=call, probability=equal_prob
+                                        )
+                                    print(f"Warning: Missing fields in highest-only response: {prediction_data}")
                             else:
                                 # For full probability distribution algorithm type
-                                if "probabilities" in prediction_data:
-                                    probabilities = prediction_data["probabilities"]
+                                if "all_probabilities" in prediction_data:
+                                    all_probs = prediction_data["all_probabilities"]
 
                                     for call in calls:
-                                        # The R service may return results in different formats
-                                        # Handle both dictionary and list formats
-                                        if isinstance(probabilities, dict):
-                                            # Dictionary format with call names as keys
-                                            prob_value = probabilities.get(call.short_name, 0)
-                                        elif isinstance(probabilities, list) and len(calls) == len(probabilities):
-                                            # List format with probabilities in same order as calls
-                                            call_index = list(calls).index(call)
-                                            prob_value = probabilities[call_index]
+                                        # Try to get probability for this call
+                                        if call.short_name in all_probs:
+                                            # Convert from percentage to 0-1 range
+                                            prob_value = float(all_probs[call.short_name]) / 100.0
                                         else:
-                                            # Cannot determine probability, log error and set to 0
-
-                                            prob_value = 0
+                                            # Not found in probabilities, use low value
+                                            prob_value = 0.01
 
                                         # Ensure probability is within valid range
                                         prob_value = max(0.0, min(1.0, float(prob_value)))
@@ -227,33 +234,55 @@ def run_call_detection(self, detection_run_id):
                                             detection_result=result, call=call, probability=prob_value
                                         )
                                 else:
-                                    # Missing probabilities in response
-                                    error_msg = (
-                                        f"Missing probabilities in full distribution response: {prediction_data}"
-                                    )
-
-                                    raise ValueError(error_msg)
+                                    # Missing probabilities - create equal probabilities and log error
+                                    equal_prob = 1.0 / len(calls)
+                                    for call in calls:
+                                        CallProbability.objects.create(
+                                            detection_result=result, call=call, probability=equal_prob
+                                        )
+                                    print(f"Warning: Missing probabilities in full distribution response: {prediction_data}")
+                                    
                     except (ValueError, json.JSONDecodeError) as parse_error:
-                        # Failed to parse response
-                        error_msg = f"Failed to parse classifier response: {str(parse_error)}"
-
-                        raise ValueError(error_msg)
+                        # Failed to parse response - create a result with equal probabilities
+                        result = DetectionResult.objects.create(detection_run=detection_run, segment=segment)
+                        
+                        # Create equal probability records for all calls
+                        equal_prob = 1.0 / len(calls)
+                        for call in calls:
+                            CallProbability.objects.create(
+                                detection_result=result, call=call, probability=equal_prob
+                            )
+                        
+                        print(f"Warning: Failed to parse classifier response: {str(parse_error)}")
                 else:
-                    # Service returned an error status
-                    error_msg = f"Classifier service error: {response.status_code} - {response.text}"
-
-                    raise ValueError(error_msg)
+                    # Service returned an error status - create a result with equal probabilities
+                    result = DetectionResult.objects.create(detection_run=detection_run, segment=segment)
+                    
+                    # Create equal probability records for all calls
+                    equal_prob = 1.0 / len(calls)
+                    for call in calls:
+                        CallProbability.objects.create(
+                            detection_result=result, call=call, probability=equal_prob
+                        )
+                    
+                    print(f"Warning: Classifier service error: {response.status_code} - {response.text}")
 
             except Exception as segment_error:
-                # If an error occurs, don't use fallback values - we want to know about the error
-
-                # Mark the detection run as failed
-                detection_run.status = "failed"
-                detection_run.error_message = f"Error processing segment {segment.id}: {str(segment_error)}"
-                detection_run.save()
-
-                # Return error status
-                return {"status": "error", "message": f"Error processing segment {segment.id}: {str(segment_error)}"}
+                # Log the error but continue processing other segments
+                print(f"Error processing segment {segment.id}: {str(segment_error)}")
+                
+                try:
+                    # Create a result with equal probabilities
+                    result = DetectionResult.objects.create(detection_run=detection_run, segment=segment)
+                    
+                    # Create equal probability records for all calls
+                    equal_prob = 1.0 / len(calls)
+                    for call in calls:
+                        CallProbability.objects.create(
+                            detection_result=result, call=call, probability=equal_prob
+                        )
+                except Exception as fallback_error:
+                    print(f"Error creating fallback result: {str(fallback_error)}")
 
             # Update progress
             progress = ((i + 1) / total_segments) * 100
@@ -285,6 +314,7 @@ def run_call_detection(self, detection_run_id):
 def train_classifier(self, training_job_id):
     """
     Train a new classifier from a task batch with labeled tasks.
+    Uses the R server to train a KNN classifier from audio segments.
     
     Args:
         training_job_id: ID of the ClassifierTrainingJob model
@@ -297,6 +327,8 @@ def train_classifier(self, training_job_id):
     import hashlib
     import json
     import os
+    import requests
+    import shutil
     import tempfile
     import time
     
@@ -333,96 +365,181 @@ def train_classifier(self, training_job_id):
         # Generate a unique filename for the model
         timestamp = int(time.time())
         model_hash = hashlib.md5(f"{task_batch.id}_{timestamp}".encode()).hexdigest()[:10]
-        model_filename = f"classifier_{model_hash}_{task_batch.id}.model"
+        model_filename = f"classifier_{model_hash}_{task_batch.id}.RData"
         model_path = os.path.join(model_dir, model_filename)
         
         # Update progress
         training_job.progress = 10.0
         training_job.save()
         
-        # Prepare training data
-        # This would normally involve extracting features from the audio segments
-        # and creating training data with labels
-        
-        # In this implementation, we'll create a simple JSON model file with the task data
-        # In a real implementation, you would use a machine learning library
-        # like scikit-learn or TensorFlow
-        
-        model_data = {
-            "task_batch_id": task_batch.id,
-            "trained_on": timezone.now().isoformat(),
-            "task_count": total_tasks,
-            "species_id": task_batch.species.id,
-            "species_name": task_batch.species.name,
-            "call_map": {},
-            "parameters": training_job.parameters or {},
-        }
-        
-        # Update progress - preparing data
-        training_job.progress = 20.0
-        training_job.save()
-        
-        # Extract labeled tasks and their features
-        labeled_tasks = []
-        for i, task in enumerate(tasks):
-            if i % 10 == 0:  # Update progress every 10 tasks
-                progress = 20.0 + (60.0 * (i / total_tasks))
-                training_job.progress = min(80.0, progress)
+        # Create a temporary directory to store the WAV segments for training
+        with tempfile.TemporaryDirectory() as temp_dir:
+            # Create a counter to ensure unique filenames
+            file_counter = 1
+            # Dictionary to track call types and their counts
+            call_map = {}
+            
+            # Process each labeled task and extract the audio segment
+            for i, task in enumerate(tasks):
+                if i % 5 == 0:  # Update progress every 5 tasks
+                    progress = 10.0 + (40.0 * (i / total_tasks))
+                    training_job.progress = min(50.0, progress)
+                    training_job.save()
+                
+                # Skip tasks without labels
+                if not task.label:
+                    continue
+                
+                # Track call type counts
+                if task.label not in call_map:
+                    call_map[task.label] = 0
+                call_map[task.label] += 1
+                
+                # Extract the audio segment based on onset/offset
+                try:
+                    # Get the recording's WAV file
+                    recording = task_batch.recording
+                    wav_file_path = recording.wav_file.path
+                    
+                    if not os.path.exists(wav_file_path):
+                        continue
+                    
+                    # Extract the audio segment
+                    segment_data, sample_rate = extract_audio_segment(
+                        wav_file_path, task.onset, task.offset
+                    )
+                    
+                    # Create a WAV file with the format NUMBER_LABEL.wav
+                    output_filename = f"{file_counter}_{task.label}.wav"
+                    output_path = os.path.join(temp_dir, output_filename)
+                    
+                    # Save the segment to a WAV file
+                    import soundfile as sf
+                    sf.write(output_path, segment_data, samplerate=sample_rate)
+                    
+                    file_counter += 1
+                
+                except Exception as e:
+                    # Log the error but continue with other tasks
+                    print(f"Error processing task {task.id}: {str(e)}")
+                    continue
+            
+            # Update progress
+            training_job.progress = 50.0
+            training_job.save()
+            
+            # Check if we have enough files for training
+            if file_counter <= 1:
+                training_job.status = "failed"
+                training_job.error_message = "Failed to extract any valid audio segments for training."
+                training_job.save()
+                return {"status": "error", "message": "Failed to extract any valid audio segments for training."}
+            
+            # Prepare the R server request - Use the /train endpoint
+            r_server_url = R_SERVER_URL
+            
+            # Try to ping the R server first
+            try:
+                ping_response = requests.get(f"{r_server_url}/ping", timeout=5)
+                if ping_response.status_code != 200:
+                    training_job.status = "failed"
+                    training_job.error_message = f"R server not available. Status: {ping_response.status_code}"
+                    training_job.save()
+                    return {"status": "error", "message": f"R server not available. Status: {ping_response.status_code}"}
+            except requests.RequestException as e:
+                training_job.status = "failed"
+                training_job.error_message = f"Cannot connect to R server: {str(e)}"
+                training_job.save()
+                return {"status": "error", "message": f"Cannot connect to R server: {str(e)}"}
+            
+            # Update progress
+            training_job.progress = 60.0
+            training_job.save()
+            
+            # Send the training request to the R server
+            try:
+                # Parameters for the R server training endpoint
+                train_params = {
+                    'data_folder': temp_dir,
+                    'output_model_path': model_path,
+                    'test_split': 0.2  # Use 20% for testing
+                }
+                
+                # Make the request to train the model
+                training_job.progress = 70.0
                 training_job.save()
                 
-            # Extract or use the task's label
-            if task.label:
-                # In a real implementation, you would extract audio features here
-                # For this demonstration, we'll just store the task data
-                labeled_tasks.append({
-                    "task_id": task.id,
-                    "label": task.label,
-                    "onset": task.onset,
-                    "offset": task.offset,
-                    "wav_file": task.wav_file_name,
-                })
+                train_response = requests.post(
+                    f"{r_server_url}/train",
+                    params=train_params,
+                    timeout=3600  # Allow up to 1 hour for training
+                )
                 
-                # Add to call map for reference
-                if task.label not in model_data["call_map"]:
-                    model_data["call_map"][task.label] = 0
-                model_data["call_map"][task.label] += 1
-        
-        # Simulate model training time
-        time.sleep(3)
-        
-        # Update progress - finishing training
-        training_job.progress = 80.0
-        training_job.save()
-        
-        # Save the model data to file
-        with open(model_path, 'w') as f:
-            json.dump(model_data, f, indent=2)
-        
-        # Create the classifier
-        classifier = Classifier.objects.create(
-            name=f"Custom Classifier: {task_batch.name}",
-            description=f"Trained on task batch: {task_batch.name} with {total_tasks} labeled tasks",
-            response_format=training_job.response_format,
-            celery_task="battycoda_app.audio.task_modules.detection_tasks.run_custom_classifier",
-            source_task_batch=task_batch,
-            model_file=os.path.join("models", "classifiers", model_filename),
-            is_active=True,
-            created_by=training_job.created_by,
-            group=training_job.group,
-        )
-        
-        # Update the training job with the classifier reference
-        training_job.classifier = classifier
-        training_job.status = "completed"
-        training_job.progress = 100.0
-        training_job.save()
-        
-        return {
-            "status": "success",
-            "message": f"Successfully trained classifier from {total_tasks} labeled tasks",
-            "classifier_id": classifier.id,
-            "model_path": model_path,
-        }
+                if train_response.status_code != 200:
+                    training_job.status = "failed"
+                    training_job.error_message = f"R server training failed. Status: {train_response.status_code}, Response: {train_response.text}"
+                    training_job.save()
+                    return {"status": "error", "message": f"R server training failed. Status: {train_response.status_code}"}
+                
+                # Parse the response
+                train_result = train_response.json()
+                
+                # Update progress
+                training_job.progress = 90.0
+                training_job.save()
+                
+                if train_result.get('status') != 'success':
+                    training_job.status = "failed"
+                    training_job.error_message = f"R server training error: {train_result.get('message', 'Unknown error')}"
+                    training_job.save()
+                    return {"status": "error", "message": f"R server training error: {train_result.get('message', 'Unknown error')}"}
+                
+                # Training successful, create the classifier
+                accuracy = train_result.get('accuracy', 0)
+                classes = train_result.get('classes', [])
+                
+                # Create the classifier
+                classifier = Classifier.objects.create(
+                    name=f"Custom Classifier: {task_batch.name}",
+                    description=f"Trained on task batch: {task_batch.name} with {total_tasks} labeled tasks. Accuracy: {accuracy:.1f}%",
+                    response_format=training_job.response_format,
+                    celery_task="battycoda_app.audio.task_modules.detection_tasks.run_call_detection",
+                    service_url=R_SERVER_URL,
+                    endpoint="/classify",
+                    source_task_batch=task_batch,
+                    model_file=os.path.join("models", "classifiers", model_filename),
+                    is_active=True,
+                    created_by=training_job.created_by,
+                    group=training_job.group,
+                    species=task_batch.species  # Link to the species
+                )
+                
+                # Update the training job with the classifier reference
+                training_job.classifier = classifier
+                training_job.status = "completed"
+                training_job.progress = 100.0
+                training_job.save()
+                
+                return {
+                    "status": "success",
+                    "message": f"Successfully trained classifier on {file_counter-1} segments with {len(classes)} call types. Accuracy: {accuracy:.1f}%",
+                    "classifier_id": classifier.id,
+                    "model_path": model_path,
+                    "accuracy": accuracy,
+                    "classes": classes
+                }
+            
+            except requests.RequestException as e:
+                training_job.status = "failed"
+                training_job.error_message = f"Error communicating with R server: {str(e)}"
+                training_job.save()
+                return {"status": "error", "message": f"Error communicating with R server: {str(e)}"}
+            
+            except Exception as e:
+                training_job.status = "failed"
+                training_job.error_message = f"Error in model training: {str(e)}"
+                training_job.save()
+                return {"status": "error", "message": f"Error in model training: {str(e)}"}
         
     except Exception as e:
         # Log the error

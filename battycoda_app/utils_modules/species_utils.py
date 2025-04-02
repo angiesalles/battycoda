@@ -26,16 +26,32 @@ def available_species():
 
         return []
 
+def setup_system_species():
+    """
+    Verify that system-wide species (Eptesicus fuscus and Carollia perspicillata) exist
+    This function is a no-op now, as system species are created through migrations
+    
+    Returns:
+        list: List of system Species objects
+    """
+    from battycoda_app.models.organization import Species
+    
+    # System species should already be created via migrations,
+    # so we just return the existing ones
+    system_species = list(Species.objects.filter(is_system=True))
+    
+    return system_species
+
 def import_default_species(user):
     """Import default species for a new user's group
-
+    For each new user, only Saccopteryx bilineata is created for their group
+    
     Args:
         user: The User object to import species for
 
     Returns:
         list: List of created Species objects
     """
-    from battycoda_app.default_species import DEFAULT_SPECIES
     from battycoda_app.models.organization import Species
     from battycoda_app.models.organization import Call
 
@@ -45,37 +61,84 @@ def import_default_species(user):
     # Get the user's group
     group = user.profile.group
     if not group:
-
         return []
 
     created_species = []
+    
+    # First ensure system species exist
+    setup_system_species()
 
-    # Use the default species defined in the separate module
-    default_species = DEFAULT_SPECIES
-
-    # Import each species
-    for species_data in default_species:
-        # Use the actual species name (no group suffix)
-        species_name = species_data["name"]
-
-        # Skip if species already exists for this group
-        if Species.objects.filter(name=species_name, group=group).exists():
-            continue
-
+    # Create Saccopteryx bilineata for this user's group
+    species_name = "Saccopteryx bilineata"
+    
+    # Skip if species already exists for this group
+    if not Species.objects.filter(name=species_name, group=group).exists():
         # Create the species with its normal name
         species = Species.objects.create(
-            name=species_name, description=species_data["description"], created_by=user, group=group
+            name=species_name, 
+            description="Saccopteryx bilineata, known as the greater sac-winged bat, is a bat species in the family Emballonuridae.", 
+            created_by=user, 
+            group=group
         )
-
-        # Add the image if it exists
-        _add_species_image(species, species_data)
         
-        # Parse call types from the text file
-        _add_species_calls(species, species_data, user)
+        # Add call types from Saccopteryx.txt file
+        call_file_path = "/app/data/species_images/Saccopteryx.txt"
+        
+        try:
+            with open(call_file_path, "r", encoding="utf-8") as f:
+                for line in f:
+                    line = line.strip()
+                    if not line:
+                        continue
+                        
+                    if "," in line:
+                        short_name, long_name = line.split(",", 1)
+                    elif "|" in line:
+                        short_name, long_name = line.split("|", 1)
+                    elif "\t" in line:
+                        short_name, long_name = line.split("\t", 1)
+                    else:
+                        short_name = line
+                        long_name = ""
+                        
+                    Call.objects.create(
+                        species=species, 
+                        short_name=short_name.strip(), 
+                        long_name=long_name.strip() if long_name else None
+                    )
+        except FileNotFoundError:
+            # If file not found, don't create any calls
+            pass
+            
+        # Try to add the species image if it exists
+        _add_species_image_by_name(species, "Saccopteryx.jpg")
         
         created_species.append(species)
 
     return created_species
+
+def _add_species_image_by_name(species, image_filename):
+    """Helper function to add an image to a species by filename
+    
+    Args:
+        species: The Species object to add the image to
+        image_filename: Name of the image file in data/species_images
+        
+    Returns:
+        bool: True if image was added successfully, False otherwise
+    """
+    # Use explicit paths for Docker container
+    image_path = f"/app/data/species_images/{image_filename}"
+    
+    if os.path.exists(image_path):
+        try:
+            with open(image_path, "rb") as img_file:
+                species.image.save(image_filename, File(img_file), save=True)
+            return True
+        except Exception:
+            return False
+            
+    return False
 
 def _add_species_image(species, species_data):
     """Helper function to add an image to a species

@@ -92,8 +92,11 @@ def _check_demo_prerequisites(user, group):
 
         return None, None, None
 
-    # Find the Carollia species
-    species = Species.objects.filter(group=group, name="Carollia").first()
+    # Find the Carollia species - first try in the user's group, then look for system species
+    species = Species.objects.filter(group=group, name__icontains="Carollia").first()
+    if not species:
+        # Try system species
+        species = Species.objects.filter(is_system=True, name__icontains="Carollia").first()
     if not species:
 
         return None, None, None

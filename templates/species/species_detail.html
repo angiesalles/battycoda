@@ -7,17 +7,36 @@
 <div class="container py-4">
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
-            <h1 class="h2">{{ species.name }}</h1>
+            <h1 class="h2">
+                {{ species.name }}
+                {% if species.is_system %}<span class="badge bg-secondary">System</span>{% endif %}
+            </h1>
         </div>
         <div class="btn-group">
+            {% if species.is_system %}
+            <!-- Disabled edit button for system species -->
+            <a href="javascript:void(0)" class="btn btn-secondary disabled"
+               data-bs-toggle="tooltip" data-bs-placement="bottom" title="System species cannot be edited">
+                <i class="fas fa-edit"></i> Edit Species
+            </a>
+            <!-- Disabled delete button for system species -->
+            <a href="javascript:void(0)" class="btn btn-secondary disabled"
+               data-bs-toggle="tooltip" data-bs-placement="bottom" title="System species cannot be deleted">
+                <i class="fas fa-trash"></i> Delete
+            </a>
+            {% else %}
+            <!-- Edit button for regular species -->
             <a href="{% url 'battycoda_app:edit_species' species.id %}" class="btn btn-primary"
                data-bs-toggle="tooltip" data-bs-placement="bottom" title="Edit this species">
                 <i class="fas fa-edit"></i> Edit Species
             </a>
+            <!-- Delete button for regular species -->
             <a href="{% url 'battycoda_app:delete_species' species.id %}" class="btn btn-danger"
                data-bs-toggle="tooltip" data-bs-placement="bottom" title="Delete this species">
                 <i class="fas fa-trash"></i> Delete
             </a>
+            {% endif %}
+            <!-- Back button for all species -->
             <a href="{% url 'battycoda_app:species_list' %}" class="btn btn-outline-secondary"
                data-bs-toggle="tooltip" data-bs-placement="bottom" title="Return to species list">
                 <i class="fas fa-arrow-left"></i> Back to List
@@ -38,7 +57,7 @@
     
     <div class="row mb-4">
         <div class="col-md-8">
-            <div class="card bg-dark h-100">
+            <div class="card h-100">
                 <div class="card-header">
                     <h5 class="mb-0">Species Information</h5>
                 </div>
@@ -71,7 +90,7 @@
         </div>
         
         <div class="col-md-4">
-            <div class="card bg-dark h-100">
+            <div class="card h-100">
                 <div class="card-header">
                     <h5 class="mb-0">Species Image</h5>
                 </div>
@@ -79,7 +98,7 @@
                     {% if species.image %}
                         <img src="{{ species.image.url }}" alt="{{ species.name }}" class="img-fluid mb-2" style="max-height: 250px;">
                         <div class="mt-2">
-                            <a href="{{ species.image.url }}" target="_blank" class="btn btn-sm btn-outline-light">
+                            <a href="{{ species.image.url }}" target="_blank" class="btn btn-sm btn-outline-secondary">
                                 <i class="fas fa-external-link-alt"></i> View Full Size
                             </a>
                         </div>
@@ -94,15 +113,20 @@
         </div>
     </div>
     
-    <div class="card bg-dark mb-4">
+    <div class="card mb-4">
         <div class="card-header d-flex justify-content-between align-items-center">
             <h5 class="mb-0">Call Types</h5>
-            <span class="badge bg-info">{{ calls|length }} Total</span>
+            <div>
+                {% if species.is_system %}
+                <span class="badge bg-secondary me-2">System call types cannot be modified</span>
+                {% endif %}
+                <span class="badge bg-info">{{ calls|length }} Total</span>
+            </div>
         </div>
         <div class="card-body p-0">
             {% if calls %}
                 <div class="table-responsive">
-                    <table class="table table-dark table-hover table-striped mb-0">
+                    <table class="table table-hover table-striped mb-0">
                         <thead>
                             <tr>
                                 <th>Short Name</th>
@@ -130,7 +154,7 @@
         </div>
     </div>
     
-    <div class="card bg-dark mb-4">
+    <div class="card mb-4">
         <div class="card-header d-flex justify-content-between align-items-center">
             <h5 class="mb-0">Task Batches</h5>
             <span class="badge bg-info">{{ batches|length }} Total</span>
@@ -138,7 +162,7 @@
         <div class="card-body p-0">
             {% if batches %}
                 <div class="table-responsive">
-                    <table class="table table-dark table-hover table-striped mb-0">
+                    <table class="table table-hover table-striped mb-0">
                         <thead>
                             <tr>
                                 <th>Name</th>
@@ -181,7 +205,7 @@
         </div>
     </div>
     
-    <div class="card bg-dark">
+    <div class="card">
         <div class="card-header d-flex justify-content-between align-items-center">
             <h5 class="mb-0">Tasks</h5>
             <span class="badge bg-info">{{ tasks|length }} Total</span>
@@ -189,7 +213,7 @@
         <div class="card-body p-0">
             {% if tasks %}
                 <div class="table-responsive">
-                    <table class="table table-dark table-hover table-striped mb-0">
+                    <table class="table table-hover table-striped mb-0">
                         <thead>
                             <tr>
                                 <th>WAV File</th>

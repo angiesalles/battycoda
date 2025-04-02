@@ -1,5 +1,5 @@
 <!-- Segment form card (initially hidden) -->
-<div id="segment-form-card" class="card bg-dark mt-4" style="display: none;">
+<div id="segment-form-card" class="card mt-4" style="display: none;">
     <div class="card-header">
         <h5 id="segment-form-title" class="mb-0">Add Segment</h5>
     </div>
@@ -8,21 +8,21 @@
             <input type="hidden" id="segment-id" name="id">
             <div class="mb-3">
                 <label for="segment-name" class="form-label">Name</label>
-                <input type="text" class="form-control bg-dark text-light border-secondary" id="segment-name" name="name" placeholder="Segment Name">
+                <input type="text" class="form-control" id="segment-name" name="name" placeholder="Segment Name">
             </div>
             <div class="row mb-3">
                 <div class="col-md-6">
                     <label for="segment-onset" class="form-label">Onset (seconds)</label>
-                    <input type="number" class="form-control bg-dark text-light border-secondary" id="segment-onset" name="onset" step="0.000001" required>
+                    <input type="number" class="form-control" id="segment-onset" name="onset" step="0.000001" required>
                 </div>
                 <div class="col-md-6">
                     <label for="segment-offset" class="form-label">Offset (seconds)</label>
-                    <input type="number" class="form-control bg-dark text-light border-secondary" id="segment-offset" name="offset" step="0.000001" required>
+                    <input type="number" class="form-control" id="segment-offset" name="offset" step="0.000001" required>
                 </div>
             </div>
             <div class="mb-3">
                 <label for="segment-notes" class="form-label">Notes</label>
-                <textarea class="form-control bg-dark text-light border-secondary" id="segment-notes" name="notes" rows="3" placeholder="Optional notes about this segment"></textarea>
+                <textarea class="form-control" id="segment-notes" name="notes" rows="3" placeholder="Optional notes about this segment"></textarea>
             </div>
             <div class="d-flex justify-content-between">
                 <button type="button" id="cancel-segment-btn" class="btn btn-outline-secondary">Cancel</button>

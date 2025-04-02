@@ -66,7 +66,13 @@ class UserProfile(models.Model):
     )
 
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name="profile")
-    group = models.ForeignKey(Group, on_delete=models.CASCADE, related_name="members", null=True)
+    group = models.ForeignKey(
+        Group, 
+        on_delete=models.CASCADE, 
+        related_name="members", 
+        null=False,  # Group is required for all users
+        help_text="Every user must belong to a group"
+    )
     is_admin = models.BooleanField(
         default=False, help_text="Designates whether this user is an administrator of their group"
     )
@@ -117,64 +123,102 @@ class UserProfile(models.Model):
 # Create user profile when user is created
 @receiver(post_save, sender=User)
 def create_user_profile(sender, instance, created, **kwargs):
+    from django.db.models import Q
+
     if created:
-        # Logger removed
-
-        # First create the profile
-        profile = UserProfile.objects.create(user=instance)
-
-        # Create a new group for this user with unique name based on username
-        group_name = f"{instance.username}'s Group"
-        group = Group.objects.create(name=group_name, description="Your personal workspace for projects and recordings")
-
-        # Assign the user to their own group and make them an admin
-        profile.group = group
-        profile.is_admin = True
-        profile.save()
-
-        # Create group membership record
-        GroupMembership.objects.create(user=instance, group=group, is_admin=True)
-
-        # Create a demo project for the user
-        # Import here to avoid circular imports
-        Project = sender.objects.model._meta.apps.get_model("battycoda_app", "Project")
-
-        # Create a standard demo project
-        project_name = "Demo Project"
-
-        Project.objects.create(
-            name=project_name,
-            description="Sample project for demonstration and practice",
-            created_by=instance,
-            group=group,
-        )
-
-        # Import default species
-        from ..utils_modules.species_utils import import_default_species
-        created_species = import_default_species(instance)
-
-        # Create a demo task batch with sample bat calls
-        from ..utils_modules.demo_utils import create_demo_task_batch
-        batch = create_demo_task_batch(instance)
+        # Check if the user was invited to a group
+        # Look for a pending invitation with the user's email
+        from .user import GroupInvitation
+        invitation = None
+        if instance.email:
+            invitation = GroupInvitation.objects.filter(
+                email=instance.email,
+                accepted=False,
+                expires_at__gt=timezone.now()
+            ).first()
         
-        # Create welcome notification
-        from .notification import UserNotification
-        from django.urls import reverse
+        if invitation:
+            # This user was invited to join an existing group
+            # Create the profile with the invited group
+            profile = UserProfile.objects.create(
+                user=instance,
+                group=invitation.group,
+                is_admin=False  # Invited users aren't admins by default
+            )
+            
+            # Create group membership record
+            GroupMembership.objects.create(
+                user=instance, 
+                group=invitation.group, 
+                is_admin=False
+            )
+        else:
+            # This is a new user creating their own account
+            # Create a new group for this user with unique name based on username
+            group_name = f"{instance.username}'s Group"
+            group = Group.objects.create(
+                name=group_name, 
+                description="Your personal workspace for projects and recordings"
+            )
+
+            # Create profile with the new group and make user an admin
+            profile = UserProfile.objects.create(
+                user=instance,
+                group=group,
+                is_admin=True
+            )
+            
+            # Create group membership record
+            GroupMembership.objects.create(
+                user=instance, 
+                group=group, 
+                is_admin=True
+            )
+
+            # Create a demo project for the user
+            # Import here to avoid circular imports
+            Project = sender.objects.model._meta.apps.get_model("battycoda_app", "Project")
+
+            # Create a standard demo project
+            project_name = "Demo Project"
+
+            Project.objects.create(
+                name=project_name,
+                description="Sample project for demonstration and practice",
+                created_by=instance,
+                group=group,
+            )
+
+            # Import default species
+            from ..utils_modules.species_utils import import_default_species
+            created_species = import_default_species(instance)
+
+            # Create a demo task batch with sample bat calls
+            from ..utils_modules.demo_utils import create_demo_task_batch
+            batch = create_demo_task_batch(instance)
+            
+            # Create welcome notification with demo data message
+            from .notification import UserNotification
+            from django.urls import reverse
+            
+            # Generate welcome message with link to dashboard
+            dashboard_link = reverse('battycoda_app:index')
+            
+            UserNotification.add_notification(
+                user=instance,
+                title="Welcome to BattyCoda!",
+                message=(
+                    "Thanks for joining BattyCoda! We've set up a demo project and sample bat calls "
+                    "for you to explore. Check out the dashboard to get started."
+                ),
+                notification_type="system",
+                icon="s7-like",
+                link=dashboard_link
+            )
         
-        # Generate welcome message with link to dashboard
-        dashboard_link = reverse('battycoda_app:index')
-        
-        UserNotification.add_notification(
-            user=instance,
-            title="Welcome to BattyCoda!",
-            message=(
-                "Thanks for joining BattyCoda! We've set up a demo project and sample bat calls "
-                "for you to explore. Check out the dashboard to get started."
-            ),
-            notification_type="system",
-            icon="s7-like",
-            link=dashboard_link
-        )
+        # For all users, ensure that system species exist
+        from ..utils_modules.species_utils import setup_system_species
+        setup_system_species()
 
 @receiver(post_save, sender=User)
 def save_user_profile(sender, instance, **kwargs):
