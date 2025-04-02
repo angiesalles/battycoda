@@ -15,7 +15,7 @@
         </ol>
     </nav>
     
-    <div class="card bg-dark mb-4">
+    <div class="card mb-4">
         <div class="card-header">
             <h2>Task Details</h2>
         </div>
@@ -63,7 +63,7 @@
         </div>
     </div>
     
-    <div class="card bg-dark">
+    <div class="card">
         <div class="card-header">
             <h3>Actions</h3>
         </div>
@@ -95,7 +95,7 @@
                 </div>
             </div>
             
-            <div class="card bg-dark border border-secondary mt-3">
+            <div class="card border mt-3">
                 <div class="card-header">
                     <h4>Update Task</h4>
                 </div>
@@ -106,7 +106,7 @@
                         <div class="row">
                             <div class="col-md-6 mb-3">
                                 <label for="{{ form.status.id_for_label }}" class="form-label">Status</label>
-                                {{ form.status|add_class:"form-select bg-dark text-light" }}
+                                {{ form.status|add_class:"form-select" }}
                                 {% if form.status.errors %}
                                     <div class="text-danger">{{ form.status.errors }}</div>
                                 {% endif %}
@@ -128,7 +128,7 @@
                         
                         <div class="mb-3">
                             <label for="{{ form.label.id_for_label }}" class="form-label">Label</label>
-                            {{ form.label|add_class:"form-control bg-dark text-light" }}
+                            {{ form.label|add_class:"form-control" }}
                             <div class="form-text">Expert-assigned label for this task</div>
                             {% if form.label.errors %}
                                 <div class="text-danger">{{ form.label.errors }}</div>
@@ -137,7 +137,7 @@
                         
                         <div class="mb-3">
                             <label for="{{ form.notes.id_for_label }}" class="form-label">Notes</label>
-                            {{ form.notes|add_class:"form-control bg-dark text-light" }}
+                            {{ form.notes|add_class:"form-control" }}
                             <div class="form-text">Additional notes or observations about this task</div>
                             {% if form.notes.errors %}
                                 <div class="text-danger">{{ form.notes.errors }}</div>
@@ -154,7 +154,7 @@
     </div>
     
     {% if task.notes %}
-    <div class="card bg-dark mt-4">
+    <div class="card mt-4">
         <div class="card-header">
             <h3>Task Notes</h3>
         </div>

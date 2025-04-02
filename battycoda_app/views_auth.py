@@ -77,23 +77,31 @@ def process_invitation(request, user, invitation_token):
     try:
         invitation = GroupInvitation.objects.get(token=invitation_token)
         if not invitation.is_expired and not invitation.accepted:
-            # Add user to group using GroupMembership model
-            membership, created = GroupMembership.objects.get_or_create(
-                user=user,
-                group=invitation.group,
-                defaults={"is_admin": False},  # New members aren't admins by default
-            )
-
-            # Set the group from the invitation as active
-            user.profile.group = invitation.group
-            user.profile.save()
-
+            # The user was already added to the group in the create_user_profile signal
             # Mark invitation as accepted
             invitation.accepted = True
             invitation.save()
 
             # Clear the invitation token from session
             del request.session["invitation_token"]
+
+            # Create a welcome notification specifically for invited users
+            from .models.notification import UserNotification
+            from django.urls import reverse
+            
+            dashboard_link = reverse('battycoda_app:index')
+            
+            UserNotification.add_notification(
+                user=user,
+                title="Welcome to BattyCoda!",
+                message=(
+                    f'You have been added to the group "{invitation.group.name}". '
+                    f'You can explore existing projects and content created by your group.'
+                ),
+                notification_type="system",
+                icon="s7-like",
+                link=dashboard_link
+            )
 
             messages.success(request, f'You have been added to the group "{invitation.group.name}".')
     except GroupInvitation.DoesNotExist:
@@ -197,15 +205,34 @@ def register_view(request):
 
                 messages.success(
                     request,
-                    f'Registration successful! You have been added to the group "{invitation.group.name}". Please log in.',
+                    f'Registration successful! You have been added to the group "{invitation.group.name}".',
                 )
             else:
-                messages.success(request, "Registration successful! Please log in.")
+                messages.success(request, "Registration successful!")
 
             # Send welcome email
             from .email_utils import send_welcome_email
             send_welcome_email(user)
-
+            
+            # Log the user in automatically
+            # Use the username from the form to authenticate
+            username = form.cleaned_data.get('username')
+            password = form.cleaned_data.get('password1')  # The first password field
+            user = authenticate(username=username, password=password)
+            if user:
+                login(request, user)
+                
+                # Set session to last for 1 year (365 days)
+                request.session.set_expiry(31536000)  # 1 year in seconds
+                
+                # Update last login time
+                user.last_login = timezone.now()
+                user.save()
+                
+                # Redirect to dashboard
+                return redirect("battycoda_app:index")
+                
+            # In case authentication fails (very unlikely), redirect to login page
             return redirect("battycoda_app:login")
     else:
         form = UserRegisterForm()

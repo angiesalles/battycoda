@@ -69,6 +69,7 @@
                             <p><strong>Tasks:</strong> {{ task_count }}</p>
                             <p><strong>Batches:</strong> {{ batch_count }}</p>
                             <p><strong>Recordings:</strong> {{ recording_count }}</p>
+                            <p><strong>Classifiers:</strong> {{ classifier_count }}</p>
                             
                             {% if call_count > 0 %}
                             <div class="alert alert-warning">
@@ -77,10 +78,10 @@
                             </div>
                             {% endif %}
                             
-                            {% if task_count > 0 or batch_count > 0 or recording_count > 0 %}
+                            {% if task_count > 0 or batch_count > 0 or recording_count > 0 or classifier_count > 0 %}
                             <div class="alert alert-danger">
                                 <i class="fas fa-exclamation-triangle"></i>
-                                <strong>Warning:</strong> Cannot delete species with associated tasks, batches, or recordings. 
+                                <strong>Warning:</strong> Cannot delete species with associated tasks, batches, recordings, or classifiers. 
                                 Please remove these dependencies first.
                             </div>
                             {% endif %}
@@ -93,7 +94,7 @@
                 {% csrf_token %}
                 <a href="{% url 'battycoda_app:species_detail' species.id %}" class="btn btn-outline-secondary">Cancel</a>
                 
-                {% if task_count == 0 and batch_count == 0 and recording_count == 0 %}
+                {% if task_count == 0 and batch_count == 0 and recording_count == 0 and classifier_count == 0 %}
                 <button type="submit" class="btn btn-danger">
                     <i class="fas fa-trash-alt"></i> Confirm Delete
                 </button>

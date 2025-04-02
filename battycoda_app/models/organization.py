@@ -58,8 +58,9 @@ class Species(models.Model):
     description = models.TextField(blank=True, null=True)
     image = models.ImageField(upload_to=get_species_image_path, blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
-    created_by = models.ForeignKey(User, on_delete=models.CASCADE, related_name="species")
-    group = models.ForeignKey(Group, on_delete=models.CASCADE, related_name="species", null=True)
+    created_by = models.ForeignKey(User, on_delete=models.CASCADE, related_name="species", null=True, blank=True)
+    group = models.ForeignKey(Group, on_delete=models.CASCADE, related_name="species", null=True, blank=True)
+    is_system = models.BooleanField(default=False, help_text="Designates whether this is a system-wide species available to all users")
 
     class Meta:
         verbose_name_plural = "Species"
@@ -67,7 +68,43 @@ class Species(models.Model):
         unique_together = [("name", "group")]
 
     def __str__(self):
+        if self.is_system:
+            return f"{self.name} (System)"
         return self.name
+        
+    def can_modify_calls(self):
+        """
+        Check if this species' call types can be modified.
+        Returns False if there are classifiers linked to this species or if it's a system species.
+        """
+        # System species can't be modified
+        if self.is_system:
+            return False
+            
+        # Import here to avoid circular imports
+        from .detection import Classifier
+        return not Classifier.objects.filter(species=self).exists()
+    
+    @classmethod
+    def get_available_for_user(cls, user):
+        """
+        Get all species available to a user, including system species
+        and those belonging to the user's group.
+        """
+        if not user or not hasattr(user, 'profile'):
+            return cls.objects.none()
+            
+        # Get system species and species for the user's group
+        if user.profile.group:
+            return cls.objects.filter(
+                models.Q(is_system=True) | 
+                models.Q(group=user.profile.group)
+            ).order_by('name')
+        else:
+            return cls.objects.filter(
+                models.Q(is_system=True) | 
+                models.Q(created_by=user, group__isnull=True)
+            ).order_by('name')
 
 class Call(models.Model):
     """Call types for species."""
@@ -83,3 +120,11 @@ class Call(models.Model):
 
     def __str__(self):
         return f"{self.species.name} - {self.short_name}"
+        
+    def can_be_deleted(self):
+        """
+        Check if this call type can be safely deleted.
+        Returns False if it belongs to a species that has classifiers.
+        """
+        # Check if the species is linked to any classifiers
+        return self.species.can_modify_calls()

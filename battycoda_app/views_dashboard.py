@@ -2,6 +2,7 @@
 Dashboard view for the BattyCoda application.
 """
 
+from django.db import models
 from django.shortcuts import redirect, render
 
 from .models.detection import DetectionRun
@@ -61,11 +62,17 @@ def index(request):
 
         context["recent_runs"] = recent_runs
 
-        # Get recent species
+        # Get recent species, including system species
         if profile.group:
-            recent_species = Species.objects.filter(group=profile.group).order_by("-created_at")[:5]
+            # Include system species and group species
+            recent_species = Species.objects.filter(
+                models.Q(is_system=True) | models.Q(group=profile.group)
+            ).order_by("-created_at")[:5]
         else:
-            recent_species = Species.objects.filter(created_by=request.user).order_by("-created_at")[:5]
+            # Include system species and user's species
+            recent_species = Species.objects.filter(
+                models.Q(is_system=True) | models.Q(created_by=request.user)
+            ).order_by("-created_at")[:5]
 
         context["recent_species"] = recent_species
 
@@ -95,7 +102,10 @@ def index(request):
         if profile.group:
             context["total_recordings"] = Recording.objects.filter(group=profile.group).count()
             context["total_batches"] = TaskBatch.objects.filter(group=profile.group).count()
-            context["total_species"] = Species.objects.filter(group=profile.group).count()
+            # Count system species plus group species
+            context["total_species"] = Species.objects.filter(
+                models.Q(is_system=True) | models.Q(group=profile.group)
+            ).count()
             context["total_projects"] = Project.objects.filter(group=profile.group).count()
 
             # Get in-progress segmentations
@@ -110,7 +120,10 @@ def index(request):
         else:
             context["total_recordings"] = Recording.objects.filter(created_by=request.user).count()
             context["total_batches"] = TaskBatch.objects.filter(created_by=request.user).count()
-            context["total_species"] = Species.objects.filter(created_by=request.user).count()
+            # Count system species plus user-created species
+            context["total_species"] = Species.objects.filter(
+                models.Q(is_system=True) | models.Q(created_by=request.user)
+            ).count()
             context["total_projects"] = Project.objects.filter(created_by=request.user).count()
 
             # Get in-progress segmentations

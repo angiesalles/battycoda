@@ -1,18 +1,11 @@
 # Default species definitions for BattyCoda
-# This file contains the definitions of default species that are automatically
-# imported for new users.
+# This file previously contained definitions of system-wide species, but they are now
+# created through migrations and don't need to be defined here.
+# The system-wide species are:
+# - Eptesicus fuscus
+# - Carollia perspicillata
+#
+# Saccopteryx bilineata is created for each user's group in import_default_species
+# function and is not defined here either.
 
-DEFAULT_SPECIES = [
-    {
-        "name": "Carollia",
-        "image_file": "Carollia.png",
-        "call_file": "Carollia.txt",
-        "description": "Carollia is a genus of short-tailed leaf-nosed bats. Their calls include various types such as aggressive warbles, distress calls, and echolocation.",
-    },
-    {
-        "name": "Efuscus",
-        "image_file": "Efuscus.jpg",
-        "call_file": "Efuscus.txt",
-        "description": "Eptesicus fuscus (big brown bat) is a species found across North America. Their calls range from frequency-modulated sweeps to quasi-constant frequency calls.",
-    },
-]
+DEFAULT_SPECIES = []
