@@ -46,11 +46,12 @@
                                 {% for classifier in classifiers %}
                                     <option value="{{ classifier.id }}" 
                                     {% if default_classifier and default_classifier.id == classifier.id %}selected{% endif %}>
-                                        {{ classifier.name }} 
-                                        {% if classifier.species %}
-                                            ({{ classifier.species.name }} - {{ classifier.get_response_format_display }})
+                                        {% if 'knn' in classifier.name|lower %}
+                                            {{ classifier.name }} (KNN)
+                                        {% elif 'lda' in classifier.name|lower %}
+                                            {{ classifier.name }} (LDA)
                                         {% else %}
-                                            (Generic - {{ classifier.get_response_format_display }})
+                                            {{ classifier.name }}
                                         {% endif %}
                                     </option>
                                 {% empty %}
@@ -58,7 +59,7 @@
                                 {% endfor %}
                             </select>
                             <div class="form-text text-muted">
-                                Select the classifier to use for this classification run.
+                                Select the classifier to use. KNN and LDA are different mathematical models for classification.
                                 {% if recording_species %}
                                     <span class="text-info">Showing only classifiers compatible with {{ recording_species.name }}.</span>
                                 {% endif %}

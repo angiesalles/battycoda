@@ -17,15 +17,35 @@ def automation_home_view(request):
     """Display a list of classification runs with a button to start a new one."""
     try:
         profile = request.user.profile
+        
+        # Import classifier training job model
+        from battycoda_app.models.detection import ClassifierTrainingJob
 
-        # Get all detection runs for user's groups, not just recent ones
+        # Get all detection runs, classifiers, and training jobs for user's groups
         if profile.group:
             if profile.is_admin:
+                # Admin can see all group items
                 runs = DetectionRun.objects.filter(group=profile.group).order_by("-created_at")
+                classifiers = Classifier.objects.filter(
+                    models.Q(group=profile.group) | models.Q(group__isnull=True)
+                ).order_by("-created_at")
+                training_jobs = ClassifierTrainingJob.objects.filter(group=profile.group).order_by("-created_at")
             else:
+                # Regular users see only their own items plus global items
                 runs = DetectionRun.objects.filter(group=profile.group, created_by=request.user).order_by("-created_at")
+                classifiers = Classifier.objects.filter(
+                    models.Q(group=profile.group, created_by=request.user) | models.Q(group__isnull=True)
+                ).order_by("-created_at")
+                training_jobs = ClassifierTrainingJob.objects.filter(
+                    group=profile.group, created_by=request.user
+                ).order_by("-created_at")
         else:
+            # No group - only see personal items plus global items
             runs = DetectionRun.objects.filter(created_by=request.user).order_by("-created_at")
+            classifiers = Classifier.objects.filter(
+                models.Q(created_by=request.user) | models.Q(group__isnull=True)
+            ).order_by("-created_at")
+            training_jobs = ClassifierTrainingJob.objects.filter(created_by=request.user).order_by("-created_at")
 
         # Filter out runs that might have problematic data due to the migration
         valid_runs = []
@@ -36,11 +56,12 @@ def automation_home_view(request):
                 valid_runs.append(run)
             except (AttributeError, Exception):
                 # Skip this run if it causes errors
-
                 continue
-
+            
         context = {
             "runs": valid_runs,
+            "classifiers": classifiers,
+            "training_jobs": training_jobs,
         }
 
         return render(request, "automation/dashboard.html", context)
@@ -48,7 +69,7 @@ def automation_home_view(request):
 
         messages.error(request, f"An error occurred: {str(e)}")
         # Provide a fallback response
-        return render(request, "automation/dashboard.html", {"runs": []})
+        return render(request, "automation/dashboard.html", {"runs": [], "classifiers": []})
 
 @login_required
 def detection_run_list_view(request):

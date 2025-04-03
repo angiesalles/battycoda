@@ -55,19 +55,21 @@
                         </div>
                         
                         <div class="mb-3">
-                            <label for="response_format" class="form-label">Response Format</label>
-                            <select class="form-select" id="response_format" name="response_format">
-                                {% for value, label in response_format_choices %}
-                                <option value="{{ value }}">{{ label }}</option>
-                                {% endfor %}
+                            <label for="algorithm_type" class="form-label">Algorithm Type</label>
+                            <select class="form-select" id="algorithm_type" name="algorithm_type">
+                                <option value="knn">K-Nearest Neighbors (KNN)</option>
+                                <option value="lda">Linear Discriminant Analysis (LDA)</option>
                             </select>
                             <div class="form-text text-muted">
                                 <ul class="mb-0">
-                                    <li><strong>Highest Probability Only:</strong> Only returns the most likely call type (faster)</li>
-                                    <li><strong>Full Probability Distribution:</strong> Returns probabilities for all call types (more detailed)</li>
+                                    <li><strong>K-Nearest Neighbors (KNN):</strong> Works well with small to medium datasets, fast predictions</li>
+                                    <li><strong>Linear Discriminant Analysis (LDA):</strong> Better for larger datasets, handles class imbalance well</li>
                                 </ul>
                             </div>
                         </div>
+                        
+                        <!-- Always use full probability distribution -->
+                        <input type="hidden" name="response_format" value="full_probability">
                         
                         <div class="mb-4">
                             <h5>Task Batch Information</h5>

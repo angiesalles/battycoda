@@ -21,6 +21,11 @@
                         <i class="fas fa-brain me-1"></i> Custom Classifiers
                     </button>
                 </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="available-tab" data-bs-toggle="tab" data-bs-target="#available-content" type="button" role="tab" aria-controls="available-content" aria-selected="false">
+                        <i class="fas fa-list me-1"></i> Available Classifiers
+                    </button>
+                </li>
             </ul>
             
             <div class="tab-content mt-4" id="automationTabsContent">
@@ -91,7 +96,7 @@
                                                     </div>
                                                 </div>
                                             </td>
-                                            <td>{{ run.created_at|date:"M d, Y H:i" }}</td>
+                                            <td data-utc-date="{{ run.created_at|date:'c' }}" data-date-format="datetime">{{ run.created_at|date:"M d, Y H:i" }}</td>
                                             <td>{{ run.created_by.username }}</td>
                                             <td>
                                                 <div class="d-flex">
@@ -159,7 +164,141 @@
                             <h4 class="mb-0">Training Jobs</h4>
                         </div>
                         <div class="card-body">
-                            <p>To view your classifier training jobs, please go to the <a href="{% url 'battycoda_app:classifier_list' %}">Classifiers page</a>.</p>
+                            {% if training_jobs %}
+                            <div class="table-responsive">
+                                <table class="table table-hover">
+                                    <thead>
+                                        <tr>
+                                            <th>Name</th>
+                                            <th>Task Batch</th>
+                                            <th>Status</th>
+                                            <th>Progress</th>
+                                            <th>Created</th>
+                                            <th>Created By</th>
+                                            <th>Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for job in training_jobs %}
+                                        <tr data-job-id="{{ job.id }}">
+                                            <td>{{ job.name }}</td>
+                                            <td>
+                                                <a href="{% url 'battycoda_app:task_batch_detail' batch_id=job.task_batch.id %}">
+                                                    {{ job.task_batch.name }}
+                                                </a>
+                                            </td>
+                                            <td>
+                                                {% if job.status == 'pending' %}
+                                                <span class="badge bg-warning text-dark">Pending</span>
+                                                {% elif job.status == 'in_progress' %}
+                                                <span class="badge bg-info">In Progress</span>
+                                                {% elif job.status == 'completed' %}
+                                                <span class="badge bg-success">Completed</span>
+                                                {% elif job.status == 'failed' %}
+                                                <span class="badge bg-danger">Failed</span>
+                                                {% endif %}
+                                            </td>
+                                            <td>
+                                                <div class="progress" style="height: 20px;">
+                                                    <div class="progress-bar {% if job.status == 'failed' %}bg-danger{% endif %}" 
+                                                         role="progressbar" 
+                                                         style="width: {{ job.progress }}%;" 
+                                                         aria-valuenow="{{ job.progress }}" 
+                                                         aria-valuemin="0" 
+                                                         aria-valuemax="100">
+                                                        {{ job.progress|floatformat:1 }}%
+                                                    </div>
+                                                </div>
+                                            </td>
+                                            <td data-utc-date="{{ job.created_at|date:'c' }}" data-date-format="datetime">{{ job.created_at|date:"M d, Y H:i" }}</td>
+                                            <td>{{ job.created_by.username }}</td>
+                                            <td>
+                                                <div class="d-flex">
+                                                    <a href="{% url 'battycoda_app:classifier_training_job_detail' job_id=job.id %}" class="btn btn-sm btn-primary mr-2">
+                                                        <i class="fas fa-eye"></i> View
+                                                    </a>
+                                                    <a href="{% url 'battycoda_app:delete_classifier_training_job' job_id=job.id %}" 
+                                                       class="btn btn-sm btn-danger">
+                                                        <i class="fas fa-trash-alt"></i> Delete
+                                                    </a>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                            {% else %}
+                            <div class="alert alert-info">
+                                <p class="mb-0">No classifier training jobs found. <a href="{% url 'battycoda_app:create_classifier_training_job' %}" class="alert-link">Train a new classifier</a> to get started.</p>
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <div class="card mb-4">
+                        <div class="card-header">
+                            <h4 class="mb-0">Available Classifiers</h4>
+                        </div>
+                        <div class="card-body">
+                            {% if classifiers %}
+                            <div class="table-responsive">
+                                <table class="table table-hover">
+                                    <thead>
+                                        <tr>
+                                            <th>Name</th>
+                                            <th>Type</th>
+                                            <th>Created</th>
+                                            <th>Source Batch</th>
+                                            <th>Status</th>
+                                            <th>Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for classifier in classifiers %}
+                                        <tr>
+                                            <td>{{ classifier.name }}</td>
+                                            <td>
+                                                {% if classifier.source_task_batch %}
+                                                <span class="badge bg-success">Custom Trained</span>
+                                                {% else %}
+                                                <span class="badge bg-primary">Built-in</span>
+                                                {% endif %}
+                                            </td>
+                                            <td data-utc-date="{{ classifier.created_at|date:'c' }}" data-date-format="date">{{ classifier.created_at|date:"M d, Y" }}</td>
+                                            <td>
+                                                {% if classifier.source_task_batch %}
+                                                <a href="{% url 'battycoda_app:task_batch_detail' batch_id=classifier.source_task_batch.id %}">
+                                                    {{ classifier.source_task_batch.name }}
+                                                </a>
+                                                {% else %}
+                                                <em>N/A</em>
+                                                {% endif %}
+                                            </td>
+                                            <td>
+                                                {% if classifier.is_active %}
+                                                <span class="badge bg-success">Active</span>
+                                                {% else %}
+                                                <span class="badge bg-secondary">Inactive</span>
+                                                {% endif %}
+                                            </td>
+                                            <td>
+                                                <div class="btn-group" role="group">
+                                                    <a href="{% url 'battycoda_app:create_detection_run' %}" class="btn btn-sm btn-primary">
+                                                        <i class="fas fa-play"></i> Use
+                                                    </a>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                            {% else %}
+                            <div class="alert alert-info">
+                                <p class="mb-0">No classifiers found. Train a custom classifier or contact an administrator to add built-in classifiers.</p>
+                            </div>
+                            {% endif %}
                         </div>
                     </div>
                     
@@ -184,6 +323,83 @@
                             <div class="alert alert-warning mt-3">
                                 <strong>Note:</strong> Training an effective classifier requires a substantial number of labeled tasks (preferably 100+) with a good distribution of different call types.
                             </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Available Classifiers Tab Content -->
+                <div class="tab-pane fade" id="available-content" role="tabpanel" aria-labelledby="available-tab">
+                    <div class="card mb-4">
+                        <div class="card-header">
+                            <h4 class="mb-0">Available Classifiers</h4>
+                        </div>
+                        <div class="card-body">
+                            {% if classifiers %}
+                            <div class="table-responsive">
+                                <table class="table table-hover">
+                                    <thead>
+                                        <tr>
+                                            <th>Name</th>
+                                            <th>Species</th>
+                                            <th>Algorithm Type</th>
+                                            <th>Status</th>
+                                            <th>Created By</th>
+                                            <th>Created</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for classifier in classifiers %}
+                                        <tr>
+                                            <td>{{ classifier.name }}</td>
+                                            <td>
+                                                {% if classifier.species %}
+                                                <a href="{% url 'battycoda_app:species_detail' species_id=classifier.species.id %}">
+                                                    {{ classifier.species.name }}
+                                                </a>
+                                                {% else %}
+                                                <span class="text-muted">—</span>
+                                                {% endif %}
+                                            </td>
+                                            <td>
+                                                {% if classifier.model_file %}
+                                                    {% if 'knn' in classifier.model_file %}
+                                                    <span class="badge bg-info">KNN</span>
+                                                    {% elif 'lda' in classifier.model_file %}
+                                                    <span class="badge bg-primary">LDA</span>
+                                                    {% else %}
+                                                    <span class="badge bg-secondary">Custom</span>
+                                                    {% endif %}
+                                                {% else %}
+                                                    <span class="badge bg-secondary">R-direct</span>
+                                                {% endif %}
+                                            </td>
+                                            <td>
+                                                {% if classifier.is_active %}
+                                                <span class="badge bg-success">Active</span>
+                                                {% else %}
+                                                <span class="badge bg-danger">Inactive</span>
+                                                {% endif %}
+                                            </td>
+                                            <td>
+                                                {% if classifier.created_by %}
+                                                {{ classifier.created_by.username }}
+                                                {% else %}
+                                                <span class="text-muted">System</span>
+                                                {% endif %}
+                                            </td>
+                                            <td data-utc-date="{{ classifier.created_at|date:'c' }}" data-date-format="datetime">
+                                                {{ classifier.created_at|date:"M d, Y" }}
+                                            </td>
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                            {% else %}
+                            <div class="alert alert-info">
+                                <p class="mb-0">No classifiers are currently available. Train a new classifier to get started.</p>
+                            </div>
+                            {% endif %}
                         </div>
                     </div>
                 </div>
@@ -226,15 +442,44 @@ document.addEventListener('DOMContentLoaded', function() {
     });
     
     // Auto-refresh progress bars for in-progress runs
-    const inProgressRows = document.querySelectorAll('tr:has(.badge.bg-info)');
+    const inProgressRuns = document.querySelectorAll('tr[data-run-id]:has(.badge.bg-info)');
     
-    if (inProgressRows.length > 0) {
+    if (inProgressRuns.length > 0) {
         setInterval(function() {
-            inProgressRows.forEach(function(row) {
+            inProgressRuns.forEach(function(row) {
                 const runId = row.getAttribute('data-run-id');
                 if (!runId) return;
                 
                 fetch(`/automation/runs/${runId}/status/`)
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            const progressBar = row.querySelector('.progress-bar');
+                            const statusBadge = row.querySelector('.badge');
+                            
+                            progressBar.style.width = `${data.progress}%`;
+                            progressBar.setAttribute('aria-valuenow', data.progress);
+                            progressBar.textContent = `${data.progress.toFixed(1)}%`;
+                            
+                            if (data.status !== 'in_progress') {
+                                window.location.reload(); // Refresh when status changes
+                            }
+                        }
+                    });
+            });
+        }, 5000); // Check every 5 seconds
+    }
+    
+    // Auto-refresh progress bars for training jobs
+    const inProgressJobs = document.querySelectorAll('tr[data-job-id]:has(.badge.bg-info)');
+    
+    if (inProgressJobs.length > 0) {
+        setInterval(function() {
+            inProgressJobs.forEach(function(row) {
+                const jobId = row.getAttribute('data-job-id');
+                if (!jobId) return;
+                
+                fetch(`/automation/classifiers/${jobId}/status/`)
                     .then(response => response.json())
                     .then(data => {
                         if (data.success) {

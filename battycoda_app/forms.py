@@ -92,31 +92,6 @@ class TaskBatchForm(forms.ModelForm):
                 self.fields["species"].queryset = self.fields["species"].queryset.filter(group=self.profile.group)
                 self.fields["project"].queryset = self.fields["project"].queryset.filter(group=self.profile.group)
 
-    def clean_name(self):
-        """
-        Validate that the name is unique within the user's group.
-        This is needed to properly handle the unique_together constraint.
-        """
-        name = self.cleaned_data.get("name")
-
-        if not name:
-            return name
-
-        if not hasattr(self, "profile") or not self.profile.group:
-            return name
-
-        # Check if a task batch with this name already exists in the user's group
-        # Exclude the current instance if we're editing
-        qs = TaskBatch.objects.filter(name=name, group=self.profile.group)
-        if self.instance and self.instance.pk:
-            qs = qs.exclude(pk=self.instance.pk)
-
-        if qs.exists():
-            raise forms.ValidationError(
-                f"A task batch with the name '{name}' already exists in your group. Please use a different name."
-            )
-
-        return name
 
 class TaskForm(forms.ModelForm):
     class Meta:

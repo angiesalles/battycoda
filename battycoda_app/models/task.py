@@ -31,7 +31,6 @@ class TaskBatch(models.Model):
 
     class Meta:
         ordering = ["name"]
-        unique_together = [("name", "group")]
 
     def __str__(self):
         return self.name
