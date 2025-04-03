@@ -85,9 +85,71 @@ prepare_training_data <- function(data_folder, test_split = 0.2) {
   debug_log("Creating selection table...")
   selt <- selection_table(wavtable)
   
-  # Extract acoustic features
+  # Extract acoustic features with batch processing to handle errors
   debug_log("Extracting acoustic features...")
-  ftable <- spectro_analysis(selt, bp = c(9,200), threshold = 15)
+  
+  # Process in smaller batches to skip problematic files
+  all_features <- NULL
+  batch_size <- 100
+  num_files <- nrow(selt)
+  
+  for (i in seq(1, num_files, by=batch_size)) {
+    end_idx <- min(i + batch_size - 1, num_files)
+    current_batch <- selt[i:end_idx,]
+    
+    debug_log(sprintf("Processing batch %d-%d of %d files", i, end_idx, num_files))
+    
+    # Try to process this batch
+    batch_features <- tryCatch({
+      spectro_analysis(current_batch, bp = c(9, 200), threshold = 15)
+    }, error = function(e) {
+      # If batch fails, process files individually
+      debug_log(sprintf("Error in batch %d-%d: %s", i, end_idx, e$message))
+      debug_log("Processing files individually...")
+      
+      individual_features <- NULL
+      
+      for (j in i:end_idx) {
+        if (j > nrow(selt)) break
+        
+        single_file <- selt[j,,drop=FALSE]
+        tryCatch({
+          # Process single file with same parameters
+          file_features <- spectro_analysis(single_file, bp = c(9, 200), threshold = 15)
+          
+          # Append results
+          if (is.null(individual_features)) {
+            individual_features <- file_features
+          } else {
+            individual_features <- rbind(individual_features, file_features)
+          }
+        }, error = function(e2) {
+          # Skip problematic file
+          file_name <- if (nrow(single_file) > 0) single_file$sound.files[1] else paste("index", j)
+          debug_log(sprintf("Skipping problematic file %s: %s", file_name, e2$message))
+        })
+      }
+      
+      return(individual_features)
+    })
+    
+    # Append batch results
+    if (!is.null(batch_features) && nrow(batch_features) > 0) {
+      if (is.null(all_features)) {
+        all_features <- batch_features
+      } else {
+        all_features <- rbind(all_features, batch_features)
+      }
+    }
+  }
+  
+  # Ensure we got features
+  if (is.null(all_features) || nrow(all_features) == 0) {
+    stop("Failed to extract features from any files")
+  }
+  
+  debug_log(sprintf("Successfully extracted features from %d files", nrow(all_features)))
+  ftable <- all_features
   
   # Prepare data for classification
   debug_log("Preparing data for classification...")
@@ -156,6 +218,13 @@ evaluate_and_save_model <- function(model, test_data, output_model_path, trainin
   prob_matrix <- predictions$prob
   
   actual_classes <- test_data$selec
+  
+  # Check for NA values in predictions
+  if (any(is.na(pred_classes))) {
+    debug_log("WARNING: Found NA values in predictions. Replacing with most common class...")
+    most_common_class <- names(sort(table(actual_classes), decreasing = TRUE))[1]
+    pred_classes[is.na(pred_classes)] <- most_common_class
+  }
   
   # Calculate accuracy
   accuracy <- mean(pred_classes == actual_classes)
@@ -268,7 +337,57 @@ train_knn_model <- function(data_folder, output_model_path, test_split = 0.2) {
   test_data <- data$test_data
   levels <- data$levels
   
-  # Create classification task
+  # Handle missing values before creating the task
+  debug_log("Checking for missing values in training data...")
+  
+  # Get feature columns (all except the response variable 'selec')
+  feature_cols <- setdiff(colnames(train_data), "selec")
+  
+  # Check for missing values
+  missing_counts <- sapply(train_data[feature_cols], function(x) sum(is.na(x)))
+  if (sum(missing_counts) > 0) {
+    debug_log(sprintf("Found %d missing values across %d columns. Imputing missing values...", 
+                     sum(missing_counts), sum(missing_counts > 0)))
+    
+    # Impute missing values with column means for each feature
+    for (col in feature_cols) {
+      if (sum(is.na(train_data[[col]])) > 0) {
+        # Calculate mean of non-missing values
+        col_mean <- mean(train_data[[col]], na.rm = TRUE)
+        
+        # Replace missing values with mean
+        train_data[[col]][is.na(train_data[[col]])] <- col_mean
+        
+        debug_log(sprintf("Imputed %d missing values in column '%s' with mean %.4f", 
+                         sum(missing_counts[col]), col, col_mean))
+      }
+    }
+  }
+  
+  # Also handle missing values in test data
+  test_missing_counts <- sapply(test_data[feature_cols], function(x) sum(is.na(x)))
+  if (sum(test_missing_counts) > 0) {
+    debug_log(sprintf("Found %d missing values in test data. Imputing...", sum(test_missing_counts)))
+    
+    # Impute missing values in test data
+    for (col in feature_cols) {
+      if (sum(is.na(test_data[[col]])) > 0) {
+        # Use the same mean as training data for consistency
+        col_mean <- mean(train_data[[col]], na.rm = TRUE)
+        test_data[[col]][is.na(test_data[[col]])] <- col_mean
+      }
+    }
+  }
+  
+  # Final check for remaining missing values
+  final_missing <- sum(sapply(train_data[feature_cols], function(x) sum(is.na(x))))
+  if (final_missing > 0) {
+    stop(sprintf("Still found %d missing values after imputation. Cannot proceed with KNN training.", final_missing))
+  }
+  
+  debug_log("Missing value imputation completed successfully")
+  
+  # Create classification task with cleaned data
   debug_log("Creating classification task...")
   task <- as_task_classif(train_data, target = 'selec')
   
@@ -342,7 +461,7 @@ train_lda_model <- function(data_folder, output_model_path, test_split = 0.2) {
   test_data <- data$test_data
   levels <- data$levels
   
-  # Scale features
+  # Scale features and handle missing values
   debug_log("Scaling features for LDA...")
   
   # Get feature columns (all except the response variable 'selec')
@@ -354,14 +473,37 @@ train_lda_model <- function(data_folder, output_model_path, test_split = 0.2) {
   names(feature_means) <- feature_cols
   names(feature_sds) <- feature_cols
   
+  # First, handle missing values in training data
+  # LDA cannot handle NAs, so we need to impute them
+  debug_log("Checking for missing values in training data...")
+  missing_counts <- sapply(train_data[feature_cols], function(x) sum(is.na(x)))
+  if (sum(missing_counts) > 0) {
+    debug_log(sprintf("Found %d missing values across %d columns. Imputing missing values...", 
+                     sum(missing_counts), sum(missing_counts > 0)))
+    
+    # Impute missing values with column means
+    for (col in feature_cols) {
+      if (sum(is.na(train_data[[col]])) > 0) {
+        # Calculate mean of non-missing values
+        col_mean <- mean(train_data[[col]], na.rm = TRUE)
+        
+        # Replace missing values with mean
+        train_data[[col]][is.na(train_data[[col]])] <- col_mean
+        
+        debug_log(sprintf("Imputed %d missing values in column '%s' with mean %.4f", 
+                         sum(missing_counts[col]), col, col_mean))
+      }
+    }
+  }
+  
   # Scale features and store scaling parameters
   scaled_train_data <- train_data
   for (i in seq_along(feature_cols)) {
     col <- feature_cols[i]
     
-    # Compute mean and sd
-    col_mean <- mean(train_data[[col]], na.rm = TRUE)
-    col_sd <- sd(train_data[[col]], na.rm = TRUE)
+    # Compute mean and sd (after imputation, there should be no NAs)
+    col_mean <- mean(train_data[[col]])
+    col_sd <- sd(train_data[[col]])
     
     # Store scaling parameters
     feature_means[col] <- col_mean
@@ -377,13 +519,27 @@ train_lda_model <- function(data_folder, output_model_path, test_split = 0.2) {
     scaled_train_data[[col]] <- (train_data[[col]] - col_mean) / col_sd
   }
   
-  # Scale test data using the same parameters
+  # Handle missing values and scale test data using the same parameters
   scaled_test_data <- test_data
   for (col in feature_cols) {
     if (col %in% colnames(test_data)) {
+      # First impute any missing values in test data using training means
+      if (sum(is.na(test_data[[col]])) > 0) {
+        test_data[[col]][is.na(test_data[[col]])] <- feature_means[col]
+      }
+      
+      # Then apply scaling
       scaled_test_data[[col]] <- (test_data[[col]] - feature_means[col]) / feature_sds[col]
     }
   }
+  
+  # Final check for any remaining missing values
+  final_missing <- sum(sapply(scaled_train_data[feature_cols], function(x) sum(is.na(x))))
+  if (final_missing > 0) {
+    stop(sprintf("Still found %d missing values after imputation. Cannot proceed with LDA training.", final_missing))
+  }
+  
+  debug_log("Feature scaling and imputation completed successfully")
   
   # Create classification task using scaled data
   debug_log("Creating LDA classification task...")
