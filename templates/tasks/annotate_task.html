@@ -258,6 +258,18 @@
             'channel_1_overview': '{{ spectrogram_urls.channel_1_overview|escapejs }}'
         }
     };
+    
+    // Batch switch notification data
+    {% if batch_switch_data %}
+    var batchSwitchData = {
+        from_batch_name: "{{ batch_switch_data.from_batch_name|escapejs }}",
+        from_batch_id: {{ batch_switch_data.from_batch_id }},
+        to_batch_name: "{{ batch_switch_data.to_batch_name|escapejs }}",
+        to_batch_id: {{ batch_switch_data.to_batch_id }}
+    };
+    {% else %}
+    var batchSwitchData = null;
+    {% endif %}
 </script>
 
 <!-- Include task annotation JavaScript -->
