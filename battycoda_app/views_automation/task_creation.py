@@ -42,9 +42,9 @@ def create_task_batch_from_detection_run(request, run_id):
                 recording = run.segmentation.recording
 
                 # Use the batch name as is, no need for timestamps or unique constraints
-                batch_name = base_name
+                # batch_name is already set from the form data above
 
-                # Create the task batch with unique name
+                # Create the task batch
                 batch = TaskBatch.objects.create(
                     name=batch_name,
                     description=description,

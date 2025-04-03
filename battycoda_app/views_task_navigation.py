@@ -32,12 +32,19 @@ def get_next_task_from_batch_view(request, batch_id):
     next_task = Task.objects.filter(batch=batch, is_done=False).order_by("created_at").first()
 
     if next_task:
-
         # Redirect to the annotation interface with the task ID
         return redirect("battycoda_app:annotate_task", task_id=next_task.id)
     else:
         # No undone tasks found in this batch
-        messages.info(request, f'No undone tasks found in batch "{batch.name}". All tasks in this batch are completed.')
+        batch_name = batch.name
+        messages.info(request, f'No undone tasks found in batch "{batch_name}". All tasks in this batch are completed.')
+        
+        # Store completed batch info in session to show toastr notification
+        request.session['batch_completed'] = {
+            'name': batch_name,
+            'id': batch.id
+        }
+        
         return redirect("battycoda_app:task_batch_detail", batch_id=batch.id)
 
 @login_required
@@ -69,27 +76,48 @@ def get_next_task_view(request):
 
     # Get the most recently updated task
     recent_task = recent_tasks.order_by("-updated_at").first()
+    
+    # Check if previous task was the last one in a batch
+    previous_batch = None
+    if 'batch_completed' in request.session:
+        previous_batch = request.session.pop('batch_completed')
 
     # If we found a recent task and it has a batch, preferentially get tasks from that batch
     if recent_task and recent_task.batch:
-
         # Look for undone tasks from the same batch
         same_batch_tasks = tasks_query.filter(batch=recent_task.batch)
         next_task = same_batch_tasks.order_by("created_at").first()
 
         if next_task:
+            # If coming from a completed batch AND it's a different batch, store that info for notification
+            if previous_batch and previous_batch['id'] != recent_task.batch.id:
+                request.session['batch_switch'] = {
+                    'from_batch_name': previous_batch['name'],
+                    'from_batch_id': previous_batch['id'],
+                    'to_batch_name': recent_task.batch.name,
+                    'to_batch_id': recent_task.batch.id
+                }
             return redirect("battycoda_app:annotate_task", task_id=next_task.id)
             
     # Fall back to the regular selection if no suitable task found from the same batch
     task = tasks_query.order_by("created_at").first()
 
     if task:
+        # If coming from a completed batch AND it's a different batch, store that info for notification
+        if previous_batch and task.batch and previous_batch['id'] != task.batch.id:
+            request.session['batch_switch'] = {
+                'from_batch_name': previous_batch['name'],
+                'from_batch_id': previous_batch['id'],
+                'to_batch_name': task.batch.name,
+                'to_batch_id': task.batch.id
+            }
         # Redirect to the annotation interface with the task ID
         return redirect("battycoda_app:annotate_task", task_id=task.id)
     else:
         # No undone tasks found
-        messages.info(request, "No undone tasks found. Please create new tasks or task batches.")
-        return redirect("battycoda_app:task_list")
+        messages.info(request, "No undone tasks found. All tasks are completed!")
+        # Redirect to task batch list instead of non-existent task_list
+        return redirect("battycoda_app:task_batch_list")
 
 @login_required
 def get_last_task_view(request):
@@ -117,4 +145,5 @@ def get_last_task_view(request):
     else:
         # No tasks found
         messages.info(request, "No tasks found. Please create new tasks or task batches.")
-        return redirect("battycoda_app:task_list")
+        # Redirect to task batch list instead of non-existent task_list
+        return redirect("battycoda_app:task_batch_list")
