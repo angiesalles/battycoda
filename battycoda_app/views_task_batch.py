@@ -151,3 +151,20 @@ def create_task_batch_view(request):
 
     # Redirect to the task batch list
     return redirect("battycoda_app:task_batch_list")
+
+@login_required
+def check_taskbatch_name(request):
+    """Check if a TaskBatch name already exists in the user's group."""
+    if request.method == "GET":
+        name = request.GET.get("name", "")
+        group = request.user.profile.group
+        
+        if not name or not group:
+            return JsonResponse({"exists": False})
+        
+        # Check if the name exists in the user's group
+        exists = TaskBatch.objects.filter(name=name, group=group).exists()
+        
+        return JsonResponse({"exists": exists})
+    
+    return JsonResponse({"error": "Invalid request method"}, status=400)

@@ -21,41 +21,89 @@
 {% endblock %}
 
 {% block table_header %}
-<th>ID</th>
 <th>Name</th>
-<th>WAV File</th>
+<th>Recording</th>
 <th>Species</th>
 <th>Project</th>
-<th>Group</th>
 <th>Created</th>
+<th>Progress</th>
 <th>Actions</th>
 {% endblock %}
 
 {% block detail_url %}{% url 'battycoda_app:task_batch_detail' item.id %}{% endblock %}
 {% block view_url %}{% url 'battycoda_app:task_batch_detail' item.id %}{% endblock %}
 
+{% block table_body %}
+{% for item in items %}
+<tr>
+    <td>
+        <a href="{% url 'battycoda_app:task_batch_detail' item.id %}" class="text-decoration-none fw-bold">
+            {{ item.name }}
+        </a>
+    </td>
+    <td>
+        {% if item.detection_run and item.detection_run.segmentation.recording %}
+            {{ item.detection_run.segmentation.recording.name }}
+        {% else %}
+            {{ item.wav_file_name }}
+        {% endif %}
+    </td>
+    <td>{{ item.species }}</td>
+    <td>{{ item.project }}</td>
+    <td data-utc-date="{{ item.created_at|date:'c' }}" data-date-format="date">
+        {{ item.created_at|date:"M d, Y" }}
+    </td>
+    <td style="width: 150px;">
+        {% with tasks=item.tasks.all %}
+        {% with done_count=tasks|count_done %}
+        {% with total_count=tasks.count %}
+        {% with done_percentage=done_count|div:total_count|mul:100 %}
+        <div class="progress" style="height: 12px;">
+            <div class="progress-bar bg-success" 
+                 role="progressbar" 
+                 style="width: {{ done_percentage|default:0|floatformat:0 }}%;" 
+                 aria-valuenow="{{ done_percentage|default:0|floatformat:0 }}" 
+                 aria-valuemin="0" 
+                 aria-valuemax="100"
+                 title="{{ done_count }}/{{ total_count }} tasks completed">
+            </div>
+        </div>
+        <div class="small text-muted mt-1">
+            {{ done_count }}/{{ total_count }} ({{ done_percentage|default:0|floatformat:0 }}%)
+        </div>
+        {% endwith %}
+        {% endwith %}
+        {% endwith %}
+        {% endwith %}
+    </td>
+    <td>
+        <div class="btn-group">
+            <div class="d-flex flex-column gap-2">
+                <a href="{% url 'battycoda_app:task_batch_detail' item.id %}" 
+                   class="btn btn-sm btn-outline-info px-3" 
+                   data-bs-toggle="tooltip" data-bs-placement="top" 
+                   title="View batch details">
+                    <i class="fas fa-eye me-1"></i> View
+                </a>
+                <a href="{% url 'battycoda_app:annotate_batch' item.id %}" 
+                   class="btn btn-sm btn-primary px-3" 
+                   data-bs-toggle="tooltip" data-bs-placement="top" 
+                   title="Start annotating this batch">
+                    <i class="fas fa-tasks me-1"></i> Annotate
+                </a>
+            </div>
+        </div>
+    </td>
+</tr>
+{% endfor %}
+{% endblock %}
+
 {% block item_fields %}
-<td>{{ item.id }}</td>
-<td>{{ item.wav_file_name }}</td>
-<td>{{ item.species }}</td>
-<td>{{ item.project }}</td>
-<td>{{ item.group.name|default:"--" }}</td>
+<!-- This block is intentionally empty as we override table_body above -->
 {% endblock %}
 
 {% block item_actions %}
-<!-- Completely replace the default actions with just these two buttons -->
-<a href="{% url 'battycoda_app:task_batch_detail' item.id %}" 
-   class="btn btn-outline-info" 
-   data-bs-toggle="tooltip" data-bs-placement="top" 
-   title="View details">
-    <i class="fas fa-eye"></i>
-</a>
-<a href="{% url 'battycoda_app:annotate_batch' item.id %}" 
-   class="btn btn-outline-primary" 
-   data-bs-toggle="tooltip" data-bs-placement="top" 
-   title="Annotate batch">
-    <i class="fas fa-edit"></i>
-</a>
+<!-- This block is intentionally empty as we override table_body above -->
 {% endblock %}
 
 {% block empty_state %}

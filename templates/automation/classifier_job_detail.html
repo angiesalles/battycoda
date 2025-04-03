@@ -70,7 +70,7 @@
                         </tr>
                         <tr>
                             <th>Created At</th>
-                            <td>{{ job.created_at|date:"M d, Y H:i" }}</td>
+                            <td data-utc-date="{{ job.created_at|date:'c' }}" data-date-format="datetime">{{ job.created_at|date:"M d, Y H:i" }}</td>
                         </tr>
                         <tr>
                             <th>Response Format</th>

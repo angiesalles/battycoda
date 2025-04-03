@@ -83,6 +83,7 @@ urlpatterns = [
     path("tasks/batches/<int:batch_id>/", views_task_batch.task_batch_detail_view, name="task_batch_detail"),
     path("tasks/batches/<int:batch_id>/export/", views_task_batch.export_task_batch_view, name="export_task_batch"),
     path("tasks/batches/create/", views_task_batch.create_task_batch_view, name="create_task_batch"),
+    path("tasks/batches/check-name/", views_task_batch.check_taskbatch_name, name="check_taskbatch_name"),
     path("tasks/next/", views_task_navigation.get_next_task_view, name="get_next_task"),
     path("tasks/last/", views_task_navigation.get_last_task_view, name="get_last_task"),
     path(

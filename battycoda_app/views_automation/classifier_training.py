@@ -57,10 +57,11 @@ def create_classifier_training_job_view(request, batch_id=None):
         batch_id = request.POST.get("batch_id") or batch_id
         name = request.POST.get("name")
         description = request.POST.get("description", "")
-        response_format = request.POST.get("response_format", "highest_only")
+        response_format = request.POST.get("response_format", "full_probability")
+        algorithm_type = request.POST.get("algorithm_type", "knn")
         
-        # Optional parameters as JSON
-        parameters = {}
+        # Include algorithm_type in parameters
+        parameters = {"algorithm_type": algorithm_type}
         
         if not batch_id:
             messages.error(request, "Task batch ID is required")

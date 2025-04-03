@@ -29,17 +29,35 @@
                         <img src="{{ species_obj.image.url }}" alt="{{ species_obj.name }}" class="species-image img-fluid rounded">
                     </div>
                     {% endif %}
-                    <p class="small text-light mb-1">{{ species }}</p>
-                    <p class="small text-light mb-1">{{ wav_path }}</p>
-                    <p class="small text-light mb-1">{{ task.onset|floatformat:4 }}s - {{ task.offset|floatformat:4 }}s ({{ task.offset|subtract:task.onset|multiply:1000|floatformat:1 }} ms)</p>
-                    <p class="small text-muted mb-1">By: {{ task.created_by.username }}
+                    <p class="small text-light mb-1"><strong>Species:</strong> {{ species }}</p>
+                    <p class="small text-light mb-1"><strong>Recording:</strong> 
+                        {% if task.batch and task.batch.detection_run and task.batch.detection_run.segmentation.recording %}
+                            {{ task.batch.detection_run.segmentation.recording.name }}
+                        {% else %}
+                            {{ wav_path }}
+                        {% endif %}
+                    </p>
+                    <p class="small text-light mb-1"><strong>Segment:</strong> {{ task.onset|floatformat:4 }}s - {{ task.offset|floatformat:4 }}s ({{ task.offset|subtract:task.onset|multiply:1000|floatformat:1 }} ms)</p>
+                    <p class="small text-muted mb-1"><strong>Task Batch:</strong> 
+                    {% if task.batch %}
+                        <a href="{% url 'battycoda_app:task_batch_detail' batch_id=task.batch.id %}" class="text-info">
+                            {{ task.batch.name }}
+                        </a>
+                    {% else %}
+                        None
+                    {% endif %}
+                    </p>
+                    <p class="small text-muted mb-1"><strong>Project:</strong> {{ task.project }}</p>
+                    <p class="small text-muted mb-1"><strong>Created by:</strong> {{ task.created_by.username }}
                     {% if task.created_by == request.user %}(you){% endif %}</p>
-                    <p class="small text-muted mb-1">Group: {{ task.group.name|default:"None" }}</p>
-                    <p class="small text-muted mb-1">Project: {{ task.project }}</p>
                 </div>
                 
                 <div class="d-grid gap-2">
+                    {% if task.batch %}
+                    <a href="{% url 'battycoda_app:task_batch_detail' batch_id=task.batch.id %}" class="btn btn-sm btn-outline-secondary">Back to Batch</a>
+                    {% else %}
                     <a href="{% url 'battycoda_app:task_batch_list' %}" class="btn btn-sm btn-outline-secondary">Back to Tasks</a>
+                    {% endif %}
                     <a href="{% url 'battycoda_app:get_last_task' %}" class="btn btn-sm btn-outline-info">Last Task</a>
                     <a href="{% url 'battycoda_app:get_next_task' %}" class="btn btn-sm btn-outline-primary">Skip to Next Task</a>
                 </div>
@@ -122,11 +140,11 @@
                             </div>
                         </div>
                         <div class="col-md-6">
-                            <div class="form-check form-switch">
-                                <input class="form-check-input" type="checkbox" id="channel-toggle">
-                                <label class="form-check-label" for="channel-toggle">
-                                    <span id="channel-label">Channel 1</span>
-                                </label>
+                            <div class="d-flex align-items-center">
+                                <div class="btn-group" role="group" aria-label="Channel selector">
+                                    <button type="button" class="btn btn-sm btn-primary active" id="channel-1-btn">Channel 1</button>
+                                    <button type="button" class="btn btn-sm btn-outline-secondary" id="channel-2-btn">Channel 2</button>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -205,13 +223,20 @@
                     </div>
                 </form>
                 
-                <!-- Task info section - placed below the form -->
+                <!-- Optional additional content for the right sidebar can go here -->
+                <!-- We removed the duplicate task details section -->
                 <div class="classification-info mt-4 pt-4 border-top border-secondary">
-                    <h5 class="mb-3">Task Details</h5>
-                    <p class="small text-light mb-1"><strong>Task ID:</strong> #{{ task.id }}</p>
-                    <p class="small text-light mb-1"><strong>Species:</strong> {{ species }}</p>
-                    <p class="small text-light mb-1"><strong>Project:</strong> {{ task.project }}</p>
-                    <p class="small text-light mb-1"><strong>Segment:</strong> {{ task.onset|floatformat:4 }}s - {{ task.offset|floatformat:4 }}s ({{ task.offset|subtract:task.onset|multiply:1000|floatformat:1 }} ms)</p>
+                    <h5 class="mb-3">Navigation</h5>
+                    <div class="d-grid gap-2">
+                        {% if task.batch %}
+                        <a href="{% url 'battycoda_app:task_batch_detail' batch_id=task.batch.id %}" class="btn btn-sm btn-outline-info">
+                            <i class="fas fa-arrow-left"></i> Return to Batch
+                        </a>
+                        {% endif %}
+                        <a href="{% url 'battycoda_app:get_next_task' %}" class="btn btn-sm btn-primary">
+                            <i class="fas fa-arrow-right"></i> Next Task
+                        </a>
+                    </div>
                 </div>
             </div>
         </div>
