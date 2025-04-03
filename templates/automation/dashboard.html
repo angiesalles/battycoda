@@ -43,7 +43,8 @@
                                     <thead>
                                         <tr>
                                             <th>Name</th>
-                                            <th>Recording</th>
+                                            <th>Segmentation</th>
+                                            <th>Classifier</th>
                                             <th>Status</th>
                                             <th>Progress</th>
                                             <th>Created</th>
@@ -57,8 +58,15 @@
                                             <td>{{ run.name }}</td>
                                             <td>
                                                 <a href="{% url 'battycoda_app:recording_detail' recording_id=run.segmentation.recording.id %}">
-                                                    {{ run.segmentation.recording.name }}
+                                                    {{ run.segmentation.name }}
                                                 </a>
+                                            </td>
+                                            <td>
+                                                {% if run.classifier %}
+                                                    {{ run.classifier.name }}
+                                                {% else %}
+                                                    <span class="text-muted">Default</span>
+                                                {% endif %}
                                             </td>
                                             <td>
                                                 {% if run.status == 'pending' %}
@@ -86,8 +94,8 @@
                                             <td>{{ run.created_at|date:"M d, Y H:i" }}</td>
                                             <td>{{ run.created_by.username }}</td>
                                             <td>
-                                                <div class="btn-group" role="group">
-                                                    <a href="{% url 'battycoda_app:detection_run_detail' run_id=run.id %}" class="btn btn-sm btn-primary">
+                                                <div class="d-flex">
+                                                    <a href="{% url 'battycoda_app:detection_run_detail' run_id=run.id %}" class="btn btn-sm btn-primary mr-2">
                                                         <i class="fas fa-chart-bar"></i> View Results
                                                     </a>
                                                     <a href="{% url 'battycoda_app:delete_detection_run' run_id=run.id %}" 

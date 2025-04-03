@@ -160,55 +160,78 @@ def run_call_detection(self, detection_run_id):
                         "wav_folder": r_server_path,
                         "model_path": model_path
                     }
-                        
-                        # Update progress - extraction phase (0%-40%)
-                        extraction_progress = 40 * (batch_index / num_batches)
-                        update_detection_run_status(detection_run, status="in_progress", progress=extraction_progress)
-                        
-                        # Call the classifier service for this batch
-                        print(f"Calling classifier service for batch {batch_index+1} at {endpoint}...")
-                        print(f"Parameters: {params}")
-                        
-                        # IMPORTANT: Use data parameter instead of params to send as form data
-                        response = requests.post(endpoint, data=params, timeout=60)  # 60 sec timeout per batch
-                        
-                        if response.status_code != 200:
-                            raise RuntimeError(f"Classifier service error for batch {batch_index+1}: Status {response.status_code} - {response.text}")
-                        
-                        # Process the batch response
+                    
+                    # Call the classifier service for this batch
+                    print(f"Calling classifier service for batch {batch_index+1} at {endpoint}...")
+                    print(f"Parameters: {params}")
+                    
+                    # IMPORTANT: Use data parameter instead of params to send as form data
+                    response = requests.post(endpoint, data=params, timeout=60)  # 60 sec timeout per batch
+                    
+                    if response.status_code != 200:
+                        raise RuntimeError(f"Classifier service error for batch {batch_index+1}: Status {response.status_code} - {response.text}")
+                    
+                    # Debug the raw response before parsing JSON
+                    print(f"Raw response text: {response.text[:200]}...")  # Print first 200 chars
+                    
+                    # Process the batch response
+                    try:
                         prediction_data = response.json()
+                        print(f"Response JSON keys: {list(prediction_data.keys())}")
+                        print(f"Response status: {prediction_data.get('status', 'NO_STATUS_FIELD')}")
+                    except Exception as json_error:
+                        raise ValueError(f"Failed to parse JSON response: {str(json_error)}, raw response: {response.text[:200]}...")
+                    
+                    # Handle both string and list format for status
+                    status_value = prediction_data.get('status')
+                    is_success = (status_value == 'success' or 
+                                 (isinstance(status_value, list) and len(status_value) > 0 and status_value[0] == 'success'))
+                    
+                    if not is_success:
+                        raise ValueError(f"Classifier returned error for batch {batch_index+1}: {prediction_data.get('message', 'Unknown error')}")
+                    
+                    # Get file results from response
+                    file_results = prediction_data.get('file_results', {})
+                    
+                    if not file_results:
+                        print(f"Warning: No classification results returned for batch {batch_index+1}")
+                    else:
+                        print(f"Received {len(file_results)} classification results for batch {batch_index+1}")
                         
-                        if prediction_data.get('status') != 'success':
-                            raise ValueError(f"Classifier returned error for batch {batch_index+1}: {prediction_data.get('message', 'Unknown error')}")
-                        
-                        # Get file results from response
-                        file_results = prediction_data.get('file_results', {})
-                        
-                        if not file_results:
-                            print(f"Warning: No classification results returned for batch {batch_index+1}")
-                        else:
-                            print(f"Received {len(file_results)} classification results for batch {batch_index+1}")
-                            
-                            # Store the results from this batch
-                            for filename, result_data in file_results.items():
-                                segment_id = segment_map.get(filename)
-                                if segment_id:
-                                    all_classification_results.append((segment_id, result_data))
-                        
-                        # Update progress - classification phase (40%-90%)
-                        classification_progress = 40 + 50 * ((batch_index + 1) / num_batches)
-                        update_detection_run_status(detection_run, status="in_progress", progress=classification_progress)
-                        
-                    except Exception as batch_error:
-                        print(f"Error processing batch {batch_index+1}: {str(batch_error)}")
-                        raise batch_error
-                    finally:
-                        # Clean up temporary directory
-                        try:
-                            import shutil
-                            shutil.rmtree(batch_dir, ignore_errors=True)
-                        except Exception as cleanup_error:
-                            print(f"Warning: Could not clean up temporary directory {batch_dir}: {str(cleanup_error)}")
+                        # Store the results from this batch
+                        for filename, result_data in file_results.items():
+                            segment_id = segment_map.get(filename)
+                            if segment_id:
+                                # Unwrap list values for consistency
+                                processed_data = {}
+                                for key, value in result_data.items():
+                                    if isinstance(value, list) and len(value) > 0:
+                                        processed_data[key] = value[0]
+                                    else:
+                                        processed_data[key] = value
+                                
+                                # Handle class_probabilities specially since it's a nested structure
+                                if 'class_probabilities' in result_data:
+                                    prob_data = result_data['class_probabilities']
+                                    if isinstance(prob_data, list) and len(prob_data) > 0:
+                                        processed_data['class_probabilities'] = prob_data[0]
+                                
+                                all_classification_results.append((segment_id, processed_data))
+                    
+                    # Update progress after each batch - reserve 10% for database operations at the end
+                    batch_progress = 90 * ((batch_index + 1) / num_batches)
+                    update_detection_run_status(detection_run, status="in_progress", progress=batch_progress)
+                    
+                except Exception as batch_error:
+                    print(f"Error processing batch {batch_index+1}: {str(batch_error)}")
+                    raise batch_error
+                finally:
+                    # Clean up temporary directory
+                    try:
+                        import shutil
+                        shutil.rmtree(batch_dir, ignore_errors=True)
+                    except Exception as cleanup_error:
+                        print(f"Warning: Could not clean up temporary directory {batch_dir}: {str(cleanup_error)}")
             
             # Now process all collected results and save to database
             print(f"Processing {len(all_classification_results)} total classification results...")
@@ -251,7 +274,7 @@ def run_call_detection(self, detection_run_id):
                         )
                     
                     # Update progress occasionally during database saves (90%-100%)
-                    if i % 20 == 0:  # Update every 20 saves to avoid too many DB writes
+                    if i % 20 == 0 or i == len(all_classification_results) - 1:  # Update every 20 saves or at the end
                         save_progress = 90 + 10 * (i / len(all_classification_results))
                         update_detection_run_status(detection_run, status="in_progress", progress=save_progress)
             

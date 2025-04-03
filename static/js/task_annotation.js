@@ -110,15 +110,7 @@ function initSpectrogramViewer() {
  * Initialize form behavior for the task annotation
  */
 function initFormBehavior() {
-    // When the "Other" input receives focus, also select the "Other" radio button
-    const otherRadio = document.getElementById('Other');
-    const otherInput = document.getElementById('other-input');
-    
-    if (otherInput && otherRadio) {
-        otherInput.addEventListener('focus', function() {
-            otherRadio.checked = true;
-        });
-    }
+    // Previously handled the "Other" option which has been removed
     
     // Add any other form-related behavior here
 }

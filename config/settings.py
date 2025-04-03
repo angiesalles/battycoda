@@ -11,8 +11,6 @@ https://docs.djangoproject.com/en/5.1/ref/settings/
 """
 
 import os
-import json
-import urllib.request
 from pathlib import Path
 
 import dotenv
@@ -42,17 +40,11 @@ DOMAIN_NAME = os.environ.get("DOMAIN_NAME", "localhost")
 # Allow the domain name, www subdomain, localhost, and internal docker IPs
 ALLOWED_HOSTS = [DOMAIN_NAME, f"www.{DOMAIN_NAME}", "localhost", "127.0.0.1", "[::1]"]
 
-# Add EC2 instance public IP for AWS deployments
-try:
-    ec2_ip = json.loads(urllib.request.urlopen('http://169.254.169.254/latest/dynamic/instance-identity/document', timeout=0.5).read())['privateIp']
-    ALLOWED_HOSTS.append(ec2_ip)
-    # Also try to get the public IP
-    public_ip = urllib.request.urlopen('http://checkip.amazonaws.com', timeout=0.5).read().decode('utf-8').strip()
-    if public_ip:
-        ALLOWED_HOSTS.append(public_ip)
-except Exception:
-    # Not running on EC2 or metadata service not available
-    pass
+# Add public IP for AWS deployments
+from .aws_utils import get_public_ip
+public_ip = get_public_ip()
+if public_ip:
+    ALLOWED_HOSTS.append(public_ip)
 
 # CSRF trusted origins - generated dynamically based on DOMAIN_NAME
 CSRF_TRUSTED_ORIGINS = [

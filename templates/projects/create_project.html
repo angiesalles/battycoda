@@ -1,42 +1,73 @@
 {% extends 'base.html' %}
+{% load static %}
 
 {% block title %}Add New Project - BattyCoda{% endblock %}
 
 {% block content %}
-<div class="section">
-    <h2>Add New Project</h2>
-    
-    <form method="post">
-        {% csrf_token %}
-        
-        <div style="margin-bottom: 15px;">
-            <label for="id_name" style="display: block; margin-bottom: 5px;">Name:</label>
-            {{ form.name }}
-            {% if form.name.errors %}
-            <div style="color: #e57373; margin-top: 5px;">
-                {% for error in form.name.errors %}
-                {{ error }}
-                {% endfor %}
-            </div>
-            {% endif %}
+<div class="container py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="{% url 'battycoda_app:project_list' %}">Projects</a></li>
+                <li class="breadcrumb-item active" aria-current="page">Add New Project</li>
+            </ol>
+        </nav>
+    </div>
+
+    {% if messages %}
+    <div class="messages mb-4">
+        {% for message in messages %}
+        <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
         </div>
-        
-        <div style="margin-bottom: 15px;">
-            <label for="id_description" style="display: block; margin-bottom: 5px;">Description:</label>
-            {{ form.description }}
-            {% if form.description.errors %}
-            <div style="color: #e57373; margin-top: 5px;">
-                {% for error in form.description.errors %}
-                {{ error }}
-                {% endfor %}
-            </div>
-            {% endif %}
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <div class="card">
+        <div class="card-header">
+            <h5 class="mb-0">Create New Project</h5>
         </div>
-        
-        <div style="margin-top: 20px;">
-            <button type="submit" class="button">Save Project</button>
-            <a href="{% url 'battycoda_app:project_list' %}" style="margin-left: 10px;">Cancel</a>
+        <div class="card-body">
+            <form method="post">
+                {% csrf_token %}
+                
+                <!-- Basic Information Section -->
+                <h6 class="text-muted mb-3">Project Information</h6>
+                <div class="row mb-4">
+                    <div class="col-md-6 mb-3">
+                        <label for="{{ form.name.id_for_label }}" class="form-label">Project Name*</label>
+                        {{ form.name }}
+                        {% if form.name.errors %}
+                        <div class="invalid-feedback d-block">
+                            {% for error in form.name.errors %}
+                            {{ error }}
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+                
+                <div class="row mb-4">
+                    <div class="col-12">
+                        <label for="{{ form.description.id_for_label }}" class="form-label">Description</label>
+                        {{ form.description }}
+                        {% if form.description.errors %}
+                        <div class="invalid-feedback d-block">
+                            {% for error in form.description.errors %}
+                            {{ error }}
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+                
+                <div class="d-flex justify-content-end mt-4">
+                    <button type="submit" class="btn btn-primary">Save Project</button>
+                </div>
+            </form>
         </div>
-    </form>
+    </div>
 </div>
 {% endblock %}

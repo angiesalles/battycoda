@@ -29,9 +29,7 @@ def task_annotation_view(request, task_id):
         # Check if the "mark as done" button was clicked
         if "mark_done" in request.POST:
             label = request.POST.get("type_call", "")
-            # Handle custom "other" label
-            if not label and "other_call" in request.POST:
-                label = request.POST.get("other_call", "")
+            # "Other" option has been removed
 
             # Update the task
             task.label = label

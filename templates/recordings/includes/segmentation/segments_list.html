@@ -23,25 +23,11 @@
                             <td>{{ segment.onset|floatformat:2 }}s - {{ segment.offset|floatformat:2 }}s</td>
                             <td>{{ segment.duration|floatformat:2 }}s</td>
                             <td>
-                                <div class="btn-group btn-group-sm">
-                                    <button class="btn btn-outline-primary play-segment-btn" 
-                                            data-onset="{{ segment.onset }}" 
-                                            data-offset="{{ segment.offset }}">
-                                        <i class="fas fa-play"></i>
-                                    </button>
-                                    <button class="btn btn-outline-warning edit-segment-btn" 
-                                            data-segment-id="{{ segment.id }}"
-                                            data-segment-name="{{ segment.name|default:'' }}"
-                                            data-segment-onset="{{ segment.onset }}"
-                                            data-segment-offset="{{ segment.offset }}"
-                                            data-segment-notes="{{ segment.notes|default:'' }}">
-                                        <i class="fas fa-edit"></i>
-                                    </button>
-                                    <button class="btn btn-outline-danger delete-segment-btn" 
-                                            data-segment-id="{{ segment.id }}">
-                                        <i class="fas fa-trash-alt"></i>
-                                    </button>
-                                </div>
+                                <!-- Action buttons will be dynamically generated via JavaScript -->
+                                <div class="segment-actions" data-segment-id="{{ segment.id }}" 
+                                     data-onset="{{ segment.onset }}" data-offset="{{ segment.offset }}"
+                                     data-name="{{ segment.name|default:'' }}" 
+                                     data-notes="{{ segment.notes|default:'' }}"></div>
                             </td>
                         </tr>
                         {% endfor %}

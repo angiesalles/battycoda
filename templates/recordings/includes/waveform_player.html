@@ -112,4 +112,7 @@ Parameters:
         initWaveformPlayer("{{ container_id }}", {{ recording.id }}, {{ allow_selection|yesno:"true,false" }}, {{ show_zoom|yesno:"true,false" }}, {% if segments %}{{ segments|safe }}{% else %}null{% endif %});
     });
     </script>
+    
+    <!-- Include the play region extension -->
+    <script src="{% static 'js/waveform_player/play_region.js' %}"></script>
 {% endif %}

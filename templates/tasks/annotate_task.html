@@ -191,18 +191,11 @@
                         </div>
                     {% endif %}
                     
-                    <!-- Unknown option before Other -->
+                    <!-- Unknown option -->
                     <div class="form-check mb-2">
                         <input class="form-check-input" type="radio" id="Unknown" name="type_call" value="Unknown" 
                             {% if not task.label %}checked{% endif %}>
                         <label class="form-check-label" for="Unknown">Unknown</label>
-                    </div>
-                    
-                    <!-- Always include Other option -->
-                    <div class="form-check mb-2">
-                        <input class="form-check-input" type="radio" id="Other" name="type_call" value="">
-                        <label class="form-check-label" for="Other">Other:</label>
-                        <input type="text" class="form-control mt-1" id="other-input" name="other_call">
                     </div>
                     
                     <div class="mt-4">
