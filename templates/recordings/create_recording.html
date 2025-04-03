@@ -25,7 +25,7 @@
     </div>
     {% endif %}
 
-    <div class="card bg-dark">
+    <div class="card">
         <div class="card-header">
             <h5 class="mb-0">Create New Recording</h5>
         </div>
@@ -142,7 +142,6 @@
                 </div>
                 
                 <div class="d-grid gap-2 d-md-flex justify-content-md-end">
-                    <a href="{% url 'battycoda_app:recording_list' %}" class="btn btn-outline-secondary me-md-2">Cancel</a>
                     <button type="submit" class="btn btn-primary">
                         <i class="fas fa-save"></i> Save Recording
                     </button>
@@ -160,9 +159,6 @@ document.addEventListener('DOMContentLoaded', function() {
     formInputs.forEach(input => {
         if (!input.classList.contains('form-check-input')) {
             input.classList.add('form-control');
-            input.classList.add('bg-dark');
-            input.classList.add('text-light');
-            input.classList.add('border-secondary');
         }
     });
     

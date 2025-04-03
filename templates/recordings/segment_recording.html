@@ -18,22 +18,19 @@
                 <li class="breadcrumb-item active" aria-current="page">Segment</li>
             </ol>
         </nav>
-        <div class="btn-group" role="group">
-            <button id="create-tasks-btn" class="btn btn-success" {% if not segments %}disabled{% endif %}>
+        <div class="d-flex">
+            {% if active_segmentation %}
+            <a id="create-tasks-btn" href="{% url 'battycoda_app:create_detection_run_for_segmentation' segmentation_id=active_segmentation.id %}" class="btn btn-primary mr-2" {% if not segments %}disabled{% endif %}>
                 <i class="fas fa-tag"></i> Create Classification
-            </button>
-            {% if recording.segmentation %}
-            <a href="{% url 'battycoda_app:create_detection_run_for_segmentation' segmentation_id=recording.segmentation.id %}" class="btn btn-success">
-                <i class="fas fa-tag"></i> Run Classification
             </a>
             {% endif %}
-            <a href="{% url 'battycoda_app:auto_segment_recording' recording_id=recording.id %}" class="btn btn-info">
+            <a href="{% url 'battycoda_app:auto_segment_recording' recording_id=recording.id %}" class="btn btn-info mr-2">
                 <i class="fas fa-magic"></i> Auto Segment
             </a>
-            <a href="{% url 'battycoda_app:upload_pickle_segments' recording_id=recording.id %}" class="btn btn-primary">
+            <a href="{% url 'battycoda_app:upload_pickle_segments' recording_id=recording.id %}" class="btn btn-outline-primary mr-2">
                 <i class="fas fa-file-upload"></i> Upload Pickle
             </a>
-            <a href="{% url 'battycoda_app:batch_segmentation' %}" class="btn btn-secondary">
+            <a href="{% url 'battycoda_app:batch_segmentation' %}" class="btn btn-secondary mr-2">
                 <i class="fas fa-tasks"></i> Segmentation Jobs
             </a>
             <a href="{% url 'battycoda_app:recording_detail' recording_id=recording.id %}" class="btn btn-outline-secondary">
@@ -76,6 +73,23 @@
 <!-- CSRF token for AJAX requests -->
 <input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}">
 
-<!-- Include segmentation scripts -->
-{% include "recordings/includes/segmentation/segment_scripts.html" %}
+<script type="module">
+    // Import segmentation module
+    import { initSegmentation } from "{% static 'js/segmentation/index.js' %}";
+    
+    document.addEventListener('DOMContentLoaded', function() {
+        // Initialize segmentation manager
+        const csrfToken = document.querySelector('input[name=csrfmiddlewaretoken]').value;
+        const segmentsData = {{ segments_json|safe }};
+        
+        // Initialize segmentation
+        initSegmentation({
+            recordingId: {{ recording.id }},
+            waveformId: 'segment-waveform',
+            csrfToken: csrfToken,
+            segments: segmentsData,
+            containerId: 'segment-waveform-container'
+        });
+    });
+</script>
 {% endblock %}

@@ -1,6 +1,7 @@
 from django import forms
 from django.contrib.auth.forms import AuthenticationForm, UserCreationForm
 from django.contrib.auth.models import User
+from django.db import models
 
 from .models.organization import Call, Project, Species
 from .models.recording import Recording, Segment
@@ -53,12 +54,12 @@ class TaskBatchForm(forms.ModelForm):
     wav_file = forms.FileField(
         help_text="Upload the WAV file for this task batch.",
         required=True,
-        widget=forms.FileInput(attrs={"class": "form-control bg-dark text-light"}),
+        widget=forms.FileInput(attrs={"class": "form-control"}),
     )
     pickle_file = forms.FileField(
         help_text="Upload a pickle file containing onsets and offsets.",
         required=False,
-        widget=forms.FileInput(attrs={"class": "form-control bg-dark text-light"}),
+        widget=forms.FileInput(attrs={"class": "form-control"}),
     )
 
     class Meta:
@@ -66,9 +67,9 @@ class TaskBatchForm(forms.ModelForm):
         fields = ["name", "species", "project", "wav_file"]
         # hidden wav_file_name field that will be auto-populated from the wav_file
         widgets = {
-            "name": forms.TextInput(attrs={"class": "form-control bg-dark text-light"}),
-            "species": forms.Select(attrs={"class": "form-control bg-dark text-light"}),
-            "project": forms.Select(attrs={"class": "form-control bg-dark text-light"}),
+            "name": forms.TextInput(attrs={"class": "form-control"}),
+            "species": forms.Select(attrs={"class": "form-control"}),
+            "project": forms.Select(attrs={"class": "form-control"}),
         }
 
     def __init__(self, *args, **kwargs):
@@ -91,31 +92,6 @@ class TaskBatchForm(forms.ModelForm):
                 self.fields["species"].queryset = self.fields["species"].queryset.filter(group=self.profile.group)
                 self.fields["project"].queryset = self.fields["project"].queryset.filter(group=self.profile.group)
 
-    def clean_name(self):
-        """
-        Validate that the name is unique within the user's group.
-        This is needed to properly handle the unique_together constraint.
-        """
-        name = self.cleaned_data.get("name")
-
-        if not name:
-            return name
-
-        if not hasattr(self, "profile") or not self.profile.group:
-            return name
-
-        # Check if a task batch with this name already exists in the user's group
-        # Exclude the current instance if we're editing
-        qs = TaskBatch.objects.filter(name=name, group=self.profile.group)
-        if self.instance and self.instance.pk:
-            qs = qs.exclude(pk=self.instance.pk)
-
-        if qs.exists():
-            raise forms.ValidationError(
-                f"A task batch with the name '{name}' already exists in your group. Please use a different name."
-            )
-
-        return name
 
 class TaskForm(forms.ModelForm):
     class Meta:
@@ -219,7 +195,8 @@ class ProjectForm(forms.ModelForm):
         model = Project
         fields = ["name", "description"]
         widgets = {
-            "description": forms.Textarea(attrs={"rows": 3}),
+            "name": forms.TextInput(attrs={"class": "form-control", "placeholder": "Enter project name"}),
+            "description": forms.Textarea(attrs={"rows": 4, "class": "form-control", "placeholder": "Describe your project here"}),
         }
 
 class GroupForm(forms.ModelForm):
@@ -264,6 +241,8 @@ class RecordingForm(forms.ModelForm):
         ]
         widgets = {
             "environmental_conditions": forms.Textarea(attrs={"rows": 3}),
+            "species": forms.Select(attrs={"class": "form-select", "size": "1"}),
+            "project": forms.Select(attrs={"class": "form-select", "size": "1"}),
         }
 
     def __init__(self, *args, **kwargs):
@@ -281,9 +260,11 @@ class RecordingForm(forms.ModelForm):
             # Get or create user profile
             self.profile, created = UserProfile.objects.get_or_create(user=self.user)
 
-            # Filter species and projects by user's group
+            # Get system species and those belonging to the user's group
             if self.profile.group:
-                self.fields["species"].queryset = self.fields["species"].queryset.filter(group=self.profile.group)
+                self.fields["species"].queryset = Species.objects.filter(
+                    models.Q(is_system=True) | models.Q(group=self.profile.group)
+                ).order_by('name')
                 self.fields["project"].queryset = self.fields["project"].queryset.filter(group=self.profile.group)
 
     def clean_name(self):

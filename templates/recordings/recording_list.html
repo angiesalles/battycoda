@@ -7,7 +7,7 @@
 {% block item_count %}{{ recordings|length }}{% endblock %}
 
 {% block action_buttons %}
-<a href="{% url 'battycoda_app:create_recording' %}" class="btn btn-primary" 
+<a href="{% url 'battycoda_app:create_recording' %}" class="btn btn-primary me-2" 
    data-bs-toggle="tooltip" data-bs-placement="bottom" title="Upload a single audio recording">
     <i class="fas fa-plus"></i> New Recording
 </a>

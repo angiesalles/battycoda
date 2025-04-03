@@ -41,18 +41,8 @@ def create_task_batch_from_detection_run(request, run_id):
                 # Get the recording from the segmentation
                 recording = run.segmentation.recording
 
-                # Ensure batch name is unique by adding timestamp if needed
-                base_name = batch_name
-                suffix = 1
-                timestamp = timezone.now().strftime("%Y%m%d-%H%M%S")
-
-                # First try with timestamp
-                batch_name = f"{base_name} ({timestamp})"
-
-                # If name still exists, add numeric suffix until unique
-                while TaskBatch.objects.filter(name=batch_name, group=profile.group).exists():
-                    batch_name = f"{base_name} ({timestamp}-{suffix})"
-                    suffix += 1
+                # Use the batch name as is, no need for timestamps or unique constraints
+                batch_name = base_name
 
                 # Create the task batch with unique name
                 batch = TaskBatch.objects.create(

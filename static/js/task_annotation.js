@@ -17,18 +17,22 @@ document.addEventListener('DOMContentLoaded', function() {
  * Initialize the spectrogram viewer with channel and view switching
  */
 function initSpectrogramViewer() {
+    // Find all UI elements needed
     const mainSpectrogram = document.getElementById('main-spectrogram');
     const detailViewBtn = document.getElementById('detail-view-btn');
     const overviewBtn = document.getElementById('overview-btn');
-    const channelToggle = document.getElementById('channel-toggle');
-    const channelLabel = document.getElementById('channel-label');
     const detailTicks = document.getElementById('detail-ticks');
     const overviewTicks = document.getElementById('overview-ticks');
     
-    // If any of these elements don't exist, return early
-    if (!mainSpectrogram || !detailViewBtn || !overviewBtn || !channelToggle || 
-        !channelLabel || !detailTicks || !overviewTicks) {
-        console.error("Some required elements are missing from the page.");
+    // Channel switching elements
+    const channel1Btn = document.getElementById('channel-1-btn');
+    const channel2Btn = document.getElementById('channel-2-btn');
+    const channelToggle = document.getElementById('channel-toggle');
+    const channelLabel = document.getElementById('channel-label');
+    
+    // Check for critical elements
+    if (!mainSpectrogram || !detailViewBtn || !overviewBtn || !detailTicks || !overviewTicks) {
+        console.error("Critical elements for spectrogram viewing are missing.");
         return;
     }
     
@@ -96,11 +100,36 @@ function initSpectrogramViewer() {
         updateSpectrogram();
     });
     
-    channelToggle.addEventListener('change', function() {
-        currentChannel = this.checked ? 1 : 0;
-        channelLabel.textContent = `Channel ${currentChannel + 1}`;
-        updateSpectrogram();
-    });
+    // Set up channel buttons if they exist
+    if (channel1Btn && channel2Btn) {
+        channel1Btn.addEventListener('click', function() {
+            currentChannel = 0;
+            // Update button styles
+            channel1Btn.classList.add('active', 'btn-primary');
+            channel1Btn.classList.remove('btn-outline-secondary');
+            channel2Btn.classList.remove('active', 'btn-primary');
+            channel2Btn.classList.add('btn-outline-secondary');
+            updateSpectrogram();
+        });
+        
+        channel2Btn.addEventListener('click', function() {
+            currentChannel = 1;
+            // Update button styles
+            channel2Btn.classList.add('active', 'btn-primary');
+            channel2Btn.classList.remove('btn-outline-secondary');
+            channel1Btn.classList.remove('active', 'btn-primary');
+            channel1Btn.classList.add('btn-outline-secondary');
+            updateSpectrogram();
+        });
+    }
+    // Use the legacy toggle if it exists (we don't have it anymore)
+    else if (channelToggle && channelLabel) {
+        channelToggle.addEventListener('change', function() {
+            currentChannel = this.checked ? 1 : 0;
+            channelLabel.textContent = `Channel ${currentChannel + 1}`;
+            updateSpectrogram();
+        });
+    }
     
     // Initialize on page load
     updateSpectrogram();
@@ -110,15 +139,7 @@ function initSpectrogramViewer() {
  * Initialize form behavior for the task annotation
  */
 function initFormBehavior() {
-    // When the "Other" input receives focus, also select the "Other" radio button
-    const otherRadio = document.getElementById('Other');
-    const otherInput = document.getElementById('other-input');
-    
-    if (otherInput && otherRadio) {
-        otherInput.addEventListener('focus', function() {
-            otherRadio.checked = true;
-        });
-    }
+    // Previously handled the "Other" option which has been removed
     
     // Add any other form-related behavior here
 }

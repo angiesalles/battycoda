@@ -77,11 +77,11 @@
                                             </div>
                                         </div>
                                     </td>
-                                    <td>{{ job.created_at|date:"M d, Y H:i" }}</td>
+                                    <td data-utc-date="{{ job.created_at|date:'c' }}" data-date-format="datetime">{{ job.created_at|date:"M d, Y H:i" }}</td>
                                     <td>{{ job.created_by.username }}</td>
                                     <td>
-                                        <div class="btn-group" role="group">
-                                            <a href="{% url 'battycoda_app:classifier_training_job_detail' job_id=job.id %}" class="btn btn-sm btn-primary">
+                                        <div class="d-flex">
+                                            <a href="{% url 'battycoda_app:classifier_training_job_detail' job_id=job.id %}" class="btn btn-sm btn-primary mr-2">
                                                 <i class="fas fa-eye"></i> View
                                             </a>
                                             <a href="{% url 'battycoda_app:delete_classifier_training_job' job_id=job.id %}" 
@@ -136,7 +136,7 @@
                                         <span class="badge bg-primary">Built-in</span>
                                         {% endif %}
                                     </td>
-                                    <td>{{ classifier.created_at|date:"M d, Y" }}</td>
+                                    <td data-utc-date="{{ classifier.created_at|date:'c' }}" data-date-format="date">{{ classifier.created_at|date:"M d, Y" }}</td>
                                     <td>
                                         {% if classifier.source_task_batch %}
                                         <a href="{% url 'battycoda_app:task_batch_detail' batch_id=classifier.source_task_batch.id %}">

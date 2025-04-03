@@ -65,6 +65,7 @@ urlpatterns = [
     path("accounts/enter-login-code/<str:username>/", views_auth.enter_login_code, name="enter_login_code"),
     path("accounts/login-with-token/<str:token>/", views_auth.login_with_token, name="login_with_token"),
     path("accounts/check-username/", views_auth.check_username, name="check_username"),
+    path("accounts/check-email/", views_auth.check_email, name="check_email"),
     path("update_theme_preference/", views_auth.update_theme_preference, name="update_theme_preference"),
     path("update_profile_ajax/", views_auth.update_profile_ajax, name="update_profile_ajax"),
     # Routes for task functionality only
@@ -82,6 +83,7 @@ urlpatterns = [
     path("tasks/batches/<int:batch_id>/", views_task_batch.task_batch_detail_view, name="task_batch_detail"),
     path("tasks/batches/<int:batch_id>/export/", views_task_batch.export_task_batch_view, name="export_task_batch"),
     path("tasks/batches/create/", views_task_batch.create_task_batch_view, name="create_task_batch"),
+    path("tasks/batches/check-name/", views_task_batch.check_taskbatch_name, name="check_taskbatch_name"),
     path("tasks/next/", views_task_navigation.get_next_task_view, name="get_next_task"),
     path("tasks/last/", views_task_navigation.get_last_task_view, name="get_last_task"),
     path(

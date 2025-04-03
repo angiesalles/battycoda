@@ -50,6 +50,14 @@
                                     <td>{{ run.name }}</td>
                                 </tr>
                                 <tr>
+                                    <th>Segmentation</th>
+                                    <td>
+                                        <a href="{% url 'battycoda_app:recording_detail' recording_id=run.segmentation.recording.id %}">
+                                            {{ run.segmentation.name }}
+                                        </a>
+                                    </td>
+                                </tr>
+                                <tr>
                                     <th>Recording</th>
                                     <td>
                                         <a href="{% url 'battycoda_app:recording_detail' recording_id=run.segmentation.recording.id %}">
@@ -68,12 +76,18 @@
                                     </td>
                                 </tr>
                                 <tr>
-                                    <th>Algorithm Type</th>
+                                    <th>Model Type</th>
                                     <td>
-                                        {% if run.algorithm_type == 'full_probability' %}
-                                            <span class="badge bg-info">Full Probability Distribution</span>
+                                        {% if run.classifier %}
+                                            {% if 'knn' in run.classifier.name|lower %}
+                                                <span class="badge bg-info">KNN</span>
+                                            {% elif 'lda' in run.classifier.name|lower %}
+                                                <span class="badge bg-primary">LDA</span>
+                                            {% else %}
+                                                <span class="badge bg-secondary">Default</span>
+                                            {% endif %}
                                         {% else %}
-                                            <span class="badge bg-warning text-dark">Highest Probability Only</span>
+                                            <span class="badge bg-secondary">Unknown</span>
                                         {% endif %}
                                     </td>
                                 </tr>

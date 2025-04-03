@@ -51,6 +51,7 @@
                                 {{ form.email.errors }}
                             </span>
                             {% endif %}
+                            <div id="email-warning" class="text-danger small mt-1"></div>
                         </div>
                         
                         <div class="form-group mb-4">
@@ -96,11 +97,7 @@
                         </div>
                     </form>
                     
-                    <div class="mt-5 text-center">
-                        <a href="{% url 'battycoda_app:login' %}" class="btn btn-link text-primary" style="font-size: 1.15rem;">
-                            <span class="s7-back mr-1" style="font-size: 1.3rem; vertical-align: middle;"></span> Back to Login
-                        </a>
-                    </div>
+                    <!-- "Back to Login" link removed as requested -->
                     
                     <div class="mt-5">
                         <h5 class="mb-3">Username Requirements</h5>
@@ -123,84 +120,12 @@
     </div>
 </div>
 
+{% load static %}
 <script>
-    document.addEventListener('DOMContentLoaded', function() {
-        const usernameField = document.getElementById('id_username');
-        const submitButton = document.querySelector('button[type="submit"]');
-        let typingTimer; // Timer identifier
-        const doneTypingInterval = 500; // Time in ms (0.5 seconds)
-        
-        if (usernameField) {
-            // Get the warning element
-            const warningElement = document.getElementById('username-warning');
-            
-            // On input event, validate characters and remove @ symbols
-            usernameField.addEventListener('input', function(e) {
-                // Clear any typing timer
-                clearTimeout(typingTimer);
-                
-                // Remove @ symbol if present
-                if (this.value.includes('@')) {
-                    this.value = this.value.replace(/@/g, '');
-                    warningElement.textContent = 'Username cannot contain the @ symbol.';
-                }
-                
-                // Only letters, numbers, and ._-
-                const regex = /^[\w.-]*$/;
-                if (!regex.test(this.value)) {
-                    this.value = this.value.replace(/[^\w.-]/g, '');
-                    warningElement.textContent = 'Username can only contain letters, numbers, and the characters ._-';
-                }
-                
-                // Start timer to check if username exists (wait for user to finish typing)
-                if (this.value.length > 0) {
-                    typingTimer = setTimeout(checkUsername, doneTypingInterval);
-                } else {
-                    warningElement.textContent = '';
-                }
-            });
-            
-            // Define the function to check if username exists
-            function checkUsername() {
-                const username = usernameField.value;
-                
-                if (username.length > 0) {
-                    // Create form data
-                    const formData = new FormData();
-                    formData.append('username', username);
-                    
-                    // Send AJAX request
-                    fetch('{% url "battycoda_app:check_username" %}', {
-                        method: 'POST',
-                        body: formData
-                    })
-                    .then(response => response.json())
-                    .then(data => {
-                        if (!data.valid) {
-                            warningElement.textContent = data.message;
-                            submitButton.disabled = true;
-                        } else if (data.exists) {
-                            warningElement.textContent = data.message;
-                            submitButton.disabled = true;
-                        } else {
-                            warningElement.textContent = '';
-                            submitButton.disabled = false;
-                        }
-                    })
-                    .catch(error => {
-                        console.error('Error checking username:', error);
-                    });
-                }
-            }
-            
-            // Also run the check when the field loses focus
-            usernameField.addEventListener('blur', function() {
-                clearTimeout(typingTimer);
-                if (this.value.length > 0) {
-                    checkUsername();
-                }
-            });
-        }
-    });
+    // Setup variables for the registration form validation
+    const csrfToken = '{{ csrf_token }}';
+    const usernameCheckURL = '{% url "battycoda_app:check_username" %}';
+    const emailCheckURL = '{% url "battycoda_app:check_email" %}';
 </script>
+<script src="{% static 'js/auth/register.js' %}"></script>
 {% endblock %}

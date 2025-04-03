@@ -40,6 +40,12 @@ DOMAIN_NAME = os.environ.get("DOMAIN_NAME", "localhost")
 # Allow the domain name, www subdomain, localhost, and internal docker IPs
 ALLOWED_HOSTS = [DOMAIN_NAME, f"www.{DOMAIN_NAME}", "localhost", "127.0.0.1", "[::1]"]
 
+# Add public IP for AWS deployments
+from .aws_utils import get_public_ip
+public_ip = get_public_ip()
+if public_ip:
+    ALLOWED_HOSTS.append(public_ip)
+
 # CSRF trusted origins - generated dynamically based on DOMAIN_NAME
 CSRF_TRUSTED_ORIGINS = [
     f"https://{DOMAIN_NAME}",

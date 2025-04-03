@@ -33,6 +33,8 @@ class AuthenticationMiddleware:
             "/accounts/login-with-token/",
             "/accounts/password-reset/",
             "/accounts/reset-password/",
+            "/accounts/check-username/",
+            "/accounts/check-email/",
             "/welcome/",  # Allow access to the landing page
         ]
 

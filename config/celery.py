@@ -17,7 +17,9 @@ app.autodiscover_tasks([
     "battycoda_app.audio",
     "battycoda_app.audio.task_modules.spectrogram_tasks",
     "battycoda_app.audio.task_modules.detection_tasks",
-    "battycoda_app.audio.task_modules.segmentation_tasks"
+    "battycoda_app.audio.task_modules.segmentation_tasks",
+    "battycoda_app.audio.task_modules.classification_tasks",
+    "battycoda_app.audio.task_modules.training_tasks"
 ])
 
 @app.task(bind=True, ignore_result=True)

@@ -76,42 +76,33 @@ def import_default_species(user):
         # Create the species with its normal name
         species = Species.objects.create(
             name=species_name, 
-            description="Saccopteryx bilineata, known as the greater sac-winged bat, is a bat species in the family Emballonuridae.", 
+            description="Saccopteryx bilineata, known as the greater sac-winged bat, is a bat species in the family Emballonuridae. Figure and call types from Christian C. Voigt, Oliver Behr, Barbara Caspers, Otto von Helversen, Mirjam Knörnschild, Frieder Mayer, Martina Nagy, Songs, Scents, and Senses: Sexual Selection in the Greater Sac-Winged Bat, Saccopteryx bilineata, Journal of Mammalogy, Volume 89, Issue 6, 16 December 2008, Pages 1401–1410, https://doi.org/10.1644/08-MAMM-S-060.1", 
             created_by=user, 
             group=group
         )
         
-        # Add call types from Saccopteryx.txt file
-        call_file_path = "/app/data/species_images/Saccopteryx.txt"
+        # Add call types directly in code
+        saccopteryx_calls = [
+            "Pup isolation call",
+            "Maternal directive call",
+            "Echolocation",
+            "Bark",
+            "Chatter",
+            "Screech",
+            "Whistle",
+            "Courtship song",
+            "Territorial song"
+        ]
         
-        try:
-            with open(call_file_path, "r", encoding="utf-8") as f:
-                for line in f:
-                    line = line.strip()
-                    if not line:
-                        continue
-                        
-                    if "," in line:
-                        short_name, long_name = line.split(",", 1)
-                    elif "|" in line:
-                        short_name, long_name = line.split("|", 1)
-                    elif "\t" in line:
-                        short_name, long_name = line.split("\t", 1)
-                    else:
-                        short_name = line
-                        long_name = ""
-                        
-                    Call.objects.create(
-                        species=species, 
-                        short_name=short_name.strip(), 
-                        long_name=long_name.strip() if long_name else None
-                    )
-        except FileNotFoundError:
-            # If file not found, don't create any calls
-            pass
+        for call_name in saccopteryx_calls:
+            Call.objects.create(
+                species=species, 
+                short_name=call_name.strip(),
+                long_name=None
+            )
             
         # Try to add the species image if it exists
-        _add_species_image_by_name(species, "Saccopteryx.jpg")
+        _add_species_image_by_name(species, "Saccopteryx.png")
         
         created_species.append(species)
 
