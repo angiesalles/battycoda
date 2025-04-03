@@ -57,16 +57,84 @@ extract_features_batch <- function(wav_folder) {
     })
   }
   
-  # Create selection table
-  selt <- selection_table(wavtable)
-  
-  # Extract features
-  debug_log("Extracting acoustic features...")
-  ftable <- spectro_analysis(selt, bp = c(9, 200), threshold = 15)
-  
-  # Return to original directory
-  setwd(original_dir)
-  return(list(features = ftable, files = wav_files))
+  # Create selection table with error handling
+  debug_log("Creating selection table...")
+  tryCatch({
+    selt <- selection_table(wavtable)
+    
+    # Extract features - maintain consistent parameters
+    debug_log("Extracting acoustic features...")
+    
+    # We'll process files in smaller batches to skip problematic ones
+    # while keeping the same parameters for all files
+    all_features <- NULL
+    batch_size <- 100
+    num_files <- nrow(selt)
+    
+    # Process in batches
+    for (i in seq(1, num_files, by=batch_size)) {
+      end_idx <- min(i + batch_size - 1, num_files)
+      current_batch <- selt[i:end_idx,]
+      
+      debug_log(sprintf("Processing batch %d-%d of %d files", i, end_idx, num_files))
+      
+      # Try to process this batch and catch errors
+      batch_features <- tryCatch({
+        spectro_analysis(current_batch, bp = c(9, 200), threshold = 15)
+      }, error = function(e) {
+        # If the entire batch fails, try one by one
+        debug_log(sprintf("Error in batch %d-%d: %s", i, end_idx, e$message))
+        debug_log("Processing files individually...")
+        
+        individual_features <- NULL
+        
+        for (j in i:end_idx) {
+          single_file <- selt[j,,drop=FALSE]
+          tryCatch({
+            # Process individual file
+            file_features <- spectro_analysis(single_file, bp = c(9, 200), threshold = 15)
+            
+            # Append to results
+            if (is.null(individual_features)) {
+              individual_features <- file_features
+            } else {
+              individual_features <- rbind(individual_features, file_features)
+            }
+          }, error = function(e2) {
+            debug_log(sprintf("Skipping problematic file %s: %s", selt$sound.files[j], e2$message))
+            # Skip this file and continue
+          })
+        }
+        
+        return(individual_features)
+      })
+      
+      # Append batch results to the full results
+      if (!is.null(batch_features) && nrow(batch_features) > 0) {
+        if (is.null(all_features)) {
+          all_features <- batch_features
+        } else {
+          all_features <- rbind(all_features, batch_features)
+        }
+      }
+    }
+    
+    # Ensure we got some features
+    if (is.null(all_features) || nrow(all_features) == 0) {
+      stop("Failed to extract features from any files")
+    }
+    
+    debug_log(sprintf("Successfully extracted features from %d files", nrow(all_features)))
+    
+    # Return to original directory
+    setwd(original_dir)
+    return(list(features = all_features, files = wav_files))
+    
+  }, error = function(e) {
+    # Set directory back before propagating error
+    setwd(original_dir)
+    stop(paste("Error in feature extraction:", e$message))
+  })
 }
 
 # Common function to load any model from file
