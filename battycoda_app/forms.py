@@ -220,7 +220,8 @@ class ProjectForm(forms.ModelForm):
         model = Project
         fields = ["name", "description"]
         widgets = {
-            "description": forms.Textarea(attrs={"rows": 3}),
+            "name": forms.TextInput(attrs={"class": "form-control", "placeholder": "Enter project name"}),
+            "description": forms.Textarea(attrs={"rows": 4, "class": "form-control", "placeholder": "Describe your project here"}),
         }
 
 class GroupForm(forms.ModelForm):

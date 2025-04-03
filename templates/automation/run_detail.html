@@ -50,6 +50,14 @@
                                     <td>{{ run.name }}</td>
                                 </tr>
                                 <tr>
+                                    <th>Segmentation</th>
+                                    <td>
+                                        <a href="{% url 'battycoda_app:recording_detail' recording_id=run.segmentation.recording.id %}">
+                                            {{ run.segmentation.name }}
+                                        </a>
+                                    </td>
+                                </tr>
+                                <tr>
                                     <th>Recording</th>
                                     <td>
                                         <a href="{% url 'battycoda_app:recording_detail' recording_id=run.segmentation.recording.id %}">

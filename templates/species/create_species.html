@@ -63,16 +63,18 @@
         <!-- Hidden field to store call types as JSON -->
         <input type="hidden" id="call_types_json" name="call_types_json" value="[]">
         
-        <div style="margin-bottom: 20px; padding: 15px; background-color: #2a2a2a; border-radius: 5px;">
+        <div class="p-3 mb-4 bg-light rounded border">
             <!-- Import from file section -->
-            <div style="margin-bottom: 15px;">
+            <div class="mb-3">
                 <h4 style="margin-top: 0; margin-bottom: 10px;">Import Calls from File</h4>
                 <p style="margin-bottom: 8px; font-style: italic; color: #999;">Uploading a file will replace any calls you've already added.</p>
-                <div style="display: flex; gap: 10px; align-items: flex-end;">
-                    <div style="flex: 1;">
-                        <input type="file" id="calls_file_input" style="padding: 6px; background-color: #444; border: 1px solid #555; color: white; width: 100%;">
+                <div class="row align-items-end mb-2">
+                    <div class="col-md-9">
+                        <input type="file" id="calls_file_input" class="form-control">
                     </div>
-                    <button type="button" id="parse_file_btn" class="button">Parse File</button>
+                    <div class="col-md-3">
+                        <button type="button" id="parse_file_btn" class="btn btn-primary w-100">Parse File</button>
+                    </div>
                 </div>
                 <p style="font-size: 0.8em; margin-top: 5px;">Upload a text file with call types (one per line, format: short_name,long_name)</p>
                 <div id="file-load-status" style="margin-top: 5px;"></div>
@@ -88,21 +90,21 @@
             </div>
             
             <!-- Add new call form -->
-            <div style="background-color: #333; padding: 12px; border-radius: 4px;">
+            <div class="p-3 bg-light rounded border">
                 <h5 style="margin-top: 0; margin-bottom: 10px;">Add a New Call Type</h5>
                 <p style="font-size: 0.8em; margin-bottom: 8px; font-style: italic; color: #999;">Press Enter in either field to quickly add a call</p>
                 <div id="add-call-messages"></div>
-                <div style="display: flex; gap: 10px; margin-bottom: 10px;">
-                    <div style="flex: 1;">
-                        <label for="new-call-short-name" style="display: block; margin-bottom: 5px;">Short Name:</label>
-                        <input type="text" id="new-call-short-name" class="form-control" style="width: 100%; padding: 6px; background-color: #444; border: 1px solid #555; color: white;">
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <label for="new-call-short-name" class="form-label">Short Name:</label>
+                        <input type="text" id="new-call-short-name" class="form-control">
                     </div>
-                    <div style="flex: 1;">
-                        <label for="new-call-long-name" style="display: block; margin-bottom: 5px;">Long Name:</label>
-                        <input type="text" id="new-call-long-name" class="form-control" style="width: 100%; padding: 6px; background-color: #444; border: 1px solid #555; color: white;">
+                    <div class="col-md-6">
+                        <label for="new-call-long-name" class="form-label">Long Name:</label>
+                        <input type="text" id="new-call-long-name" class="form-control">
                     </div>
                 </div>
-                <button type="button" id="add-call-btn" class="button">Add Call</button>
+                <button type="button" id="add-call-btn" class="btn btn-primary">Add Call</button>
             </div>
         </div>
         

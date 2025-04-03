@@ -36,7 +36,7 @@
 {% block item_fields %}
 <td>{{ item.tasks.count }}</td>
 <td>{{ item.task_batches.count }}</td>
-<td>{{ item.created_at|date:"M d, Y" }}</td>
+<td data-utc-date="{{ item.created_at|date:'c' }}" data-date-format="datetime">{{ item.created_at|date:"M d, Y" }}</td>
 <td>{{ item.created_by.username }}</td>
 {% endblock %}
 

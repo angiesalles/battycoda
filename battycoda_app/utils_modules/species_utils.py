@@ -81,37 +81,28 @@ def import_default_species(user):
             group=group
         )
         
-        # Add call types from Saccopteryx.txt file
-        call_file_path = "/app/data/species_images/Saccopteryx.txt"
+        # Add call types directly in code
+        saccopteryx_calls = [
+            "Pup isolation call",
+            "Maternal directive call",
+            "Echolocation",
+            "Bark",
+            "Chatter",
+            "Screech",
+            "Whistle",
+            "Courtship song",
+            "Territorial song"
+        ]
         
-        try:
-            with open(call_file_path, "r", encoding="utf-8") as f:
-                for line in f:
-                    line = line.strip()
-                    if not line:
-                        continue
-                        
-                    if "," in line:
-                        short_name, long_name = line.split(",", 1)
-                    elif "|" in line:
-                        short_name, long_name = line.split("|", 1)
-                    elif "\t" in line:
-                        short_name, long_name = line.split("\t", 1)
-                    else:
-                        short_name = line
-                        long_name = ""
-                        
-                    Call.objects.create(
-                        species=species, 
-                        short_name=short_name.strip(), 
-                        long_name=long_name.strip() if long_name else None
-                    )
-        except FileNotFoundError:
-            # If file not found, don't create any calls
-            pass
+        for call_name in saccopteryx_calls:
+            Call.objects.create(
+                species=species, 
+                short_name=call_name.strip(),
+                long_name=None
+            )
             
         # Try to add the species image if it exists
-        _add_species_image_by_name(species, "Saccopteryx.jpg")
+        _add_species_image_by_name(species, "Saccopteryx.png")
         
         created_species.append(species)
 
