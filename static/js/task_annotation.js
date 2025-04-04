@@ -2,7 +2,7 @@
  * Task Annotation JavaScript
  * 
  * This file contains all the JavaScript functionality for the task annotation interface,
- * including spectrogram switching, channel toggling, and form handling.
+ * including spectrogram switching, channel toggling, form handling, and notifications.
  */
 
 document.addEventListener('DOMContentLoaded', function() {
@@ -11,6 +11,9 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Initialize form behavior
     initFormBehavior();
+    
+    // Check for batch switch notification
+    checkBatchSwitchNotification();
 });
 
 /**
@@ -142,4 +145,35 @@ function initFormBehavior() {
     // Previously handled the "Other" option which has been removed
     
     // Add any other form-related behavior here
+}
+
+/**
+ * Check if we need to show a notification about switching batches
+ */
+function checkBatchSwitchNotification() {
+    // Check if toastr is available
+    if (typeof toastr !== 'undefined') {
+        // Configure toastr
+        toastr.options = {
+            "closeButton": true,
+            "positionClass": "toast-top-right",
+            "preventDuplicates": true,
+            "timeOut": "6000",
+            "extendedTimeOut": "2000",
+        };
+        
+        // Check if there's batch switch data in sessionStorage
+        if (typeof batchSwitchData !== 'undefined' && batchSwitchData) {
+            const fromBatchName = batchSwitchData.from_batch_name;
+            const toBatchName = batchSwitchData.to_batch_name;
+            const toBatchId = batchSwitchData.to_batch_id;
+            
+            // Create message with link to batch
+            const batchLink = `<a href="/tasks/batches/${toBatchId}/" class="text-white text-decoration-underline">view batch</a>`;
+            const message = `You completed all tasks in batch "${fromBatchName}" and are now working on "${toBatchName}" (${batchLink})`;
+            
+            // Show success notification
+            toastr.success(message, 'Batch Completed!');
+        }
+    }
 }

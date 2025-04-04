@@ -37,7 +37,8 @@ def task_annotation_view(request, task_id):
             task.status = "done"
             task.save()
 
-            messages.success(request, "Task marked as done with label: " + label)
+            # We don't need to show a success message for every task completion
+            # - it creates too many notifications
 
             # Redirect to the next task
             return redirect("battycoda_app:get_next_task")
@@ -161,6 +162,11 @@ def task_annotation_view(request, task_id):
     x_ticks_overview = tick_data["x_ticks_overview"]
     y_ticks = tick_data["y_ticks"]
 
+    # Check if there's batch switch data in the session (only when coming from a different batch)
+    batch_switch_data = None
+    if 'batch_switch' in request.session:
+        batch_switch_data = request.session.pop('batch_switch')
+    
     # Create context for the template
     context = {
         "task": task,
@@ -184,6 +190,8 @@ def task_annotation_view(request, task_id):
         "x_ticks_detail": x_ticks_detail,
         "x_ticks_overview": x_ticks_overview,
         "y_ticks": y_ticks,
+        # Add batch switch data for notification
+        "batch_switch_data": batch_switch_data,
     }
 
     # Return the annotation interface
