@@ -73,8 +73,12 @@ def create_recording_view(request):
                 messages.error(request, "You must be assigned to a group to create a recording")
                 return redirect("battycoda_app:create_recording")
 
-            # Save the recording
+            # Save the recording first without marking as ready
             recording.save()
+            
+            # Now mark as ready for processing and save again
+            recording.file_ready = True
+            recording.save(update_fields=["file_ready"])
 
             # Check if AJAX request
             if request.headers.get("x-requested-with") == "XMLHttpRequest":
@@ -175,10 +179,11 @@ def recalculate_audio_info_view(request, recording_id):
         messages.error(request, "You don't have permission to perform this action.")
         return redirect("battycoda_app:recording_list")
 
-    # Reset audio info fields
+    # Reset audio info fields and ensure file_ready is True
     recording.duration = None
     recording.sample_rate = None
-    recording.save(update_fields=["duration", "sample_rate"])
+    recording.file_ready = True
+    recording.save(update_fields=["duration", "sample_rate", "file_ready"])
 
     # Import the task function and run it synchronously
     import os

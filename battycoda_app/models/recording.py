@@ -16,6 +16,7 @@ class Recording(models.Model):
     wav_file = models.FileField(upload_to="recordings/", help_text="WAV file for the recording")
     duration = models.FloatField(blank=True, null=True, help_text="Duration of the recording in seconds")
     sample_rate = models.IntegerField(blank=True, null=True, help_text="Sample rate of the recording in Hz")
+    file_ready = models.BooleanField(default=False, help_text="Flag indicating if the file is fully uploaded and ready for processing")
 
     # Recording metadata
     recorded_date = models.DateField(blank=True, null=True, help_text="Date when the recording was made")
