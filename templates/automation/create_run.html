@@ -34,8 +34,8 @@
                             <label for="name" class="form-label">Run Name</label>
                             <input type="text" class="form-control" 
                                    id="name" name="name" 
-                                   placeholder="Classification Run for {{ segmentation.recording.name }}" 
-                                   value="Classification Run for {{ segmentation.recording.name }}">
+                                   placeholder="Classification Run for Segmentation #{{ segmentation.id }}" 
+                                   value="Classification Run for Segmentation #{{ segmentation.id }}">
                             <div class="form-text text-muted">Give your classification run a descriptive name</div>
                         </div>
                         
@@ -71,7 +71,7 @@
                             <h5>Segmentation Information</h5>
                             <table class="table">
                                 <tr>
-                                    <th>Recording</th>
+                                    <th>Source Recording</th>
                                     <td>
                                         <a href="{% url 'battycoda_app:segment_recording' recording_id=segmentation.recording.id %}">
                                             {{ segmentation.recording.name }}
@@ -90,12 +90,6 @@
                                     <th>Segment Count</th>
                                     <td>{{ segmentation.recording.segments.count }}</td>
                                 </tr>
-                                {% if segmentation.algorithm %}
-                                <tr>
-                                    <th>Segmentation Algorithm</th>
-                                    <td>{{ segmentation.algorithm.name }}</td>
-                                </tr>
-                                {% endif %}
                                 {% if segmentation.manually_edited %}
                                 <tr>
                                     <th>Status</th>

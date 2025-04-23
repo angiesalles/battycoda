@@ -251,26 +251,26 @@ def create_detection_run_view(request, segmentation_id=None):
     items = []
     for segmentation in segmentations:
         items.append({
-            "name": f"{segmentation.recording.name} - {segmentation.algorithm.name if segmentation.algorithm else 'Custom'}",
-            "type_name": "Segmentation",
+            "name": f"Segmentation #{segmentation.id} - {segmentation.recording.name}",
+            "type_name": "Segmentation Run",
             "count": segmentation.segments.count(),
             "created_at": segmentation.created_at,
-            "detail_url": f"/recordings/{segmentation.recording.id}/",
+            "detail_url": f"/recordings/{segmentation.recording.id}/segment/?segmentation_id={segmentation.id}",
             "action_url": f"/automation/runs/create/{segmentation.id}/",
         })
 
     context = {
         "title": "Create Classification Run",
-        "list_title": "Available Segmentations",
+        "list_title": "Available Segmentation Runs",
         "action_text": "Create Run",
         "action_icon": "bolt",
         "parent_url": "battycoda_app:automation_home",
         "parent_name": "Automation",
-        "th1": "Recording",
-        "th2": "Algorithm",
+        "th1": "Segmentation Run",
+        "th2": "Type",
         "th3": "Segments",
         "show_count": True,
-        "empty_message": "No segmentations available. You need to create segmentations first.",
+        "empty_message": "No segmentation runs available. You need to create segmentation runs first.",
         "create_url": "battycoda_app:batch_segmentation",
         "items": items,
     }
