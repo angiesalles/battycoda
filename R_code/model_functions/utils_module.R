@@ -38,16 +38,19 @@ extract_features_batch <- function(wav_folder) {
   # We'll use 0 to end of file for all files
   selec <- seq_along(wav_files)
   start <- rep(0, length(wav_files))
-  end <- rep(1, length(wav_files))  # Default 1 second, will be updated
+  end <- rep(0, length(wav_files))  # Will be filled with exact durations
   
   wavtable <- cbind.data.frame(sound.files = wav_files, selec = selec, start = start, end = end)
   
-  # Get actual length of sound files
+  # Get actual length of sound files - use full Wave object for precision
   for (i in 1:nrow(wavtable)) {
     tryCatch({
-      audio <- readWave(wavtable[i,1], header=TRUE)
-      audiolength <- (audio$samples / audio$sample.rate)
-      wavtable[i,4] <- audiolength
+      # Read full wave file for precise duration calculation
+      wav <- readWave(wavtable[i,1])
+      # Calculate exact duration based on actual samples
+      exact_duration <- length(wav@left) / wav@samp.rate
+      # Update end time with precise duration
+      wavtable[i,4] <- exact_duration
       if (i %% 10 == 0) {
         debug_log(sprintf("Processed %d/%d files", i, nrow(wavtable)))
       }
@@ -62,64 +65,22 @@ extract_features_batch <- function(wav_folder) {
   tryCatch({
     selt <- selection_table(wavtable)
     
-    # Extract features - maintain consistent parameters
+    # Extract features using reliable segment processor
     debug_log("Extracting acoustic features...")
     
-    # We'll process files in smaller batches to skip problematic ones
-    # while keeping the same parameters for all files
-    all_features <- NULL
-    batch_size <- 100
-    num_files <- nrow(selt)
+    # Load segment processor functions with absolute path to the R code directory
+    processor_path <- "/app/R_code/model_functions/process_segment.R"
+    source(processor_path)
     
-    # Process in batches
-    for (i in seq(1, num_files, by=batch_size)) {
-      end_idx <- min(i + batch_size - 1, num_files)
-      current_batch <- selt[i:end_idx,]
-      
-      debug_log(sprintf("Processing batch %d-%d of %d files", i, end_idx, num_files))
-      
-      # Try to process this batch and catch errors
-      batch_features <- tryCatch({
-        spectro_analysis(current_batch, bp = c(9, 200), threshold = 15)
-      }, error = function(e) {
-        # If the entire batch fails, try one by one
-        debug_log(sprintf("Error in batch %d-%d: %s", i, end_idx, e$message))
-        debug_log("Processing files individually...")
-        
-        individual_features <- NULL
-        
-        for (j in i:end_idx) {
-          single_file <- selt[j,,drop=FALSE]
-          tryCatch({
-            # Process individual file
-            file_features <- spectro_analysis(single_file, bp = c(9, 200), threshold = 15)
-            
-            # Append to results
-            if (is.null(individual_features)) {
-              individual_features <- file_features
-            } else {
-              individual_features <- rbind(individual_features, file_features)
-            }
-          }, error = function(e2) {
-            debug_log(sprintf("Skipping problematic file %s: %s", selt$sound.files[j], e2$message))
-            # Skip this file and continue
-          })
-        }
-        
-        return(individual_features)
-      })
-      
-      # Append batch results to the full results
-      if (!is.null(batch_features) && nrow(batch_features) > 0) {
-        if (is.null(all_features)) {
-          all_features <- batch_features
-        } else {
-          all_features <- rbind(all_features, batch_features)
-        }
-      }
-    }
+    # Get full file paths for processing
+    current_dir <- getwd()
+    file_paths <- file.path(current_dir, selt$sound.files)
     
-    # Ensure we got some features
+    # Process all files using our robust processor
+    debug_log("Using robust segment processor for feature extraction")
+    all_features <- process_segments(file_paths)
+    
+    # Check if any features were extracted
     if (is.null(all_features) || nrow(all_features) == 0) {
       stop("Failed to extract features from any files")
     }
