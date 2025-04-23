@@ -53,14 +53,7 @@
 </head>
 <body class="theme-{% if user.is_authenticated %}{{ user.profile.theme|default:'default' }}{% else %}default{% endif %} {% block body_class %}{% endblock %}" id="main-body">
 
-    {% if request.hijack.is_hijacked %}
-    <div class="alert alert-warning mb-0 text-center" style="position: sticky; top: 0; z-index: 1050;">
-        <div class="container-fluid">
-            <strong>You are impersonating {{ user.username }}</strong>
-            <a href="{% url 'hijack:release' %}" class="btn btn-sm btn-secondary ml-2">Release User</a>
-        </div>
-    </div>
-    {% endif %}
+    {# Notification for hijacked users is now handled by django-hijack's notification.html template #}
 
 
     <nav id="mainNavbar" class="navbar navbar-expand navbar-dark mai-top-header">
