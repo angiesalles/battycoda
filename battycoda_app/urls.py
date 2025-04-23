@@ -68,6 +68,7 @@ urlpatterns = [
     path("accounts/check-email/", views_auth.check_email, name="check_email"),
     path("update_theme_preference/", views_auth.update_theme_preference, name="update_theme_preference"),
     path("update_profile_ajax/", views_auth.update_profile_ajax, name="update_profile_ajax"),
+    # Admin user hijacking is now handled by django-hijack package
     # Routes for task functionality only
     # Directory and file browsing functionality removed
     # Spectrogram routes

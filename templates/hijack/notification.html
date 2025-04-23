@@ -1,0 +1,9 @@
+{% load i18n %}
+<div id="hijacked-warning" class="hijacked-warning alert alert-warning mb-0 text-center" style="position: sticky; top: 0; z-index: 1050;">
+  <div class="container">
+    <b>{% trans "You are currently working on behalf of" %} {{ request.user }}</b>
+    <a href="{% url 'hijack:release' %}{% if next %}?next={{ next }}{% endif %}" class="btn btn-sm btn-warning ml-2">
+      {% trans "Release" %}
+    </a>
+  </div>
+</div>

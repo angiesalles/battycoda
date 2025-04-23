@@ -1,7 +1,19 @@
 from django.contrib import admin
+from django.contrib.auth.admin import UserAdmin
+from django.contrib.auth.models import User
+from hijack.contrib.admin import HijackUserAdminMixin
 
 from .models.detection import Classifier
 from .models.user import UserProfile
+
+# Add hijack functionality to the User admin
+class HijackUserAdmin(HijackUserAdminMixin, UserAdmin):
+    # Don't modify list_display - the mixin handles this automatically
+    pass
+
+# Re-register UserAdmin with hijack functionality
+admin.site.unregister(User)
+admin.site.register(User, HijackUserAdmin)
 
 # Register your models here.
 @admin.register(UserProfile)

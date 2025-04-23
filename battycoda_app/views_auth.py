@@ -729,3 +729,64 @@ def update_profile_ajax(request):
         import traceback
         traceback.print_exc()
         return JsonResponse({'success': False, 'message': f'An error occurred: {str(e)}'}, status=500)
+
+
+@login_required
+def hijack_user_view(request, user_id):
+    """
+    Custom view for hijacking a user.
+    This is a simplified implementation for admin use that doesn't rely on django-hijack.
+    """
+    # Only allow superusers to hijack other users
+    if not request.user.is_superuser:
+        messages.error(request, "You don't have permission to impersonate users.")
+        return redirect('/')
+    
+    # Get the user to hijack
+    user = get_object_or_404(User, id=user_id)
+    
+    # Store the original user ID in the session
+    if 'hijack_history' not in request.session:
+        request.session['hijack_history'] = []
+    
+    # Add current user ID to the history
+    request.session['hijack_history'].append(request.user.id)
+    
+    # Log in as the target user
+    login(request, user)
+    
+    messages.success(
+        request, 
+        f"You are now impersonating {user.username}. Use the release button at the top to return to your account."
+    )
+    
+    return redirect('/')
+
+
+@login_required
+def release_hijacked_user_view(request):
+    """
+    Custom view for releasing a hijacked user.
+    This is a simplified implementation for admin use that doesn't rely on django-hijack.
+    """
+    # Check if there's a hijack history in the session
+    if 'hijack_history' not in request.session or not request.session['hijack_history']:
+        messages.error(request, "No user impersonation in progress.")
+        return redirect('/')
+    
+    # Get the original user ID
+    original_user_id = request.session['hijack_history'].pop()
+    
+    # Clean up the session
+    if not request.session['hijack_history']:
+        del request.session['hijack_history']
+    
+    # Get the original user
+    original_user = get_object_or_404(User, id=original_user_id)
+    
+    # Log in as the original user
+    login(request, original_user)
+    
+    messages.success(request, "You have been returned to your account.")
+    
+    return redirect('/admin/auth/user/')
