@@ -8,9 +8,12 @@ from django.contrib.auth.decorators import login_required
 from django.db import models
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
+from django.urls import reverse
+from django.utils import timezone
 
 from battycoda_app.models.detection import CallProbability, Classifier, DetectionResult, DetectionRun
-from battycoda_app.models.recording import Segmentation
+from battycoda_app.models.recording import Segmentation, Segment
+from battycoda_app.models.organization import Species
 
 @login_required
 def automation_home_view(request):
@@ -305,3 +308,204 @@ def delete_detection_run_view(request, run_id):
 
     # For GET requests, show confirmation page
     return render(request, "automation/delete_run.html", {"run": run})
+
+
+@login_required
+def classify_unclassified_segments_view(request):
+    """Display species with unclassified segments for batch classification."""
+    profile = request.user.profile
+    
+    # Get all species with segments that don't have detection results
+    if profile.group:
+        if profile.is_admin:
+            # Admin sees all species in their group
+            species_list = Species.objects.filter(
+                recordings__segments__isnull=False,
+                recordings__group=profile.group
+            ).distinct()
+        else:
+            # Regular user sees only species for their own recordings
+            species_list = Species.objects.filter(
+                recordings__segments__isnull=False,
+                recordings__created_by=request.user
+            ).distinct()
+    else:
+        # User with no group sees only their own species
+        species_list = Species.objects.filter(
+            recordings__segments__isnull=False,
+            recordings__created_by=request.user
+        ).distinct()
+    
+    items = []
+    for species in species_list:
+        if profile.group and profile.is_admin:
+            # Count unclassified segments for this species within the group
+            unclassified_count = Segment.objects.filter(
+                recording__species=species,
+                recording__group=profile.group,
+                detection_results__isnull=True
+            ).count()
+        else:
+            # Count unclassified segments for this species created by the user
+            unclassified_count = Segment.objects.filter(
+                recording__species=species,
+                recording__created_by=request.user,
+                detection_results__isnull=True
+            ).count()
+        
+        if unclassified_count > 0:
+            items.append({
+                'name': species.name,
+                'type_name': 'Bat Species',
+                'count': unclassified_count,
+                'created_at': species.created_at,
+                'detail_url': reverse('battycoda_app:species_detail', args=[species.id]),
+                'action_url': reverse('battycoda_app:create_classification_for_species', args=[species.id])
+            })
+    
+    context = {
+        'title': 'Classify Unclassified Segments',
+        'list_title': 'Species with Unclassified Segments',
+        'parent_url': 'battycoda_app:automation_home',
+        'parent_name': 'Automation',
+        'th1': 'Species',
+        'th2': 'Type',
+        'th3': 'Unclassified Segments',
+        'show_count': True,
+        'action_text': 'Classify',
+        'action_icon': 'tag',
+        'empty_message': 'No species with unclassified segments found.',
+        'items': items
+    }
+    
+    return render(request, "automation/select_entity.html", context)
+
+
+@login_required
+def create_classification_for_species_view(request, species_id):
+    """Create classification run for unclassified segments of a specific species."""
+    species = get_object_or_404(Species, id=species_id)
+    profile = request.user.profile
+    
+    # Check permissions
+    if profile.group and profile.is_admin:
+        if not Segment.objects.filter(recording__species=species, recording__group=profile.group).exists():
+            messages.error(request, "No segments for this species in your group.")
+            return redirect('battycoda_app:classify_unclassified_segments')
+    else:
+        if not Segment.objects.filter(recording__species=species, recording__created_by=request.user).exists():
+            messages.error(request, "You don't have permission to classify segments for this species.")
+            return redirect('battycoda_app:classify_unclassified_segments')
+    
+    # For POST request, create the classification run
+    if request.method == "POST":
+        classifier_id = request.POST.get('classifier_id')
+        run_name = request.POST.get('name') or f"Auto-classification for {species.name} - {timezone.now().strftime('%Y-%m-%d')}"
+        
+        if not classifier_id:
+            messages.error(request, "Please select a classifier.")
+            return redirect('battycoda_app:create_classification_for_species', species_id=species_id)
+            
+        classifier = get_object_or_404(Classifier, id=classifier_id)
+        
+        # Check if classifier is compatible with species
+        if classifier.species and classifier.species != species:
+            messages.error(request, f"Selected classifier is trained for {classifier.species.name}, not {species.name}.")
+            return redirect('battycoda_app:create_classification_for_species', species_id=species_id)
+
+        # Get unclassified segments
+        if profile.group and profile.is_admin:
+            segments = Segment.objects.filter(
+                recording__species=species,
+                recording__group=profile.group,
+                detection_results__isnull=True
+            )
+        else:
+            segments = Segment.objects.filter(
+                recording__species=species,
+                recording__created_by=request.user,
+                detection_results__isnull=True
+            )
+        
+        if not segments.exists():
+            messages.error(request, "No unclassified segments found for this species.")
+            return redirect('battycoda_app:classify_unclassified_segments')
+        
+        try:
+            # Group segments by recording/segmentation to create detection runs
+            recording_segmentation_map = {}
+            
+            # Identify the segmentations we need to process
+            for segment in segments:
+                key = (segment.recording.id, segment.segmentation.id)
+                if key not in recording_segmentation_map:
+                    recording_segmentation_map[key] = segment.segmentation
+            
+            # Create a detection run for each segmentation
+            run_count = 0
+            for segmentation in recording_segmentation_map.values():
+                # Create the detection run
+                run = DetectionRun.objects.create(
+                    name=f"{run_name} - {segmentation.recording.name}",
+                    segmentation=segmentation,
+                    created_by=request.user,
+                    group=profile.group,
+                    algorithm_type=classifier.response_format,
+                    classifier=classifier,
+                    status="pending",
+                    progress=0.0,
+                )
+                
+                # Launch the appropriate Celery task
+                from battycoda_app.audio.task_modules.classification_tasks import run_call_detection
+                run_call_detection.delay(run.id)
+                run_count += 1
+            
+            messages.success(
+                request, 
+                f"Created {run_count} classification runs for {segments.count()} segments across {run_count} recordings."
+            )
+            return redirect('battycoda_app:automation_home')
+            
+        except Exception as e:
+            messages.error(request, f"Error creating classification runs: {str(e)}")
+            return redirect('battycoda_app:classify_unclassified_segments')
+    
+    # For GET request, show form with available classifiers
+    # Get compatible classifiers (based on species or null species)
+    if profile.group:
+        classifiers = (
+            Classifier.objects.filter(is_active=True)
+            .filter(models.Q(group=profile.group) | models.Q(group__isnull=True))
+            .filter(models.Q(species=species) | models.Q(species__isnull=True))
+            .order_by('name')
+        )
+    else:
+        classifiers = (
+            Classifier.objects.filter(is_active=True, group__isnull=True)
+            .filter(models.Q(species=species) | models.Q(species__isnull=True))
+            .order_by('name')
+        )
+    
+    # Get count of unclassified segments
+    if profile.group and profile.is_admin:
+        unclassified_count = Segment.objects.filter(
+            recording__species=species,
+            recording__group=profile.group,
+            detection_results__isnull=True
+        ).count()
+    else:
+        unclassified_count = Segment.objects.filter(
+            recording__species=species,
+            recording__created_by=request.user,
+            detection_results__isnull=True
+        ).count()
+    
+    context = {
+        'species': species,
+        'classifiers': classifiers,
+        'unclassified_count': unclassified_count,
+        'default_classifier': classifiers.filter(name="R-direct Classifier").first(),
+    }
+    
+    return render(request, 'automation/create_species_classification.html', context)
