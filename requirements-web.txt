@@ -16,6 +16,12 @@ django-ses>=3.5.0,<4.0.0  # Django AWS SES email backend
 whitenoise>=6.6.0,<7.0.0  # Serving static files in production
 fontawesomefree>=6.4.0,<7.0.0  # Font Awesome Free for static files
 
+# Audio processing libraries (required for waveform visualization)
+scipy>=1.0.0,<2.0.0
+numpy>=1.20.0,<3.0.0
+matplotlib>=3.5.0,<4.0.0
+pillow>=10.2.0,<11.0.0
+
 # Django-related packages
 django-hijack>=3.4.0,<4.0.0  # For user impersonation
 
