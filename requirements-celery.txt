@@ -20,3 +20,5 @@ requests>=2.31.0,<3.0.0
 
 # Django related (needed for models)
 django>=4.2.0,<6.0.0
+django-hijack>=3.4.0,<4.0.0  # For user impersonation (needed for settings)
+fontawesomefree>=6.4.0,<7.0.0  # Font Awesome Free for static files
