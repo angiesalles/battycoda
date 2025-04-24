@@ -103,12 +103,16 @@ def upload_pickle_segments_view(request, recording_id):
             return redirect("battycoda_app:segment_recording", recording_id=recording.id)
 
         except Exception as e:
+            # Log the error with filename for troubleshooting
+            import logging
+            pickle_filename = pickle_file.name if hasattr(pickle_file, 'name') else 'unknown'
+            logging.error(f"Error processing pickle file '{pickle_filename}': {str(e)}")
 
             # Return appropriate error response
             if request.headers.get("x-requested-with") == "XMLHttpRequest":
                 return JsonResponse({"success": False, "error": str(e)})
 
-            messages.error(request, f"Error processing pickle file: {str(e)}")
+            messages.error(request, f"Error processing pickle file '{os.path.basename(pickle_filename)}': {str(e)}")
             return redirect("battycoda_app:segment_recording", recording_id=recording.id)
 
     # GET request - render upload form

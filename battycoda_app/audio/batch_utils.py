@@ -171,7 +171,10 @@ def process_batch_upload(wav_zip, pickle_zip, form_data, user, group):
                                     if segments_created > 0:
                                         segmented_count += 1
                                         # Created segments for recording
-                            except Exception:
+                            except Exception as e:
+                                # Log the error with the filename for troubleshooting
+                                import logging
+                                logging.error(f"Error processing pickle file {pickle_filename}: {str(e)}")
                                 # Exception during pickle processing or segment creation
                                 segmented_count = segmented_count
 
