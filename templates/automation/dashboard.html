@@ -32,8 +32,14 @@
                 <!-- Runs Tab Content -->
                 <div class="tab-pane fade show active" id="runs-content" role="tabpanel" aria-labelledby="runs-tab">
                     <div class="d-flex justify-content-end mb-3">
-                        <a href="{% url 'battycoda_app:create_detection_run' %}" class="btn btn-primary">
-                            <i class="fas fa-plus-circle me-1"></i> New Classification Run
+                        <a href="{% url 'battycoda_app:create_detection_run' %}" class="btn btn-primary mr-3">
+                            <i class="fas fa-plus-circle mr-1"></i> New Classification Run
+                        </a>
+                        <a href="{% url 'battycoda_app:classify_unclassified_segments' %}" class="btn btn-primary mr-3">
+                            <i class="fas fa-tags mr-1"></i> Classify Unclassified Segments
+                        </a>
+                        <a href="{% url 'battycoda_app:create_task_batches_for_species' %}" class="btn btn-primary">
+                            <i class="fas fa-clipboard mr-1"></i> Create Task Batches
                         </a>
                     </div>
                     

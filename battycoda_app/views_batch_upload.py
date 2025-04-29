@@ -161,8 +161,12 @@ def batch_upload_recordings_view(request):
                                 created_by=request.user,
                             )
 
-                            # Save the recording
+                            # Save the recording first without marking as ready
                             recording.save()
+                            
+                            # Now mark as ready for processing and save again
+                            recording.file_ready = True
+                            recording.save(update_fields=["file_ready"])
 
                             # Check if there's a matching pickle file
                             pickle_filename = f"{wav_file_name}.pickle"

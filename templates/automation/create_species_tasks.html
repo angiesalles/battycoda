@@ -1,0 +1,59 @@
+{% extends 'base.html' %}
+
+{% block title %}Create Task Batches for {{ species.name }} | BattyCoda{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-12">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{% url 'battycoda_app:automation_home' %}">Automation</a></li>
+                    <li class="breadcrumb-item"><a href="{% url 'battycoda_app:create_task_batches_for_species' %}">Create Task Batches</a></li>
+                    <li class="breadcrumb-item active">{{ species.name }}</li>
+                </ol>
+            </nav>
+            
+            <h1 class="mb-4">Create Task Batches for {{ species.name }}</h1>
+            
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h4 class="mb-0">Task Batch Creation Details</h4>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-info mb-4">
+                        <p class="mb-0">There are <strong>{{ pending_runs_count }}</strong> completed classification runs for {{ species.name }} that don't have task batches yet. This operation will create task batches for all these runs.</p>
+                    </div>
+                    
+                    <form method="post" action="{% url 'battycoda_app:create_tasks_for_species' species_id=species.id %}">
+                        {% csrf_token %}
+                        
+                        <div class="form-group mb-3">
+                            <label for="name_prefix">Batch Name Prefix</label>
+                            <input type="text" class="form-control" id="name_prefix" name="name_prefix" value="{{ default_name_prefix }}">
+                            <small class="form-text text-muted">This prefix will be used for all batch names. The recording name will be appended to create unique batch names.</small>
+                        </div>
+                        
+                        <div class="alert alert-warning mb-4">
+                            <h5 class="alert-heading">Important Notes</h5>
+                            <ul class="mb-0">
+                                <li>This operation will create a separate task batch for each completed classification run.</li>
+                                <li>Only segments without existing tasks will be included.</li>
+                                <li>The initial label for each task will be set to the call type with the highest probability.</li>
+                                <li>All batches will be created at once and will be available in the Task Batches section.</li>
+                            </ul>
+                        </div>
+                        
+                        <div class="text-end">
+                            <a href="{% url 'battycoda_app:create_task_batches_for_species' %}" class="btn btn-secondary mr-2">Cancel</a>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-clipboard-check mr-1"></i> Create Task Batches
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

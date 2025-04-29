@@ -76,6 +76,9 @@ def process_pickle_file(pickle_file):
         ValueError: If the pickle file format is not recognized or contains invalid data
         Exception: For any other errors during processing
     """
+    # Get the filename for error reporting
+    filename = getattr(pickle_file, 'name', 'unknown')
+    
     try:
         import numpy as np
 
@@ -96,9 +99,8 @@ def process_pickle_file(pickle_file):
             offsets = pickle_data[1]
         else:
             # Unrecognized format
-
             raise ValueError(
-                "Pickle file format not recognized. Expected a dictionary with 'onsets' and 'offsets' keys, or a list/tuple with at least 2 elements."
+                f"Pickle file '{os.path.basename(filename)}' format not recognized. Expected a dictionary with 'onsets' and 'offsets' keys, or a list/tuple with at least 2 elements."
             )
 
         # Convert to lists if they're NumPy arrays or other iterables
@@ -114,11 +116,11 @@ def process_pickle_file(pickle_file):
 
         # Validate data
         if len(onsets) == 0 or len(offsets) == 0:
-            raise ValueError("Pickle file does not contain required onset and offset lists.")
+            raise ValueError(f"Pickle file '{os.path.basename(filename)}' does not contain required onset and offset lists.")
 
         # Check if lists are the same length
         if len(onsets) != len(offsets):
-            raise ValueError("Onsets and offsets lists must have the same length.")
+            raise ValueError(f"In pickle file '{os.path.basename(filename)}': Onsets and offsets lists must have the same length.")
 
         # Convert numpy types to Python native types if needed
         onsets = [float(onset) for onset in onsets]
@@ -127,7 +129,12 @@ def process_pickle_file(pickle_file):
         return onsets, offsets
 
     except Exception as e:
-
-        import traceback
-
-        raise
+        # Create a more informative error message that includes the filename
+        if isinstance(e, ValueError):
+            # Re-raise with the existing message that already includes the filename
+            raise
+        else:
+            # Wrap other exceptions with filename information
+            import traceback
+            logging.error(f"Error processing pickle file '{os.path.basename(filename)}': {str(e)}\n{traceback.format_exc()}")
+            raise Exception(f"Error processing pickle file '{os.path.basename(filename)}': {str(e)}") from e

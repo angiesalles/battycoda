@@ -24,13 +24,18 @@ from .tasks import calculate_audio_duration
 def trigger_audio_info_calculation(sender, instance, **kwargs):
     """
     Signal handler to asynchronously calculate audio duration and sample rate after a recording is saved
-
-    This ensures the file is fully committed to disk before trying to access it.
+    
+    Only triggers when the file_ready flag is set to True, ensuring the file is fully committed
+    to disk before trying to access it.
     """
     # Skip if both duration and sample rate are already set
     if instance.duration and instance.sample_rate:
         return
-
+        
+    # Only process recordings where file_ready is True
+    if not instance.file_ready:
+        return
+        
     # Trigger the Celery task
     calculate_audio_duration.delay(instance.id)
 

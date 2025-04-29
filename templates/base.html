@@ -53,7 +53,7 @@
 </head>
 <body class="theme-{% if user.is_authenticated %}{{ user.profile.theme|default:'default' }}{% else %}default{% endif %} {% block body_class %}{% endblock %}" id="main-body">
 
-
+    {# Notification for hijacked users is now handled by django-hijack's notification.html template #}
 
 
     <nav id="mainNavbar" class="navbar navbar-expand navbar-dark mai-top-header">

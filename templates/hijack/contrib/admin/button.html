@@ -1,0 +1,10 @@
+{% load i18n %}
+<form method="post" action="{% url 'hijack:acquire' %}" style="display: inline;">
+  {% csrf_token %}
+  <input type="hidden" name="user_pk" value="{{ another_user.pk }}">
+  {% if next %}<input type="hidden" name="next" value="{{ next }}">{% endif %}
+  <button class="hijack-button btn btn-primary btn-sm" type="submit"
+     title="{% if is_user_admin %}{% trans 'Hijack user' %}{% else %}{% trans 'Hijack' %} {{ username }}{% endif %}">
+    {% if is_user_admin %}{% trans 'Hijack user' %}{% else %}{% trans 'Hijack' %} {{ username }}{% endif %}
+  </button>
+</form>

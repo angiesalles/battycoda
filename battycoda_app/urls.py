@@ -14,9 +14,13 @@ from .views_segmentation.segmentation_settings import activate_segmentation_view
 from .views_automation.results_application import apply_detection_results_view
 from .views_automation.runs_details import detection_run_detail_view, detection_run_status_view
 from .views_automation.runs_management import (
-    automation_home_view, create_detection_run_view, delete_detection_run_view
+    automation_home_view, create_detection_run_view, delete_detection_run_view,
+    classify_unclassified_segments_view, create_classification_for_species_view
 )
-from .views_automation.task_creation import create_task_batch_from_detection_run
+from .views_automation.task_creation import (
+    create_task_batch_from_detection_run, create_task_batches_for_species_view,
+    create_tasks_for_species_view
+)
 from .views_automation.classifier_training import (
     classifier_list_view, create_classifier_training_job_view, 
     classifier_training_job_detail_view, classifier_training_job_status_view,
@@ -68,6 +72,7 @@ urlpatterns = [
     path("accounts/check-email/", views_auth.check_email, name="check_email"),
     path("update_theme_preference/", views_auth.update_theme_preference, name="update_theme_preference"),
     path("update_profile_ajax/", views_auth.update_profile_ajax, name="update_profile_ajax"),
+    # Admin user hijacking is now handled by django-hijack package
     # Routes for task functionality only
     # Directory and file browsing functionality removed
     # Spectrogram routes
@@ -121,6 +126,28 @@ urlpatterns = [
     ),
     path(
         "automation/runs/<int:run_id>/delete/", delete_detection_run_view, name="delete_detection_run"
+    ),
+    # Classify unclassified segments
+    path(
+        "automation/unclassified/",
+        classify_unclassified_segments_view,
+        name="classify_unclassified_segments"
+    ),
+    path(
+        "automation/unclassified/<int:species_id>/classify/",
+        create_classification_for_species_view,
+        name="create_classification_for_species"
+    ),
+    # Create task batches from classification runs
+    path(
+        "automation/task-batches/",
+        create_task_batches_for_species_view,
+        name="create_task_batches_for_species"
+    ),
+    path(
+        "automation/task-batches/<int:species_id>/create/",
+        create_tasks_for_species_view,
+        name="create_tasks_for_species"
     ),
     # Classifier training routes
     path("automation/classifiers/", classifier_list_view, name="classifier_list"),

@@ -76,7 +76,15 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
     "fontawesomefree",
     "battycoda_app",
+    "hijack",
 ]
+
+# Settings for django-hijack
+HIJACK_LOGIN_REDIRECT_URL = '/'  # Where to redirect after hijacking
+HIJACK_LOGOUT_REDIRECT_URL = '/admin/auth/user/'  # Where to redirect after releasing the user
+HIJACK_ALLOW_GET_REQUESTS = False  # Do not allow GET requests for hijacking
+HIJACK_USE_BOOTSTRAP = True  # Use Bootstrap for styling
+HIJACK_INSERT_BEFORE = '</body>'  # Insert notification before closing body tag
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
@@ -87,6 +95,8 @@ MIDDLEWARE = [
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
+    # Hijack middleware for user impersonation
+    "hijack.middleware.HijackUserMiddleware",
     # Add standard authentication middleware
     "battycoda_app.middleware.authentication_middleware.AuthenticationMiddleware",
 ]
@@ -105,6 +115,7 @@ TEMPLATES = [
                 "django.contrib.auth.context_processors.auth",
                 "django.contrib.messages.context_processors.messages",
                 "battycoda_app.context_processors.theme_choices",
+                "battycoda_app.context_processors.hijack_notification",
             ],
         },
     },

@@ -14,16 +14,19 @@ def process_audio_file(file_path):
 @shared_task
 def calculate_audio_duration(recording_id):
     """
-    Calculate and update the duration and sample rate for a recording
-
-    This task is triggered after a recording is saved, to ensure
+    Calculate and update the duration and sample rate for a recording.
+    
+    This task should only be triggered when file_ready=True, ensuring that
     the file is fully committed to disk before processing.
     """
     import os
+    import logging
 
     import soundfile as sf
 
     from .models.recording import Recording
+    
+    logger = logging.getLogger(__name__)
 
     try:
         # Get the recording from the database
@@ -31,18 +34,25 @@ def calculate_audio_duration(recording_id):
 
         # Skip if both duration and sample rate are already set
         if recording.duration and recording.sample_rate:
-            # Recording already has duration and sample rate
+            logger.info(f"Recording {recording_id} already has duration and sample rate set")
             return True
 
-        # Check if file exists
+        # Double-check that file_ready is True
+        if not recording.file_ready:
+            logger.warning(f"Task called for recording {recording_id} with file_ready=False, skipping")
+            return False
+
+        # Check if file exists (should exist since file_ready=True)
         if not os.path.exists(recording.wav_file.path):
-            # Recording file doesn't exist
+            logger.error(f"File missing for recording {recording_id} despite file_ready=True: {recording.wav_file.path}")
             return False
 
         # Extract audio information from file
         info = sf.info(recording.wav_file.path)
         duration = info.duration
         sample_rate = info.samplerate
+        
+        logger.info(f"Audio info for recording {recording_id}: duration={duration}s, sample_rate={sample_rate}Hz")
 
         # Update the recording
         update_fields = []
@@ -57,18 +67,18 @@ def calculate_audio_duration(recording_id):
             recording.sample_rate = sample_rate
             update_fields.append("sample_rate")
 
-        # Use update_fields to avoid triggering save signal again (if any fields were updated)
+        # Use update_fields to avoid triggering save signal again
         if update_fields:
             recording.save(update_fields=update_fields)
-            # Successfully updated recording with duration and sample rate
+            logger.info(f"Successfully updated recording {recording_id} with duration {duration}s and sample rate {sample_rate}Hz")
 
         return True
 
     except Recording.DoesNotExist:
-        # Recording doesn't exist
+        logger.error(f"Recording {recording_id} does not exist")
         return False
-    except Exception:
-        # Other error occurred
+    except Exception as e:
+        logger.error(f"Error calculating audio duration for recording {recording_id}: {str(e)}")
         return False
 
 @shared_task
