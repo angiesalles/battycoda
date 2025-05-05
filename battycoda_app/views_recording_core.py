@@ -7,6 +7,8 @@ from .forms_edit import RecordingEditForm
 
 # Set up logging
 
+from .views_recordings_duplicates import has_duplicate_recordings
+
 @login_required
 def recording_list_view(request):
     """Display list of all recordings for the user's group"""
@@ -18,15 +20,31 @@ def recording_list_view(request):
         if profile.is_admin:
             # Admin sees all recordings in their group
             recordings = Recording.objects.filter(group=profile.group).order_by("-created_at")
+            
+            # Check if there are recordings with missing sample rates
+            has_missing_sample_rates = Recording.objects.filter(
+                group=profile.group,
+                sample_rate__isnull=True,
+                file_ready=True
+            ).exists()
+            
+            # Check if there are duplicate recordings
+            has_duplicate_recordings_flag = has_duplicate_recordings(profile.group)
         else:
             # Regular user only sees their own recordings
             recordings = Recording.objects.filter(created_by=request.user).order_by("-created_at")
+            has_missing_sample_rates = False
+            has_duplicate_recordings_flag = False
     else:
         # Fallback to showing only user's recordings if no group is assigned
         recordings = Recording.objects.filter(created_by=request.user).order_by("-created_at")
+        has_missing_sample_rates = False
+        has_duplicate_recordings_flag = False
 
     context = {
         "recordings": recordings,
+        "has_missing_sample_rates": has_missing_sample_rates,
+        "has_duplicate_recordings": has_duplicate_recordings_flag,
     }
 
     return render(request, "recordings/recording_list.html", context)
@@ -208,3 +226,39 @@ def recalculate_audio_info_view(request, recording_id):
         messages.error(request, f"Failed to recalculate audio information: {str(e)}")
     
     return redirect("battycoda_app:recording_detail", recording_id=recording.id)
+
+@login_required
+def process_missing_sample_rates(request):
+    """Trigger sample rate calculation for all recordings missing this information"""
+    # Check if user is an admin
+    profile = request.user.profile
+    if not profile.is_admin:
+        messages.error(request, "Only administrators can perform this action.")
+        return redirect("battycoda_app:recording_list")
+    
+    # Get user's group
+    if not profile.group:
+        messages.error(request, "You must be assigned to a group to perform this action.")
+        return redirect("battycoda_app:recording_list")
+    
+    # Find recordings without sample rates in user's group
+    recordings_to_process = Recording.objects.filter(
+        group=profile.group, 
+        sample_rate__isnull=True,
+        file_ready=True
+    )
+    
+    # Count how many were found
+    count = recordings_to_process.count()
+    
+    if count == 0:
+        messages.info(request, "No recordings need sample rate measurement.")
+        return redirect("battycoda_app:recording_list")
+    
+    # Process each recording
+    for recording in recordings_to_process:
+        # Trigger the calculation task
+        calculate_audio_duration.delay(recording.id)
+    
+    messages.success(request, f"Sample rate calculation started for {count} recordings. This may take a few moments.")
+    return redirect("battycoda_app:recording_list")
