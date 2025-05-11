@@ -109,87 +109,74 @@ run_lda_model <- function(wav_folder, model_path) {
   file_info <- ftable[, 1, drop=FALSE]
   pred_data <- ftable[, -1]
   
-  # Scale features using the same parameters as during training
+  # Handle missing values first, then scale features
+  # Get feature columns (all except 'selec' if it exists)
+  feature_cols <- colnames(pred_data)
+  if ('selec' %in% feature_cols) {
+    feature_cols <- setdiff(feature_cols, 'selec')
+  }
+  
+  # First, handle missing values - just like in the trainer
+  missing_counts <- sapply(pred_data[feature_cols], function(x) sum(is.na(x)))
+  if (sum(missing_counts) > 0) {
+    debug_log(sprintf("Found %d missing values across %d columns. Imputing...", 
+                     sum(missing_counts), sum(missing_counts > 0)))
+    
+    # Impute missing values with means from the training data
+    for (col in feature_cols) {
+      if (sum(is.na(pred_data[[col]])) > 0) {
+        # Use feature mean from training if available
+        if (col %in% names(feature_means)) {
+          impute_value <- feature_means[col]
+          debug_log(sprintf("Imputing %d missing values in '%s' with %.4f from training", 
+                           sum(is.na(pred_data[[col]])), col, impute_value))
+        } else {
+          # Calculate column mean if not available from training
+          impute_value <- mean(pred_data[[col]], na.rm = TRUE)
+          if (is.na(impute_value)) impute_value <- 0 # Fallback if all values are NA
+          debug_log(sprintf("Imputing %d missing values in '%s' with %.4f (calculated)", 
+                           sum(is.na(pred_data[[col]])), col, impute_value))
+        }
+        
+        # Replace missing values
+        pred_data[[col]][is.na(pred_data[[col]])] <- impute_value
+      }
+    }
+  }
+  
+  # Now scale features using the same parameters as during training
   for (col in colnames(pred_data)) {
     if (col %in% names(feature_means) && col %in% names(feature_sds)) {
       pred_data[[col]] <- (pred_data[[col]] - feature_means[col]) / feature_sds[col]
-    } else {
+    } else if (col != 'selec') {
       # If for some reason this column wasn't in training, use basic scaling
       pred_data[[col]] <- scale(pred_data[[col]])
     }
   }
   
-  # Make predictions using the standard MASS LDA model (not MLR3)
+  # Make predictions using the mlr3 model
   debug_log("Making LDA predictions...")
   tryCatch({
     # Debug lda_model structure
     debug_log(sprintf("LDA model class: %s", class(lda_model)))
     
-    # Use standard predict() function from MASS package
-    debug_log("Calling predict() on LDA model...")
-    predictions <- predict(lda_model, newdata = as.data.frame(pred_data))
+    # Use mlr3 predict_newdata method
+    debug_log("Calling predict_newdata() on LDA model...")
+    predictions <- lda_model$predict_newdata(as.data.frame(pred_data))
     
     # Debug predictions structure
     debug_log(sprintf("Predictions class: %s", class(predictions)))
-    debug_log(sprintf("Predictions components: %s", 
-                     ifelse(is.list(predictions), 
-                           paste(names(predictions), collapse=", "), 
-                           "NOT A LIST")))
-    
-    # Get predicted classes
-    debug_log("Extracting predicted classes...")
-    if (!is.list(predictions)) {
-      # If predictions is not a list, handle it differently
-      debug_log("Predictions is not a list, creating manual structure")
-      # Create predictions structure manually based on output
-      debug_log(sprintf("Predictions is a %s, handling accordingly", class(predictions)[1]))
-      
-      # Handle factor type predictions
-      if (is.factor(predictions)) {
-        pred_classes <- as.character(predictions)
-        debug_log(sprintf("Converted factor to character vector, classes: %s", 
-                         paste(unique(pred_classes), collapse=", ")))
-        
-        # Create a probability matrix with 1.0 for predicted class
-        prob_matrix <- matrix(0, nrow=length(pred_classes), ncol=length(levels))
-        colnames(prob_matrix) <- levels
-        
-        # Set 1.0 probability for predicted class
-        for (i in 1:length(pred_classes)) {
-          col_idx <- which(levels == pred_classes[i])
-          if (length(col_idx) > 0) {
-            prob_matrix[i, col_idx] <- 1.0
-          }
-        }
-        debug_log("Created probability matrix with 1.0 for predicted classes")
-      }
-      # Handle other vector types
-      else if (is.vector(predictions)) {
-        pred_classes <- predictions
-        debug_log(sprintf("Using vector directly, classes: %s", 
-                         paste(unique(pred_classes), collapse=", ")))
-        
-        # Create a probability matrix with 1.0 for predicted class
-        prob_matrix <- matrix(0, nrow=length(pred_classes), ncol=length(levels))
-        colnames(prob_matrix) <- levels
-        
-        # Set 1.0 probability for predicted class
-        for (i in 1:length(pred_classes)) {
-          col_idx <- which(levels == pred_classes[i])
-          if (length(col_idx) > 0) {
-            prob_matrix[i, col_idx] <- 1.0
-          }
-        }
-      } 
-      # If it's something else we don't expect
-      else {
-        stop(sprintf("Predictions has unexpected format: %s", class(predictions)[1]))
-      }
-    } else {
-      # Normal extraction from list
-      pred_classes <- predictions$class
-      prob_matrix <- predictions$posterior
+    if ("prob" %in% names(predictions)) {
+      debug_log(sprintf("Probability matrix dimensions: %d x %d", 
+               nrow(predictions$prob), ncol(predictions$prob)))
     }
+    
+    # Extract class predictions and probabilities from mlr3 prediction object
+    pred_classes <- as.character(predictions$response)
+    prob_matrix <- predictions$prob
+    
+    debug_log(sprintf("Extracted %d predictions with %d probability classes", 
+              length(pred_classes), ncol(prob_matrix)))
     
     # Debug output to help diagnose any issues
     debug_log(paste("Prediction successful. Classes:", length(pred_classes), 

@@ -255,13 +255,26 @@ def run_call_detection(self, detection_run_id):
                     
                     # Save class probabilities
                     for call in calls:
-                        # Get probability for this call type
-                        probability = class_probabilities.get(call.short_name, 0)
-                        if isinstance(probability, (int, float)):
-                            # Convert from percentage to 0-1 range
-                            prob_value = probability / 100.0
+                        # Get probability for this call type - handle missing values gracefully
+                        if call.short_name not in class_probabilities:
+                            # Use 0.0 probability for call types not predicted by the model
+                            probability = 0.0
+                            print(f"Note: Call type '{call.short_name}' not found in prediction results, using 0.0 probability")
                         else:
-                            prob_value = 0.01
+                            probability = class_probabilities[call.short_name]
+                            # Handle case where probability is not a number
+                            if not isinstance(probability, (int, float)):
+                                # Try extracting from list if it's a list with one numeric element
+                                if isinstance(probability, list) and len(probability) == 1 and isinstance(probability[0], (int, float)):
+                                    probability = probability[0]
+                                    print(f"Note: Extracted {probability} from list for call type '{call.short_name}'")
+                                else:
+                                    # If it's still not a valid number, use 0.0 as fallback
+                                    print(f"Warning: Invalid probability value for call type '{call.short_name}': '{probability}', using 0.0")
+                                    probability = 0.0
+                            
+                        # Convert from percentage to 0-1 range
+                        prob_value = probability / 100.0
                         
                         # Ensure probability is within valid range
                         prob_value = max(0.0, min(1.0, float(prob_value)))
