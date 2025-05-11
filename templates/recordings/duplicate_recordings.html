@@ -1,0 +1,129 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Duplicate Recordings{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="card">
+        <div class="card-header">
+            <h5 class="card-title">Duplicate Recordings</h5>
+            <h6 class="card-subtitle mb-2 text-muted">
+                {% if total_duplicate_count > 0 %}
+                Found {{ total_duplicate_count }} duplicate recordings across {{ duplicate_recordings|length }} groups
+                {% else %}
+                No duplicate recordings found
+                {% endif %}
+            </h6>
+        </div>
+        <div class="card-body">
+            {% if duplicate_recordings %}
+                <div class="alert alert-warning">
+                    <p><strong>How this works:</strong> This tool identifies recordings with the same filename and duration, 
+                    and allows you to keep only the most recent version.</p>
+                    <p>When removing duplicates:</p>
+                    <ul>
+                        <li>For each group, the most recent recording will be kept</li>
+                        <li>Older duplicate recordings will be removed</li>
+                        <li><strong>Important:</strong> Any segments and segmentations attached to duplicate recordings will also be removed</li>
+                        <li>Tasks created from segments in duplicate recordings may be affected</li>
+                    </ul>
+                </div>
+                
+                <table class="table table-striped table-hover">
+                    <thead>
+                        <tr>
+                            <th>Recording Name</th>
+                            <th>Duration</th>
+                            <th>Count</th>
+                            <th>Most Recent Date</th>
+                            <th>Duplicates</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for group in duplicate_recordings %}
+                            <tr>
+                                <td>{{ group.name }}</td>
+                                <td>{{ group.duration|floatformat:2 }} sec</td>
+                                <td>{{ group.count }}</td>
+                                <td data-utc-date="{{ group.recordings.0.created_at|date:'c' }}" 
+                                    data-date-format="datetime">
+                                    {{ group.recordings.0.created_at|date:"M d, Y H:i" }}
+                                </td>
+                                <td>
+                                    <button type="button" class="btn btn-sm btn-info" data-bs-toggle="collapse" 
+                                            data-bs-target="#details-{{ forloop.counter }}">
+                                        Show Details
+                                    </button>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td colspan="5" class="p-0">
+                                    <div id="details-{{ forloop.counter }}" class="collapse">
+                                        <div class="table-responsive">
+                                            <table class="table table-bordered m-0">
+                                                <thead>
+                                                    <tr>
+                                                        <th>ID</th>
+                                                        <th>Name</th>
+                                                        <th>Created</th>
+                                                        <th>Segments</th>
+                                                        <th>Actions</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    {% for recording in group.recordings %}
+                                                        <tr{% if forloop.first %} class="table-success"{% endif %}>
+                                                            <td>{{ recording.id }}</td>
+                                                            <td>{{ recording.name }}</td>
+                                                            <td data-utc-date="{{ recording.created_at|date:'c' }}" 
+                                                                data-date-format="datetime">
+                                                                {{ recording.created_at|date:"M d, Y H:i" }}
+                                                            </td>
+                                                            <td>{{ recording.segments.count }}</td>
+                                                            <td>
+                                                                <a href="{% url 'battycoda_app:recording_detail' recording_id=recording.id %}" 
+                                                                   class="btn btn-sm btn-primary">
+                                                                    View
+                                                                </a>
+                                                            </td>
+                                                        </tr>
+                                                    {% endfor %}
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </div>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+                
+                <div class="mt-4">
+                    <form action="{% url 'battycoda_app:remove_duplicate_recordings' %}" method="post" 
+                          onsubmit="return confirm('WARNING: Are you sure you want to remove all duplicate recordings?\n\n• This action cannot be undone.\n• The most recent version of each recording will be kept.\n• Any segments and tasks associated with older duplicates WILL BE DELETED.\n\nProceed with caution!');">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-danger">
+                            <i class="fas fa-trash-alt"></i> Remove All Duplicate Recordings
+                        </button>
+                        <a href="{% url 'battycoda_app:recording_list' %}" class="btn btn-secondary ms-2">
+                            <i class="fas fa-arrow-left"></i> Back to Recordings
+                        </a>
+                    </form>
+                </div>
+            {% else %}
+                <div class="alert alert-success">
+                    <p>Great news! No duplicate recordings were found.</p>
+                </div>
+                <a href="{% url 'battycoda_app:recording_list' %}" class="btn btn-primary">
+                    <i class="fas fa-arrow-left"></i> Back to Recordings
+                </a>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'js/datetime_formatter.js' %}"></script>
+{% endblock %}

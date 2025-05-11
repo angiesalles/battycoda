@@ -11,10 +11,22 @@
    data-bs-toggle="tooltip" data-bs-placement="bottom" title="Upload a single audio recording">
     <i class="fas fa-plus"></i> New Recording
 </a>
-<a href="{% url 'battycoda_app:batch_upload_recordings' %}" class="btn btn-primary"
+<a href="{% url 'battycoda_app:batch_upload_recordings' %}" class="btn btn-primary me-2"
    data-bs-toggle="tooltip" data-bs-placement="bottom" title="Upload multiple recordings at once">
     <i class="fas fa-cloud-upload-alt"></i> Batch Upload
 </a>
+{% if user.profile.is_admin and has_missing_sample_rates %}
+<a href="{% url 'battycoda_app:process_missing_sample_rates' %}" class="btn btn-outline-secondary me-2"
+   data-bs-toggle="tooltip" data-bs-placement="bottom" title="Calculate sample rates for recordings with missing values">
+    <i class="fas fa-calculator"></i> Calculate Missing Sample Rates
+</a>
+{% endif %}
+{% if user.profile.is_admin and has_duplicate_recordings %}
+<a href="{% url 'battycoda_app:detect_duplicate_recordings' %}" class="btn btn-outline-warning"
+   data-bs-toggle="tooltip" data-bs-placement="bottom" title="Find and remove duplicate recordings">
+    <i class="fas fa-clone"></i> Remove Duplicate Recordings
+</a>
+{% endif %}
 {% endblock %}
 
 {% block table_header %}

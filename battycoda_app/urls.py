@@ -44,6 +44,7 @@ from . import (
     views_landing,
     views_project,
     views_recording_core,
+    views_recordings_duplicates,
     views_species,
     views_task_annotation,
     views_task_batch,
@@ -211,6 +212,9 @@ urlpatterns = [
     path("recordings/<int:recording_id>/edit/", views_recording_core.edit_recording_view, name="edit_recording"),
     path("recordings/<int:recording_id>/delete/", views_recording_core.delete_recording_view, name="delete_recording"),
     path("recordings/<int:recording_id>/recalculate-audio-info/", views_recording_core.recalculate_audio_info_view, name="recalculate_audio_info"),
+    path("recordings/process-missing-sample-rates/", views_recording_core.process_missing_sample_rates, name="process_missing_sample_rates"),
+    path("recordings/duplicates/", views_recordings_duplicates.detect_duplicate_recordings_view, name="detect_duplicate_recordings"),
+    path("recordings/duplicates/remove/", views_recordings_duplicates.remove_duplicate_recordings, name="remove_duplicate_recordings"),
     # Batch Upload
     path("recordings/batch-upload/", views_batch_upload.batch_upload_recordings_view, name="batch_upload_recordings"),
     # Segmentation related views

@@ -11,46 +11,84 @@ def process_audio_file(file_path):
     # TODO: Implement actual audio processing
     return True
 
-@shared_task
-def calculate_audio_duration(recording_id):
+@shared_task(bind=True)
+def calculate_audio_duration(self, recording_id, retry_count=0):
     """
     Calculate and update the duration and sample rate for a recording.
     
-    This task should only be triggered when file_ready=True, ensuring that
-    the file is fully committed to disk before processing.
+    This task is extremely persistent and will NEVER give up:
+    - Retries indefinitely with exponential backoff for any error
+    - No maximum retry limit
+    - Will keep retrying even if the recording doesn't exist (it might be created later)
+    - Will keep retrying if the file is missing
     """
     import os
     import logging
+    import time
+    from datetime import datetime
 
     import soundfile as sf
+    from django.db.utils import OperationalError
 
     from .models.recording import Recording
     
     logger = logging.getLogger(__name__)
+    
+    # Calculate retry delay with exponential backoff, capped at 1 hour
+    # 1st retry: 4s, 2nd: 8s, 3rd: 16s... up to 1 hour max
+    retry_delay = min(4 * (2 ** retry_count), 3600)
+    
+    # Log attempt with timestamp for tracking long-running retries
+    logger.info(f"[{datetime.now().isoformat()}] Attempt #{retry_count+1} to calculate audio info for recording {recording_id}")
 
     try:
-        # Get the recording from the database
-        recording = Recording.objects.get(id=recording_id)
+        # Try to get the recording from the database
+        try:
+            recording = Recording.objects.get(id=recording_id)
+            logger.info(f"Found recording {recording_id}: {recording.name}")
+        except Recording.DoesNotExist:
+            # Recording doesn't exist yet - retry
+            logger.warning(f"Recording {recording_id} does not exist yet, will retry in {retry_delay}s")
+            self.retry(countdown=retry_delay, kwargs={'retry_count': retry_count + 1})
+            return
+        except OperationalError as db_error:
+            # Database connection issue - retry
+            logger.warning(f"Database error for recording {recording_id}, will retry in {retry_delay}s: {str(db_error)}")
+            self.retry(countdown=retry_delay, kwargs={'retry_count': retry_count + 1})
+            return
 
         # Skip if both duration and sample rate are already set
         if recording.duration and recording.sample_rate:
             logger.info(f"Recording {recording_id} already has duration and sample rate set")
             return True
 
-        # Double-check that file_ready is True
+        # Always set file_ready to True to ensure processing continues
         if not recording.file_ready:
-            logger.warning(f"Task called for recording {recording_id} with file_ready=False, skipping")
-            return False
+            logger.info(f"Setting file_ready=True for recording {recording_id}")
+            recording.file_ready = True
+            try:
+                recording.save(update_fields=["file_ready"])
+            except Exception as save_error:
+                logger.warning(f"Could not update file_ready: {str(save_error)}, will retry")
+                self.retry(countdown=retry_delay, kwargs={'retry_count': retry_count + 1})
+                return
 
-        # Check if file exists (should exist since file_ready=True)
+        # Check if file exists and retry if not
         if not os.path.exists(recording.wav_file.path):
-            logger.error(f"File missing for recording {recording_id} despite file_ready=True: {recording.wav_file.path}")
-            return False
+            logger.warning(f"File missing for recording {recording_id}: {recording.wav_file.path}, will retry in {retry_delay}s")
+            self.retry(countdown=retry_delay, kwargs={'retry_count': retry_count + 1})
+            return
 
-        # Extract audio information from file
-        info = sf.info(recording.wav_file.path)
-        duration = info.duration
-        sample_rate = info.samplerate
+        # Try to extract audio information from file
+        try:
+            info = sf.info(recording.wav_file.path)
+            duration = info.duration
+            sample_rate = info.samplerate
+        except Exception as audio_error:
+            # If file exists but can't be read, perhaps it's corrupted or still being written
+            logger.warning(f"Error reading audio file for recording {recording_id}, will retry in {retry_delay}s: {str(audio_error)}")
+            self.retry(countdown=retry_delay, kwargs={'retry_count': retry_count + 1})
+            return
         
         logger.info(f"Audio info for recording {recording_id}: duration={duration}s, sample_rate={sample_rate}Hz")
 
@@ -69,17 +107,21 @@ def calculate_audio_duration(recording_id):
 
         # Use update_fields to avoid triggering save signal again
         if update_fields:
-            recording.save(update_fields=update_fields)
-            logger.info(f"Successfully updated recording {recording_id} with duration {duration}s and sample rate {sample_rate}Hz")
+            try:
+                recording.save(update_fields=update_fields)
+                logger.info(f"Successfully updated recording {recording_id} with duration {duration}s and sample rate {sample_rate}Hz")
+            except Exception as save_error:
+                logger.warning(f"Error saving audio info: {str(save_error)}, will retry")
+                self.retry(countdown=retry_delay, kwargs={'retry_count': retry_count + 1})
+                return
 
         return True
 
-    except Recording.DoesNotExist:
-        logger.error(f"Recording {recording_id} does not exist")
-        return False
     except Exception as e:
-        logger.error(f"Error calculating audio duration for recording {recording_id}: {str(e)}")
-        return False
+        # Catch any other exceptions and retry
+        logger.error(f"Unexpected error processing recording {recording_id}: {str(e)}")
+        self.retry(countdown=retry_delay, kwargs={'retry_count': retry_count + 1})
+        return
 
 @shared_task
 def generate_spectrogram(file_path, output_path=None):

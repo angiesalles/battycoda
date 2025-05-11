@@ -6,6 +6,7 @@
 # Load required packages for feature extraction
 library(warbleR)
 library(stringr)
+library(jsonlite)  # For proper JSON handling
 
 # Debug logging function
 debug_log <- function(...) {
@@ -127,15 +128,18 @@ format_prediction_results <- function(file_info, pred_classes, prob_matrix, mode
     pred_class <- as.character(pred_classes[i])
     confidence <- file_probs[[pred_class]] * 100
     
-    # Format probabilities as percentages
-    prob_percents <- lapply(file_probs, function(x) x * 100)
+    # Format probabilities as percentages - and unbox each value
+    prob_percents <- lapply(names(file_probs), function(name) {
+      unbox(file_probs[[name]] * 100)  # Unbox each percentage
+    })
+    names(prob_percents) <- names(file_probs)  # Preserve the names
     
-    # Add to results
+    # Add to results - using unbox to ensure values are not wrapped in arrays
     results[[file_name]] <- list(
-      file_name = file_name,
-      predicted_class = pred_class,
-      confidence = confidence,
-      class_probabilities = prob_percents
+      file_name = unbox(file_name),
+      predicted_class = unbox(pred_class),
+      confidence = unbox(confidence),
+      class_probabilities = prob_percents  # This is a list, so no unbox
     )
   }
   
@@ -143,20 +147,20 @@ format_prediction_results <- function(file_info, pred_classes, prob_matrix, mode
   class_counts <- table(pred_classes)
   class_percents <- (class_counts / length(pred_classes)) * 100
   
-  # Format summary
+  # Format summary - ensuring single values, not lists
   summary <- list()
   for (class_name in names(class_counts)) {
     summary[[class_name]] <- list(
-      count = as.integer(class_counts[class_name]),
+      count = as.integer(class_counts[class_name]),  # Will add unbox later
       percent = class_percents[class_name]
     )
   }
   
-  # Return combined results
+  # Return combined results - using unbox for all scalar values
   return(list(
-    status = "success",
-    model_type = model_type,
-    processed_files = length(pred_classes),
+    status = unbox("success"),
+    model_type = unbox(model_type),
+    processed_files = unbox(length(pred_classes)),
     summary = summary,
     file_results = results
   ))

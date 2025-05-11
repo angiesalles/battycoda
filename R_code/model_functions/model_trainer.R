@@ -59,86 +59,45 @@ prepare_training_data <- function(data_folder, test_split = 0.2) {
     debug_log(sprintf("  %s: %d files", class_name, class_counts[class_name]))
   }
   
-  # Create selection table for WarbleR
-  selec <- seq_along(sound.files)
-  start <- rep(0, length(sound.files))
-  end <- rep(1, length(sound.files))  # Default duration, will be updated
   
-  wavtable <- cbind.data.frame(sound.files = sound.files, selec = labels, start = start, end = end)
+  # Load enhanced segment processor for better error diagnostics
+  debug_log("Loading enhanced segment processor...")
+  processor_path <- "/app/R_code/model_functions/process_segment.R"
+  debug_log(sprintf("Looking for processor at: %s", processor_path))
+  source(processor_path)
   
-  # Calculate actual file durations
-  debug_log("Calculating audio file lengths...")
-  for (i in 1:nrow(wavtable)) {
-    tryCatch({
-      audio <- readWave(wavtable[i,1], header=TRUE)
-      audiolength <- (audio$samples / audio$sample.rate)
-      wavtable[i,4] <- audiolength
-      if (i %% 100 == 0) {
-        debug_log(sprintf("Processed %d/%d files", i, nrow(wavtable)))
-      }
-    }, error = function(e) {
-      warning(paste("Error processing file", wavtable[i,1], ":", e$message))
-    })
-  }
-  
-  # Create WarbleR selection table
-  debug_log("Creating selection table...")
-  selt <- selection_table(wavtable)
-  
-  # Extract acoustic features with batch processing to handle errors
+  # Extract acoustic features with enhanced error diagnostics
   debug_log("Extracting acoustic features...")
   
-  # Process in smaller batches to skip problematic files
+  # Process files individually using our enhanced processor
   all_features <- NULL
-  batch_size <- 100
-  num_files <- nrow(selt)
+  num_files <- length(sound.files)
   
-  for (i in seq(1, num_files, by=batch_size)) {
-    end_idx <- min(i + batch_size - 1, num_files)
-    current_batch <- selt[i:end_idx,]
+  for (i in 1:num_files) {
+    if (i %% 100 == 0) {
+      debug_log(sprintf("Processing file %d of %d", i, num_files))
+    }
     
-    debug_log(sprintf("Processing batch %d-%d of %d files", i, end_idx, num_files))
+    # Get the file name and path
+    file_name <- sound.files[i]
+    file_path <- file.path(getwd(), file_name)
     
-    # Try to process this batch
-    batch_features <- tryCatch({
-      spectro_analysis(current_batch, bp = c(9, 200), threshold = 15)
-    }, error = function(e) {
-      # If batch fails, process files individually
-      debug_log(sprintf("Error in batch %d-%d: %s", i, end_idx, e$message))
-      debug_log("Processing files individually...")
-      
-      individual_features <- NULL
-      
-      for (j in i:end_idx) {
-        if (j > nrow(selt)) break
-        
-        single_file <- selt[j,,drop=FALSE]
-        tryCatch({
-          # Process single file with same parameters
-          file_features <- spectro_analysis(single_file, bp = c(9, 200), threshold = 15)
-          
-          # Append results
-          if (is.null(individual_features)) {
-            individual_features <- file_features
-          } else {
-            individual_features <- rbind(individual_features, file_features)
-          }
-        }, error = function(e2) {
-          # Skip problematic file
-          file_name <- if (nrow(single_file) > 0) single_file$sound.files[1] else paste("index", j)
-          debug_log(sprintf("Skipping problematic file %s: %s", file_name, e2$message))
-        })
-      }
-      
-      return(individual_features)
-    })
+    # Get the class label from the filename
+    file_label <- labels[i]
     
-    # Append batch results
-    if (!is.null(batch_features) && nrow(batch_features) > 0) {
+    # Process file using the enhanced process_segment function
+    features <- process_segment(file_path)
+    
+    # Add to results if successful and replace the default selec value with actual label
+    if (!is.null(features) && nrow(features) > 0) {
+      # Replace the selec column with the actual label
+      features$selec <- file_label
+      
+      # Add to the combined features dataset
       if (is.null(all_features)) {
-        all_features <- batch_features
+        all_features <- features
       } else {
-        all_features <- rbind(all_features, batch_features)
+        all_features <- rbind(all_features, features)
       }
     }
   }

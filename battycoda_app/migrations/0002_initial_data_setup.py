@@ -173,7 +173,7 @@ def create_system_species(apps, schema_editor):
     
     # Call types for Carollia perspicillata (extracted from Carollia.txt)
     carollia_calls = [
-        ("aggressive down-sweeps", "A"),
+        ("aggressive down-sweeps (A)", ""),
         ("aggressive warbles", ""),
         ("male aggressive trills", ""),
         ("distress calls", ""),
