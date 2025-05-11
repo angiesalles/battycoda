@@ -46,6 +46,19 @@ def create_task_batch_from_detection_run(request, run_id):
                 # Use the batch name as is, no need for timestamps or unique constraints
                 # batch_name is already set from the form data above
 
+                # Lock segments to prevent race conditions
+                from battycoda_app.models.recording import Segment
+                
+                # Get segment IDs for this run
+                result_segments = DetectionResult.objects.filter(
+                    detection_run=run
+                ).values_list('segment_id', flat=True)
+                
+                # Lock these segments using SELECT FOR UPDATE
+                locked_segments = list(Segment.objects.filter(
+                    id__in=result_segments
+                ).select_for_update())  # This locks the rows
+
                 # Create the task batch
                 batch = TaskBatch.objects.create(
                     name=batch_name,
@@ -65,7 +78,12 @@ def create_task_batch_from_detection_run(request, run_id):
                 # Create tasks for each detection result's segment
                 tasks_created = 0
                 for result in results:
-                    segment = result.segment
+                    # Get the fresh segment object (which we've locked)
+                    segment = Segment.objects.get(id=result.segment_id)
+                    
+                    # Skip segments that already have tasks
+                    if segment.task:
+                        continue
 
                     # Get the highest probability call type
                     top_probability = (
@@ -92,13 +110,20 @@ def create_task_batch_from_detection_run(request, run_id):
                     segment.save()
 
                     tasks_created += 1
-
+                
+                # If no tasks were created, delete the batch
+                if tasks_created == 0:
+                    batch.delete()
+                    messages.warning(request, "No tasks were created. All segments may already have tasks.")
+                    return redirect("battycoda_app:detection_run_detail", run_id=run_id)
+                
                 messages.success(request, f"Created task batch '{batch.name}' with {tasks_created} tasks for review.")
-
                 return redirect("battycoda_app:task_batch_detail", batch_id=batch.id)
 
         except Exception as e:
-
+            import traceback
+            print(f"Error creating task batch for run {run_id}: {str(e)}")
+            print(traceback.format_exc())
             messages.error(request, f"Error creating task batch: {str(e)}")
             return redirect("battycoda_app:detection_run_detail", run_id=run_id)
 
@@ -221,9 +246,29 @@ def create_tasks_for_species_view(request, species_id):
             batches_created = 0
             tasks_created = 0
             
-            for run in runs:
-                try:
-                    with transaction.atomic():
+            # Use a single transaction for the entire process to prevent race conditions
+            with transaction.atomic():
+                # First, lock all segments we might modify to prevent concurrent access
+                # Get all segments associated with these runs
+                from battycoda_app.models.recording import Segment
+                all_segments_ids = []
+                
+                for run in runs:
+                    # Get segment IDs for this run
+                    result_segments = DetectionResult.objects.filter(
+                        detection_run=run
+                    ).values_list('segment_id', flat=True)
+                    all_segments_ids.extend(result_segments)
+                
+                # Lock all these segments using SELECT FOR UPDATE to prevent concurrent modifications
+                if all_segments_ids:
+                    locked_segments = list(Segment.objects.filter(
+                        id__in=all_segments_ids
+                    ).select_for_update())  # This locks the rows
+                
+                # Now process each run
+                for run in runs:
+                    try:
                         # Get the recording from the segmentation
                         recording = run.segmentation.recording
                         
@@ -249,7 +294,8 @@ def create_tasks_for_species_view(request, species_id):
                         # Create tasks for each detection result's segment
                         run_tasks_created = 0
                         for result in results:
-                            segment = result.segment
+                            # Get the fresh segment object (which we've locked)
+                            segment = Segment.objects.get(id=result.segment_id)
                             
                             # Skip segments that already have tasks
                             if segment.task:
@@ -288,10 +334,13 @@ def create_tasks_for_species_view(request, species_id):
                             batches_created += 1
                             tasks_created += run_tasks_created
                         
-                except Exception as e:
-                    # Log the error but continue with other runs
-                    print(f"Error creating task batch for run {run.id}: {str(e)}")
-                    continue
+                    except Exception as e:
+                        # Log the error but continue with other runs
+                        import traceback
+                        print(f"Error creating task batch for run {run.id}: {str(e)}")
+                        print(traceback.format_exc())
+                        # Don't continue - raise the exception to rollback the transaction
+                        raise
             
             if batches_created > 0:
                 messages.success(
