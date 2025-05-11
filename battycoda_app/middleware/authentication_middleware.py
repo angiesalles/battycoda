@@ -36,6 +36,7 @@ class AuthenticationMiddleware:
             "/accounts/check-username/",
             "/accounts/check-email/",
             "/welcome/",  # Allow access to the landing page
+            "/hijack/",   # Allow hijack functionality access
         ]
 
         # Skip for Let's Encrypt ACME challenges
