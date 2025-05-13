@@ -100,8 +100,10 @@ def create_task_batch_from_detection_run(request, run_id):
                         batch=batch,
                         created_by=request.user,
                         group=profile.group,
-                        # Use the highest probability call type as the initial label
+                        # Use the highest probability call type as the initial label AND the classification result
                         label=top_probability.call.short_name if top_probability else None,
+                        classification_result=top_probability.call.short_name if top_probability else None,
+                        confidence=top_probability.probability if top_probability else None,
                         status="pending",
                     )
 
@@ -316,8 +318,10 @@ def create_tasks_for_species_view(request, species_id):
                                 batch=batch,
                                 created_by=request.user,
                                 group=profile.group,
-                                # Use the highest probability call type as the initial label
+                                # Use the highest probability call type as the initial label AND the classification result
                                 label=top_probability.call.short_name if top_probability else None,
+                                classification_result=top_probability.call.short_name if top_probability else None,
+                                confidence=top_probability.probability if top_probability else None,
                                 status="pending",
                             )
                             
