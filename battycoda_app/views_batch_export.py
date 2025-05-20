@@ -14,6 +14,7 @@ from django.shortcuts import redirect, render
 from django.urls import reverse
 
 from .models.task import Task, TaskBatch
+from .utils_modules.task_export_utils import generate_tasks_csv
 
 
 @login_required
@@ -58,8 +59,11 @@ def export_completed_batches(request):
         # Build the ZIP file containing CSVs for each batch
         with zipfile.ZipFile(zip_path, 'w', zipfile.ZIP_DEFLATED) as zipf:
             for batch in completed_batches:
-                # Generate CSV for this batch
-                csv_content = generate_batch_csv(batch)
+                # Get tasks for this batch
+                tasks = Task.objects.filter(batch=batch).order_by("id")
+                
+                # Generate CSV for this batch using the shared utility function
+                csv_content = generate_tasks_csv(tasks)
                 
                 # Clean batch name for filename
                 safe_name = ''.join(c if c.isalnum() or c in ['-', '_'] else '_' for c in batch.name)
@@ -77,58 +81,6 @@ def export_completed_batches(request):
             response = HttpResponse(f.read(), content_type='application/zip')
             response['Content-Disposition'] = f'attachment; filename="{zip_filename}"'
             return response
-
-
-def generate_batch_csv(batch):
-    """Generate CSV content for a single batch."""
-    # Get tasks for the batch
-    tasks = Task.objects.filter(batch=batch).order_by("id")
-    
-    # Create CSV in memory
-    output = StringIO()
-    writer = csv.writer(output)
-    
-    # Write header row
-    writer.writerow([
-        "Task ID",
-        "Onset (s)",
-        "Offset (s)",
-        "Duration (s)",
-        "Status",
-        "Label",
-        "Classification Result",
-        "Confidence",
-        "Notes",
-        "WAV File",
-        "Species",
-        "Project",
-        "Created By",
-        "Created At",
-        "Updated At",
-    ])
-    
-    # Write data rows
-    for task in tasks:
-        writer.writerow([
-            task.id,
-            task.onset,
-            task.offset,
-            task.offset - task.onset,
-            task.status,
-            task.label if task.label else "",
-            task.classification_result if task.classification_result else "",
-            task.confidence if task.confidence is not None else "",
-            task.notes.replace("\n", " ").replace("\r", "") if task.notes else "",
-            task.wav_file_name,
-            task.species.name,
-            task.project.name,
-            task.created_by.username,
-            task.created_at.strftime("%Y-%m-%d %H:%M:%S"),
-            task.updated_at.strftime("%Y-%m-%d %H:%M:%S"),
-        ])
-    
-    # Return the CSV content
-    return output.getvalue()
 
 
 def generate_summary_csv(batches):

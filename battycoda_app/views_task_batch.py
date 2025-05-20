@@ -1,5 +1,3 @@
-import csv
-
 import pickle
 import traceback
 from datetime import datetime
@@ -18,6 +16,7 @@ from .forms import TaskBatchForm
 from .models.recording import Recording, Segment
 from .models.task import Task, TaskBatch
 from .models.user import UserProfile
+from .utils_modules.task_export_utils import generate_tasks_csv
 
 # Set up logging
 
@@ -101,57 +100,15 @@ def export_task_batch_view(request, batch_id):
     # Get tasks with ascending ID order
     tasks = Task.objects.filter(batch=batch).order_by("id")
 
-    # Create HTTP response with CSV content type
+    # Generate CSV content using the utility function
+    csv_content = generate_tasks_csv(tasks)
+
+    # Create HTTP response
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
     filename = f"taskbatch_{batch.id}_{batch.name.replace(' ', '_')}_{timestamp}.csv"
     response = HttpResponse(content_type="text/csv")
     response["Content-Disposition"] = f'attachment; filename="{filename}"'
-
-    # Create CSV writer
-    writer = csv.writer(response)
-
-    # Write header row
-    writer.writerow(
-        [
-            "Task ID",
-            "Onset (s)",
-            "Offset (s)",
-            "Duration (s)",
-            "Status",
-            "Label",
-            "Classification Result",
-            "Confidence",
-            "Notes",
-            "WAV File",
-            "Species",
-            "Project",
-            "Created By",
-            "Created At",
-            "Updated At",
-        ]
-    )
-
-    # Write data rows
-    for task in tasks:
-        writer.writerow(
-            [
-                task.id,
-                task.onset,
-                task.offset,
-                task.offset - task.onset,
-                task.status,
-                task.label if task.label else "",
-                task.classification_result if task.classification_result else "",
-                task.confidence if task.confidence is not None else "",
-                task.notes.replace("\n", " ").replace("\r", "") if task.notes else "",
-                task.wav_file_name,
-                task.species.name,
-                task.project.name,
-                task.created_by.username,
-                task.created_at.strftime("%Y-%m-%d %H:%M:%S"),
-                task.updated_at.strftime("%Y-%m-%d %H:%M:%S"),
-            ]
-        )
+    response.write(csv_content)
 
     return response
 
