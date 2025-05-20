@@ -23,7 +23,9 @@ from .models.user import UserProfile
 
 @login_required
 def task_batch_list_view(request):
-    """Display list of all task batches"""
+    """Display list of all task batches with pagination"""
+    from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
+    
     # Get user profile
     profile = request.user.profile
 
@@ -31,16 +33,31 @@ def task_batch_list_view(request):
     if profile.group:
         if profile.is_admin:
             # Admin sees all batches in their group
-            batches = TaskBatch.objects.filter(group=profile.group).order_by("-created_at")
+            batches_list = TaskBatch.objects.filter(group=profile.group).order_by("-created_at")
         else:
             # Regular user only sees their own batches
-            batches = TaskBatch.objects.filter(created_by=request.user).order_by("-created_at")
+            batches_list = TaskBatch.objects.filter(created_by=request.user).order_by("-created_at")
     else:
         # Fallback to showing only user's batches if no group is assigned
-        batches = TaskBatch.objects.filter(created_by=request.user).order_by("-created_at")
+        batches_list = TaskBatch.objects.filter(created_by=request.user).order_by("-created_at")
+    
+    # Set up pagination - 20 batches per page
+    paginator = Paginator(batches_list, 20)
+    page = request.GET.get('page')
+    
+    try:
+        # Get the requested page
+        batches = paginator.page(page)
+    except PageNotAnInteger:
+        # If page is not an integer, deliver first page
+        batches = paginator.page(1)
+    except EmptyPage:
+        # If page is out of range, deliver last page
+        batches = paginator.page(paginator.num_pages)
 
     context = {
         "batches": batches,
+        "total_count": batches_list.count(),
     }
 
     return render(request, "tasks/batch_list.html", context)

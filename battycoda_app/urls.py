@@ -32,6 +32,9 @@ from .views_notifications import (
     notification_list_view, mark_notification_read, mark_all_read, get_navbar_notifications
 )
 
+# Import batch export views
+from .views_batch_export import export_completed_batches
+
 from . import (
     views_audio,
     views_audio_streaming,
@@ -88,6 +91,7 @@ urlpatterns = [
     path("tasks/batches/", views_task_batch.task_batch_list_view, name="task_batch_list"),
     path("tasks/batches/<int:batch_id>/", views_task_batch.task_batch_detail_view, name="task_batch_detail"),
     path("tasks/batches/<int:batch_id>/export/", views_task_batch.export_task_batch_view, name="export_task_batch"),
+    path("tasks/batches/export-completed/", export_completed_batches, name="export_completed_batches"),
     path("tasks/batches/create/", views_task_batch.create_task_batch_view, name="create_task_batch"),
     path("tasks/batches/check-name/", views_task_batch.check_taskbatch_name, name="check_taskbatch_name"),
     path("tasks/next/", views_task_navigation.get_next_task_view, name="get_next_task"),

@@ -5,13 +5,19 @@
 {% block page_title %}Task Batches{% endblock %}
 {% block list_title %}Task Batches{% endblock %}
 {% block card_title %}All Task Batches{% endblock %}
-{% block item_count %}{{ batches|length }}{% endblock %}
+{% block item_count %}{{ total_count|default:batches|length }}{% endblock %}
 
 {% block action_buttons %}
-<a href="{% url 'battycoda_app:automation_home' %}" class="btn btn-primary" 
-   data-bs-toggle="tooltip" data-bs-placement="bottom" title="Create a task batch from classification">
-    <i class="fas fa-robot"></i> Create from Classification
-</a>
+<div class="d-flex gap-2">
+    <a href="{% url 'battycoda_app:automation_home' %}" class="btn btn-primary" 
+       data-bs-toggle="tooltip" data-bs-placement="bottom" title="Create a task batch from classification">
+        <i class="fas fa-robot"></i> Create from Classification
+    </a>
+    <a href="{% url 'battycoda_app:export_completed_batches' %}" class="btn btn-success" 
+       data-bs-toggle="tooltip" data-bs-placement="bottom" title="Download all completed batches as a ZIP file">
+        <i class="fas fa-file-archive"></i> Download Completed Batches
+    </a>
+</div>
 {% endblock %}
 
 {% block data_table %}
@@ -96,6 +102,77 @@
     </td>
 </tr>
 {% endfor %}
+{% endblock %}
+
+{% block card_footer %}
+{% if batches.paginator.num_pages > 1 %}
+<div class="card-footer">
+    <div class="d-flex justify-content-between align-items-center">
+        <div class="text-muted">
+            Showing {{ batches.start_index }} to {{ batches.end_index }} of {{ total_count }} batches
+        </div>
+        
+        <nav aria-label="Batch pagination">
+            <ul class="pagination mb-0">
+                {% if batches.has_previous %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page=1" aria-label="First">
+                            <span aria-hidden="true">&laquo;&laquo;</span>
+                        </a>
+                    </li>
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ batches.previous_page_number }}" aria-label="Previous">
+                            <span aria-hidden="true">&laquo;</span>
+                        </a>
+                    </li>
+                {% else %}
+                    <li class="page-item disabled">
+                        <span class="page-link">&laquo;&laquo;</span>
+                    </li>
+                    <li class="page-item disabled">
+                        <span class="page-link">&laquo;</span>
+                    </li>
+                {% endif %}
+                
+                {% for p in batches.paginator.page_range %}
+                    {% if batches.number == p %}
+                        <li class="page-item active">
+                            <span class="page-link">
+                                {{ p }}
+                                <span class="sr-only">(current)</span>
+                            </span>
+                        </li>
+                    {% elif p > batches.number|add:"-3" and p < batches.number|add:"3" %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ p }}">{{ p }}</a>
+                        </li>
+                    {% endif %}
+                {% endfor %}
+                
+                {% if batches.has_next %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ batches.next_page_number }}" aria-label="Next">
+                            <span aria-hidden="true">&raquo;</span>
+                        </a>
+                    </li>
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ batches.paginator.num_pages }}" aria-label="Last">
+                            <span aria-hidden="true">&raquo;&raquo;</span>
+                        </a>
+                    </li>
+                {% else %}
+                    <li class="page-item disabled">
+                        <span class="page-link">&raquo;</span>
+                    </li>
+                    <li class="page-item disabled">
+                        <span class="page-link">&raquo;&raquo;</span>
+                    </li>
+                {% endif %}
+            </ul>
+        </nav>
+    </div>
+</div>
+{% endif %}
 {% endblock %}
 
 {% block item_fields %}
