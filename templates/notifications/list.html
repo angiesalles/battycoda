@@ -8,7 +8,7 @@
         <div class="d-flex justify-content-between align-items-center">
             <h4 class="mb-0">Notifications</h4>
             {% if notifications %}
-                <a href="{% url 'battycoda_app:mark_all_read' %}" class="btn btn-primary btn-sm">
+                <a href="{% url 'battycoda_app:mark_all_read' %}{% if request.GET.page %}?page={{ request.GET.page }}{% endif %}" class="btn btn-primary btn-sm">
                     <i class="s7-check mr-1"></i> Mark All As Read
                 </a>
             {% endif %}
@@ -16,6 +16,15 @@
     </div>
     <div class="card-body">
         {% if notifications %}
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <div class="text-muted">
+                    Showing {{ notifications.start_index }} - {{ notifications.end_index }} of {{ total_count }} notifications
+                </div>
+                <div>
+                    <span class="badge badge-primary">{{ unread_count }} unread</span>
+                </div>
+            </div>
+            
             <div class="list-group">
                 {% for notification in notifications %}
                     <div class="list-group-item {% if not notification.is_read %}list-group-item-primary{% endif %}">
@@ -50,6 +59,67 @@
                     </div>
                 {% endfor %}
             </div>
+            
+            <!-- Pagination -->
+            {% if notifications.paginator.num_pages > 1 %}
+            <div class="d-flex justify-content-center mt-4">
+                <nav aria-label="Notification pagination">
+                    <ul class="pagination">
+                        {% if notifications.has_previous %}
+                            <li class="page-item">
+                                <a class="page-link" href="?page=1" aria-label="First">
+                                    <span aria-hidden="true">&laquo;&laquo;</span>
+                                </a>
+                            </li>
+                            <li class="page-item">
+                                <a class="page-link" href="?page={{ notifications.previous_page_number }}" aria-label="Previous">
+                                    <span aria-hidden="true">&laquo;</span>
+                                </a>
+                            </li>
+                        {% else %}
+                            <li class="page-item disabled">
+                                <span class="page-link">&laquo;&laquo;</span>
+                            </li>
+                            <li class="page-item disabled">
+                                <span class="page-link">&laquo;</span>
+                            </li>
+                        {% endif %}
+                        
+                        {% for page_num in notifications.paginator.page_range %}
+                            {% if page_num == notifications.number %}
+                                <li class="page-item active">
+                                    <span class="page-link">{{ page_num }}</span>
+                                </li>
+                            {% elif page_num > notifications.number|add:"-3" and page_num < notifications.number|add:"3" %}
+                                <li class="page-item">
+                                    <a class="page-link" href="?page={{ page_num }}">{{ page_num }}</a>
+                                </li>
+                            {% endif %}
+                        {% endfor %}
+                        
+                        {% if notifications.has_next %}
+                            <li class="page-item">
+                                <a class="page-link" href="?page={{ notifications.next_page_number }}" aria-label="Next">
+                                    <span aria-hidden="true">&raquo;</span>
+                                </a>
+                            </li>
+                            <li class="page-item">
+                                <a class="page-link" href="?page={{ notifications.paginator.num_pages }}" aria-label="Last">
+                                    <span aria-hidden="true">&raquo;&raquo;</span>
+                                </a>
+                            </li>
+                        {% else %}
+                            <li class="page-item disabled">
+                                <span class="page-link">&raquo;</span>
+                            </li>
+                            <li class="page-item disabled">
+                                <span class="page-link">&raquo;&raquo;</span>
+                            </li>
+                        {% endif %}
+                    </ul>
+                </nav>
+            </div>
+            {% endif %}
         {% else %}
             <div class="text-center py-5">
                 <span class="icon s7-bell" style="font-size: 3rem;"></span>

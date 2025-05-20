@@ -10,12 +10,31 @@ from .models.notification import UserNotification
 
 @login_required
 def notification_list_view(request):
-    """Display a list of user notifications."""
-    notifications = UserNotification.objects.filter(user=request.user).order_by('-created_at')
+    """Display a list of user notifications with pagination."""
+    from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
+    
+    # Get all notifications for this user
+    notifications_list = UserNotification.objects.filter(user=request.user).order_by('-created_at')
+    unread_count = notifications_list.filter(is_read=False).count()
+    
+    # Set up pagination - 20 notifications per page
+    paginator = Paginator(notifications_list, 20)
+    page = request.GET.get('page')
+    
+    try:
+        # Get the requested page
+        notifications = paginator.page(page)
+    except PageNotAnInteger:
+        # If page is not an integer, deliver first page
+        notifications = paginator.page(1)
+    except EmptyPage:
+        # If page is out of range, deliver last page
+        notifications = paginator.page(paginator.num_pages)
     
     context = {
         'notifications': notifications,
-        'unread_count': notifications.filter(is_read=False).count(),
+        'unread_count': unread_count,
+        'total_count': notifications_list.count(),
     }
     
     return render(request, 'notifications/list.html', context)
@@ -45,6 +64,11 @@ def mark_all_read(request):
     # If this is an AJAX request, return JSON
     if request.headers.get('x-requested-with') == 'XMLHttpRequest':
         return JsonResponse({'success': True})
+    
+    # Return to the same page if page parameter is provided
+    page = request.GET.get('page')
+    if page:
+        return redirect(f"{reverse('battycoda_app:notifications')}?page={page}")
     
     # Otherwise redirect to notification list
     return redirect('battycoda_app:notifications')
