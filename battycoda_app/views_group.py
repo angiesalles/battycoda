@@ -94,7 +94,7 @@ def create_group_view(request):
 
                 # Store the user's current group and admin status
                 old_group = user_profile.group
-                was_admin = user_profile.is_admin
+                was_admin = user_profile.is_current_group_admin
 
                 # Create GroupMembership record for the new group
                 print(f"Creating GroupMembership: User={request.user.username}, Group={group.name} (ID: {group.id})")
@@ -105,7 +105,7 @@ def create_group_view(request):
 
                 # Always make the creator a member and admin of the new group
                 user_profile.group = group
-                user_profile.is_admin = True
+                user_profile.is_current_group_admin = True
                 user_profile.save()
 
             messages.success(request, "Group created successfully! You have been added as an admin.")
@@ -126,7 +126,7 @@ def edit_group_view(request, group_id):
     group = get_object_or_404(Group, id=group_id)
 
     # Check if user is admin of this group
-    if not request.user.profile.is_admin or request.user.profile.group != group:
+    if not request.user.profile.is_current_group_admin or request.user.profile.group != group:
         messages.error(request, "You do not have permission to edit this group.")
         return redirect("battycoda_app:group_list")
 
@@ -209,7 +209,7 @@ def manage_group_members_view(request, group_id):
                 # If this was the user's active group, set to None
                 if user.profile.group == group:
                     user.profile.group = None
-                    user.profile.is_admin = False
+                    user.profile.is_current_group_admin = False
                     user.profile.save()
 
                 messages.success(request, f"User {user.username} removed from the group.")
@@ -232,7 +232,7 @@ def manage_group_members_view(request, group_id):
 
                 # If this is the user's active group, also update profile
                 if user.profile.group == group:
-                    user.profile.is_admin = membership.is_admin
+                    user.profile.is_current_group_admin = membership.is_admin
                     user.profile.save()
 
                 status = "granted" if membership.is_admin else "revoked"
@@ -269,7 +269,7 @@ def switch_group_view(request, group_id):
     user_profile.group = group
 
     # Set admin status based on membership
-    user_profile.is_admin = membership.is_admin
+    user_profile.is_current_group_admin = membership.is_admin
     user_profile.save()
 
     messages.success(request, f'You are now working in the "{group.name}" group.')

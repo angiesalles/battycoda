@@ -17,7 +17,7 @@ def recording_list_view(request):
 
     # Filter recordings by group if the user is in a group
     if profile.group:
-        if profile.is_admin:
+        if profile.is_current_group_admin:
             # Admin sees all recordings in their group
             recordings = Recording.objects.filter(group=profile.group).order_by("-created_at")
             
@@ -134,7 +134,7 @@ def edit_recording_view(request, recording_id):
     # Check if the user has permission to edit this recording
     profile = request.user.profile
     if recording.created_by != request.user and (
-        not profile.group or recording.group != profile.group or not profile.is_admin
+        not profile.group or recording.group != profile.group or not profile.is_current_group_admin
     ):
         messages.error(request, "You don't have permission to edit this recording.")
         return redirect("battycoda_app:recording_list")
@@ -163,7 +163,7 @@ def delete_recording_view(request, recording_id):
     # Check if the user has permission to delete this recording
     profile = request.user.profile
     if recording.created_by != request.user and (
-        not profile.group or recording.group != profile.group or not profile.is_admin
+        not profile.group or recording.group != profile.group or not profile.is_current_group_admin
     ):
         messages.error(request, "You don't have permission to delete this recording.")
         return redirect("battycoda_app:recording_list")
@@ -192,7 +192,7 @@ def recalculate_audio_info_view(request, recording_id):
     # Check if the user has permission to edit this recording
     profile = request.user.profile
     if recording.created_by != request.user and (
-        not profile.group or recording.group != profile.group or not profile.is_admin
+        not profile.group or recording.group != profile.group or not profile.is_current_group_admin
     ):
         messages.error(request, "You don't have permission to perform this action.")
         return redirect("battycoda_app:recording_list")
@@ -232,7 +232,7 @@ def process_missing_sample_rates(request):
     """Trigger sample rate calculation for all recordings missing this information"""
     # Check if user is an admin
     profile = request.user.profile
-    if not profile.is_admin:
+    if not profile.is_current_group_admin:
         messages.error(request, "Only administrators can perform this action.")
         return redirect("battycoda_app:recording_list")
     

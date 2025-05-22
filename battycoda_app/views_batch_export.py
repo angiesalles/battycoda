@@ -20,15 +20,20 @@ from .utils_modules.task_export_utils import generate_tasks_csv
 @login_required
 def export_completed_batches(request):
     """Export all completed batches as a ZIP file containing CSV exports."""
+    
     # Get user profile
     profile = request.user.profile
     
     # Determine which batches to include
-    if profile.group and profile.is_admin:
-        # Admin sees all batches in their group
-        batches = TaskBatch.objects.filter(group=profile.group)
+    if profile.group:
+        if profile.is_current_group_admin:
+            # Admin sees all batches in their group
+            batches = TaskBatch.objects.filter(group=profile.group)
+        else:
+            # Regular user only sees their own batches
+            batches = TaskBatch.objects.filter(created_by=request.user)
     else:
-        # Regular user only sees their own batches
+        # Fallback to showing only user's batches if no group is assigned
         batches = TaskBatch.objects.filter(created_by=request.user)
     
     # Filter for completed batches (all tasks in the batch are done)

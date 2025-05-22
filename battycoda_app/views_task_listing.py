@@ -12,12 +12,13 @@ from .models.user import UserProfile
 @login_required
 def task_list_view(request):
     """Display list of all tasks"""
+    
     # Get user profile
     profile = request.user.profile
 
     # Filter tasks by group if the user is in a group
     if profile.group:
-        if profile.is_admin:
+        if profile.is_current_group_admin:
             # Admin sees all tasks in their group
             tasks = Task.objects.filter(group=profile.group).order_by("-created_at")
         else:
@@ -46,7 +47,7 @@ def task_detail_view(request, task_id):
 
     # For editing, check if the user is the creator or a group admin
     can_edit = (task.created_by == request.user) or (
-        request.user.profile.is_admin and task.group == request.user.profile.group
+        request.user.profile.is_admin_of_group(task.group) and task.group == request.user.profile.group
     )
 
     if request.method == "POST" and can_edit:

@@ -30,7 +30,7 @@ def task_batch_list_view(request):
 
     # Filter batches by group if the user is in a group
     if profile.group:
-        if profile.is_admin:
+        if profile.is_current_group_admin:
             # Admin sees all batches in their group
             batches_list = TaskBatch.objects.filter(group=profile.group).order_by("-created_at")
         else:

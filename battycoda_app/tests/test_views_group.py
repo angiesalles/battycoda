@@ -24,7 +24,7 @@ class GroupViewsTest(BattycodaTestCase):
 
         # Set as active group for user1
         self.profile.group = self.group
-        self.profile.is_admin = True
+        self.profile.is_current_group_admin = True
         self.profile.save()
 
         # URL paths
@@ -97,7 +97,7 @@ class GroupViewsTest(BattycodaTestCase):
         # Check that the group was set as active group for the user
         self.user.profile.refresh_from_db()
         self.assertEqual(self.user.profile.group, new_group)
-        self.assertTrue(self.user.profile.is_admin)
+        self.assertTrue(self.user.profile.is_current_group_admin)
 
     def test_edit_group_view_admin(self):
         # Login as group admin
@@ -174,4 +174,4 @@ class GroupViewsTest(BattycodaTestCase):
         # Check that the user's active group was updated
         self.user.profile.refresh_from_db()
         self.assertEqual(self.user.profile.group, group2)
-        self.assertFalse(self.user.profile.is_admin)
+        self.assertFalse(self.user.profile.is_current_group_admin)

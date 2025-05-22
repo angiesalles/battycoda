@@ -31,7 +31,7 @@ class Command(BaseCommand):
                     if options["force"]:
                         # If force flag is used, we update or create
                         membership, created = GroupMembership.objects.update_or_create(
-                            user=profile.user, group=profile.group, defaults={"is_admin": profile.is_admin}
+                            user=profile.user, group=profile.group, defaults={"is_admin": profile.is_current_group_admin}
                         )
 
                         if created:
@@ -47,7 +47,7 @@ class Command(BaseCommand):
                     else:
                         # Otherwise, only create if it doesn't exist
                         membership, created = GroupMembership.objects.get_or_create(
-                            user=profile.user, group=profile.group, defaults={"is_admin": profile.is_admin}
+                            user=profile.user, group=profile.group, defaults={"is_admin": profile.is_current_group_admin}
                         )
 
                         if created:

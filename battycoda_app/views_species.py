@@ -183,7 +183,7 @@ def delete_species_view(request, species_id):
     # Check if the user has permission to delete this species
     profile = request.user.profile
     if species.created_by != request.user and (
-        not profile.group or species.group != profile.group or not profile.is_admin
+        not profile.group or species.group != profile.group or not profile.is_current_group_admin
     ):
         messages.error(request, "You don't have permission to delete this species.")
         return redirect("battycoda_app:species_list")

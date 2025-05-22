@@ -22,7 +22,7 @@ def index(request):
         context = {}
 
         if profile.group:
-            if profile.is_admin:
+            if profile.is_current_group_admin:
                 # Admin sees all batches in their group
                 recent_batches = TaskBatch.objects.filter(group=profile.group).order_by("-created_at")[:5]
             else:
@@ -36,7 +36,7 @@ def index(request):
 
         # Get recent recordings
         if profile.group:
-            if profile.is_admin:
+            if profile.is_current_group_admin:
                 # Admin sees all recordings in their group
                 recent_recordings = Recording.objects.filter(group=profile.group).order_by("-created_at")[:5]
             else:
@@ -50,7 +50,7 @@ def index(request):
 
         # Get recent classification runs
         if profile.group:
-            if profile.is_admin:
+            if profile.is_current_group_admin:
                 # Admin sees all runs in their group
                 recent_runs = DetectionRun.objects.filter(group=profile.group).order_by("-created_at")[:5]
             else:
@@ -86,7 +86,7 @@ def index(request):
         
         # Get recent segmentations
         if profile.group:
-            if profile.is_admin:
+            if profile.is_current_group_admin:
                 # Admin sees all segmentations in their group
                 recent_segmentations = Segmentation.objects.filter(recording__group=profile.group).order_by("-created_at")[:5]
             else:

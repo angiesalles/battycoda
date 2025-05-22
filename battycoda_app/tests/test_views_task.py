@@ -23,7 +23,7 @@ class TaskViewsTest(BattycodaTestCase):
 
         # Set as active group for user1
         self.profile.group = self.group
-        self.profile.is_admin = True
+        self.profile.is_current_group_admin = True
         self.profile.save()
 
         # Create test species
@@ -93,7 +93,7 @@ class TaskViewsTest(BattycodaTestCase):
 
     def test_task_list_view_non_admin(self):
         # Make user not an admin
-        self.profile.is_admin = False
+        self.profile.is_current_group_admin = False
         self.profile.save()
 
         # Create a task for user2
