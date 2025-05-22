@@ -1,0 +1,192 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Clustering Dashboard - BattyCoda{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">Clustering Dashboard</h3>
+                <div class="btn-group float-right">
+                    <a href="{% url 'battycoda_app:create_clustering_run' %}" class="btn btn-primary">
+                        <i class="fa fa-plus"></i> Create New Clustering Run
+                    </a>
+                </div>
+            </div>
+            <div class="card-body">
+                <p class="card-text">
+                    The clustering system allows you to discover patterns in your audio data without prior species associations.
+                    Unlike the supervised classification system, clustering identifies similar sounds based on acoustic features alone.
+                </p>
+                
+                <h4>Getting Started</h4>
+                <ol>
+                    <li>Create a new clustering run with your segmented recordings</li>
+                    <li>Explore the discovered clusters using the interactive visualizations</li>
+                    <li>Optionally map clusters to known species call types</li>
+                </ol>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mt-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">Your Clustering Runs</h3>
+            </div>
+            <div class="card-body">
+                {% if clustering_runs %}
+                <div class="table-responsive">
+                    <table class="table table-striped table-hover">
+                        <thead>
+                            <tr>
+                                <th>Name</th>
+                                <th>Recording</th>
+                                <th>Algorithm</th>
+                                <th>Status</th>
+                                <th>Progress</th>
+                                <th>Clusters</th>
+                                <th>Created</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for run in clustering_runs %}
+                            <tr>
+                                <td><a href="{% url 'battycoda_app:clustering_run_detail' run_id=run.id %}">{{ run.name }}</a></td>
+                                <td>{{ run.recording.name }}</td>
+                                <td>{{ run.algorithm.name }}</td>
+                                <td>
+                                    <span class="badge 
+                                        {% if run.status == 'completed' %}badge-success
+                                        {% elif run.status == 'failed' %}badge-danger
+                                        {% elif run.status == 'in_progress' %}badge-primary
+                                        {% else %}badge-secondary{% endif %}">
+                                        {{ run.status }}
+                                    </span>
+                                </td>
+                                <td>
+                                    {% if run.is_processing %}
+                                    <div class="progress">
+                                        <div class="progress-bar" role="progressbar" style="width: {{ run.progress }}%;" 
+                                            aria-valuenow="{{ run.progress }}" aria-valuemin="0" aria-valuemax="100">
+                                            {{ run.progress|floatformat:0 }}%
+                                        </div>
+                                    </div>
+                                    {% else %}
+                                    {% if run.status == 'completed' %}100%{% else %}--{% endif %}
+                                    {% endif %}
+                                </td>
+                                <td>{{ run.num_clusters_created }}</td>
+                                <td>{{ run.created_at|date:"Y-m-d H:i" }}</td>
+                                <td>
+                                    <div class="btn-group">
+                                        <a href="{% url 'battycoda_app:clustering_run_detail' run_id=run.id %}" class="btn btn-sm btn-primary">
+                                            <i class="fa fa-eye"></i> View
+                                        </a>
+                                        {% if run.status == 'completed' %}
+                                        <a href="{% url 'battycoda_app:cluster_explorer' run_id=run.id %}" class="btn btn-sm btn-success">
+                                            <i class="fa fa-chart-network"></i> Explore
+                                        </a>
+                                        <a href="{% url 'battycoda_app:map_clusters_to_calls' run_id=run.id %}" class="btn btn-sm btn-info">
+                                            <i class="fa fa-exchange-alt"></i> Map
+                                        </a>
+                                        {% endif %}
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <div class="alert alert-info">
+                    <i class="fa fa-info-circle"></i> No clustering runs yet. Create your first clustering run to get started.
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mt-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">Available Clustering Algorithms</h3>
+            </div>
+            <div class="card-body">
+                {% if algorithms %}
+                <div class="row">
+                    {% for algorithm in algorithms %}
+                    <div class="col-lg-6 col-xl-4 mb-4">
+                        <div class="card h-100">
+                            <div class="card-header">
+                                <h5 class="card-title">{{ algorithm.name }}</h5>
+                            </div>
+                            <div class="card-body">
+                                <p class="card-text">{{ algorithm.description }}</p>
+                                <p class="text-muted">
+                                    <small>Type: {{ algorithm.get_algorithm_type_display }}</small>
+                                </p>
+                                {% if algorithm.parameters %}
+                                <p class="text-muted">
+                                    <small>Default parameters: {{ algorithm.parameters }}</small>
+                                </p>
+                                {% endif %}
+                            </div>
+                            <div class="card-footer">
+                                <a href="{% url 'battycoda_app:create_clustering_run' %}?algorithm={{ algorithm.id }}" 
+                                   class="btn btn-sm btn-primary">Use this algorithm</a>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <div class="alert alert-warning">
+                    <i class="fa fa-exclamation-triangle"></i> No clustering algorithms available. Please contact your administrator.
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+$(document).ready(function() {
+    // Auto-refresh progress for in-progress runs
+    const updateProgress = function() {
+        $('tr').each(function() {
+            const status = $(this).find('td:nth-child(4) .badge').text().trim();
+            if (status === 'in_progress' || status === 'pending') {
+                const runId = $(this).find('td:nth-child(1) a').attr('href').split('/').slice(-2)[0];
+                $.get(`/clustering/run/${runId}/status/`, function(data) {
+                    if (data.status && data.progress !== undefined) {
+                        const progressBar = $(`tr:contains('${runId}') .progress-bar`);
+                        progressBar.css('width', `${data.progress}%`);
+                        progressBar.attr('aria-valuenow', data.progress);
+                        progressBar.text(`${Math.floor(data.progress)}%`);
+                        
+                        // Update status badge if it changed
+                        if (data.status !== status) {
+                            location.reload();  // Just reload the page if status changed
+                        }
+                    }
+                });
+            }
+        });
+    };
+    
+    // Update progress every 5 seconds
+    setInterval(updateProgress, 5000);
+});
+</script>
+{% endblock %}

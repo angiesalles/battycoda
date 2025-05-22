@@ -10,6 +10,7 @@ numpy>=1.20.0,<3.0.0
 matplotlib>=3.5.0,<4.0.0
 pillow>=10.2.0,<11.0.0
 soundfile>=0.12.1,<1.0.0
+librosa>=0.10.0,<1.0.0  # Required for audio feature extraction and segmentation
 
 # Database access (for task results)
 psycopg2-binary>=2.9.9,<3.0.0

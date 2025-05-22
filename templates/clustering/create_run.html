@@ -1,0 +1,118 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Create Clustering Run - BattyCoda{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">Create New Clustering Run</h3>
+                <div class="btn-group float-right">
+                    <a href="{% url 'battycoda_app:clustering_dashboard' %}" class="btn btn-secondary">
+                        <i class="fa fa-arrow-left"></i> Back to Dashboard
+                    </a>
+                </div>
+            </div>
+            <div class="card-body">
+                <form method="post" action="{% url 'battycoda_app:create_clustering_run' %}">
+                    {% csrf_token %}
+                    
+                    <div class="form-group">
+                        <label for="name">Run Name <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control" id="name" name="name" required 
+                               placeholder="Give your clustering run a descriptive name">
+                        <small class="form-text text-muted">
+                            A descriptive name to help you identify this clustering run.
+                        </small>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="description">Description</label>
+                        <textarea class="form-control" id="description" name="description" rows="3"
+                                  placeholder="Optional description for this clustering run"></textarea>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="segmentation">Segmentation <span class="text-danger">*</span></label>
+                        <select class="form-control" id="segmentation" name="segmentation" required>
+                            <option value="">Select a segmentation...</option>
+                            {% for seg in segmentations %}
+                            <option value="{{ seg.id }}">
+                                {{ seg.recording.name }} - {{ seg.segments.count }} segments
+                                {% if seg.is_active %} (Active) {% endif %}
+                            </option>
+                            {% endfor %}
+                        </select>
+                        <small class="form-text text-muted">
+                            Select the segmentation containing the segments you want to cluster.
+                        </small>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="algorithm">Clustering Algorithm <span class="text-danger">*</span></label>
+                        <select class="form-control" id="algorithm" name="algorithm" required>
+                            <option value="">Select an algorithm...</option>
+                            {% for algo in algorithms %}
+                            <option value="{{ algo.id }}" data-type="{{ algo.algorithm_type }}">
+                                {{ algo.name }} ({{ algo.get_algorithm_type_display }})
+                            </option>
+                            {% endfor %}
+                        </select>
+                        <small class="form-text text-muted">
+                            Choose the clustering algorithm to use for finding patterns in the audio segments.
+                        </small>
+                    </div>
+                    
+                    <div class="form-group" id="n_clusters_group">
+                        <label for="n_clusters">Number of Clusters</label>
+                        <input type="number" class="form-control" id="n_clusters" name="n_clusters" min="2" value="5">
+                        <small class="form-text text-muted">
+                            The target number of clusters to find. Only relevant for algorithms that require a fixed number 
+                            of clusters (K-means, GMM, Spectral).
+                        </small>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="feature_method">Feature Extraction Method</label>
+                        <select class="form-control" id="feature_method" name="feature_method">
+                            <option value="mfcc" selected>Mel-Frequency Cepstral Coefficients (MFCC)</option>
+                            <option value="mel_spectrogram">Mel Spectrogram</option>
+                            <option value="chroma">Chroma Features</option>
+                        </select>
+                        <small class="form-text text-muted">
+                            The method used to extract features from the audio segments.
+                        </small>
+                    </div>
+                    
+                    <div class="form-group">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fa fa-play"></i> Create Clustering Run
+                        </button>
+                        <a href="{% url 'battycoda_app:clustering_dashboard' %}" class="btn btn-secondary">Cancel</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+$(document).ready(function() {
+    // Show/hide number of clusters field based on algorithm type
+    $('#algorithm').change(function() {
+        const algorithmType = $(this).find(':selected').data('type');
+        if (algorithmType === 'kmeans' || algorithmType === 'gaussian_mixture' || algorithmType === 'spectral') {
+            $('#n_clusters_group').show();
+            $('#n_clusters').attr('required', true);
+        } else {
+            $('#n_clusters_group').hide();
+            $('#n_clusters').attr('required', false);
+        }
+    }).trigger('change');
+});
+</script>
+{% endblock %}

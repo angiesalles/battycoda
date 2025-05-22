@@ -1,0 +1,363 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Map Clusters to Call Types: {{ clustering_run.name }} - BattyCoda{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/cluster_explorer.css' %}">
+<style>
+    .call-box {
+        border: 1px solid #ddd;
+        padding: 10px;
+        margin-bottom: 10px;
+        border-radius: 4px;
+        background-color: #f8f9fa;
+    }
+    
+    .cluster-box {
+        border: 1px solid #ddd;
+        padding: 10px;
+        margin-bottom: 10px;
+        border-radius: 4px;
+        cursor: pointer;
+        transition: background-color 0.2s;
+    }
+    
+    .cluster-box:hover {
+        background-color: #e9ecef;
+    }
+    
+    .cluster-box.selected {
+        background-color: #cfe2ff;
+        border-color: #0d6efd;
+    }
+    
+    .mapping-container {
+        padding: 15px;
+        border: 1px dashed #ddd;
+        border-radius: 4px;
+        min-height: 200px;
+        transition: background-color 0.2s, border-color 0.2s;
+    }
+    
+    /* Style for drop hover state */
+    .mapping-container.drop-hover {
+        background-color: #e8f4fc;
+        border-color: #0d6efd;
+        border-style: solid;
+    }
+    
+    /* Style for dragging state */
+    .cluster-box.dragging {
+        opacity: 0.6;
+        border-color: #0d6efd;
+        box-shadow: 0 0 5px rgba(13, 110, 253, 0.5);
+    }
+    
+    .mapping-instruction {
+        color: #6c757d;
+        font-style: italic;
+    }
+    
+    .mapping-item {
+        background-color: #e9ecef;
+        padding: 8px 12px;
+        margin-bottom: 8px;
+        border-radius: 4px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+    
+    .confidence-slider {
+        width: 100%;
+    }
+    
+    .drag-handle {
+        cursor: move;
+        color: #6c757d;
+        margin-right: 10px;
+    }
+    
+    .color-indicator {
+        width: 16px;
+        height: 16px;
+        display: inline-block;
+        margin-right: 8px;
+        border-radius: 50%;
+    }
+    
+    .cluster-count-badge {
+        font-size: 0.7em;
+        vertical-align: top;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+{% csrf_token %}
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">Map Clusters to Call Types: {{ clustering_run.name }}</h3>
+                <div class="btn-group float-right">
+                    <a href="{% url 'battycoda_app:clustering_run_detail' run_id=clustering_run.id %}" class="btn btn-secondary">
+                        <i class="fa fa-arrow-left"></i> Back to Run Details
+                    </a>
+                    <a href="{% url 'battycoda_app:cluster_explorer' run_id=clustering_run.id %}" class="btn btn-success">
+                        <i class="fa fa-chart-network"></i> Explore Clusters
+                    </a>
+                    <a href="{% url 'battycoda_app:export_mappings' run_id=clustering_run.id %}" class="btn btn-outline-secondary">
+                        <i class="fa fa-download"></i> Export Mappings as CSV
+                    </a>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-12">
+                        <div class="alert alert-info">
+                            <i class="fa fa-info-circle"></i> This interface allows you to map discovered clusters to known species call types.
+                            Select a cluster from the left panel, then drag and drop it onto a call type in the right panel to create a mapping.
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="row">
+                    <div class="col-md-4">
+                        <div class="card">
+                            <div class="card-header">
+                                <h4 class="card-title">Clusters</h4>
+                                <div class="card-tools">
+                                    <input type="text" id="cluster-search" class="form-control form-control-sm" 
+                                           placeholder="Search clusters...">
+                                </div>
+                            </div>
+                            <div class="card-body">
+                                <div class="clusters-container">
+                                    <div class="form-group">
+                                        <label for="cluster-sort">Sort By</label>
+                                        <select id="cluster-sort" class="form-control form-control-sm">
+                                            <option value="id">Cluster ID</option>
+                                            <option value="size">Size (largest first)</option>
+                                            <option value="coherence">Coherence (highest first)</option>
+                                            <option value="label">Label (A-Z)</option>
+                                        </select>
+                                    </div>
+                                    
+                                    <div id="clusters-list">
+                                        {% for cluster in clusters %}
+                                        <div class="cluster-box" data-cluster-id="{{ cluster.id }}" data-cluster-num="{{ cluster.cluster_id }}">
+                                            <div class="d-flex align-items-center">
+                                                <span class="color-indicator" style="background-color: {{ cluster.color|default:'#777' }};"></span>
+                                                <h5 class="mb-0">
+                                                    {% if cluster.label %}
+                                                    {{ cluster.label }}
+                                                    {% else %}
+                                                    Cluster {{ cluster.cluster_id }}
+                                                    {% endif %}
+                                                </h5>
+                                            </div>
+                                            <div class="mt-2">
+                                                <small class="text-muted">Size: {{ cluster.size }} segments</small>
+                                                {% if cluster.coherence %}
+                                                <small class="text-muted ml-2">Coherence: {{ cluster.coherence|floatformat:3 }}</small>
+                                                {% endif %}
+                                            </div>
+                                            {% if cluster.description %}
+                                            <div class="mt-1">
+                                                <small>{{ cluster.description|truncatechars:60 }}</small>
+                                            </div>
+                                            {% endif %}
+                                        </div>
+                                        {% endfor %}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-8">
+                        <div class="card">
+                            <div class="card-header">
+                                <h4 class="card-title">Species Call Types</h4>
+                                <div class="card-tools">
+                                    <select id="species-filter" class="form-control form-control-sm">
+                                        <option value="all">All Species</option>
+                                        {% for species in available_species %}
+                                        <option value="{{ species.id }}">{{ species.name }}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="card-body">
+                                <div id="species-call-container">
+                                    {% for species in available_species %}
+                                    <div class="species-section" data-species-id="{{ species.id }}">
+                                        <h5>{{ species.name }}</h5>
+                                        <div class="row">
+                                            {% for call in species.calls.all %}
+                                            <div class="col-md-6 mb-3">
+                                                <div class="call-box" data-call-id="{{ call.id }}">
+                                                    <div class="d-flex justify-content-between align-items-center">
+                                                        <div>
+                                                            <h6 class="mb-0">{{ call.short_name }}
+                                                                <span class="badge badge-secondary cluster-count-badge" data-call-id="{{ call.id }}">0</span>
+                                                            </h6>
+                                                            <small class="text-muted">{{ call.long_name|default:"" }}</small>
+                                                        </div>
+                                                    </div>
+                                                    <div class="mapping-container mt-2" data-call-id="{{ call.id }}">
+                                                        <p class="mapping-instruction text-center">Drop clusters here to map</p>
+                                                        <div class="mapped-clusters">
+                                                            <!-- Mapped clusters will be added dynamically here -->
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            {% empty %}
+                                            <div class="col-12">
+                                                <div class="alert alert-warning">
+                                                    <i class="fa fa-exclamation-triangle"></i> No call types defined for {{ species.name }}
+                                                </div>
+                                            </div>
+                                            {% endfor %}
+                                        </div>
+                                        <hr>
+                                    </div>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Cluster Preview Modal -->
+<div class="modal fade" id="clusterPreviewModal" tabindex="-1" role="dialog" aria-labelledby="clusterPreviewModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="clusterPreviewModalLabel">Cluster Preview</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="text-center mb-3">
+                    <h5 class="cluster-preview-id">Cluster #</h5>
+                    <p class="cluster-preview-description"></p>
+                </div>
+                <div class="row">
+                    <div class="col-md-7">
+                        <div class="representative-spectrogram">
+                            <!-- Representative spectrogram will go here -->
+                        </div>
+                    </div>
+                    <div class="col-md-5">
+                        <table class="table table-sm">
+                            <tr>
+                                <th>Size</th>
+                                <td class="cluster-preview-size"></td>
+                            </tr>
+                            <tr>
+                                <th>Coherence</th>
+                                <td class="cluster-preview-coherence"></td>
+                            </tr>
+                        </table>
+                        <div class="mt-3">
+                            <audio controls class="representative-audio-player" style="width: 100%;">
+                                <source src="" type="audio/wav">
+                                Your browser does not support the audio element.
+                            </audio>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <div class="container-fluid">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <select id="mapping-call-select" class="form-control"></select>
+                        </div>
+                        <div class="col-md-6 text-right">
+                            <button type="button" id="create-mapping-btn" class="btn btn-primary">Create Mapping</button>
+                            <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/sortablejs@1.14.0/Sortable.min.js"></script>
+<script>
+// Store clustering run ID for API calls
+const clusteringRunId = {{ clustering_run.id }};
+
+// Store existing mappings
+const existingMappings = [
+    {% for mapping in existing_mappings %}
+    {
+        id: {{ mapping.id }},
+        cluster_id: {{ mapping.cluster.id }},
+        call_id: {{ mapping.call.id }},
+        confidence: {{ mapping.confidence }},
+        species_name: "{{ mapping.call.species.name }}",
+        call_name: "{{ mapping.call.short_name }}"
+    },
+    {% endfor %}
+];
+
+// Initialize the application after jQuery is definitely loaded
+document.addEventListener('DOMContentLoaded', function() {
+    // Make sure jQuery is loaded
+    if (typeof jQuery === 'undefined') {
+        console.error('jQuery is not loaded. Waiting...');
+        // Try again in a short while
+        setTimeout(function() {
+            if (typeof jQuery !== 'undefined') {
+                console.log('jQuery is now loaded, initializing...');
+                // Set up CSRF token for AJAX requests
+                setupCSRF();
+                // Load our script
+                var script = document.createElement('script');
+                script.src = "{% static 'js/cluster_mapping.js' %}";
+                document.body.appendChild(script);
+            } else {
+                console.error('jQuery could not be loaded after waiting. Cluster mapping functionality may not work.');
+            }
+        }, 1000);
+    } else {
+        console.log('jQuery is already loaded, initializing...');
+        // Set up CSRF token for AJAX requests
+        setupCSRF();
+        // Load our script
+        var script = document.createElement('script');
+        script.src = "{% static 'js/cluster_mapping.js' %}";
+        document.body.appendChild(script);
+    }
+});
+
+function setupCSRF() {
+    // Get CSRF token
+    var csrftoken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+    console.log("CSRF token found:", csrftoken ? "Yes" : "No");
+    
+    // Set up jQuery AJAX to always send CSRF token
+    $.ajaxSetup({
+        beforeSend: function(xhr, settings) {
+            if (!this.crossDomain) {
+                xhr.setRequestHeader("X-CSRFToken", csrftoken);
+            }
+        }
+    });
+}
+</script>
+{% endblock %}
