@@ -67,6 +67,8 @@ export class WaveformPlayer {
         this.totalTimeEl = document.getElementById(`${id}-total-time`);
         this.waveformContainer = document.getElementById(id);
         this.timelineContainer = document.getElementById(`${id}-timeline`);
+        this.speed1xBtn  = document.getElementById(`${id}-speed-1x`);
+        this.speedSlowBtn = document.getElementById(`${id}-speed-slow`);
         this.loadingEl = document.getElementById(`${id}-loading`);
         this.statusEl = document.getElementById(`${id}-status`);
         
@@ -93,6 +95,12 @@ export class WaveformPlayer {
         this.updateTimeDisplay();
         if (this.allowSelection) this.updateSelectionDisplay();
         this.updatePlayButtons();
+    }
+
+    setPlaybackRate(rate) {
+    if (this.audioPlayer) {
+        this.audioPlayer.playbackRate = rate;
+    }
     }
     
     /**
@@ -344,6 +352,7 @@ export class WaveformPlayer {
         this.setupAudioEventListeners();
         this.setupControlEventListeners();
         this.setupZoomEventListeners();
+        this.setupSpeedEventListeners();
         this.setupSelectionEventListeners();
         this.setupWindowEventListeners();
     }
@@ -567,6 +576,27 @@ export class WaveformPlayer {
             });
         }
     }
+
+    setupSpeedEventListeners() {
+    const updateActive = (activeBtn, inactiveBtn) => {
+        activeBtn.classList.add('active');
+        inactiveBtn.classList.remove('active');
+    };
+
+    if (this.speed1xBtn && this.speedSlowBtn && this.audioPlayer) {
+        // Normal speed
+        this.speed1xBtn.addEventListener('click', () => {
+            this.audioPlayer.playbackRate = 1.0;
+            updateActive(this.speed1xBtn, this.speedSlowBtn);
+        });
+
+        // 1⁄8 speed
+        this.speedSlowBtn.addEventListener('click', () => {
+            this.audioPlayer.playbackRate = 0.125;
+            updateActive(this.speedSlowBtn, this.speed1xBtn);
+        });
+    }
+}
     
     /**
      * Set up selection button event listeners

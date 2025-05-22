@@ -49,6 +49,20 @@ Parameters:
                         <i class="fas fa-stop"></i> Stop
                     </button>
                 </div>
+
+            <!-- --- Playback-speed toggle --- -->
+            <div class="btn-group ms-2" id="{{ container_id }}-speed-toggle">
+                <button  class="btn btn-outline-secondary active"
+                         id="{{ container_id }}-speed-1x"
+                         data-rate="1">
+                    1×
+                </button>
+                <button  class="btn btn-outline-secondary"
+                         id="{{ container_id }}-speed-slow"
+                         data-rate="0.125">
+                    ⅛×
+                </button>
+            </div>
                 
                 <div class="d-flex align-items-center mx-2 flex-grow-1">
                     <span id="{{ container_id }}-current-time" class="badge me-2" style="background-color: var(--input-bg);">0.00s</span>
