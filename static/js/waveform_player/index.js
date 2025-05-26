@@ -19,10 +19,16 @@ if (window.waveformPlayers === undefined) {
  * @param {boolean} allowSelection - Whether to allow selecting regions
  * @param {boolean} showZoom - Whether to show zoom controls
  * @param {Array} [segmentsData] - Optional array of segments to display in the waveform
+ * @param {string} [spectrogramUrl] - Optional URL of the spectrogram image
  */
-export function initWaveformPlayer(containerId, recordingId, allowSelection, showZoom, segmentsData) {
+export function initWaveformPlayer(containerId, recordingId, allowSelection, showZoom, segmentsData, spectrogramUrl) {
     // Create a new WaveformPlayer instance
     const player = new WaveformPlayer(containerId, recordingId, allowSelection, showZoom, segmentsData);
+    
+    // Initialize spectrogram if URL provided
+    if (spectrogramUrl) {
+        player.viewManager.initializeSpectrogram(spectrogramUrl);
+    }
     
     // Register the player instance in the global registry
     window.waveformPlayers[containerId] = {
@@ -34,6 +40,19 @@ export function initWaveformPlayer(containerId, recordingId, allowSelection, sho
         },
         redrawSegments: function() {
             player.redrawSegments();
+        },
+        // View management functions
+        setViewMode: function(mode) {
+            player.viewManager.setViewMode(mode);
+        },
+        getViewMode: function() {
+            return player.viewManager.getViewMode();
+        },
+        isSpectrogramAvailable: function() {
+            return player.viewManager.isSpectrogramAvailable();
+        },
+        initializeSpectrogram: function(url) {
+            player.viewManager.initializeSpectrogram(url);
         },
         player: player // Expose the underlying player directly
     };

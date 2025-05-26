@@ -62,10 +62,15 @@ def recording_detail_view(request, recording_id):
         messages.error(request, "You don't have permission to view this recording.")
         return redirect("battycoda_app:recording_list")
 
-    # We no longer need to generate spectrograms since we're using waveform visualization
-    # We also don't include segments in the recording detail view
+    # Import the spectrogram status function
+    from .views_segmentation.segment_management import get_spectrogram_status
+    
+    # Check spectrogram status and jobs
+    spectrogram_info = get_spectrogram_status(recording)
+    
     context = {
         "recording": recording,
+        "spectrogram_info": spectrogram_info,
     }
 
     return render(request, "recordings/recording_detail.html", context)

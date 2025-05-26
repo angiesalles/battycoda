@@ -83,9 +83,22 @@
                     </div>
                 </div>
                 <div id="recordingInfoFooter" class="card-footer text-center">
-                    <a id="downloadRecordingBtn" href="{{ recording.wav_file.url }}" class="btn btn-outline-primary" target="_blank">
+                    <a id="downloadRecordingBtn" href="{{ recording.wav_file.url }}" class="btn btn-outline-primary mr-2" target="_blank">
                         <span id="downloadIcon" class="s7-download mr-1"></span> Download Recording
                     </a>
+                    {% if spectrogram_info.status == 'not_available' %}
+                    <button id="createSpectrogramJobBtn" class="btn btn-outline-secondary" data-recording-id="{{ recording.id }}">
+                        <span id="spectrogramJobIcon" class="s7-graph mr-1"></span> Generate Spectrogram
+                    </button>
+                    {% elif spectrogram_info.status == 'generating' %}
+                    <span class="text-muted">
+                        <i class="fas fa-spinner fa-spin mr-1"></i> Generating spectrogram... {{ spectrogram_info.progress }}%
+                    </span>
+                    {% elif spectrogram_info.status == 'available' %}
+                    <span class="text-success">
+                        <i class="fas fa-check mr-1"></i> Spectrogram available
+                    </span>
+                    {% endif %}
                 </div>
             </div>
             
@@ -100,7 +113,7 @@
         <!-- Spectrogram and segments section -->
         <div id="spectrogramCol" class="col-md-8 mb-4">
             <!-- Include the reusable waveform player -->
-            {% include "recordings/includes/waveform_player.html" with recording=recording container_id="detail-waveform" %}
+            {% include "recordings/includes/waveform_player.html" with recording=recording container_id="detail-waveform" spectrogram_info=spectrogram_info %}
             
             <!-- Segmentation links card -->
             <div id="segmentationCard" class="card mt-4">
@@ -136,6 +149,65 @@
 {% block extra_scripts %}
 <!-- Include the waveform player script -->
 <script id="waveformPlayerScript" src="{% static 'js/waveform_player.js' %}"></script>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const createSpectrogramBtn = document.getElementById('createSpectrogramJobBtn');
+    
+    if (createSpectrogramBtn) {
+        createSpectrogramBtn.addEventListener('click', function() {
+            const recordingId = this.dataset.recordingId;
+            const btnIcon = this.querySelector('#spectrogramJobIcon');
+            const btnText = this;
+            
+            // Disable button and show loading state
+            btnText.disabled = true;
+            btnIcon.className = 'fas fa-spinner fa-spin mr-1';
+            btnText.innerHTML = '<span class="fas fa-spinner fa-spin mr-1"></span> Creating Job...';
+            
+            // Create the spectrogram job
+            fetch(`{% url 'battycoda_app:create_spectrogram_job' recording_id=0 %}`.replace('0', recordingId), {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': '{{ csrf_token }}',
+                    'Content-Type': 'application/json',
+                },
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Show success message
+                    toastr.success(data.message);
+                    
+                    // Update button to show success state temporarily
+                    btnText.innerHTML = '<span class="s7-check mr-1"></span> Job Created!';
+                    
+                    // Reset button after 3 seconds
+                    setTimeout(() => {
+                        btnText.disabled = false;
+                        btnText.innerHTML = '<span class="s7-graph mr-1"></span> Generate Spectrogram';
+                    }, 3000);
+                } else {
+                    // Show error message
+                    toastr.error(data.error || 'Failed to create spectrogram job');
+                    
+                    // Reset button
+                    btnText.disabled = false;
+                    btnText.innerHTML = '<span class="s7-graph mr-1"></span> Generate Spectrogram';
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                toastr.error('Failed to create spectrogram job');
+                
+                // Reset button
+                btnText.disabled = false;
+                btnText.innerHTML = '<span class="s7-graph mr-1"></span> Generate Spectrogram';
+            });
+        });
+    }
+});
+</script>
 {% endblock %}
 
 {% endblock %}

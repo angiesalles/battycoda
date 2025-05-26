@@ -1,0 +1,22 @@
+<!-- Waveform player card body -->
+<div class="card-body p-2">
+    <!-- Waveform visualization -->
+    <div id="{{ container_id }}" style="height: {{ height|default:"200" }}px; background-color: var(--input-bg); position: relative;">
+        <div id="{{ container_id }}-loading" class="d-flex justify-content-center align-items-center h-100">
+            <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">Loading...</span>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Timeline visualization -->
+    <div id="{{ container_id }}-timeline" class="position-relative mt-2" style="height: 30px; background-color: var(--input-bg);">
+        <!-- Timeline markers will be added here via JavaScript -->
+    </div>
+    
+    {% include "recordings/includes/waveform_player/controls.html" %}
+    
+    {% if allow_selection %}
+    {% include "recordings/includes/waveform_player/selection_controls.html" %}
+    {% endif %}
+</div>

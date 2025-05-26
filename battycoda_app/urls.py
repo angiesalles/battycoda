@@ -45,6 +45,7 @@ from . import (
     views_debug,
     views_group,
     views_invitations,
+    views_jobs,
     views_landing,
     views_project,
     views_recording_core,
@@ -303,4 +304,10 @@ urlpatterns = [
     path("clustering/delete-mapping/", views_clustering.delete_cluster_mapping, name="delete_cluster_mapping"),
     path("clustering/update-mapping-confidence/", views_clustering.update_mapping_confidence, name="update_mapping_confidence"),
     path("clustering/get-segment-data/", views_clustering.get_segment_data, name="get_segment_data"),
+    
+    # Jobs management routes
+    path("jobs/", views_jobs.jobs_dashboard_view, name="jobs_dashboard"),
+    path("jobs/api/status/", views_jobs.job_status_api_view, name="job_status_api"),
+    path("jobs/cancel/<str:job_type>/<int:job_id>/", views_jobs.cancel_job_view, name="cancel_job"),
+    path("jobs/spectrogram/create/<int:recording_id>/", views_jobs.create_spectrogram_job_view, name="create_spectrogram_job"),
 ]

@@ -1,0 +1,36 @@
+<!-- Audio controls -->
+<div class="d-flex align-items-center justify-content-between my-2">
+    <div class="btn-group">
+        <button id="{{ container_id }}-play-btn" class="btn btn-primary">
+            <i class="fas fa-play"></i> Play
+        </button>
+        <button id="{{ container_id }}-pause-btn" class="btn btn-secondary" disabled>
+            <i class="fas fa-pause"></i> Pause
+        </button>
+        <button id="{{ container_id }}-stop-btn" class="btn btn-secondary" disabled>
+            <i class="fas fa-stop"></i> Stop
+        </button>
+    </div>
+    
+    <div class="d-flex align-items-center mx-2 flex-grow-1">
+        <span id="{{ container_id }}-current-time" class="badge me-2" style="background-color: var(--input-bg);">0.00s</span>
+        <div id="{{ container_id }}-progress-container" class="progress flex-grow-1" style="height: 10px; cursor: pointer;">
+            <div id="{{ container_id }}-progress-bar" class="progress-bar bg-primary" role="progressbar" style="width: 0%"></div>
+        </div>
+        <span id="{{ container_id }}-total-time" class="badge ms-2" style="background-color: var(--input-bg);">{{ recording.duration|default:"0"|floatformat:2 }}s</span>
+    </div>
+    
+    {% if show_zoom %}
+    <div class="btn-group">
+        <button id="{{ container_id }}-zoom-in-btn" class="btn btn-sm btn-outline-secondary">
+            <i class="fas fa-search-plus"></i> Zoom In
+        </button>
+        <button id="{{ container_id }}-zoom-out-btn" class="btn btn-sm btn-outline-secondary">
+            <i class="fas fa-search-minus"></i> Zoom Out
+        </button>
+        <button id="{{ container_id }}-reset-zoom-btn" class="btn btn-sm btn-outline-secondary">
+            <i class="fas fa-expand"></i> Reset
+        </button>
+    </div>
+    {% endif %}
+</div>

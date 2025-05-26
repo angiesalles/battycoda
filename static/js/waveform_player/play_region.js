@@ -58,7 +58,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 ));
                 
                 // Update displays
-                this.drawWaveform();
+                this.redrawCurrentView();
                 this.drawTimeline();
                 this.updateTimeDisplay();
               }

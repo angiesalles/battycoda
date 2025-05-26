@@ -24,6 +24,7 @@ from .detection import (
     ClassifierTrainingJob
 )
 from .notification import UserNotification as Notification
+from .spectrogram import SpectrogramJob
 
 # Optional import for clustering models - will not fail if module doesn't exist yet
 try:

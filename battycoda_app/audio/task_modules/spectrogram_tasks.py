@@ -122,10 +122,33 @@ def generate_recording_spectrogram(self, recording_id):
     from PIL import Image
 
     from ...models.recording import Recording
+    from ...models.spectrogram import SpectrogramJob
+
+    # Get the SpectrogramJob associated with this task
+    job = None
+    try:
+        job = SpectrogramJob.objects.filter(
+            recording_id=recording_id,
+            celery_task_id=self.request.id
+        ).first()
+    except:
+        pass  # Job tracking is optional
+
+    def update_job_progress(progress, status=None):
+        """Helper function to update job progress"""
+        if job:
+            try:
+                job.progress = progress
+                if status:
+                    job.status = status
+                job.save()
+            except:
+                pass  # Don't fail if job update fails
 
     try:
         # Get the recording
         recording = Recording.objects.get(id=recording_id)
+        update_job_progress(20, 'in_progress')
 
         # Get the WAV file path
         wav_path = recording.wav_file.path
@@ -140,11 +163,16 @@ def generate_recording_spectrogram(self, recording_id):
 
         # Check if file already exists
         if os.path.exists(output_path) and os.path.getsize(output_path) > 0:
-
+            update_job_progress(100, 'completed')
+            if job:
+                job.output_file_path = output_path
+                job.save()
             return {"status": "success", "file_path": output_path, "recording_id": recording_id, "cached": True}
 
         # Load the audio file
+        update_job_progress(30)
         audio_data, sample_rate = sf.read(wav_path)
+        update_job_progress(50)
 
         # For very long recordings, downsample to improve performance
         max_duration_samples = 10 * 60 * sample_rate  # 10 minutes maximum
@@ -161,32 +189,90 @@ def generate_recording_spectrogram(self, recording_id):
         if len(audio_data.shape) > 1 and audio_data.shape[1] > 1:
             audio_data = np.mean(audio_data, axis=1)
 
-        # Generate spectrogram
-        plt.figure(figsize=(20, 10))
-        plt.specgram(audio_data, Fs=effective_sample_rate, cmap="viridis")
-        plt.title(f"Spectrogram: {recording.name}")
-        plt.xlabel("Time (s)")
-        plt.ylabel("Frequency (Hz)")
-        plt.colorbar(label="Intensity")
-
-        # Save the figure to a temporary file first
-        with tempfile.NamedTemporaryFile(suffix=".png", delete=False) as tmp_file:
-            temp_path = tmp_file.name
-            plt.savefig(temp_path, dpi=100, bbox_inches="tight")
-            plt.close()
-
-        # Convert with PIL for final processing and compression
-        with Image.open(temp_path) as img:
-            # Apply any image processing here if needed
-            img.save(output_path, format="PNG", optimize=True)
-
-        # Clean up temporary file
-        os.unlink(temp_path)
+        # Generate spectrogram using scipy directly
+        update_job_progress(70)
+        
+        # Calculate spectrogram parameters for good time/frequency resolution
+        nperseg = 512  # Window size for frequency resolution
+        noverlap = nperseg // 2  # 50% overlap
+        
+        # Generate spectrogram data
+        from scipy import signal
+        frequencies, times, spectrogram_data = signal.spectrogram(
+            audio_data, 
+            fs=effective_sample_rate,
+            nperseg=nperseg,
+            noverlap=noverlap
+        )
+        
+        # Convert to log scale for better visualization
+        spectrogram_db = 10 * np.log10(spectrogram_data + 1e-10)  # Add small value to avoid log(0)
+        
+        # Normalize to 0-255 range
+        spec_min = np.min(spectrogram_db)
+        spec_max = np.max(spectrogram_db)
+        normalized_spec = ((spectrogram_db - spec_min) / (spec_max - spec_min) * 255).astype(np.uint8)
+        
+        # Flip vertically (frequencies should go from low to high, bottom to top)
+        normalized_spec = np.flipud(normalized_spec)
+        
+        update_job_progress(80)
+        
+        # Calculate target image dimensions
+        # Scale width based on recording duration for better time resolution
+        duration_seconds = len(audio_data) / effective_sample_rate
+        target_width = max(800, int(duration_seconds * 50))  # ~50 pixels per second minimum
+        target_height = 400  # Fixed height for good frequency resolution
+        
+        # Create PIL image from spectrogram data using proper viridis colormap
+        height, width = normalized_spec.shape
+        rgb_image = np.zeros((height, width, 3), dtype=np.uint8)
+        
+        # Proper viridis colormap implementation
+        def viridis_colormap(val):
+            """Convert value [0,1] to viridis RGB"""
+            # Viridis colormap coefficients (approximation)
+            r = np.interp(val, [0, 0.13, 0.25, 0.38, 0.5, 0.63, 0.75, 0.88, 1.0],
+                         [0.267, 0.282, 0.253, 0.206, 0.173, 0.196, 0.388, 0.682, 0.993])
+            g = np.interp(val, [0, 0.13, 0.25, 0.38, 0.5, 0.63, 0.75, 0.88, 1.0],
+                         [0.005, 0.141, 0.265, 0.371, 0.467, 0.573, 0.682, 0.795, 0.906])
+            b = np.interp(val, [0, 0.13, 0.25, 0.38, 0.5, 0.63, 0.75, 0.88, 1.0],
+                         [0.329, 0.458, 0.562, 0.640, 0.708, 0.762, 0.776, 0.706, 0.144])
+            return r, g, b
+        
+        # Apply viridis colormap
+        for i in range(height):
+            for j in range(width):
+                val = normalized_spec[i, j] / 255.0
+                r, g, b = viridis_colormap(val)
+                rgb_image[i, j, 0] = int(255 * r)
+                rgb_image[i, j, 1] = int(255 * g)
+                rgb_image[i, j, 2] = int(255 * b)
+        
+        # Create PIL image and resize to target dimensions
+        pil_image = Image.fromarray(rgb_image)
+        pil_image = pil_image.resize((target_width, target_height), Image.Resampling.LANCZOS)
+        
+        update_job_progress(90)
+        
+        # Save directly as PNG
+        pil_image.save(output_path, format="PNG", optimize=True)
+        
+        # Update job completion
+        update_job_progress(100, 'completed')
+        if job:
+            job.output_file_path = output_path
+            job.save()
 
         return {"status": "success", "file_path": output_path, "recording_id": recording_id, "cached": False}
 
     except Exception as e:
-
+        # Update job as failed
+        if job:
+            job.status = 'failed'
+            job.error_message = str(e)
+            job.save()
+        
         return {"status": "error", "message": str(e), "recording_id": recording_id}
 
 def generate_spectrogram(path, args, output_path=None):

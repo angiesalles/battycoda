@@ -1,0 +1,523 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}BattyCoda - Jobs Dashboard{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/debug.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1><i class="s7-clock mr-2"></i> Jobs Dashboard</h1>
+        <div>
+            <button id="refresh-jobs" class="btn btn-outline-primary">
+                <i class="fas fa-sync-alt"></i> Refresh
+            </button>
+            <button id="auto-refresh-toggle" class="btn btn-outline-secondary" data-auto="true">
+                <i class="fas fa-play"></i> Auto-refresh: ON
+            </button>
+        </div>
+    </div>
+
+    <!-- Summary Cards -->
+    <div class="row mb-4">
+        <div class="col-md-2">
+            <div class="card border-primary">
+                <div class="card-body text-center">
+                    <h5 class="card-title text-primary">
+                        <i class="s7-scissors"></i> Segmentation
+                    </h5>
+                    <h3 id="segmentation-count" class="mb-0">{{ segmentation_jobs|length }}</h3>
+                    <small class="text-muted">Active Jobs</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-2">
+            <div class="card border-info">
+                <div class="card-body text-center">
+                    <h5 class="card-title text-info">
+                        <i class="s7-display1"></i> Classification
+                    </h5>
+                    <h3 id="detection-count" class="mb-0">{{ detection_jobs|length }}</h3>
+                    <small class="text-muted">Active Jobs</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-2">
+            <div class="card border-warning">
+                <div class="card-body text-center">
+                    <h5 class="card-title text-warning">
+                        <i class="s7-tools"></i> Training
+                    </h5>
+                    <h3 id="training-count" class="mb-0">{{ training_jobs|length }}</h3>
+                    <small class="text-muted">Active Jobs</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-2">
+            <div class="card border-success">
+                <div class="card-body text-center">
+                    <h5 class="card-title text-success">
+                        <i class="fa fa-cluster"></i> Clustering
+                    </h5>
+                    <h3 id="clustering-count" class="mb-0">{{ clustering_jobs|length }}</h3>
+                    <small class="text-muted">Active Jobs</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-2">
+            <div class="card border-danger">
+                <div class="card-body text-center">
+                    <h5 class="card-title text-danger">
+                        <i class="s7-graph"></i> Spectrograms
+                    </h5>
+                    <h3 id="spectrogram-count" class="mb-0">{{ spectrogram_jobs|length }}</h3>
+                    <small class="text-muted">Active Jobs</small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Jobs Tables -->
+    <div class="row">
+        <!-- Segmentation Jobs -->
+        {% if segmentation_jobs %}
+        <div class="col-lg-6 mb-4">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="s7-scissors mr-2"></i> Segmentation Jobs
+                    </h5>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover mb-0">
+                            <thead class="thead-light">
+                                <tr>
+                                    <th>Recording</th>
+                                    <th>Status</th>
+                                    <th>Created</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for job in segmentation_jobs %}
+                                <tr>
+                                    <td>
+                                        <a href="{% url 'battycoda_app:recording_detail' recording_id=job.recording.id %}">
+                                            {{ job.recording.name|truncatechars:30 }}
+                                        </a>
+                                        {% if job.algorithm %}
+                                        <br><small class="text-muted">{{ job.algorithm.name }}</small>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <span class="badge badge-{% if job.status == 'completed' %}success{% elif job.status == 'failed' %}danger{% elif job.status == 'in_progress' %}warning{% else %}secondary{% endif %}">
+                                            {{ job.status|title }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <small>{{ job.created_at|date:"M d, H:i" }}</small>
+                                    </td>
+                                    <td>
+                                        <a href="{% url 'battycoda_app:recording_detail' recording_id=job.recording.id %}" class="btn btn-sm btn-outline-primary">
+                                            <i class="fas fa-eye"></i>
+                                        </a>
+                                        {% if job.status in 'pending,in_progress' %}
+                                        <button class="btn btn-sm btn-outline-danger cancel-job" 
+                                                data-job-type="segmentation" 
+                                                data-job-id="{{ job.id }}">
+                                            <i class="fas fa-times"></i>
+                                        </button>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Detection/Classification Jobs -->
+        {% if detection_jobs %}
+        <div class="col-lg-6 mb-4">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="s7-display1 mr-2"></i> Classification Jobs
+                    </h5>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover mb-0">
+                            <thead class="thead-light">
+                                <tr>
+                                    <th>Name</th>
+                                    <th>Status</th>
+                                    <th>Created</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for job in detection_jobs %}
+                                <tr>
+                                    <td>
+                                        <a href="{% url 'battycoda_app:detection_run_detail' run_id=job.id %}">
+                                            {{ job.name|truncatechars:30 }}
+                                        </a>
+                                        {% if job.classifier %}
+                                        <br><small class="text-muted">{{ job.classifier.name }}</small>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <span class="badge badge-{% if job.status == 'completed' %}success{% elif job.status == 'failed' %}danger{% elif job.status == 'running' %}warning{% else %}secondary{% endif %}">
+                                            {{ job.status|title }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <small>{{ job.created_at|date:"M d, H:i" }}</small>
+                                    </td>
+                                    <td>
+                                        <a href="{% url 'battycoda_app:detection_run_detail' run_id=job.id %}" class="btn btn-sm btn-outline-primary">
+                                            <i class="fas fa-eye"></i>
+                                        </a>
+                                        {% if job.status in 'pending,running' %}
+                                        <button class="btn btn-sm btn-outline-danger cancel-job" 
+                                                data-job-type="detection" 
+                                                data-job-id="{{ job.id }}">
+                                            <i class="fas fa-times"></i>
+                                        </button>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Training Jobs -->
+        {% if training_jobs %}
+        <div class="col-lg-6 mb-4">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="s7-tools mr-2"></i> Training Jobs
+                    </h5>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover mb-0">
+                            <thead class="thead-light">
+                                <tr>
+                                    <th>Name</th>
+                                    <th>Status</th>
+                                    <th>Created</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for job in training_jobs %}
+                                <tr>
+                                    <td>
+                                        <a href="{% url 'battycoda_app:classifier_training_job_detail' job_id=job.id %}">
+                                            {{ job.name|truncatechars:30 }}
+                                        </a>
+                                        {% if job.species %}
+                                        <br><small class="text-muted">{{ job.species.name }}</small>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <span class="badge badge-{% if job.status == 'completed' %}success{% elif job.status == 'failed' %}danger{% elif job.status == 'running' %}warning{% else %}secondary{% endif %}">
+                                            {{ job.status|title }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <small>{{ job.created_at|date:"M d, H:i" }}</small>
+                                    </td>
+                                    <td>
+                                        <a href="{% url 'battycoda_app:classifier_training_job_detail' job_id=job.id %}" class="btn btn-sm btn-outline-primary">
+                                            <i class="fas fa-eye"></i>
+                                        </a>
+                                        {% if job.status in 'pending,running' %}
+                                        <button class="btn btn-sm btn-outline-danger cancel-job" 
+                                                data-job-type="training" 
+                                                data-job-id="{{ job.id }}">
+                                            <i class="fas fa-times"></i>
+                                        </button>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Clustering Jobs -->
+        {% if clustering_jobs %}
+        <div class="col-lg-6 mb-4">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fa fa-cluster mr-2"></i> Clustering Jobs
+                    </h5>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover mb-0">
+                            <thead class="thead-light">
+                                <tr>
+                                    <th>Name</th>
+                                    <th>Status</th>
+                                    <th>Created</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for job in clustering_jobs %}
+                                <tr>
+                                    <td>
+                                        <a href="{% url 'battycoda_app:clustering_run_detail' run_id=job.id %}">
+                                            {{ job.name|truncatechars:30 }}
+                                        </a>
+                                        {% if job.algorithm %}
+                                        <br><small class="text-muted">{{ job.algorithm.name }}</small>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <span class="badge badge-{% if job.status == 'completed' %}success{% elif job.status == 'failed' %}danger{% elif job.status == 'running' %}warning{% else %}secondary{% endif %}">
+                                            {{ job.status|title }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <small>{{ job.created_at|date:"M d, H:i" }}</small>
+                                    </td>
+                                    <td>
+                                        <a href="{% url 'battycoda_app:clustering_run_detail' run_id=job.id %}" class="btn btn-sm btn-outline-primary">
+                                            <i class="fas fa-eye"></i>
+                                        </a>
+                                        {% if job.status in 'pending,running' %}
+                                        <button class="btn btn-sm btn-outline-danger cancel-job" 
+                                                data-job-type="clustering" 
+                                                data-job-id="{{ job.id }}">
+                                            <i class="fas fa-times"></i>
+                                        </button>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Spectrogram Jobs -->
+        {% if spectrogram_jobs %}
+        <div class="col-lg-6 mb-4">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="s7-graph mr-2"></i> Spectrogram Jobs
+                    </h5>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover mb-0">
+                            <thead class="thead-light">
+                                <tr>
+                                    <th>Recording</th>
+                                    <th>Status</th>
+                                    <th>Progress</th>
+                                    <th>Created</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for job in spectrogram_jobs %}
+                                <tr>
+                                    <td>
+                                        <a href="{% url 'battycoda_app:recording_detail' recording_id=job.recording.id %}">
+                                            {{ job.recording.name|truncatechars:25 }}
+                                        </a>
+                                    </td>
+                                    <td>
+                                        <span class="badge badge-{% if job.status == 'completed' %}success{% elif job.status == 'failed' %}danger{% elif job.status == 'in_progress' %}warning{% else %}secondary{% endif %}">
+                                            {{ job.status|title }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        {% if job.progress > 0 %}
+                                        <div class="progress" style="height: 20px; width: 60px;">
+                                            <div class="progress-bar" role="progressbar" 
+                                                 style="width: {{ job.progress }}%" 
+                                                 aria-valuenow="{{ job.progress }}" 
+                                                 aria-valuemin="0" aria-valuemax="100">
+                                                {{ job.progress }}%
+                                            </div>
+                                        </div>
+                                        {% else %}
+                                        <small class="text-muted">-</small>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <small>{{ job.created_at|date:"M d, H:i" }}</small>
+                                    </td>
+                                    <td>
+                                        <a href="{% url 'battycoda_app:recording_detail' recording_id=job.recording.id %}" class="btn btn-sm btn-outline-primary">
+                                            <i class="fas fa-eye"></i>
+                                        </a>
+                                        {% if job.status in 'pending,in_progress' %}
+                                        <button class="btn btn-sm btn-outline-danger cancel-job" 
+                                                data-job-type="spectrogram" 
+                                                data-job-id="{{ job.id }}">
+                                            <i class="fas fa-times"></i>
+                                        </button>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- Empty State -->
+    {% if not segmentation_jobs and not detection_jobs and not training_jobs and not clustering_jobs and not spectrogram_jobs %}
+    <div class="text-center py-5">
+        <i class="s7-clock text-muted" style="font-size: 4rem;"></i>
+        <h3 class="text-muted mt-3">No Jobs Found</h3>
+        <p class="text-muted">There are currently no active or recent jobs to display.</p>
+        <div class="mt-4">
+            <a href="{% url 'battycoda_app:batch_segmentation' %}" class="btn btn-primary mr-2">
+                <i class="s7-scissors mr-1"></i> Start Segmentation
+            </a>
+            <a href="{% url 'battycoda_app:automation_home' %}" class="btn btn-info mr-2">
+                <i class="s7-display1 mr-1"></i> Run Classification
+            </a>
+            <a href="{% url 'battycoda_app:clustering_dashboard' %}" class="btn btn-success">
+                <i class="fa fa-cluster mr-1"></i> Start Clustering
+            </a>
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    let autoRefreshInterval = null;
+    let autoRefreshEnabled = true;
+    
+    const refreshButton = document.getElementById('refresh-jobs');
+    const autoRefreshToggle = document.getElementById('auto-refresh-toggle');
+    
+    // Auto-refresh functionality
+    function refreshJobsData() {
+        fetch('{% url "battycoda_app:job_status_api" %}')
+            .then(response => response.json())
+            .then(data => {
+                // Update counters
+                document.getElementById('segmentation-count').textContent = data.segmentation_jobs.length;
+                document.getElementById('detection-count').textContent = data.detection_jobs.length;
+                document.getElementById('training-count').textContent = data.training_jobs.length;
+                document.getElementById('clustering-count').textContent = data.clustering_jobs.length;
+                document.getElementById('spectrogram-count').textContent = data.spectrogram_jobs.length;
+                
+                // Update last refresh time
+                const now = new Date().toLocaleTimeString();
+                console.log('Jobs refreshed at:', now);
+            })
+            .catch(error => {
+                console.error('Error refreshing jobs:', error);
+            });
+    }
+    
+    // Manual refresh
+    refreshButton.addEventListener('click', function() {
+        refreshJobsData();
+        // Reload the page to update the full tables
+        window.location.reload();
+    });
+    
+    // Auto-refresh toggle
+    autoRefreshToggle.addEventListener('click', function() {
+        autoRefreshEnabled = !autoRefreshEnabled;
+        
+        if (autoRefreshEnabled) {
+            autoRefreshToggle.innerHTML = '<i class="fas fa-pause"></i> Auto-refresh: ON';
+            autoRefreshToggle.classList.remove('btn-outline-secondary');
+            autoRefreshToggle.classList.add('btn-outline-success');
+            
+            // Start auto-refresh every 30 seconds
+            autoRefreshInterval = setInterval(refreshJobsData, 30000);
+        } else {
+            autoRefreshToggle.innerHTML = '<i class="fas fa-play"></i> Auto-refresh: OFF';
+            autoRefreshToggle.classList.remove('btn-outline-success');
+            autoRefreshToggle.classList.add('btn-outline-secondary');
+            
+            // Stop auto-refresh
+            if (autoRefreshInterval) {
+                clearInterval(autoRefreshInterval);
+                autoRefreshInterval = null;
+            }
+        }
+    });
+    
+    // Start auto-refresh by default
+    if (autoRefreshEnabled) {
+        autoRefreshInterval = setInterval(refreshJobsData, 30000);
+    }
+    
+    // Job cancellation
+    document.querySelectorAll('.cancel-job').forEach(button => {
+        button.addEventListener('click', function() {
+            const jobType = this.dataset.jobType;
+            const jobId = this.dataset.jobId;
+            
+            if (confirm('Are you sure you want to cancel this job?')) {
+                fetch(`{% url "battycoda_app:cancel_job" job_type="PLACEHOLDER" job_id=0 %}`.replace('PLACEHOLDER', jobType).replace('0', jobId), {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRFToken': '{{ csrf_token }}',
+                        'Content-Type': 'application/json',
+                    },
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        // Reload the page to show updated status
+                        window.location.reload();
+                    } else {
+                        alert('Error cancelling job: ' + data.error);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('Error cancelling job');
+                });
+            }
+        });
+    });
+});
+</script>
+{% endblock %}

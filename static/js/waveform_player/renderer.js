@@ -18,18 +18,41 @@ export class WaveformRenderer {
      */
     draw() {
         const player = this.player;
-        if (!player.waveformData || !player.waveformContainer) return;
+        if (!player.waveformData || !player.waveformContainer) {
+            console.log('WaveformRenderer.draw(): Missing data or container', {
+                hasData: !!player.waveformData,
+                hasContainer: !!player.waveformContainer
+            });
+            return;
+        }
         
         // Calculate visible duration for consistency
         const visibleDuration = player.duration / player.zoomLevel;
         const visibleStartTime = player.zoomOffset * player.duration;
         const visibleEndTime = Math.min(visibleStartTime + visibleDuration, player.duration);
         
-        // Create canvas
-        player.waveformContainer.innerHTML = '';
+        // Remove only waveform canvases, preserve spectrogram canvas
+        const waveformCanvases = player.waveformContainer.querySelectorAll('canvas.waveform-canvas, canvas:not([class])');
+        waveformCanvases.forEach(canvas => canvas.remove());
+        
         const canvas = document.createElement('canvas');
+        canvas.id = `${player.containerId}-waveform-canvas`;
+        canvas.className = 'waveform-canvas';
+        canvas.style.position = 'absolute';
+        canvas.style.top = '0';
+        canvas.style.left = '0';
+        canvas.style.width = '100%';
+        canvas.style.height = '100%';
         canvas.width = player.waveformContainer.clientWidth;
         canvas.height = player.waveformContainer.clientHeight;
+        
+        console.log('WaveformRenderer.draw(): Canvas dimensions', {
+            containerWidth: player.waveformContainer.clientWidth,
+            containerHeight: player.waveformContainer.clientHeight,
+            canvasWidth: canvas.width,
+            canvasHeight: canvas.height
+        });
+        
         player.waveformContainer.appendChild(canvas);
         
         const ctx = canvas.getContext('2d');
@@ -325,7 +348,7 @@ export class WaveformRenderer {
             }
             
             // Update the view
-            player.drawWaveform();
+            player.redrawCurrentView();
             player.drawTimeline();
         };
         
@@ -335,5 +358,26 @@ export class WaveformRenderer {
         
         // Set cursor to indicate it's clickable
         canvas.style.cursor = 'pointer';
+    }
+    
+    /**
+     * Show the waveform view
+     */
+    show() {
+        if (this.player.waveformContainer) {
+            this.player.waveformContainer.style.display = 'block';
+        }
+    }
+    
+    /**
+     * Hide the waveform view
+     */
+    hide() {
+        if (this.player.waveformContainer) {
+            // Remove only waveform canvas elements, but preserve spectrogram canvas
+            const waveformCanvases = this.player.waveformContainer.querySelectorAll('canvas.waveform-canvas, canvas:not([class])');
+            waveformCanvases.forEach(canvas => canvas.remove());
+            this.player.waveformContainer.style.backgroundColor = 'transparent';
+        }
     }
 }
