@@ -6,6 +6,7 @@ from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import get_object_or_404, redirect, render
+from django.utils import timezone
 
 from .models.organization import Species
 from .models.task import Task
@@ -35,6 +36,8 @@ def task_annotation_view(request, task_id):
             task.label = label
             task.is_done = True
             task.status = "done"
+            task.annotated_by = request.user
+            task.annotated_at = timezone.now()
             task.save()
 
             # We don't need to show a success message for every task completion

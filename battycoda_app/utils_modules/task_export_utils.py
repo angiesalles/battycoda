@@ -35,8 +35,10 @@ def generate_tasks_csv(tasks):
         "Species",
         "Project",
         "Created By",
+        "Annotated By",
         "Created At",
         "Updated At",
+        "Annotated At",
     ])
     
     # Write data rows
@@ -55,8 +57,10 @@ def generate_tasks_csv(tasks):
             task.species.name,
             task.project.name,
             task.created_by.username,
+            task.annotated_by.username if task.annotated_by else "",
             task.created_at.strftime("%Y-%m-%d %H:%M:%S"),
             task.updated_at.strftime("%Y-%m-%d %H:%M:%S"),
+            task.annotated_at.strftime("%Y-%m-%d %H:%M:%S") if task.annotated_at else "",
         ])
     
     # Return the CSV content
