@@ -54,14 +54,27 @@
                         <label for="algorithm">Clustering Algorithm <span class="text-danger">*</span></label>
                         <select class="form-control" id="algorithm" name="algorithm" required>
                             <option value="">Select an algorithm...</option>
-                            {% for algo in algorithms %}
-                            <option value="{{ algo.id }}" data-type="{{ algo.algorithm_type }}">
-                                {{ algo.name }} ({{ algo.get_algorithm_type_display }})
-                            </option>
-                            {% endfor %}
+                            <optgroup label="📊 Manual Algorithms (Specify cluster count)">
+                                {% for algo in algorithms %}
+                                {% if algo.algorithm_type == 'kmeans' or algo.algorithm_type == 'gaussian_mixture' or algo.algorithm_type == 'spectral' or algo.algorithm_type == 'dbscan' and 'Auto-Clustering' not in algo.name %}
+                                <option value="{{ algo.id }}" data-type="{{ algo.algorithm_type }}" data-name="{{ algo.name }}">
+                                    {{ algo.name }}
+                                </option>
+                                {% endif %}
+                                {% endfor %}
+                            </optgroup>
+                            <optgroup label="🤖 Automatic Algorithms (Auto-determine clusters)">
+                                {% for algo in algorithms %}
+                                {% if 'Auto-Clustering' in algo.name %}
+                                <option value="{{ algo.id }}" data-type="{{ algo.algorithm_type }}" data-name="{{ algo.name }}">
+                                    {{ algo.name }}
+                                </option>
+                                {% endif %}
+                                {% endfor %}
+                            </optgroup>
                         </select>
                         <small class="form-text text-muted">
-                            Choose the clustering algorithm to use for finding patterns in the audio segments.
+                            Choose between <strong>Manual algorithms</strong> (you specify cluster count) or <strong>Automatic algorithms</strong> (optimal clusters determined automatically).
                         </small>
                     </div>
                     
@@ -69,8 +82,8 @@
                         <label for="n_clusters">Number of Clusters</label>
                         <input type="number" class="form-control" id="n_clusters" name="n_clusters" min="2" value="5">
                         <small class="form-text text-muted">
-                            The target number of clusters to find. Only relevant for algorithms that require a fixed number 
-                            of clusters (K-means, GMM, Spectral).
+                            The target number of clusters to find. Only required for algorithms that need a predefined number 
+                            of clusters (K-means, GMM, Spectral). Automatic algorithms will determine the optimal number.
                         </small>
                     </div>
                     
@@ -105,7 +118,16 @@ $(document).ready(function() {
     // Show/hide number of clusters field based on algorithm type
     $('#algorithm').change(function() {
         const algorithmType = $(this).find(':selected').data('type');
-        if (algorithmType === 'kmeans' || algorithmType === 'gaussian_mixture' || algorithmType === 'spectral') {
+        const algorithmName = $(this).find(':selected').data('name');
+        
+        // Algorithms that require manual cluster count specification
+        const manualAlgorithms = ['kmeans', 'gaussian_mixture', 'spectral'];
+        
+        // Check if it's a manual algorithm OR if it's DBSCAN (but not Auto-DBSCAN)
+        const isManualAlgorithm = manualAlgorithms.includes(algorithmType) || 
+                                  (algorithmType === 'dbscan' && !algorithmName.includes('Auto-Clustering'));
+        
+        if (isManualAlgorithm) {
             $('#n_clusters_group').show();
             $('#n_clusters').attr('required', true);
         } else {

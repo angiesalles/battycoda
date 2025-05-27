@@ -75,7 +75,7 @@
           <li id="navTaskBatchesItem" class="nav-item"><a id="navTaskBatches" class="nav-link" href="{% url 'battycoda_app:task_batch_list' %}"><span class="s7-box1 mr-1"></span> Task Batches</a></li>
           <li id="navProjectsItem" class="nav-item"><a id="navProjects" class="nav-link" href="{% url 'battycoda_app:project_list' %}"><span class="s7-portfolio mr-1"></span> Projects</a></li>
           <li id="navSpeciesItem" class="nav-item"><a id="navSpecies" class="nav-link" href="{% url 'battycoda_app:species_list' %}"><span class="s7-leaf mr-1"></span> Species</a></li>
-          {% if user.profile.is_admin and user.profile.group %}
+          {% if user.profile.is_current_group_admin and user.profile.group %}
           <li id="navUsersItem" class="nav-item"><a id="navUsers" class="nav-link" href="{% url 'battycoda_app:group_users' %}"><span class="s7-users mr-1"></span> Users</a></li>
           {% endif %}
           {% if user.is_staff %}

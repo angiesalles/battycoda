@@ -14,7 +14,7 @@ library(kknn)  # For KNN
 source("model_functions/utils_module.R")
 
 # KNN model runner
-run_knn_model <- function(wav_folder, model_path) {
+run_knn_model <- function(wav_folder, model_path, export_features_path = NULL) {
   # Load the model
   debug_log(sprintf("Loading KNN model from %s", model_path))
   model_env <- load_model(model_path)
@@ -34,6 +34,12 @@ run_knn_model <- function(wav_folder, model_path) {
   debug_log(sprintf("Processing WAV files in folder: %s", wav_folder))
   batch_results <- extract_features_batch(wav_folder)
   ftable <- batch_results$features
+  
+  # Export features if requested
+  if (!is.null(export_features_path)) {
+    debug_log(sprintf("Exporting features to: %s", export_features_path))
+    write.csv(ftable, file = export_features_path, row.names = FALSE)
+  }
   
   # Check if we got features
   if (nrow(ftable) == 0) {
@@ -65,7 +71,7 @@ run_knn_model <- function(wav_folder, model_path) {
 }
 
 # LDA model runner
-run_lda_model <- function(wav_folder, model_path) {
+run_lda_model <- function(wav_folder, model_path, export_features_path = NULL) {
   # Load the model
   debug_log(sprintf("Loading LDA model from %s", model_path))
   model_env <- load_model(model_path)
@@ -99,6 +105,12 @@ run_lda_model <- function(wav_folder, model_path) {
   debug_log(sprintf("Processing WAV files in folder: %s", wav_folder))
   batch_results <- extract_features_batch(wav_folder)
   ftable <- batch_results$features
+  
+  # Export features if requested
+  if (!is.null(export_features_path)) {
+    debug_log(sprintf("Exporting features to: %s", export_features_path))
+    write.csv(ftable, file = export_features_path, row.names = FALSE)
+  }
   
   # Check if we got features
   if (nrow(ftable) == 0) {
@@ -197,7 +209,7 @@ run_lda_model <- function(wav_folder, model_path) {
 }
 
 # Unified model running interface
-run_model <- function(wav_folder, model_path, model_type = NULL) {
+run_model <- function(wav_folder, model_path, model_type = NULL, export_features_path = NULL) {
   # If model_type is not specified, try to autodetect
   if (is.null(model_type)) {
     # Load model to check its contents
@@ -214,9 +226,9 @@ run_model <- function(wav_folder, model_path, model_type = NULL) {
   
   # Call appropriate model runner
   if (model_type == "knn") {
-    return(run_knn_model(wav_folder, model_path))
+    return(run_knn_model(wav_folder, model_path, export_features_path))
   } else if (model_type == "lda") {
-    return(run_lda_model(wav_folder, model_path))
+    return(run_lda_model(wav_folder, model_path, export_features_path))
   } else {
     stop(paste("Unsupported model type:", model_type))
   }

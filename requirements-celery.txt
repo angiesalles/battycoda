@@ -12,6 +12,13 @@ pillow>=10.2.0,<11.0.0
 soundfile>=0.12.1,<1.0.0
 librosa>=0.10.0,<1.0.0  # Required for audio feature extraction and segmentation
 
+# Data processing libraries
+pandas>=2.0.0,<3.0.0  # For CSV handling and data manipulation
+
+# Machine learning libraries (for clustering and classification)
+scikit-learn>=1.3.0,<2.0.0  # Core ML algorithms
+hdbscan>=0.8.33,<1.0.0  # HDBSCAN clustering algorithm
+
 # Database access (for task results)
 psycopg2-binary>=2.9.9,<3.0.0
 dj-database-url>=2.1.0,<3.0.0

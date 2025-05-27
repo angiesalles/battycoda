@@ -29,13 +29,17 @@ function() {
 #* @post /predict/knn
 #* @param wav_folder:character Path to folder containing WAV files
 #* @param model_path:character Full path to the model file
-function(wav_folder, model_path) {
+#* @param export_features_path:character Optional path to export extracted features as CSV
+function(wav_folder, model_path, export_features_path = NULL) {
   debug_log("KNN prediction request received")
   debug_log("Parameters: wav_folder=", wav_folder, "model_path=", model_path)
+  if (!is.null(export_features_path)) {
+    debug_log("Features will be exported to:", export_features_path)
+  }
   
   # Call KNN prediction function
   tryCatch({
-    result <- run_model(wav_folder, model_path, "knn")
+    result <- run_model(wav_folder, model_path, "knn", export_features_path)
     debug_log("KNN prediction successful")
     return(result)
   }, error = function(e) {
@@ -51,13 +55,17 @@ function(wav_folder, model_path) {
 #* @post /predict/lda
 #* @param wav_folder:character Path to folder containing WAV files
 #* @param model_path:character Full path to the model file
-function(wav_folder, model_path) {
+#* @param export_features_path:character Optional path to export extracted features as CSV
+function(wav_folder, model_path, export_features_path = NULL) {
   debug_log("LDA prediction request received")
   debug_log("Parameters: wav_folder=", wav_folder, "model_path=", model_path)
+  if (!is.null(export_features_path)) {
+    debug_log("Features will be exported to:", export_features_path)
+  }
   
   # Call LDA prediction function
   tryCatch({
-    result <- run_model(wav_folder, model_path, "lda")
+    result <- run_model(wav_folder, model_path, "lda", export_features_path)
     debug_log("LDA prediction successful")
     return(result)
   }, error = function(e) {

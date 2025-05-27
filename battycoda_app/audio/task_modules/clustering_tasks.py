@@ -517,3 +517,443 @@ def run_clustering(clustering_run_id):
             pass
         
         raise e
+
+
+# =============================================================================
+# AUTOMATIC CLUSTERING ALGORITHMS (No manual cluster count required)
+# =============================================================================
+
+@shared_task(bind=True, name="battycoda_app.audio.task_modules.clustering_tasks.run_hdbscan_clustering")
+def run_hdbscan_clustering(self, clustering_run_id):
+    """
+    Run HDBSCAN clustering that automatically determines the number of clusters.
+    """
+    try:
+        from sklearn.cluster import HDBSCAN
+    except ImportError:
+        # Fallback if HDBSCAN is not available
+        try:
+            import hdbscan
+            HDBSCAN = hdbscan.HDBSCAN
+        except ImportError:
+            raise ImportError("HDBSCAN is not available. Install with: pip install hdbscan")
+    
+    clustering_run = None
+    try:
+        clustering_run = ClusteringRun.objects.get(id=clustering_run_id)
+        clustering_run.status = "in_progress"
+        clustering_run.progress = 10
+        clustering_run.save()
+        
+        # Get parameters
+        params = clustering_run.runtime_parameters or clustering_run.algorithm.parameters or {}
+        min_cluster_size = params.get('min_cluster_size', 5)
+        min_samples = params.get('min_samples', 3)
+        
+        # Extract features and run clustering
+        features = extract_features_from_segments(
+            clustering_run.segmentation, 
+            clustering_run.feature_extraction_method,
+            clustering_run.feature_parameters
+        )
+        clustering_run.progress = 40
+        clustering_run.save()
+        
+        # Standardize features
+        scaler = StandardScaler()
+        features_scaled = scaler.fit_transform(features)
+        clustering_run.progress = 50
+        clustering_run.save()
+        
+        # Run HDBSCAN clustering
+        clusterer = HDBSCAN(
+            min_cluster_size=min_cluster_size,
+            min_samples=min_samples,
+            cluster_selection_epsilon=params.get('cluster_selection_epsilon', 0.0),
+            allow_single_cluster=params.get('allow_single_cluster', False),
+            cluster_selection_method=params.get('cluster_selection_method', 'eom')
+        )
+        
+        cluster_labels = clusterer.fit_predict(features_scaled)
+        clustering_run.progress = 80
+        clustering_run.save()
+        
+        # Process results
+        unique_labels = set(cluster_labels)
+        unique_labels.discard(-1)  # Remove noise cluster
+        num_clusters = len(unique_labels)
+        
+        # Store clustering results
+        store_clustering_results(clustering_run, cluster_labels, features_scaled)
+        
+        # Calculate silhouette score (only if we have clusters)
+        if num_clusters > 1:
+            # Only calculate for non-noise points
+            non_noise_mask = cluster_labels != -1
+            if np.sum(non_noise_mask) > 1:
+                clustering_run.silhouette_score = silhouette_score(
+                    features_scaled[non_noise_mask], 
+                    cluster_labels[non_noise_mask]
+                )
+        
+        clustering_run.num_clusters_created = num_clusters
+        clustering_run.progress = 100
+        clustering_run.status = "completed"
+        clustering_run.save()
+        
+        return {
+            "status": "success",
+            "message": f"HDBSCAN completed with {num_clusters} clusters",
+            "run_id": clustering_run_id
+        }
+        
+    except Exception as e:
+        if clustering_run:
+            clustering_run.status = "failed"
+            clustering_run.error_message = str(e)
+            clustering_run.save()
+        raise e
+
+
+@shared_task(bind=True, name="battycoda_app.audio.task_modules.clustering_tasks.run_mean_shift_clustering")
+def run_mean_shift_clustering(self, clustering_run_id):
+    """
+    Run Mean Shift clustering that automatically determines the number of clusters.
+    """
+    from sklearn.cluster import MeanShift, estimate_bandwidth
+    
+    clustering_run = None
+    try:
+        clustering_run = ClusteringRun.objects.get(id=clustering_run_id)
+        clustering_run.status = "in_progress"
+        clustering_run.progress = 10
+        clustering_run.save()
+        
+        # Extract features and run clustering
+        features = extract_features_from_segments(
+            clustering_run.segmentation, 
+            clustering_run.feature_extraction_method,
+            clustering_run.feature_parameters
+        )
+        clustering_run.progress = 40
+        clustering_run.save()
+        
+        # Standardize features
+        scaler = StandardScaler()
+        features_scaled = scaler.fit_transform(features)
+        clustering_run.progress = 50
+        clustering_run.save()
+        
+        # Get parameters
+        params = clustering_run.runtime_parameters or clustering_run.algorithm.parameters or {}
+        bandwidth = params.get('bandwidth')
+        
+        # Estimate bandwidth if not provided
+        if bandwidth is None:
+            bandwidth = estimate_bandwidth(features_scaled, quantile=0.3, n_samples=min(500, len(features_scaled)))
+        
+        # Run Mean Shift clustering
+        clusterer = MeanShift(
+            bandwidth=bandwidth,
+            bin_seeding=params.get('bin_seeding', True),
+            min_bin_freq=params.get('min_bin_freq', 1),
+            cluster_all=params.get('cluster_all', True)
+        )
+        
+        cluster_labels = clusterer.fit_predict(features_scaled)
+        clustering_run.progress = 80
+        clustering_run.save()
+        
+        # Process results
+        num_clusters = len(set(cluster_labels))
+        
+        # Store clustering results
+        store_clustering_results(clustering_run, cluster_labels, features_scaled)
+        
+        # Calculate silhouette score
+        if num_clusters > 1:
+            clustering_run.silhouette_score = silhouette_score(features_scaled, cluster_labels)
+        
+        clustering_run.num_clusters_created = num_clusters
+        clustering_run.progress = 100
+        clustering_run.status = "completed"
+        clustering_run.save()
+        
+        return {
+            "status": "success",
+            "message": f"Mean Shift completed with {num_clusters} clusters",
+            "run_id": clustering_run_id
+        }
+        
+    except Exception as e:
+        if clustering_run:
+            clustering_run.status = "failed"
+            clustering_run.error_message = str(e)
+            clustering_run.save()
+        raise e
+
+
+@shared_task(bind=True, name="battycoda_app.audio.task_modules.clustering_tasks.run_optics_clustering")
+def run_optics_clustering(self, clustering_run_id):
+    """
+    Run OPTICS clustering that automatically determines the number of clusters.
+    """
+    from sklearn.cluster import OPTICS
+    
+    clustering_run = None
+    try:
+        clustering_run = ClusteringRun.objects.get(id=clustering_run_id)
+        clustering_run.status = "in_progress"
+        clustering_run.progress = 10
+        clustering_run.save()
+        
+        # Extract features and run clustering
+        features = extract_features_from_segments(
+            clustering_run.segmentation, 
+            clustering_run.feature_extraction_method,
+            clustering_run.feature_parameters
+        )
+        clustering_run.progress = 40
+        clustering_run.save()
+        
+        # Standardize features
+        scaler = StandardScaler()
+        features_scaled = scaler.fit_transform(features)
+        clustering_run.progress = 50
+        clustering_run.save()
+        
+        # Get parameters
+        params = clustering_run.runtime_parameters or clustering_run.algorithm.parameters or {}
+        
+        # Get max_eps parameter and handle string 'infinity'
+        max_eps = params.get('max_eps', float('inf'))
+        if max_eps == 'infinity':
+            max_eps = float('inf')
+        
+        # Run OPTICS clustering
+        clusterer = OPTICS(
+            min_samples=params.get('min_samples', 5),
+            max_eps=max_eps,
+            metric=params.get('metric', 'minkowski'),
+            p=params.get('p', 2),
+            cluster_method=params.get('cluster_method', 'xi'),
+            xi=params.get('xi', 0.05)
+        )
+        
+        cluster_labels = clusterer.fit_predict(features_scaled)
+        clustering_run.progress = 80
+        clustering_run.save()
+        
+        # Process results
+        unique_labels = set(cluster_labels)
+        unique_labels.discard(-1)  # Remove noise cluster
+        num_clusters = len(unique_labels)
+        
+        # Store clustering results
+        store_clustering_results(clustering_run, cluster_labels, features_scaled)
+        
+        # Calculate silhouette score (only if we have clusters)
+        if num_clusters > 1:
+            non_noise_mask = cluster_labels != -1
+            if np.sum(non_noise_mask) > 1:
+                clustering_run.silhouette_score = silhouette_score(
+                    features_scaled[non_noise_mask], 
+                    cluster_labels[non_noise_mask]
+                )
+        
+        clustering_run.num_clusters_created = num_clusters
+        clustering_run.progress = 100
+        clustering_run.status = "completed"
+        clustering_run.save()
+        
+        return {
+            "status": "success",
+            "message": f"OPTICS completed with {num_clusters} clusters",
+            "run_id": clustering_run_id
+        }
+        
+    except Exception as e:
+        if clustering_run:
+            clustering_run.status = "failed"
+            clustering_run.error_message = str(e)
+            clustering_run.save()
+        raise e
+
+
+@shared_task(bind=True, name="battycoda_app.audio.task_modules.clustering_tasks.run_affinity_propagation_clustering")
+def run_affinity_propagation_clustering(self, clustering_run_id):
+    """
+    Run Affinity Propagation clustering that automatically determines the number of clusters.
+    """
+    from sklearn.cluster import AffinityPropagation
+    
+    clustering_run = None
+    try:
+        clustering_run = ClusteringRun.objects.get(id=clustering_run_id)
+        clustering_run.status = "in_progress"
+        clustering_run.progress = 10
+        clustering_run.save()
+        
+        # Extract features and run clustering
+        features = extract_features_from_segments(
+            clustering_run.segmentation, 
+            clustering_run.feature_extraction_method,
+            clustering_run.feature_parameters
+        )
+        clustering_run.progress = 40
+        clustering_run.save()
+        
+        # Standardize features
+        scaler = StandardScaler()
+        features_scaled = scaler.fit_transform(features)
+        clustering_run.progress = 50
+        clustering_run.save()
+        
+        # Get parameters
+        params = clustering_run.runtime_parameters or clustering_run.algorithm.parameters or {}
+        preference = params.get('preference')
+        
+        # Set preference to median similarity if not provided
+        if preference is None:
+            from sklearn.metrics import euclidean_distances
+            distances = euclidean_distances(features_scaled)
+            preference = np.median(-distances)
+        
+        # Run Affinity Propagation clustering
+        clusterer = AffinityPropagation(
+            damping=params.get('damping', 0.5),
+            max_iter=params.get('max_iter', 200),
+            convergence_iter=params.get('convergence_iter', 15),
+            preference=preference,
+            affinity=params.get('affinity', 'euclidean'),
+            random_state=params.get('random_state', 42)
+        )
+        
+        cluster_labels = clusterer.fit_predict(features_scaled)
+        clustering_run.progress = 80
+        clustering_run.save()
+        
+        # Process results
+        num_clusters = len(set(cluster_labels))
+        
+        # Store clustering results
+        store_clustering_results(clustering_run, cluster_labels, features_scaled)
+        
+        # Calculate silhouette score
+        if num_clusters > 1:
+            clustering_run.silhouette_score = silhouette_score(features_scaled, cluster_labels)
+        
+        clustering_run.num_clusters_created = num_clusters
+        clustering_run.progress = 100
+        clustering_run.status = "completed"
+        clustering_run.save()
+        
+        return {
+            "status": "success",
+            "message": f"Affinity Propagation completed with {num_clusters} clusters",
+            "run_id": clustering_run_id
+        }
+        
+    except Exception as e:
+        if clustering_run:
+            clustering_run.status = "failed"
+            clustering_run.error_message = str(e)
+            clustering_run.save()
+        raise e
+
+
+@shared_task(bind=True, name="battycoda_app.audio.task_modules.clustering_tasks.run_auto_dbscan_clustering")
+def run_auto_dbscan_clustering(self, clustering_run_id):
+    """
+    Run DBSCAN with automatic eps parameter estimation using k-distance graph.
+    """
+    clustering_run = None
+    try:
+        clustering_run = ClusteringRun.objects.get(id=clustering_run_id)
+        clustering_run.status = "in_progress"
+        clustering_run.progress = 10
+        clustering_run.save()
+        
+        # Extract features and run clustering
+        features = extract_features_from_segments(
+            clustering_run.segmentation, 
+            clustering_run.feature_extraction_method,
+            clustering_run.feature_parameters
+        )
+        clustering_run.progress = 30
+        clustering_run.save()
+        
+        # Standardize features
+        scaler = StandardScaler()
+        features_scaled = scaler.fit_transform(features)
+        clustering_run.progress = 40
+        clustering_run.save()
+        
+        # Get parameters
+        params = clustering_run.runtime_parameters or clustering_run.algorithm.parameters or {}
+        min_samples = params.get('min_samples', 5)
+        eps = params.get('eps', 'auto')
+        
+        # Estimate eps automatically if needed
+        if eps == 'auto':
+            from sklearn.neighbors import NearestNeighbors
+            
+            # Use k-distance graph to estimate eps
+            k = min_samples
+            neighbors = NearestNeighbors(n_neighbors=k)
+            neighbors_fit = neighbors.fit(features_scaled)
+            distances, indices = neighbors_fit.kneighbors(features_scaled)
+            
+            # Sort distances and use percentile to find eps
+            k_distances = np.sort(distances[:, k-1], axis=0)
+            percentile = params.get('auto_eps_percentile', 90)
+            eps = np.percentile(k_distances, percentile)
+        
+        clustering_run.progress = 60
+        clustering_run.save()
+        
+        # Run DBSCAN clustering
+        clusterer = DBSCAN(
+            eps=eps,
+            min_samples=min_samples,
+            metric=params.get('metric', 'euclidean')
+        )
+        
+        cluster_labels = clusterer.fit_predict(features_scaled)
+        clustering_run.progress = 80
+        clustering_run.save()
+        
+        # Process results
+        unique_labels = set(cluster_labels)
+        unique_labels.discard(-1)  # Remove noise cluster
+        num_clusters = len(unique_labels)
+        
+        # Store clustering results
+        store_clustering_results(clustering_run, cluster_labels, features_scaled)
+        
+        # Calculate silhouette score (only if we have clusters)
+        if num_clusters > 1:
+            non_noise_mask = cluster_labels != -1
+            if np.sum(non_noise_mask) > 1:
+                clustering_run.silhouette_score = silhouette_score(
+                    features_scaled[non_noise_mask], 
+                    cluster_labels[non_noise_mask]
+                )
+        
+        clustering_run.num_clusters_created = num_clusters
+        clustering_run.progress = 100
+        clustering_run.status = "completed"
+        clustering_run.save()
+        
+        return {
+            "status": "success",
+            "message": f"Auto-DBSCAN completed with {num_clusters} clusters (eps={eps:.4f})",
+            "run_id": clustering_run_id
+        }
+        
+    except Exception as e:
+        if clustering_run:
+            clustering_run.status = "failed"
+            clustering_run.error_message = str(e)
+            clustering_run.save()
+        raise e

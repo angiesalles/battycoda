@@ -90,8 +90,9 @@ def run_call_detection(self, detection_run_id):
             total_segments = segments.count()
             segment_list = list(segments)  # Convert queryset to list for easier batching
             
-            # Store all classification results
+            # Store all classification results and features files
             all_classification_results = []
+            all_features_files = []
             
             # Get model path if we have a custom model
             model_path = None
@@ -156,9 +157,16 @@ def run_call_detection(self, detection_run_id):
                     # Use the path relative to /app in the docker container for R server
                     # since both containers mount the project at /app
                     r_server_path = os.path.join('/app', 'tmp', batch_dir_name)
+                    
+                    # Create path for features export
+                    features_filename = f"batch_{batch_index}_{detection_run.id}_features.csv"
+                    features_path_local = os.path.join(shared_tmp_dir, features_filename)
+                    features_path_r_server = os.path.join('/app', 'tmp', features_filename)
+                    
                     params = {
                         "wav_folder": r_server_path,
-                        "model_path": model_path
+                        "model_path": model_path,
+                        "export_features_path": features_path_r_server
                     }
                     
                     # Call the classifier service for this batch
@@ -218,6 +226,13 @@ def run_call_detection(self, detection_run_id):
                                 
                                 all_classification_results.append((segment_id, processed_data))
                     
+                    # Check if features file was created and store its path
+                    if os.path.exists(features_path_local):
+                        all_features_files.append(features_path_local)
+                        print(f"Features file created for batch {batch_index+1}: {features_path_local}")
+                    else:
+                        print(f"Warning: Features file not created for batch {batch_index+1}")
+                    
                     # Update progress after each batch - reserve 10% for database operations at the end
                     batch_progress = 90 * ((batch_index + 1) / num_batches)
                     update_detection_run_status(detection_run, status="in_progress", progress=batch_progress)
@@ -232,6 +247,46 @@ def run_call_detection(self, detection_run_id):
                         shutil.rmtree(batch_dir, ignore_errors=True)
                     except Exception as cleanup_error:
                         print(f"Warning: Could not clean up temporary directory {batch_dir}: {str(cleanup_error)}")
+            
+            # Combine all features files into a single export file
+            combined_features_path = None
+            if all_features_files:
+                try:
+                    import pandas as pd
+                    
+                    # Create combined features file path
+                    features_export_filename = f"detection_run_{detection_run.id}_features.csv"
+                    combined_features_path = os.path.join(shared_tmp_dir, features_export_filename)
+                    
+                    # Read and combine all features files
+                    all_features_data = []
+                    for features_file in all_features_files:
+                        try:
+                            df = pd.read_csv(features_file)
+                            all_features_data.append(df)
+                        except Exception as read_error:
+                            print(f"Warning: Could not read features file {features_file}: {str(read_error)}")
+                    
+                    if all_features_data:
+                        # Combine all features dataframes
+                        combined_features = pd.concat(all_features_data, ignore_index=True)
+                        
+                        # Save combined features to export file
+                        combined_features.to_csv(combined_features_path, index=False)
+                        print(f"Combined features exported to: {combined_features_path}")
+                        print(f"Total features exported: {len(combined_features)} rows, {len(combined_features.columns)} columns")
+                    
+                    # Clean up individual batch features files
+                    for features_file in all_features_files:
+                        try:
+                            os.remove(features_file)
+                        except Exception as cleanup_error:
+                            print(f"Warning: Could not clean up features file {features_file}: {str(cleanup_error)}")
+                            
+                except ImportError:
+                    print("Warning: pandas not available - cannot combine features files")
+                except Exception as features_error:
+                    print(f"Warning: Error combining features files: {str(features_error)}")
             
             # Now process all collected results and save to database
             print(f"Processing {len(all_classification_results)} total classification results...")
@@ -294,11 +349,17 @@ def run_call_detection(self, detection_run_id):
             # Mark as completed
             update_detection_run_status(detection_run, "completed", progress=100)
             
-            return {
+            result = {
                 "status": "success",
                 "message": f"Successfully processed {total_segments} segments using classifier: {classifier.name}",
                 "detection_run_id": detection_run_id,
             }
+            
+            # Include features file path if available
+            if combined_features_path and os.path.exists(combined_features_path):
+                result["features_file"] = combined_features_path
+                
+            return result
             
         except Exception as error:
             # Handle any error during processing

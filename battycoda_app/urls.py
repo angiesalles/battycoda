@@ -40,6 +40,7 @@ from . import (
     views_audio_streaming,
     views_auth,
     views_batch_upload,
+    views_chess,
     views_clustering,
     views_dashboard,
     views_debug,
@@ -310,4 +311,8 @@ urlpatterns = [
     path("jobs/api/status/", views_jobs.job_status_api_view, name="job_status_api"),
     path("jobs/cancel/<str:job_type>/<int:job_id>/", views_jobs.cancel_job_view, name="cancel_job"),
     path("jobs/spectrogram/create/<int:recording_id>/", views_jobs.create_spectrogram_job_view, name="create_spectrogram_job"),
+    
+    # Chess proxy routes (authenticated users only)
+    path("chess/", views_chess.chess_home_view, name="chess_home"),
+    path("chess/<path:path>", views_chess.chess_proxy_view, name="chess_proxy"),
 ]
