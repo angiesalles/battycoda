@@ -172,6 +172,7 @@ def run_call_detection(self, detection_run_id):
                     # Call the classifier service for this batch
                     print(f"Calling classifier service for batch {batch_index+1} at {endpoint}...")
                     print(f"Parameters: {params}")
+                    print(f"Features will be exported to: {features_path_r_server}")
                     
                     # IMPORTANT: Use data parameter instead of params to send as form data
                     response = requests.post(endpoint, data=params, timeout=60)  # 60 sec timeout per batch
@@ -273,8 +274,9 @@ def run_call_detection(self, detection_run_id):
                         
                         # Save combined features to export file
                         combined_features.to_csv(combined_features_path, index=False)
-                        print(f"Combined features exported to: {combined_features_path}")
-                        print(f"Total features exported: {len(combined_features)} rows, {len(combined_features.columns)} columns")
+                        print(f"🎯 FEATURES EXPORTED: {combined_features_path}")
+                        print(f"📊 Feature export summary: {len(combined_features)} segments, {len(combined_features.columns)} acoustic features")
+                        print(f"💾 Features file size: {round(os.path.getsize(combined_features_path) / 1024, 2)} KB")
                     
                     # Clean up individual batch features files
                     for features_file in all_features_files:
@@ -346,6 +348,11 @@ def run_call_detection(self, detection_run_id):
                         save_progress = 90 + 10 * (i / len(all_classification_results))
                         update_detection_run_status(detection_run, status="in_progress", progress=save_progress)
             
+            # Save features file path to database if available
+            if combined_features_path and os.path.exists(combined_features_path):
+                detection_run.features_file = combined_features_path
+                detection_run.save()
+            
             # Mark as completed
             update_detection_run_status(detection_run, "completed", progress=100)
             
@@ -358,6 +365,7 @@ def run_call_detection(self, detection_run_id):
             # Include features file path if available
             if combined_features_path and os.path.exists(combined_features_path):
                 result["features_file"] = combined_features_path
+                result["message"] += f" | Features exported to CSV file"
                 
             return result
             

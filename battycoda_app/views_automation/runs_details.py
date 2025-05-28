@@ -3,9 +3,11 @@
 Provides views for displaying detailed information about detection runs.
 """
 
+import os
+
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
-from django.http import JsonResponse
+from django.http import FileResponse, Http404, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 
 from battycoda_app.models.detection import CallProbability, DetectionResult, DetectionRun
@@ -74,3 +76,43 @@ def detection_run_status_view(request, run_id):
             "error": run.error_message,
         }
     )
+
+@login_required
+def download_features_file_view(request, run_id):
+    """Download the features CSV file for a detection run."""
+    # Get the detection run by ID
+    run = get_object_or_404(DetectionRun, id=run_id)
+
+    # Check if the user has permission to view this run
+    profile = request.user.profile
+    if run.created_by != request.user and (not profile.group or run.group != profile.group):
+        messages.error(request, "You don't have permission to access this classification run.")
+        return redirect("battycoda_app:automation_home")
+
+    # Check if features file exists
+    if not run.features_file:
+        messages.error(request, "No features file available for this run.")
+        return redirect("battycoda_app:detection_run_detail", run_id=run_id)
+    
+    # Check if file exists on disk
+    if not os.path.exists(run.features_file):
+        messages.error(request, "Features file not found on disk.")
+        return redirect("battycoda_app:detection_run_detail", run_id=run_id)
+    
+    # Generate a user-friendly filename
+    filename = f"features_{run.name}_{run.id}.csv"
+    # Remove any problematic characters from filename
+    filename = "".join(c for c in filename if c.isalnum() or c in "._- ")
+    
+    # Return the file as a download
+    try:
+        response = FileResponse(
+            open(run.features_file, 'rb'),
+            as_attachment=True,
+            filename=filename,
+            content_type='text/csv'
+        )
+        return response
+    except Exception as e:
+        messages.error(request, f"Error downloading features file: {str(e)}")
+        return redirect("battycoda_app:detection_run_detail", run_id=run_id)

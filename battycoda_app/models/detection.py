@@ -149,6 +149,12 @@ class DetectionRun(models.Model):
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default="pending")
     progress = models.FloatField(default=0.0, help_text="Progress percentage from 0-100")
     error_message = models.TextField(blank=True, null=True)
+    features_file = models.CharField(
+        max_length=512, 
+        blank=True, 
+        null=True, 
+        help_text="Path to the exported features CSV file"
+    )
 
     class Meta:
         ordering = ["-created_at"]

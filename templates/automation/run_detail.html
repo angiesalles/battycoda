@@ -130,6 +130,27 @@
                                 </div>
                             </div>
                             
+                            {% if run.status == 'completed' %}
+                                {% if run.features_file %}
+                                <div class="mb-3">
+                                    <h5>Export Files</h5>
+                                    <a href="{% url 'battycoda_app:download_features_file' run_id=run.id %}" class="btn btn-outline-primary">
+                                        <i class="fas fa-download me-1"></i> Download Features CSV
+                                    </a>
+                                    <small class="text-muted d-block mt-1">Acoustic features extracted during classification</small>
+                                </div>
+                                {% else %}
+                                <div class="mb-3">
+                                    <h5>Export Files</h5>
+                                    <div class="text-muted">
+                                        <i class="fas fa-info-circle me-1"></i>
+                                        Features export not available for this run.
+                                        <small class="d-block">Features are automatically exported for new classification runs.</small>
+                                    </div>
+                                </div>
+                                {% endif %}
+                            {% endif %}
+                            
                             {% if run.error_message %}
                             <div class="alert alert-danger">
                                 <h5>Error</h5>

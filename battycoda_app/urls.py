@@ -12,7 +12,7 @@ from .views_segmentation.segmentation_settings import activate_segmentation_view
 
 # Direct imports from views_automation
 from .views_automation.results_application import apply_detection_results_view
-from .views_automation.runs_details import detection_run_detail_view, detection_run_status_view
+from .views_automation.runs_details import detection_run_detail_view, detection_run_status_view, download_features_file_view
 from .views_automation.runs_management import (
     automation_home_view, create_detection_run_view, delete_detection_run_view,
     classify_unclassified_segments_view, create_classification_for_species_view
@@ -116,6 +116,11 @@ urlpatterns = [
     ),
     path(
         "automation/runs/<int:run_id>/status/", detection_run_status_view, name="detection_run_status"
+    ),
+    path(
+        "automation/runs/<int:run_id>/download-features/", 
+        download_features_file_view, 
+        name="download_features_file"
     ),
     path(
         "automation/runs/<int:run_id>/apply/",
