@@ -84,7 +84,7 @@
                                     <div class="dropdown-divider"></div>
                                     <h6 class="dropdown-header">Choose Batch</h6>
                                     {% for batch in available_batches %}
-                                    <a href="{% url 'battycoda_app:get_next_task_from_batch' batch.id %}" class="dropdown-item">
+                                    <a href="{% url 'battycoda_app:annotate_batch' batch.id %}" class="dropdown-item">
                                         <span class="s7-box1 mr-2"></span>{{ batch.name }}
                                         <small class="text-muted d-block">
                                             {{ batch.species.name }} • 

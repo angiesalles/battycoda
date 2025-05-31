@@ -25,7 +25,7 @@ from .models.clustering import (
     ClusterCallMapping
 )
 from .models.organization import Species
-from .audio.task_modules.clustering_tasks import run_clustering
+from .audio.task_modules.clustering.tasks import run_clustering
 
 
 @login_required
@@ -140,8 +140,20 @@ def create_clustering_run(request):
             progress=0.0
         )
         
-        # Launch the clustering task
-        task = run_clustering.delay(clustering_run.id)
+        # Launch the appropriate clustering task based on algorithm
+        from celery import current_app
+        
+        # Get the celery task name for this algorithm
+        task_name = algorithm.celery_task
+        
+        # Get the task function and launch it
+        task_func = current_app.tasks.get(task_name)
+        if task_func:
+            task = task_func.delay(clustering_run.id)
+        else:
+            # Fallback to the default clustering task for older algorithms
+            task = run_clustering.delay(clustering_run.id)
+            
         clustering_run.task_id = task.id
         clustering_run.save()
         

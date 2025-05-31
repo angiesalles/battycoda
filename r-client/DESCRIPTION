@@ -1,0 +1,15 @@
+Package: openapi
+Title: R Package Client for BattyCoda API
+Version: 1.0.0
+Author: person("OpenAPI Generator community", email = "team@openapitools.org", role = c("aut", "cre"))
+Maintainer: OpenAPI Generator community <team@openapitools.org>
+Description: API for BattyCoda - Animal Call Analysis Platform
+URL: https://github.com/GIT_USER_ID/GIT_REPO_ID
+BugReports: https://github.com/GIT_USER_ID/GIT_REPO_ID/issues
+Depends: R (>= 3.3)
+Encoding: UTF-8
+License: Unlicense
+LazyData: true
+Suggests: testthat
+Imports: jsonlite, httr, R6, base64enc, stringr
+RoxygenNote: 7.2.1
