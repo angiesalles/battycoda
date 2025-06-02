@@ -90,9 +90,10 @@ def run_call_detection(self, detection_run_id):
             total_segments = segments.count()
             segment_list = list(segments)  # Convert queryset to list for easier batching
             
-            # Store all classification results and features files
+            # Store all classification results, features files, and segment metadata
             all_classification_results = []
             all_features_files = []
+            all_segment_metadata = {}  # Global mapping of segment filename to metadata
             
             # Get model path if we have a custom model
             model_path = None
@@ -133,7 +134,7 @@ def run_call_detection(self, detection_run_id):
                 os.makedirs(batch_dir, exist_ok=True)
                 
                 try:
-                    # Mapping of filename to segment ID for this batch
+                    # Mapping of filename to segment metadata for this batch
                     segment_map = {}
                     
                     # Extract audio segments for this batch
@@ -150,8 +151,25 @@ def run_call_detection(self, detection_run_id):
                         # Save the segment as a WAV file
                         sf.write(segment_path, segment_data, samplerate=sample_rate)
                         
-                        # Store mapping of filename to segment ID
-                        segment_map[segment_filename] = segment.id
+                        # Get the corresponding task ID for this segment
+                        task_id = None
+                        try:
+                            if hasattr(segment, 'task') and segment.task:
+                                task_id = segment.task.id
+                        except:
+                            pass  # Some segments might not have associated tasks
+                        
+                        # Store enhanced mapping with segment metadata
+                        segment_metadata = {
+                            'segment_id': segment.id,
+                            'task_id': task_id,
+                            'start_time': segment.onset,
+                            'end_time': segment.offset,
+                            'recording_name': recording.name,
+                            'wav_filename': os.path.basename(recording.wav_file.name) if recording.wav_file else 'unknown.wav'
+                        }
+                        segment_map[segment_filename] = segment_metadata
+                        all_segment_metadata[segment_filename] = segment_metadata  # Store globally
                     
                     # Prepare parameters for the batch classification
                     # Use the path relative to /app in the docker container for R server
@@ -209,8 +227,9 @@ def run_call_detection(self, detection_run_id):
                         
                         # Store the results from this batch
                         for filename, result_data in file_results.items():
-                            segment_id = segment_map.get(filename)
-                            if segment_id:
+                            segment_metadata = segment_map.get(filename)
+                            if segment_metadata:
+                                segment_id = segment_metadata['segment_id']
                                 # Unwrap list values for consistency
                                 processed_data = {}
                                 for key, value in result_data.items():
@@ -272,10 +291,61 @@ def run_call_detection(self, detection_run_id):
                         # Combine all features dataframes
                         combined_features = pd.concat(all_features_data, ignore_index=True)
                         
-                        # Save combined features to export file
-                        combined_features.to_csv(combined_features_path, index=False)
-                        print(f"🎯 FEATURES EXPORTED: {combined_features_path}")
-                        print(f"📊 Feature export summary: {len(combined_features)} segments, {len(combined_features.columns)} acoustic features")
+                        # Enhance features with additional metadata columns requested by Jessica
+                        print("🔧 Enhancing features export with additional metadata columns...")
+                        
+                        # Add new columns for task ID, start/end times, and recording info
+                        enhanced_columns = []
+                        for index, row in combined_features.iterrows():
+                            sound_file = row['sound.files']
+                            if sound_file in all_segment_metadata:
+                                metadata = all_segment_metadata[sound_file]
+                                enhanced_columns.append({
+                                    'task_id': metadata['task_id'],
+                                    'call_start_time': metadata['start_time'],
+                                    'call_end_time': metadata['end_time'],
+                                    'call_duration': metadata['end_time'] - metadata['start_time'],
+                                    'recording_name': metadata['recording_name'],
+                                    'original_wav_file': metadata['wav_filename']
+                                })
+                            else:
+                                # Fallback for missing metadata
+                                enhanced_columns.append({
+                                    'task_id': None,
+                                    'call_start_time': None,
+                                    'call_end_time': None,
+                                    'call_duration': None,
+                                    'recording_name': 'Unknown',
+                                    'original_wav_file': 'Unknown'
+                                })
+                        
+                        # Create enhanced dataframe with new columns
+                        enhanced_df = pd.DataFrame(enhanced_columns)
+                        
+                        # Reorder columns: put new metadata columns after sound.files and selec, before acoustic features
+                        # Get the original column order
+                        original_cols = combined_features.columns.tolist()
+                        
+                        # Find where to insert new columns (after sound.files and selec)
+                        insert_index = 2  # After sound.files (0) and selec (1)
+                        if 'selec' in original_cols:
+                            insert_index = original_cols.index('selec') + 1
+                        elif 'sound.files' in original_cols:
+                            insert_index = original_cols.index('sound.files') + 1
+                        
+                        # Create final column order
+                        new_cols = ['task_id', 'call_start_time', 'call_end_time', 'call_duration', 'recording_name', 'original_wav_file']
+                        final_cols = original_cols[:insert_index] + new_cols + original_cols[insert_index:]
+                        
+                        # Combine original features with enhanced metadata
+                        final_features = pd.concat([combined_features, enhanced_df], axis=1)
+                        final_features = final_features[final_cols]  # Reorder columns
+                        
+                        # Save enhanced features to export file
+                        final_features.to_csv(combined_features_path, index=False)
+                        print(f"🎯 ENHANCED FEATURES EXPORTED: {combined_features_path}")
+                        print(f"📊 Enhanced feature export summary: {len(final_features)} segments, {len(final_features.columns)} total columns")
+                        print(f"✨ New metadata columns: task_id, call_start_time, call_end_time, call_duration, recording_name, original_wav_file")
                         print(f"💾 Features file size: {round(os.path.getsize(combined_features_path) / 1024, 2)} KB")
                     
                     # Clean up individual batch features files

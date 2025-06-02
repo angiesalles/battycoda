@@ -1,0 +1,57 @@
+# Unified requirements for BattyCoda
+# Core Django dependencies
+django>=4.2.0,<6.0.0
+email_validator>=2.1.0,<3.0.0
+python-dotenv>=1.0.0,<2.0.0
+psycopg2-binary>=2.9.9,<3.0.0
+dj-database-url>=2.1.0,<3.0.0
+requests>=2.31.0,<3.0.0
+pyjwt>=2.8.0,<3.0.0
+cryptography>=42.0.0,<43.0.0
+markupsafe>=2.1.1,<3.0.0
+
+# Django extensions
+django-hijack>=3.4.0,<4.0.0  # For user impersonation
+djangorestframework>=3.14.0,<4.0.0  # Django REST Framework
+drf-spectacular>=0.27.0,<1.0.0  # API schema generation
+
+# Production web server
+gunicorn>=23.0.0,<24.0.0
+whitenoise>=6.6.0,<7.0.0  # Serving static files
+
+# AWS integration
+boto3>=1.34.0,<2.0.0  # AWS SDK for Python
+django-ses>=3.5.0,<4.0.0  # Django AWS SES email backend
+
+# Celery and task queue
+celery>=5.3.0,<6.0.0
+redis>=5.0.0,<6.0.0
+flower>=2.0.0,<3.0.0  # Celery monitoring
+
+# Audio processing libraries
+scipy>=1.0.0,<2.0.0
+numpy>=1.20.0,<3.0.0
+matplotlib>=3.5.0,<4.0.0
+pillow>=10.2.0,<11.0.0
+soundfile>=0.12.1,<1.0.0
+librosa>=0.10.0,<1.0.0  # Audio feature extraction
+
+# Data processing
+pandas>=2.0.0,<3.0.0  # CSV handling and data manipulation
+
+# Machine learning
+scikit-learn>=1.3.0,<2.0.0  # Core ML algorithms
+hdbscan>=0.8.33,<1.0.0  # HDBSCAN clustering algorithm
+
+# UI assets
+fontawesomefree>=6.4.0,<7.0.0  # Font Awesome Free
+
+# Development and debugging
+pydevd-pycharm>=233.13135.95  # PyCharm debugging
+
+# Linting and code quality tools
+flake8>=6.1.0,<7.0.0
+flake8-django>=1.4.0,<2.0.0
+flake8-docstrings>=1.7.0,<2.0.0
+black>=23.12.0,<24.0.0
+isort>=5.13.0,<6.0.0
