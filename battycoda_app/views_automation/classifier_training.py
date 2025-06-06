@@ -21,7 +21,7 @@ def classifier_list_view(request):
 
         # Get all training jobs for user's groups
         if profile.group:
-            if profile.is_admin:
+            if profile.is_current_group_admin:
                 training_jobs = ClassifierTrainingJob.objects.filter(group=profile.group).order_by("-created_at")
                 classifiers = Classifier.objects.filter(
                     models.Q(group=profile.group) | models.Q(group__isnull=True)
@@ -144,7 +144,7 @@ def create_classifier_training_job_view(request, batch_id=None):
     
     # Filter task batches by group if the user is in a group
     if profile.group:
-        if profile.is_admin:
+        if profile.is_current_group_admin:
             # Admin sees all task batches in their group
             task_batches = TaskBatch.objects.filter(group=profile.group).order_by("-created_at")
         else:

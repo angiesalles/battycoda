@@ -1,0 +1,32 @@
+// Handle view toggle between waveform and spectrogram
+function setupViewToggle() {
+    const waveformRadio = document.getElementById('{{ container_id }}-waveform-radio');
+    const spectrogramRadio = document.getElementById('{{ container_id }}-spectrogram-radio');
+    const viewLabel = document.getElementById('{{ container_id }}-view-label');
+    const playerInstance = window.waveformPlayers["{{ container_id }}"];
+    
+    // Check if player instance is available
+    if (!playerInstance || !playerInstance.setViewMode) {
+        // Retry after a short delay
+        setTimeout(setupViewToggle, 100);
+        return;
+    }
+    
+    function toggleView() {
+        if (spectrogramRadio.checked) {
+            // Switch to spectrogram view
+            playerInstance.setViewMode('spectrogram');
+            viewLabel.textContent = 'Spectrogram';
+        } else {
+            // Switch to waveform view
+            playerInstance.setViewMode('waveform');
+            viewLabel.textContent = 'Waveform';
+        }
+    }
+    
+    waveformRadio.addEventListener('change', toggleView);
+    spectrogramRadio.addEventListener('change', toggleView);
+}
+
+// Setup view toggle with retry mechanism
+setupViewToggle();

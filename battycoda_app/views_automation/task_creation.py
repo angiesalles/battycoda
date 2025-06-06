@@ -148,7 +148,7 @@ def get_pending_runs_for_species(species, user_profile):
     )
     
     # Filter by user permissions
-    if user_profile.group and user_profile.is_admin:
+    if user_profile.group and user_profile.is_current_group_admin:
         # Admin sees all runs in the group
         base_query = base_query.filter(segmentation__recording__group=user_profile.group)
     else:
@@ -165,7 +165,7 @@ def create_task_batches_for_species_view(request):
     profile = request.user.profile
     
     # Get all species with completed detection runs
-    if profile.group and profile.is_admin:
+    if profile.group and profile.is_current_group_admin:
         # Admin sees all species in their group
         species_list = Species.objects.filter(
             recordings__segmentations__detection_runs__status="completed",
@@ -219,7 +219,7 @@ def create_tasks_for_species_view(request, species_id):
     profile = request.user.profile
     
     # Check permissions
-    if profile.group and profile.is_admin:
+    if profile.group and profile.is_current_group_admin:
         if not DetectionRun.objects.filter(
             segmentation__recording__species=species, 
             segmentation__recording__group=profile.group,

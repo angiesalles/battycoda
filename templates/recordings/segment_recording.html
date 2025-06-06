@@ -54,7 +54,7 @@
         <!-- Waveform and segmentation tools -->
         <div class="col-lg-8">
             <!-- Include the reusable waveform player with selection and zoom enabled -->
-            {% include "recordings/includes/waveform_player.html" with recording=recording container_id="segment-waveform" height=300 allow_selection=True show_zoom=True segments=segments_json %}
+            {% include "recordings/includes/waveform_player.html" with recording=recording container_id="segment-waveform" height=300 allow_selection=True show_zoom=True segments=segments_json spectrogram_url=spectrogram_url %}
             
             <!-- Include segment form component -->
             {% include "recordings/includes/segmentation/segment_form.html" %}

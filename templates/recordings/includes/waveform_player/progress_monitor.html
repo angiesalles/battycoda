@@ -1,0 +1,61 @@
+// Monitor spectrogram generation progress
+function monitorSpectrogramProgress() {
+    const progressBar = document.querySelector('#{{ container_id }}-generate-spectrogram-btn')?.parentNode?.querySelector('.progress-bar');
+    if (!progressBar) return;
+    
+    // Check job status every 5 seconds
+    const checkInterval = setInterval(() => {
+        fetch(`{% url 'battycoda_app:job_status_api' %}`)
+            .then(response => response.json())
+            .then(data => {
+                // Find spectrogram job for this recording
+                const spectrogramJob = data.spectrogram_jobs?.find(job => 
+                    job.name.includes('{{ recording.name }}') || 
+                    job.url.includes('{{ recording.id }}')
+                );
+                
+                if (spectrogramJob) {
+                    // Update progress bar
+                    progressBar.style.width = spectrogramJob.progress + '%';
+                    progressBar.textContent = spectrogramJob.progress + '%';
+                    
+                    if (spectrogramJob.status === 'completed') {
+                        // Job completed - reload page to show spectrogram
+                        clearInterval(checkInterval);
+                        if (typeof toastr !== 'undefined') {
+                            toastr.success('Spectrogram generated successfully!');
+                        }
+                        setTimeout(() => {
+                            window.location.reload();
+                        }, 1000);
+                    } else if (spectrogramJob.status === 'failed') {
+                        // Job failed - show error
+                        clearInterval(checkInterval);
+                        if (typeof toastr !== 'undefined') {
+                            toastr.error('Spectrogram generation failed');
+                        }
+                        setTimeout(() => {
+                            window.location.reload();
+                        }, 2000);
+                    }
+                } else {
+                    // Job not found or completed - stop monitoring
+                    clearInterval(checkInterval);
+                    setTimeout(() => {
+                        window.location.reload();
+                    }, 1000);
+                }
+            })
+            .catch(error => {
+                console.error('Error monitoring progress:', error);
+            });
+    }, 5000);
+    
+    // Stop monitoring after 10 minutes
+    setTimeout(() => {
+        clearInterval(checkInterval);
+    }, 600000);
+}
+
+// Start monitoring
+monitorSpectrogramProgress();

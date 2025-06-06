@@ -12,7 +12,7 @@ from .views_segmentation.segmentation_settings import activate_segmentation_view
 
 # Direct imports from views_automation
 from .views_automation.results_application import apply_detection_results_view
-from .views_automation.runs_details import detection_run_detail_view, detection_run_status_view
+from .views_automation.runs_details import detection_run_detail_view, detection_run_status_view, download_features_file_view
 from .views_automation.runs_management import (
     automation_home_view, create_detection_run_view, delete_detection_run_view,
     classify_unclassified_segments_view, create_classification_for_species_view
@@ -40,10 +40,13 @@ from . import (
     views_audio_streaming,
     views_auth,
     views_batch_upload,
+    views_chess,
+    views_clustering,
     views_dashboard,
     views_debug,
     views_group,
     views_invitations,
+    views_jobs,
     views_landing,
     views_project,
     views_recording_core,
@@ -113,6 +116,11 @@ urlpatterns = [
     ),
     path(
         "automation/runs/<int:run_id>/status/", detection_run_status_view, name="detection_run_status"
+    ),
+    path(
+        "automation/runs/<int:run_id>/download-features/", 
+        download_features_file_view, 
+        name="download_features_file"
     ),
     path(
         "automation/runs/<int:run_id>/apply/",
@@ -284,4 +292,32 @@ urlpatterns = [
     path("notifications/<int:notification_id>/read/", mark_notification_read, name="mark_notification_read"),
     path("notifications/mark-all-read/", mark_all_read, name="mark_all_read"),
     path("notifications/navbar/", get_navbar_notifications, name="get_navbar_notifications"),
+    
+    # Clustering routes
+    path("clustering/", views_clustering.dashboard, name="clustering_dashboard"),
+    path("clustering/create/", views_clustering.create_clustering_run, name="create_clustering_run"),
+    path("clustering/run/<int:run_id>/", views_clustering.clustering_run_detail, name="clustering_run_detail"),
+    path("clustering/run/<int:run_id>/status/", views_clustering.clustering_run_status, name="clustering_run_status"),
+    path("clustering/explorer/<int:run_id>/", views_clustering.cluster_explorer, name="cluster_explorer"),
+    path("clustering/mapping/<int:run_id>/", views_clustering.mapping_interface, name="map_clusters_to_calls"),
+    path("clustering/export/<int:run_id>/", views_clustering.export_clusters, name="export_clusters"),
+    path("clustering/export-mappings/<int:run_id>/", views_clustering.export_mappings, name="export_mappings"),
+    
+    # Clustering API endpoints
+    path("clustering/get-cluster-data/", views_clustering.get_cluster_data, name="get_cluster_data"),
+    path("clustering/update-cluster-label/", views_clustering.update_cluster_label, name="update_cluster_label"),
+    path("clustering/create-mapping/", views_clustering.create_cluster_mapping, name="create_cluster_mapping"),
+    path("clustering/delete-mapping/", views_clustering.delete_cluster_mapping, name="delete_cluster_mapping"),
+    path("clustering/update-mapping-confidence/", views_clustering.update_mapping_confidence, name="update_mapping_confidence"),
+    path("clustering/get-segment-data/", views_clustering.get_segment_data, name="get_segment_data"),
+    
+    # Jobs management routes
+    path("jobs/", views_jobs.jobs_dashboard_view, name="jobs_dashboard"),
+    path("jobs/api/status/", views_jobs.job_status_api_view, name="job_status_api"),
+    path("jobs/cancel/<str:job_type>/<int:job_id>/", views_jobs.cancel_job_view, name="cancel_job"),
+    path("jobs/spectrogram/create/<int:recording_id>/", views_jobs.create_spectrogram_job_view, name="create_spectrogram_job"),
+    
+    # Chess proxy routes (authenticated users only)
+    path("chess/", views_chess.chess_home_view, name="chess_home"),
+    path("chess/<path:path>", views_chess.chess_proxy_view, name="chess_proxy"),
 ]

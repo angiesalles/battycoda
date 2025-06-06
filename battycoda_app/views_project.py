@@ -17,7 +17,7 @@ def project_list_view(request):
 
     # Filter projects by group if the user is in a group
     if profile.group:
-        if profile.is_admin:
+        if profile.is_current_group_admin:
             # Admin sees all projects in their group
             project_list = Project.objects.filter(group=profile.group)
         else:
@@ -82,7 +82,7 @@ def edit_project_view(request, project_id):
     project = get_object_or_404(Project, id=project_id)
 
     # Only allow editing if the user is admin or in the same group
-    if request.user.profile.is_admin or (request.user.profile.group and request.user.profile.group == project.group):
+    if request.user.profile.is_current_group_admin or (request.user.profile.group and request.user.profile.group == project.group):
         if request.method == "POST":
             form = ProjectForm(request.POST, instance=project, user=request.user)
             if form.is_valid():
@@ -110,7 +110,7 @@ def delete_project_view(request, project_id):
 
     # Check if the user has permission to delete this project
     profile = request.user.profile
-    if profile.is_admin or (profile.group and project.group == profile.group):
+    if profile.is_current_group_admin or (profile.group and project.group == profile.group):
         # Get counts of related objects for context
         task_count = Task.objects.filter(project=project).count()
         batch_count = TaskBatch.objects.filter(project=project).count()

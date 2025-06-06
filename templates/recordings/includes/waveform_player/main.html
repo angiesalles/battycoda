@@ -1,0 +1,33 @@
+{% load static %}
+
+{% comment %}
+Main waveform player component - entry point
+Parameters:
+- recording: The recording object
+- container_id: A unique ID for the waveform container (optional, defaults to "waveform-container")
+- height: Height of the waveform in pixels (optional, defaults to 200)
+- allow_selection: Whether to show selection controls (optional, defaults to false)
+- show_zoom: Whether to show zoom controls (optional, defaults to false)
+- segments: Optional segments data
+- spectrogram_url: Optional spectrogram URL
+{% endcomment %}
+
+{% if not container_id %}
+    {% with container_id="waveform-container" %}
+        {% include "recordings/includes/waveform_player/main.html" with recording=recording container_id=container_id %}
+    {% endwith %}
+{% else %}
+    <!-- Waveform visualization and player component -->
+    <div class="card mb-4">
+        {% include "recordings/includes/waveform_player/header.html" %}
+        {% include "recordings/includes/waveform_player/body.html" %}
+    </div>
+
+    <!-- Audio element (hidden) -->
+    <audio id="{{ container_id }}-audio" preload="auto" style="display: none;">
+        <source src="{% url 'battycoda_app:stream_recording_audio' recording_id=recording.id %}" type="audio/wav">
+        Your browser does not support the audio element.
+    </audio>
+
+    {% include "recordings/includes/waveform_player/scripts.html" %}
+{% endif %}

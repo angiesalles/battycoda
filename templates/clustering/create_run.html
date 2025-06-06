@@ -1,0 +1,200 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Create Clustering Run - BattyCoda{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-8 col-md-10">
+            <div class="card shadow-sm">
+                <div class="card-header bg-primary text-white">
+                    <h3 class="card-title mb-0">
+                        <i class="fas fa-project-diagram me-2"></i>Create New Clustering Run
+                    </h3>
+                    <div class="btn-group float-end">
+                        <a href="{% url 'battycoda_app:clustering_dashboard' %}" class="btn btn-light btn-sm">
+                            <i class="fas fa-arrow-left me-1"></i> Back to Dashboard
+                        </a>
+                    </div>
+                </div>
+            <div class="card-body p-4">
+                <form method="post" action="{% url 'battycoda_app:create_clustering_run' %}">
+                    {% csrf_token %}
+                    
+                    <!-- Basic Information Section -->
+                    <div class="mb-4">
+                        <h5 class="text-primary border-bottom pb-2 mb-3">
+                            <i class="fas fa-info-circle me-2"></i>Basic Information
+                        </h5>
+                        
+                        <div class="form-group mb-3">
+                            <label for="name" class="form-label fw-bold">
+                                Run Name <span class="text-danger">*</span>
+                            </label>
+                            <input type="text" class="form-control form-control-lg" id="name" name="name" required 
+                                   placeholder="Give your clustering run a descriptive name">
+                            <small class="form-text text-muted">
+                                A descriptive name to help you identify this clustering run.
+                            </small>
+                        </div>
+                        
+                        <div class="form-group mb-3">
+                            <label for="description" class="form-label fw-bold">Description</label>
+                            <textarea class="form-control" id="description" name="description" rows="3"
+                                      placeholder="Optional description for this clustering run"></textarea>
+                        </div>
+                    </div>
+                    
+                    <!-- Data Selection Section -->
+                    <div class="mb-4">
+                        <h5 class="text-primary border-bottom pb-2 mb-3">
+                            <i class="fas fa-database me-2"></i>Data Selection
+                        </h5>
+                        
+                        <div class="form-group mb-3">
+                            <label for="segmentation" class="form-label fw-bold">
+                                Segmentation <span class="text-danger">*</span>
+                            </label>
+                            <select class="form-control form-control-lg" id="segmentation" name="segmentation" required>
+                                <option value="">Select a segmentation...</option>
+                                {% for seg in segmentations %}
+                                <option value="{{ seg.id }}">
+                                    {{ seg.recording.name }} - {{ seg.segments.count }} segments
+                                    {% if seg.is_active %} (Active) {% endif %}
+                                </option>
+                                {% endfor %}
+                            </select>
+                            <small class="form-text text-muted">
+                                Select the segmentation containing the segments you want to cluster.
+                            </small>
+                        </div>
+                    </div>
+                    
+                    <!-- Algorithm Configuration Section -->
+                    <div class="mb-4">
+                        <h5 class="text-primary border-bottom pb-2 mb-3">
+                            <i class="fas fa-cogs me-2"></i>Algorithm Configuration
+                        </h5>
+                        
+                        <div class="form-group mb-3">
+                            <label for="algorithm" class="form-label fw-bold">
+                                Clustering Algorithm <span class="text-danger">*</span>
+                            </label>
+                            <select class="form-control form-control-lg" id="algorithm" name="algorithm" required>
+                                <option value="">Select an algorithm...</option>
+                                <optgroup label="📊 Manual Algorithms (Specify cluster count)">
+                                    {% for algo in algorithms %}
+                                    {% if algo.algorithm_type == 'kmeans' or algo.algorithm_type == 'gaussian_mixture' or algo.algorithm_type == 'spectral' or algo.algorithm_type == 'dbscan' and 'Auto-Clustering' not in algo.name %}
+                                    <option value="{{ algo.id }}" data-type="{{ algo.algorithm_type }}" data-name="{{ algo.name }}" data-manual="true">
+                                        {{ algo.name }} [{{ algo.algorithm_type }}]
+                                    </option>
+                                    {% endif %}
+                                    {% endfor %}
+                                </optgroup>
+                                <optgroup label="🤖 Automatic Algorithms (Auto-determine clusters)">
+                                    {% for algo in algorithms %}
+                                    {% if 'Auto-Clustering' in algo.name %}
+                                    <option value="{{ algo.id }}" data-type="{{ algo.algorithm_type }}" data-name="{{ algo.name }}" data-manual="false">
+                                        {{ algo.name }} [{{ algo.algorithm_type }}]
+                                    </option>
+                                    {% endif %}
+                                    {% endfor %}
+                                </optgroup>
+                            </select>
+                            <small class="form-text text-muted">
+                                Choose between <strong>Manual algorithms</strong> (you specify cluster count) or <strong>Automatic algorithms</strong> (optimal clusters determined automatically).
+                            </small>
+                        </div>
+                        
+                        <div class="form-group mb-3" id="n_clusters_group" style="display: none;">
+                            <label for="n_clusters" class="form-label fw-bold">
+                                <i class="fas fa-hashtag me-1"></i>Number of Clusters
+                            </label>
+                            <div class="input-group">
+                                <input type="number" class="form-control form-control-lg" id="n_clusters" name="n_clusters" min="2" max="50" value="5">
+                                <span class="input-group-text">clusters</span>
+                            </div>
+                            <small class="form-text text-muted">
+                                <i class="fas fa-info-circle me-1"></i>
+                                The target number of clusters to find. Only required for manual algorithms.
+                            </small>
+                        </div>
+                    </div>
+                    
+                    <!-- Feature Extraction Section -->
+                    <div class="mb-4">
+                        <h5 class="text-primary border-bottom pb-2 mb-3">
+                            <i class="fas fa-wave-square me-2"></i>Feature Extraction
+                        </h5>
+                        
+                        <div class="form-group mb-3">
+                            <label for="feature_method" class="form-label fw-bold">Feature Extraction Method</label>
+                            <select class="form-control form-control-lg" id="feature_method" name="feature_method">
+                                <option value="mfcc" selected>Mel-Frequency Cepstral Coefficients (MFCC)</option>
+                                <option value="mel_spectrogram">Mel Spectrogram</option>
+                                <option value="chroma">Chroma Features</option>
+                            </select>
+                            <small class="form-text text-muted">
+                                The method used to extract features from the audio segments.
+                            </small>
+                        </div>
+                    </div>
+                    
+                    <!-- Submit Section -->
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-center pt-3 border-top">
+                        <button type="submit" class="btn btn-primary btn-lg px-5">
+                            <i class="fas fa-play me-2"></i> Create Clustering Run
+                        </button>
+                        <a href="{% url 'battycoda_app:clustering_dashboard' %}" class="btn btn-outline-secondary btn-lg px-4">
+                            <i class="fas fa-times me-2"></i>Cancel
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+</div>
+{% endblock %}
+
+<script>
+// Wait for jQuery to be available
+$(document).ready(function() {
+    console.log('jQuery is ready, clustering script loaded');
+    console.log('Algorithm select element:', $('#algorithm').length);
+    console.log('Clusters group element:', $('#n_clusters_group').length);
+    
+    // Show/hide number of clusters field based on algorithm type with smooth animation
+    $('#algorithm').change(function() {
+        const selectedOption = $(this).find(':selected');
+        const isManual = selectedOption.data('manual');
+        
+        console.log('Algorithm changed:', {
+            value: selectedOption.val(),
+            name: selectedOption.data('name'),
+            type: selectedOption.data('type'),
+            isManual: isManual
+        });
+        
+        if (isManual === true || isManual === 'true') {
+            console.log('Showing clusters field');
+            $('#n_clusters_group').slideDown(300);
+            $('#n_clusters').attr('required', true);
+            // Add visual emphasis
+            $('#n_clusters_group').addClass('border-start border-primary border-3 ps-3');
+        } else {
+            console.log('Hiding clusters field');
+            $('#n_clusters_group').slideUp(300);
+            $('#n_clusters').attr('required', false);
+            $('#n_clusters_group').removeClass('border-start border-primary border-3 ps-3');
+        }
+    });
+    
+    // Form validation feedback
+    $('form').on('submit', function() {
+        $(this).find('button[type="submit"]').html('<i class="fas fa-spinner fa-spin me-2"></i>Creating Run...');
+        $(this).find('button[type="submit"]').prop('disabled', true);
+    });
+});
+</script>

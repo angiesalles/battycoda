@@ -1,0 +1,240 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Clustering Run: {{ clustering_run.name }} - BattyCoda{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">Clustering Run: {{ clustering_run.name }}</h3>
+                <div class="btn-group float-right">
+                    <a href="{% url 'battycoda_app:clustering_dashboard' %}" class="btn btn-secondary">
+                        <i class="fa fa-arrow-left"></i> Back to Dashboard
+                    </a>
+                    {% if clustering_run.status == 'completed' %}
+                    <a href="{% url 'battycoda_app:cluster_explorer' run_id=clustering_run.id %}" class="btn btn-success">
+                        <i class="fa fa-chart-network"></i> Explore Clusters
+                    </a>
+                    <a href="{% url 'battycoda_app:map_clusters_to_calls' run_id=clustering_run.id %}" class="btn btn-info">
+                        <i class="fa fa-exchange-alt"></i> Map to Call Types
+                    </a>
+                    <div class="btn-group">
+                        <button type="button" class="btn btn-outline-secondary dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                            <i class="fa fa-download"></i> Export
+                        </button>
+                        <div class="dropdown-menu dropdown-menu-right">
+                            <a class="dropdown-item" href="{% url 'battycoda_app:export_clusters' run_id=clustering_run.id %}">
+                                <i class="fa fa-file-csv"></i> Export Clusters as CSV
+                            </a>
+                            <a class="dropdown-item" href="{% url 'battycoda_app:export_mappings' run_id=clustering_run.id %}">
+                                <i class="fa fa-file-csv"></i> Export Mappings as CSV
+                            </a>
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <h4>Run Details</h4>
+                        <table class="table table-bordered">
+                            <tr>
+                                <th>Name</th>
+                                <td>{{ clustering_run.name }}</td>
+                            </tr>
+                            <tr>
+                                <th>Description</th>
+                                <td>{{ clustering_run.description|default:"No description provided" }}</td>
+                            </tr>
+                            <tr>
+                                <th>Recording</th>
+                                <td>{{ clustering_run.recording.name }}</td>
+                            </tr>
+                            <tr>
+                                <th>Status</th>
+                                <td>
+                                    <span class="badge 
+                                        {% if clustering_run.status == 'completed' %}badge-success
+                                        {% elif clustering_run.status == 'failed' %}badge-danger
+                                        {% elif clustering_run.status == 'in_progress' %}badge-primary
+                                        {% else %}badge-secondary{% endif %}">
+                                        {{ clustering_run.status }}
+                                    </span>
+                                </td>
+                            </tr>
+                            <tr>
+                                <th>Created By</th>
+                                <td>{{ clustering_run.created_by.username }}</td>
+                            </tr>
+                            <tr>
+                                <th>Created At</th>
+                                <td>{{ clustering_run.created_at|date:"Y-m-d H:i" }}</td>
+                            </tr>
+                        </table>
+                    </div>
+                    <div class="col-md-6">
+                        <h4>Algorithm Details</h4>
+                        <table class="table table-bordered">
+                            <tr>
+                                <th>Algorithm</th>
+                                <td>{{ clustering_run.algorithm.name }}</td>
+                            </tr>
+                            <tr>
+                                <th>Type</th>
+                                <td>{{ clustering_run.algorithm.get_algorithm_type_display }}</td>
+                            </tr>
+                            {% if clustering_run.n_clusters %}
+                            <tr>
+                                <th>Number of Clusters</th>
+                                <td>{{ clustering_run.n_clusters }}</td>
+                            </tr>
+                            {% endif %}
+                            <tr>
+                                <th>Feature Extraction</th>
+                                <td>{{ clustering_run.feature_extraction_method }}</td>
+                            </tr>
+                            {% if clustering_run.feature_parameters %}
+                            <tr>
+                                <th>Feature Parameters</th>
+                                <td><pre>{{ clustering_run.feature_parameters|pprint }}</pre></td>
+                            </tr>
+                            {% endif %}
+                            {% if clustering_run.runtime_parameters %}
+                            <tr>
+                                <th>Runtime Parameters</th>
+                                <td><pre>{{ clustering_run.runtime_parameters|pprint }}</pre></td>
+                            </tr>
+                            {% endif %}
+                        </table>
+                    </div>
+                </div>
+                
+                {% if clustering_run.is_processing %}
+                <div class="row mt-4">
+                    <div class="col-12">
+                        <h4>Progress</h4>
+                        <div class="progress" style="height: 25px;">
+                            <div class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar" 
+                                style="width: {{ clustering_run.progress }}%;" 
+                                aria-valuenow="{{ clustering_run.progress }}" aria-valuemin="0" aria-valuemax="100">
+                                {{ clustering_run.progress|floatformat:1 }}%
+                            </div>
+                        </div>
+                        <p class="text-muted mt-2">Processed {{ clustering_run.num_segments_processed }} segments so far.</p>
+                    </div>
+                </div>
+                {% endif %}
+                
+                {% if clustering_run.status == 'failed' %}
+                <div class="row mt-4">
+                    <div class="col-12">
+                        <div class="alert alert-danger">
+                            <h4 class="alert-heading">Error Details</h4>
+                            <p>{{ clustering_run.error_message }}</p>
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+                
+                {% if clustering_run.status == 'completed' %}
+                <div class="row mt-4">
+                    <div class="col-12">
+                        <h4>Results Summary</h4>
+                        <table class="table table-bordered">
+                            <tr>
+                                <th>Segments Processed</th>
+                                <td>{{ clustering_run.num_segments_processed }}</td>
+                            </tr>
+                            <tr>
+                                <th>Clusters Created</th>
+                                <td>{{ clustering_run.num_clusters_created }}</td>
+                            </tr>
+                            {% if clustering_run.silhouette_score %}
+                            <tr>
+                                <th>Silhouette Score</th>
+                                <td>{{ clustering_run.silhouette_score|floatformat:4 }}</td>
+                            </tr>
+                            {% endif %}
+                        </table>
+                    </div>
+                </div>
+                
+                <div class="row mt-4">
+                    <div class="col-12">
+                        <h4>Clusters</h4>
+                        <div class="table-responsive">
+                            <table class="table table-striped table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>ID</th>
+                                        <th>Label</th>
+                                        <th>Size</th>
+                                        <th>Coherence</th>
+                                        <th>Is Labeled</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for cluster in clusters %}
+                                    <tr>
+                                        <td>{{ cluster.cluster_id }}</td>
+                                        <td>{{ cluster.label|default:"[Unlabeled]" }}</td>
+                                        <td>{{ cluster.size }}</td>
+                                        <td>{{ cluster.coherence|floatformat:4 }}</td>
+                                        <td>
+                                            {% if cluster.is_labeled %}
+                                            <span class="badge badge-success">Yes</span>
+                                            {% else %}
+                                            <span class="badge badge-secondary">No</span>
+                                            {% endif %}
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+{% if clustering_run.is_processing %}
+<script>
+$(document).ready(function() {
+    // Refresh progress for in-progress runs
+    const updateProgress = function() {
+        $.get("{% url 'battycoda_app:clustering_run_detail' run_id=clustering_run.id %}", function(data) {
+            // Extract the progress value from the HTML
+            const progressHtml = $(data).find('.progress-bar');
+            if (progressHtml.length > 0) {
+                const progress = progressHtml.attr('aria-valuenow');
+                const progressText = progressHtml.text();
+                
+                // Update the progress bar
+                $('.progress-bar').css('width', `${progress}%`);
+                $('.progress-bar').attr('aria-valuenow', progress);
+                $('.progress-bar').text(progressText);
+                
+                // If status has changed, reload the page
+                const currentStatus = $('.badge').text().trim();
+                const newStatus = $(data).find('.badge').text().trim();
+                if (currentStatus !== newStatus) {
+                    location.reload();
+                }
+            }
+        });
+    };
+    
+    // Update progress every 3 seconds
+    setInterval(updateProgress, 3000);
+});
+</script>
+{% endif %}
+{% endblock %}

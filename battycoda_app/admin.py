@@ -11,6 +11,19 @@ from .models.task import Task, TaskBatch
 from .models.user import UserProfile, GroupMembership
 from .models.user import Group as BattycodaGroup
 
+# Try to import clustering models if they exist
+try:
+    from .models.clustering import (
+        ClusteringAlgorithm, 
+        ClusteringRun, 
+        Cluster, 
+        SegmentCluster, 
+        ClusterCallMapping
+    )
+    clustering_enabled = True
+except ImportError:
+    clustering_enabled = False
+
 # Add hijack functionality to the User admin
 class HijackUserAdmin(HijackUserAdminMixin, UserAdmin):
     # Don't modify list_display - the mixin handles this automatically
@@ -96,3 +109,26 @@ admin.site.register(Task)
 admin.site.register(TaskBatch)
 admin.site.register(GroupMembership)
 admin.site.register(BattycodaGroup)
+
+# Register clustering models if they exist
+if clustering_enabled:
+    @admin.register(ClusteringAlgorithm)
+    class ClusteringAlgorithmAdmin(admin.ModelAdmin):
+        list_display = ("name", "algorithm_type", "is_active", "created_by", "group")
+        list_filter = ("algorithm_type", "is_active", "group")
+        search_fields = ("name", "description")
+        
+    @admin.register(ClusteringRun)
+    class ClusteringRunAdmin(admin.ModelAdmin):
+        list_display = ("name", "algorithm", "status", "num_clusters_created", "progress", "created_by")
+        list_filter = ("status", "algorithm", "group")
+        search_fields = ("name", "description")
+        
+    @admin.register(Cluster)
+    class ClusterAdmin(admin.ModelAdmin):
+        list_display = ("__str__", "clustering_run", "size", "is_labeled", "coherence")
+        list_filter = ("is_labeled", "clustering_run")
+        search_fields = ("label", "description")
+        
+    admin.site.register(SegmentCluster)
+    admin.site.register(ClusterCallMapping)

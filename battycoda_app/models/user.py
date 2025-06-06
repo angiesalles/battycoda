@@ -73,9 +73,6 @@ class UserProfile(models.Model):
         null=False,  # Group is required for all users
         help_text="Every user must belong to a group"
     )
-    is_admin = models.BooleanField(
-        default=False, help_text="Designates whether this user is an administrator of their group"
-    )
     # User preferences
     theme = models.CharField(
         max_length=20, choices=THEME_CHOICES, default="default", help_text="Color theme preference"
@@ -100,6 +97,22 @@ class UserProfile(models.Model):
     def __str__(self):
         return self.user.username
 
+    def is_admin_of_group(self, group=None):
+        """Check if user is admin of the specified group (defaults to current group)"""
+        target_group = group if group else self.group
+        if not target_group:
+            return False
+        return GroupMembership.objects.filter(
+            user=self.user, 
+            group=target_group, 
+            is_admin=True
+        ).exists()
+
+    @property
+    def is_current_group_admin(self):
+        """Check if user is admin of their current group"""
+        return self.is_admin_of_group()
+
     @property
     def available_groups(self):
         """Get all groups the user is a member of through GroupMembership"""
@@ -114,11 +127,6 @@ class UserProfile(models.Model):
             return [self.group] + result
 
         return membership_groups
-
-    @property
-    def is_admin_of_group(self, group_id):
-        """Check if user is admin of the specified group"""
-        return GroupMembership.objects.filter(user=self.user, group_id=group_id, is_admin=True).exists()
 
 # Create user profile when user is created
 @receiver(post_save, sender=User)
@@ -142,8 +150,7 @@ def create_user_profile(sender, instance, created, **kwargs):
             # Create the profile with the invited group
             profile = UserProfile.objects.create(
                 user=instance,
-                group=invitation.group,
-                is_admin=False  # Invited users aren't admins by default
+                group=invitation.group
             )
             
             # Create group membership record
@@ -164,8 +171,7 @@ def create_user_profile(sender, instance, created, **kwargs):
             # Create profile with the new group and make user an admin
             profile = UserProfile.objects.create(
                 user=instance,
-                group=group,
-                is_admin=True
+                group=group
             )
             
             # Create group membership record

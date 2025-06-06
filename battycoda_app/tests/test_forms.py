@@ -54,7 +54,7 @@ class UserFormsTest(BattycodaTestCase):
     def test_user_profile_form_regular_user(self):
         # Create a mock user that's not an admin
         mock_user = MagicMock()
-        mock_user.profile.is_admin = False
+        mock_user.profile.is_current_group_admin = False
 
         form = UserProfileForm(instance=self.profile, user=mock_user)
 
@@ -67,7 +67,7 @@ class UserFormsTest(BattycodaTestCase):
     def test_user_profile_form_admin_user(self):
         # Create a mock user that is an admin
         mock_user = MagicMock()
-        mock_user.profile.is_admin = True
+        mock_user.profile.is_current_group_admin = True
 
         form = UserProfileForm(instance=self.profile, user=mock_user)
 

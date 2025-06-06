@@ -22,7 +22,7 @@ def batch_segmentation_view(request):
 
     # Filter recordings by group if the user is in a group
     if profile.group:
-        if profile.is_admin:
+        if profile.is_current_group_admin:
             # Admin sees all recordings in their group
             recordings = Recording.objects.filter(group=profile.group).order_by("-created_at")
         else:
@@ -47,7 +47,7 @@ def segmentation_jobs_status_view(request):
     profile = request.user.profile
 
     # Filter segmentations by user and group permissions
-    if profile.group and profile.is_admin:
+    if profile.group and profile.is_current_group_admin:
         # Admin sees all segmentations in their group
         segmentations = Segmentation.objects.filter(recording__group=profile.group).order_by("-created_at")
     else:

@@ -58,7 +58,7 @@ class UserProfileModelTest(BattycodaTestCase):
         self.assertEqual(user_profile.group.name, "newuser's Group")
 
         # Verify user is admin of personal group
-        self.assertTrue(user_profile.is_admin)
+        self.assertTrue(user_profile.is_current_group_admin)
 
         # Verify group membership was created
         self.assertTrue(GroupMembership.objects.filter(user=new_user, group=user_profile.group).exists())

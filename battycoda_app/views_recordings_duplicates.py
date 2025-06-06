@@ -15,7 +15,7 @@ def detect_duplicate_recordings_view(request):
     """Show list of duplicate recordings for review"""
     # Check if user is an admin
     profile = request.user.profile
-    if not profile.is_admin:
+    if not profile.is_current_group_admin:
         messages.error(request, "Only administrators can perform this action.")
         return redirect("battycoda_app:recording_list")
     
@@ -68,7 +68,7 @@ def remove_duplicate_recordings(request):
     
     # Check if user is an admin
     profile = request.user.profile
-    if not profile.is_admin:
+    if not profile.is_current_group_admin:
         messages.error(request, "Only administrators can perform this action.")
         return redirect("battycoda_app:recording_list")
     

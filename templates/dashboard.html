@@ -69,9 +69,35 @@
                             <a id="classificationBtn" href="{% url 'battycoda_app:automation_home' %}" class="btn btn-primary btn-block mb-3">
                                 <span class="s7-display1 mr-2"></span>Run Classification
                             </a>
-                            <a id="nextTaskBtn" href="{% url 'battycoda_app:get_next_task' %}" class="btn btn-primary btn-block">
-                                <span class="s7-next mr-2"></span>Get Next Task
-                            </a>
+                            <!-- Next Task Section -->
+                            <div class="dropdown">
+                                <button class="btn btn-primary btn-block dropdown-toggle" type="button" id="nextTaskDropdown" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                    <span class="s7-next mr-2"></span>Get Next Task
+                                </button>
+                                <div class="dropdown-menu" aria-labelledby="nextTaskDropdown" style="width: 100%;">
+                                    <h6 class="dropdown-header">Quick Start</h6>
+                                    <a id="nextTaskBtn" href="{% url 'battycoda_app:get_next_task' %}" class="dropdown-item">
+                                        <span class="s7-rocket mr-2"></span>Smart Next Task
+                                        <small class="text-muted d-block">{{ next_task_info.message|default:"Continues from your last batch" }}</small>
+                                    </a>
+                                    {% if available_batches %}
+                                    <div class="dropdown-divider"></div>
+                                    <h6 class="dropdown-header">Choose Batch</h6>
+                                    {% for batch in available_batches %}
+                                    <a href="{% url 'battycoda_app:annotate_batch' batch.id %}" class="dropdown-item">
+                                        <span class="s7-box1 mr-2"></span>{{ batch.name }}
+                                        <small class="text-muted d-block">
+                                            {{ batch.species.name }} • 
+                                            {{ batch.pending_tasks_count }} of {{ batch.tasks.count }} pending
+                                            {% if batch.progress_percentage > 0 %}
+                                            ({{ batch.progress_percentage }}% complete)
+                                            {% endif %}
+                                        </small>
+                                    </a>
+                                    {% endfor %}
+                                    {% endif %}
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>

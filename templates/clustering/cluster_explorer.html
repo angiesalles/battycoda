@@ -1,0 +1,262 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Cluster Explorer: {{ clustering_run.name }} - BattyCoda{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/cluster_explorer.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">Cluster Explorer: {{ clustering_run.name }}</h3>
+                <div class="btn-group float-right">
+                    <a href="{% url 'battycoda_app:clustering_run_detail' run_id=clustering_run.id %}" class="btn btn-secondary">
+                        <i class="fa fa-arrow-left"></i> Back to Run Details
+                    </a>
+                    <a href="{% url 'battycoda_app:map_clusters_to_calls' run_id=clustering_run.id %}" class="btn btn-info">
+                        <i class="fa fa-exchange-alt"></i> Map to Call Types
+                    </a>
+                    <div class="btn-group">
+                        <button type="button" class="btn btn-outline-secondary dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                            <i class="fa fa-download"></i> Export
+                        </button>
+                        <div class="dropdown-menu dropdown-menu-right">
+                            <a class="dropdown-item" href="{% url 'battycoda_app:export_clusters' run_id=clustering_run.id %}">
+                                <i class="fa fa-file-csv"></i> Export Clusters as CSV
+                            </a>
+                            <a class="dropdown-item" href="{% url 'battycoda_app:export_mappings' run_id=clustering_run.id %}">
+                                <i class="fa fa-file-csv"></i> Export Mappings as CSV
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-8">
+                        <div class="card">
+                            <div class="card-header">
+                                <h4 class="card-title">Cluster Visualization</h4>
+                            </div>
+                            <div class="card-body">
+                                <div id="cluster-visualization" class="cluster-visualization">
+                                    <!-- D3.js visualization will be rendered here -->
+                                    <div class="text-center py-5">
+                                        <div class="spinner-border text-primary" role="status">
+                                            <span class="sr-only">Loading...</span>
+                                        </div>
+                                        <p>Loading cluster visualization...</p>
+                                    </div>
+                                </div>
+                                <div class="cluster-controls mt-3">
+                                    <div class="form-row">
+                                        <div class="col-md-6 form-group">
+                                            <label for="point-size">Point Size</label>
+                                            <input type="range" class="form-control-range" id="point-size" min="2" max="15" value="8">
+                                        </div>
+                                        <div class="col-md-6 form-group">
+                                            <label for="cluster-opacity">Cluster Opacity</label>
+                                            <input type="range" class="form-control-range" id="cluster-opacity" min="0.1" max="1" step="0.1" value="0.8">
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="cluster-legend mt-3">
+                                    <!-- Cluster legend will be dynamically generated -->
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="card">
+                            <div class="card-header">
+                                <h4 class="card-title">Cluster Details</h4>
+                            </div>
+                            <div class="card-body cluster-details-panel">
+                                <div class="initial-message">
+                                    <p class="text-center">
+                                        <i class="fa fa-info-circle fa-2x mb-2"></i><br>
+                                        Select a cluster to view details
+                                    </p>
+                                </div>
+                                <div class="cluster-details d-none">
+                                    <h5 class="cluster-id-display"></h5>
+                                    <div class="form-group">
+                                        <label for="cluster-label">Label</label>
+                                        <input type="text" class="form-control" id="cluster-label">
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="cluster-description">Description</label>
+                                        <textarea class="form-control" id="cluster-description" rows="3"></textarea>
+                                    </div>
+                                    <button id="save-cluster-label" class="btn btn-primary">
+                                        <i class="fa fa-save"></i> Save
+                                    </button>
+                                    
+                                    <hr>
+                                    
+                                    <div class="cluster-stats mt-3">
+                                        <table class="table table-sm">
+                                            <tr>
+                                                <th>Size</th>
+                                                <td class="cluster-size"></td>
+                                            </tr>
+                                            <tr>
+                                                <th>Coherence</th>
+                                                <td class="cluster-coherence"></td>
+                                            </tr>
+                                        </table>
+                                    </div>
+                                    
+                                    <div class="representative-sample mt-3">
+                                        <h6>Representative Sample</h6>
+                                        <div class="representative-spectrogram">
+                                            <!-- Representative spectrogram will go here -->
+                                        </div>
+                                        <div class="representative-audio mt-2">
+                                            <audio controls class="representative-audio-player" style="width: 100%;">
+                                                <source src="" type="audio/wav">
+                                                Your browser does not support the audio element.
+                                            </audio>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="cluster-mappings mt-3">
+                                        <h6>Call Type Mappings</h6>
+                                        <ul class="mapping-list list-group">
+                                            <!-- Mappings will be dynamically added here -->
+                                            <li class="list-group-item no-mappings">No mappings yet</li>
+                                        </ul>
+                                        <div class="mt-2">
+                                            <a href="{% url 'battycoda_app:map_clusters_to_calls' run_id=clustering_run.id %}" class="btn btn-sm btn-outline-primary">
+                                                <i class="fa fa-exchange-alt"></i> Map This Cluster
+                                            </a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="row mt-4">
+                    <div class="col-12">
+                        <div class="card">
+                            <div class="card-header">
+                                <h4 class="card-title">Cluster Members</h4>
+                            </div>
+                            <div class="card-body">
+                                <div class="cluster-members-container">
+                                    <div class="text-center py-5 initial-members-message">
+                                        <p>Select a cluster to view its members</p>
+                                    </div>
+                                    <div class="cluster-members d-none">
+                                        <div class="table-responsive">
+                                            <table class="table table-sm table-hover" id="members-table">
+                                                <thead>
+                                                    <tr>
+                                                        <th>Segment ID</th>
+                                                        <th>Onset</th>
+                                                        <th>Offset</th>
+                                                        <th>Duration</th>
+                                                        <th>Confidence</th>
+                                                        <th>Actions</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody id="members-table-body">
+                                                    <!-- Segment members will be dynamically added here -->
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modals -->
+<div class="modal fade" id="segmentDetailsModal" tabindex="-1" role="dialog" aria-labelledby="segmentDetailsModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="segmentDetailsModalLabel">Segment Details</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="segment-spectrogram text-center mb-3">
+                    <!-- Segment spectrogram will go here -->
+                </div>
+                <div class="segment-audio mb-3 text-center">
+                    <audio controls class="segment-audio-player" style="width: 100%;">
+                        <source src="" type="audio/wav">
+                        Your browser does not support the audio element.
+                    </audio>
+                </div>
+                <div class="segment-info">
+                    <table class="table table-bordered">
+                        <tr>
+                            <th>Segment ID</th>
+                            <td class="segment-id"></td>
+                        </tr>
+                        <tr>
+                            <th>Recording</th>
+                            <td class="segment-recording"></td>
+                        </tr>
+                        <tr>
+                            <th>Onset</th>
+                            <td class="segment-onset"></td>
+                        </tr>
+                        <tr>
+                            <th>Offset</th>
+                            <td class="segment-offset"></td>
+                        </tr>
+                        <tr>
+                            <th>Duration</th>
+                            <td class="segment-duration"></td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<!-- D3.js from CDN -->
+<script src="https://d3js.org/d3.v6.min.js"></script>
+<script>
+// Store clustering run ID for API calls
+const clusteringRunId = {{ clustering_run.id }};
+let clusters = [];
+
+// Retrieve clusters from the backend
+{% for cluster in clusters %}
+clusters.push({
+    id: {{ cluster.id }},
+    cluster_id: {{ cluster.cluster_id }},
+    label: "{{ cluster.label|default:'' }}",
+    description: "{{ cluster.description|default:''|escapejs }}",
+    is_labeled: {{ cluster.is_labeled|lower }},
+    size: {{ cluster.size }},
+    coherence: {{ cluster.coherence|default:0 }},
+    vis_x: {{ cluster.vis_x|default:0 }},
+    vis_y: {{ cluster.vis_y|default:0 }}
+});
+{% endfor %}
+</script>
+<script src="{% static 'js/cluster_explorer.js' %}"></script>
+{% endblock %}

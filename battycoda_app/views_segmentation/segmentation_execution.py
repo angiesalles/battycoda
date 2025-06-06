@@ -21,7 +21,7 @@ def select_recording_for_segmentation_view(request):
 
     # Filter recordings by group if the user is in a group
     if profile.group:
-        if profile.is_admin:
+        if profile.is_current_group_admin:
             # Admin sees all recordings in their group
             recordings = Recording.objects.filter(group=profile.group).order_by("-created_at")
         else:
@@ -72,7 +72,7 @@ def auto_segment_recording_view(request, recording_id, algorithm_id=None):
         return redirect("battycoda_app:recording_detail", recording_id=recording_id)
 
     # Get available algorithms
-    if profile.group and profile.is_admin:
+    if profile.group and profile.is_current_group_admin:
         # Admin sees all algorithms plus group-specific ones
         # First get all global algorithms
         global_query = SegmentationAlgorithm.objects.filter(is_active=True, group__isnull=True)

@@ -79,6 +79,15 @@ class Task(models.Model):
 
     # Notes and comments
     notes = models.TextField(blank=True, null=True, help_text="Additional notes or observations about this task")
+    
+    # Annotation tracking
+    annotated_by = models.ForeignKey(
+        User, on_delete=models.SET_NULL, related_name="annotated_tasks", 
+        null=True, blank=True, help_text="User who provided the annotation/label"
+    )
+    annotated_at = models.DateTimeField(
+        null=True, blank=True, help_text="When the annotation was completed"
+    )
 
     class Meta:
         ordering = ["created_at"]

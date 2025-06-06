@@ -24,8 +24,8 @@ RUN apt-get update && apt-get install -y \
 RUN mkdir -p media/home logs static/tempdata
 
 # Install Python dependencies
-COPY requirements-web.txt .
-RUN pip install --no-cache-dir -r requirements-web.txt
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
 
 # The application code will be mounted at runtime via volume
 # This allows for faster development cycles without rebuilding the image

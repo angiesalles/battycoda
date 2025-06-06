@@ -26,7 +26,7 @@ def automation_home_view(request):
 
         # Get all detection runs, classifiers, and training jobs for user's groups
         if profile.group:
-            if profile.is_admin:
+            if profile.is_current_group_admin:
                 # Admin can see all group items
                 runs = DetectionRun.objects.filter(group=profile.group).order_by("-created_at")
                 classifiers = Classifier.objects.filter(
@@ -236,7 +236,7 @@ def create_detection_run_view(request, segmentation_id=None):
 
     # Filter segmentations by group if the user is in a group
     if profile.group:
-        if profile.is_admin:
+        if profile.is_current_group_admin:
             # Admin sees all segmentations in their group
             segmentations = Segmentation.objects.filter(recording__group=profile.group, status="completed").order_by(
                 "-created_at"
@@ -317,7 +317,7 @@ def classify_unclassified_segments_view(request):
     
     # Get all species with segments that don't have detection results
     if profile.group:
-        if profile.is_admin:
+        if profile.is_current_group_admin:
             # Admin sees all species in their group
             species_list = Species.objects.filter(
                 recordings__segments__isnull=False,
@@ -338,7 +338,7 @@ def classify_unclassified_segments_view(request):
     
     items = []
     for species in species_list:
-        if profile.group and profile.is_admin:
+        if profile.group and profile.is_current_group_admin:
             # Count unclassified segments for this species within the group
             unclassified_count = Segment.objects.filter(
                 recording__species=species,
@@ -388,7 +388,7 @@ def create_classification_for_species_view(request, species_id):
     profile = request.user.profile
     
     # Check permissions
-    if profile.group and profile.is_admin:
+    if profile.group and profile.is_current_group_admin:
         if not Segment.objects.filter(recording__species=species, recording__group=profile.group).exists():
             messages.error(request, "No segments for this species in your group.")
             return redirect('battycoda_app:classify_unclassified_segments')
@@ -414,7 +414,7 @@ def create_classification_for_species_view(request, species_id):
             return redirect('battycoda_app:create_classification_for_species', species_id=species_id)
 
         # Get unclassified segments
-        if profile.group and profile.is_admin:
+        if profile.group and profile.is_current_group_admin:
             segments = Segment.objects.filter(
                 recording__species=species,
                 recording__group=profile.group,
@@ -488,7 +488,7 @@ def create_classification_for_species_view(request, species_id):
         )
     
     # Get count of unclassified segments
-    if profile.group and profile.is_admin:
+    if profile.group and profile.is_current_group_admin:
         unclassified_count = Segment.objects.filter(
             recording__species=species,
             recording__group=profile.group,

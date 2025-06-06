@@ -18,7 +18,7 @@ from .models.user import Group, GroupInvitation, GroupMembership, UserProfile
 def group_users_view(request):
     """Display users in the current group with invitation capability for admins"""
     # Check if the user is an admin of their current group
-    if not request.user.profile.is_admin or not request.user.profile.group:
+    if not request.user.profile.is_current_group_admin or not request.user.profile.group:
         messages.error(request, "You must be a group admin to manage users.")
         return redirect("battycoda_app:index")
 
@@ -45,7 +45,7 @@ def group_users_view(request):
 def invite_user_view(request):
     """Send an invitation to join the group to a user by email"""
     # Check if the user is an admin of their current group
-    if not request.user.profile.is_admin or not request.user.profile.group:
+    if not request.user.profile.is_current_group_admin or not request.user.profile.group:
         messages.error(request, "You must be a group admin to invite users.")
         return redirect("battycoda_app:group_users")
 

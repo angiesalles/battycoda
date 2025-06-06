@@ -15,6 +15,77 @@ from django.utils import timezone
 
 from battycoda_app.forms import SegmentForm
 from battycoda_app.models.recording import Recording, Segment, Segmentation
+from battycoda_app.models.spectrogram import SpectrogramJob
+
+
+def get_spectrogram_status(recording):
+    """
+    Get comprehensive spectrogram status for a recording.
+    
+    Returns:
+        dict: Contains 'status', 'url', 'job', 'progress' information
+    """
+    try:
+        # Hash the recording file path for cache key
+        file_hash = hashlib.md5(recording.wav_file.path.encode()).hexdigest()
+        spectrogram_path = os.path.join(settings.MEDIA_ROOT, "spectrograms", "recordings", f"{file_hash}.png")
+        
+        # Check if spectrogram file already exists
+        if os.path.exists(spectrogram_path) and os.path.getsize(spectrogram_path) > 0:
+            return {
+                'status': 'available',
+                'url': f"/media/spectrograms/recordings/{file_hash}.png",
+                'job': None,
+                'progress': 100
+            }
+        
+        # Check for existing jobs
+        active_job = SpectrogramJob.objects.filter(
+            recording=recording,
+            status__in=['pending', 'in_progress']
+        ).first()
+        
+        if active_job:
+            return {
+                'status': 'generating',
+                'url': None,
+                'job': active_job,
+                'progress': active_job.progress
+            }
+        
+        # Check for completed jobs with file
+        completed_job = SpectrogramJob.objects.filter(
+            recording=recording,
+            status='completed'
+        ).order_by('-created_at').first()
+        
+        if completed_job and completed_job.output_file_path and os.path.exists(completed_job.output_file_path):
+            # Extract the relative URL from the full path
+            relative_path = completed_job.output_file_path.replace(settings.MEDIA_ROOT, '').lstrip('/')
+            return {
+                'status': 'available',
+                'url': f"/media/{relative_path}",
+                'job': completed_job,
+                'progress': 100
+            }
+        
+        # No spectrogram available, no active jobs
+        return {
+            'status': 'not_available',
+            'url': None,
+            'job': None,
+            'progress': 0
+        }
+        
+    except Exception as e:
+        return {
+            'status': 'error',
+            'url': None,
+            'job': None,
+            'progress': 0,
+            'error': str(e)
+        }
+
 
 @login_required
 def segment_recording_view(request, recording_id):
@@ -90,28 +161,9 @@ def segment_recording_view(request, recording_id):
                 # Redirect to refresh the page with the newly activated segmentation
                 return redirect("battycoda_app:segment_recording", recording_id=recording.id)
 
-    # Generate spectrogram if needed
-    try:
-        # Hash the recording file path for cache key
-        file_hash = hashlib.md5(recording.wav_file.path.encode()).hexdigest()
-        spectrogram_path = os.path.join(settings.MEDIA_ROOT, "spectrograms", "recordings", f"{file_hash}.png")
-
-        # Check if spectrogram already exists
-        if os.path.exists(spectrogram_path) and os.path.getsize(spectrogram_path) > 0:
-            # Use existing spectrogram
-            spectrogram_url = f"/media/spectrograms/recordings/{file_hash}.png"
-        else:
-            # Trigger generation
-            from celery import current_app
-
-            task = current_app.send_task(
-                "battycoda_app.audio.task_modules.spectrogram_tasks.generate_recording_spectrogram", args=[recording.id]
-            )
-            # Use a placeholder until it's generated
-            spectrogram_url = None
-    except Exception as e:
-
-        spectrogram_url = None
+    # Check spectrogram status and jobs
+    spectrogram_info = get_spectrogram_status(recording)
+    spectrogram_url = spectrogram_info.get('url')
 
     # Convert segments to JSON
     segments_json = []
@@ -126,6 +178,7 @@ def segment_recording_view(request, recording_id):
         "segments": segments,
         "segments_json": json.dumps(segments_json),
         "spectrogram_url": spectrogram_url,
+        "spectrogram_info": spectrogram_info,
         "active_segmentation": segmentation_info,
         "all_segmentations": all_segmentations,
     }

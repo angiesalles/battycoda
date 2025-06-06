@@ -6,6 +6,11 @@
 
 import { WaveformRenderer } from './renderer.js';
 import { TimelineRenderer } from './timeline.js';
+import { SpectrogramRenderer } from './spectrogram_renderer.js';
+import { ViewManager } from './view_manager.js';
+import { EventHandlers } from './event_handlers.js';
+import { UIState } from './ui_state.js';
+import { DataManager } from './data_manager.js';
 
 /**
  * WaveformPlayer class - encapsulates waveform player functionality
@@ -45,6 +50,15 @@ export class WaveformPlayer {
         // Renderers
         this.waveformRenderer = new WaveformRenderer(this);
         this.timelineRenderer = new TimelineRenderer(this);
+        this.spectrogramRenderer = new SpectrogramRenderer(this);
+        
+        // View manager
+        this.viewManager = new ViewManager(this);
+        
+        // Modules
+        this.eventHandlers = new EventHandlers(this);
+        this.uiState = new UIState(this);
+        this.dataManager = new DataManager(this);
     }
     
     /**
@@ -53,7 +67,6 @@ export class WaveformPlayer {
     initDomElements() {
         const id = this.containerId;
         
-        // Core elements
         this.container = document.getElementById(id);
         if (!this.container) return;
         
@@ -72,13 +85,14 @@ export class WaveformPlayer {
         this.loadingEl = document.getElementById(`${id}-loading`);
         this.statusEl = document.getElementById(`${id}-status`);
         
-        // Optional elements based on configuration
+        // Zoom controls (optional)
         if (this.showZoom) {
             this.zoomInBtn = document.getElementById(`${id}-zoom-in-btn`);
             this.zoomOutBtn = document.getElementById(`${id}-zoom-out-btn`);
             this.resetZoomBtn = document.getElementById(`${id}-reset-zoom-btn`);
         }
         
+        // Selection controls (optional)
         if (this.allowSelection) {
             this.setStartBtn = document.getElementById(`${id}-set-start-btn`);
             this.setEndBtn = document.getElementById(`${id}-set-end-btn`);
@@ -90,11 +104,11 @@ export class WaveformPlayer {
      * Initialize the waveform player
      */
     initialize() {
-        this.setupEventListeners();
+        this.eventHandlers.setupEventListeners();
         this.loadWaveformData();
-        this.updateTimeDisplay();
-        if (this.allowSelection) this.updateSelectionDisplay();
-        this.updatePlayButtons();
+        this.uiState.updateTimeDisplay();
+        if (this.allowSelection) this.uiState.updateSelectionDisplay();
+        this.uiState.updatePlayButtons();
     }
 
     setPlaybackRate(rate) {
@@ -111,33 +125,38 @@ export class WaveformPlayer {
             // Update status
             if (this.statusEl) this.statusEl.textContent = 'Loading...';
             
+            console.log('Loading waveform data for recording:', this.recordingId);
             const response = await fetch(`/recordings/${this.recordingId}/waveform-data/`);
             if (!response.ok) {
                 throw new Error(`HTTP error! status: ${response.status}`);
             }
             const data = await response.json();
+            console.log('Waveform data response:', data);
             
-            // Always update duration if available, even on error
+            // Set duration if provided
             if (data.duration !== undefined && data.duration !== null) {
-                this.duration = data.duration || 0;
+                this.duration = data.duration;
                 if (this.totalTimeEl) this.totalTimeEl.textContent = this.duration.toFixed(2) + 's';
             }
             
             if (data.success) {
                 this.waveformData = data.waveform;
+                console.log('Waveform data loaded successfully:', {
+                    dataLength: this.waveformData ? this.waveformData.length : 0,
+                    duration: this.duration
+                });
                 
                 // Hide loading indicator
                 if (this.loadingEl) this.loadingEl.style.display = 'none';
                 
                 // Update status
                 if (this.statusEl) {
-                    this.statusEl.textContent = 'Complete';
-                    this.statusEl.classList.remove('bg-info');
-                    this.statusEl.classList.add('bg-success');
+                    this.statusEl.textContent = '';
                 }
                 
-                // Draw waveform and timeline
-                this.drawWaveform();
+                // Ensure waveform is visible and draw
+                this.viewManager.showWaveform();
+                this.redrawCurrentView();
                 this.drawTimeline();
             } else {
                 throw new Error(data.error || 'Failed to load waveform data');
@@ -148,204 +167,106 @@ export class WaveformPlayer {
             // Hide loading indicator
             if (this.loadingEl) this.loadingEl.style.display = 'none';
             
-            // Update status
+            // Update status with error
             if (this.statusEl) {
-                this.statusEl.textContent = 'Error';
-                this.statusEl.classList.remove('bg-info');
-                this.statusEl.classList.add('bg-danger');
+                this.statusEl.textContent = 'Error loading waveform';
             }
             
-            // Show error message
+            // Show a basic waveform container even if loading fails
             if (this.waveformContainer) {
-                this.waveformContainer.innerHTML = `
-                    <div class="alert alert-danger m-3">
-                        <i class="fas fa-exclamation-triangle"></i> 
-                        Error loading waveform: ${error.message}
-                    </div>
-                `;
+                this.waveformContainer.style.height = '150px';
+                this.waveformContainer.style.backgroundColor = '#f0f0f0';
+                this.waveformContainer.style.border = '1px solid #ddd';
             }
-            
-            // Still attempt to draw the timeline with empty data
-            this.drawTimeline();
         }
     }
-    
+
     /**
-     * Draw the waveform visualization
+     * Draw the waveform (delegates to renderer)
      */
     drawWaveform() {
         this.waveformRenderer.draw();
     }
-    
+
     /**
-     * Draw the timeline below the waveform
+     * Redraw the current view (respects view mode)
+     */
+    redrawCurrentView() {
+        if (this.viewManager) {
+            this.viewManager.redraw();
+        } else {
+            // Fallback for cases where ViewManager isn't available yet
+            this.drawWaveform();
+        }
+    }
+
+    /**
+     * Draw the timeline (delegates to renderer)
      */
     drawTimeline() {
         this.timelineRenderer.draw();
     }
+
+    // Delegation methods for backwards compatibility and external access
     
     /**
-     * Update the time display
+     * Update the time display and progress bar
      */
     updateTimeDisplay() {
-        // Ensure currentTime is a valid number
-        const time = Number.isFinite(this.currentTime) ? this.currentTime : 0;
-        if (this.currentTimeEl) this.currentTimeEl.textContent = time.toFixed(2) + 's';
-        
-        // Avoid division by zero if duration is not set
-        const percentage = this.duration ? ((time / this.duration) * 100) : 0;
-        if (this.progressBar) this.progressBar.style.width = percentage + '%';
-        
-        // If zoomed in, add a visual indicator of the current view in the progress bar
-        if (this.zoomLevel > 1 && this.progressContainer) {
-            // Remove any existing view indicator
-            const existingIndicator = this.progressContainer.querySelector('.zoom-view-indicator');
-            if (existingIndicator) {
-                existingIndicator.remove();
-            }
-            
-            // Calculate visible range as percentage of total duration
-            const visibleDuration = this.duration / this.zoomLevel;
-            const startPercent = (this.zoomOffset * this.duration / this.duration) * 100;
-            const widthPercent = (visibleDuration / this.duration) * 100;
-            
-            // Create indicator element
-            const indicator = document.createElement('div');
-            indicator.className = 'zoom-view-indicator position-absolute';
-            indicator.style.position = 'absolute';
-            indicator.style.left = startPercent + '%';
-            indicator.style.width = widthPercent + '%';
-            indicator.style.height = '5px';
-            indicator.style.bottom = '0';
-            indicator.style.backgroundColor = 'rgba(255, 255, 255, 0.5)';
-            indicator.style.borderRadius = '2px';
-            indicator.style.pointerEvents = 'none'; // Don't interfere with clicks
-            
-            this.progressContainer.appendChild(indicator);
-        } else if (this.progressContainer) {
-            // Remove indicator if not zoomed
-            const existingIndicator = this.progressContainer.querySelector('.zoom-view-indicator');
-            if (existingIndicator) {
-                existingIndicator.remove();
-            }
-        }
+        return this.uiState.updateTimeDisplay();
     }
     
     /**
      * Update the selection display
      */
     updateSelectionDisplay() {
-        if (!this.allowSelection || !this.selectionRangeEl) return;
-        
-        if (this.selectionStart !== null && this.selectionEnd !== null) {
-            // Both start and end points are set
-            const start = Number.isFinite(this.selectionStart) ? this.selectionStart : 0;
-            const end = Number.isFinite(this.selectionEnd) ? this.selectionEnd : 0;
-            const selectionDuration = end - start;
-            this.selectionRangeEl.textContent = `Selection: ${start.toFixed(2)}s - ${end.toFixed(2)}s (${selectionDuration.toFixed(2)}s)`;
-        } else if (this.selectionStart !== null) {
-            // Only start point is set
-            const start = Number.isFinite(this.selectionStart) ? this.selectionStart : 0;
-            this.selectionRangeEl.textContent = `Start: ${start.toFixed(2)}s (End not set)`;
-        } else if (this.selectionEnd !== null) {
-            // Only end point is set
-            const end = Number.isFinite(this.selectionEnd) ? this.selectionEnd : 0;
-            this.selectionRangeEl.textContent = `End: ${end.toFixed(2)}s (Start not set)`;
-        } else {
-            this.selectionRangeEl.textContent = 'No Selection';
-        }
+        return this.uiState.updateSelectionDisplay();
     }
-    
+
     /**
-     * Update play/pause buttons state
+     * Update play button states
      */
     updatePlayButtons() {
-        if (this.isPlaying) {
-            if (this.playBtn) this.playBtn.disabled = true;
-            if (this.pauseBtn) this.pauseBtn.disabled = false;
-            if (this.stopBtn) this.stopBtn.disabled = false;
-        } else {
-            if (this.playBtn) this.playBtn.disabled = false;
-            if (this.pauseBtn) this.pauseBtn.disabled = true;
-            if (this.stopBtn) this.stopBtn.disabled = true;
-        }
+        return this.uiState.updatePlayButtons();
     }
-    
+
     /**
-     * Get the current selection range
-     * @returns {Object} The selection range with start and end times
+     * Get the current selection
      */
     getSelection() {
-        return { start: this.selectionStart, end: this.selectionEnd };
+        return this.dataManager.getSelection();
     }
-    
+
     /**
-     * Check if a time position overlaps with any existing segment
-     * @param {number} time - The time position to check
-     * @returns {boolean} True if position overlaps with any segment
+     * Check if a given time is within any existing segment
      */
     isTimeInSegment(time) {
-        if (!this.segments || !this.segments.length) return false;
-        
-        return this.segments.some(segment => {
-            const start = segment.start || segment.onset;
-            const end = segment.end || segment.offset;
-            return time >= start && time <= end;
-        });
+        return this.dataManager.isTimeInSegment(time);
     }
-    
+
     /**
-     * Find the nearest segment boundary (start or end) to a given time position
-     * @param {number} time - The time position to check from
-     * @param {string} direction - Either 'forward' or 'backward'
-     * @returns {number|null} The nearest boundary time or null if none found
+     * Find the nearest segment boundary from a given time
      */
     findNearestSegmentBoundary(time, direction = 'forward') {
-        if (!this.segments || !this.segments.length) return null;
-        
-        // Collect all boundary points
-        let boundaries = [];
-        this.segments.forEach(segment => {
-            const start = segment.start || segment.onset;
-            const end = segment.end || segment.offset;
-            boundaries.push(start, end);
-        });
-        
-        // Sort boundaries
-        boundaries.sort((a, b) => a - b);
-        
-        if (direction === 'forward') {
-            // Find the first boundary point after the given time
-            const nextBoundary = boundaries.find(b => b > time);
-            return nextBoundary !== undefined ? nextBoundary : null;
-        } else {
-            // Find the last boundary point before the given time
-            boundaries.reverse();
-            const prevBoundary = boundaries.find(b => b < time);
-            return prevBoundary !== undefined ? prevBoundary : null;
-        }
+        return this.dataManager.findNearestSegmentBoundary(time, direction);
     }
-    
+
     /**
      * Set segments for the waveform
-     * @param {Array} newSegments - Array of segment objects
      */
     setSegments(newSegments) {
-        this.segments = newSegments || [];
-        this.drawWaveform();
-        this.drawTimeline();
+        return this.dataManager.setSegments(newSegments);
     }
     
     /**
      * Redraw segments on the waveform
-     * Called when a new segment is added
      */
     redrawSegments() {
-        this.drawWaveform();
-        this.drawTimeline();
+        return this.dataManager.redrawSegments();
     }
-    
+
     /**
+<<<<<<< HEAD
      * Set up all event listeners
      */
     setupEventListeners() {
@@ -713,43 +634,11 @@ export class WaveformPlayer {
     
     /**
      * Animate scrolling the waveform smoothly
+=======
+     * Animate smooth scrolling when zoomed in
+>>>>>>> upstream/master
      */
     animateScroll() {
-        // Cancel any existing animation
-        if (this.animationFrameId) {
-            cancelAnimationFrame(this.animationFrameId);
-            this.animationFrameId = null;
-        }
-        
-        const startTime = performance.now();
-        const startOffset = this.zoomOffset;
-        const offsetDiff = this.targetZoomOffset - startOffset;
-        const duration = 300; // animation duration in ms
-        
-        const step = (timestamp) => {
-            const elapsed = timestamp - startTime;
-            const progress = Math.min(elapsed / duration, 1);
-            
-            // Ease function (ease-out cubic)
-            const eased = 1 - Math.pow(1 - progress, 3);
-            
-            // Update zoom offset
-            this.zoomOffset = startOffset + (offsetDiff * eased);
-            
-            // Redraw
-            this.drawWaveform();
-            this.drawTimeline();
-            this.updateTimeDisplay();
-            
-            // Continue animation if not complete
-            if (progress < 1) {
-                this.animationFrameId = requestAnimationFrame(step);
-            } else {
-                this.animationFrameId = null;
-            }
-        };
-        
-        // Start animation
-        this.animationFrameId = requestAnimationFrame(step);
+        return this.eventHandlers.animateScroll();
     }
 }
