@@ -10,6 +10,8 @@ from .api_views import (
     ProjectViewSet,
     TaskBatchViewSet,
     TaskViewSet,
+    SegmentationViewSet,
+    SegmentationAlgorithmViewSet,
 )
 
 # Create a router and register our viewsets with it
@@ -19,6 +21,8 @@ router.register(r'species', SpeciesViewSet)
 router.register(r'projects', ProjectViewSet)
 router.register(r'task-batches', TaskBatchViewSet)
 router.register(r'tasks', TaskViewSet)
+router.register(r'segmentations', SegmentationViewSet)
+router.register(r'segmentation-algorithms', SegmentationAlgorithmViewSet)
 
 # The API URLs are now determined automatically by the router
 urlpatterns = [

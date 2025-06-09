@@ -4,6 +4,7 @@ Serializers for BattyCoda API.
 from rest_framework import serializers
 from .models import Recording, Project, Task, TaskBatch
 from .models.organization import Species
+from .models.recording import Segmentation, SegmentationAlgorithm
 
 
 class SpeciesSerializer(serializers.ModelSerializer):
@@ -108,3 +109,42 @@ class TaskSerializer(serializers.ModelSerializer):
             'created_at', 'updated_at'
         ]
         read_only_fields = ['id', 'created_at', 'updated_at']
+
+
+class SegmentationAlgorithmSerializer(serializers.ModelSerializer):
+    """
+    Serializer for SegmentationAlgorithm model.
+    """
+    class Meta:
+        model = SegmentationAlgorithm
+        fields = [
+            'id', 'name', 'description', 'algorithm_type', 
+            'default_min_duration_ms', 'default_smooth_window', 'default_threshold_factor'
+        ]
+        read_only_fields = ['id']
+
+
+class SegmentationSerializer(serializers.ModelSerializer):
+    """
+    Serializer for Segmentation model.
+    """
+    recording = RecordingSerializer(read_only=True)
+    recording_id = serializers.IntegerField(write_only=True)
+    algorithm = SegmentationAlgorithmSerializer(read_only=True)
+    algorithm_id = serializers.IntegerField(write_only=True, required=False, allow_null=True)
+    created_by_username = serializers.CharField(source='created_by.username', read_only=True)
+    segments_count = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Segmentation
+        fields = [
+            'id', 'recording', 'recording_id', 'name', 'is_active', 
+            'algorithm', 'algorithm_id', 'status', 'progress',
+            'min_duration_ms', 'smooth_window', 'threshold_factor',
+            'segments_created', 'segments_count', 'manually_edited',
+            'created_by_username', 'created_at', 'updated_at', 'error_message'
+        ]
+        read_only_fields = ['id', 'created_at', 'updated_at', 'task_id', 'progress']
+
+    def get_segments_count(self, obj):
+        return obj.segments.count()
