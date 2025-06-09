@@ -1,3 +1,4 @@
+{% load static %}
 {% comment %}
 Waveform Player Component - Main Entry Point
 This file now includes the modular waveform player components.
@@ -11,8 +12,6 @@ Parameters:
 - segments: Optional segments data
 - spectrogram_url: Optional spectrogram URL
 {% endcomment %}
-
-<<<<<<< HEAD
 {% if not container_id %}
     {% with container_id="waveform-container" %}
         {% include "recordings/includes/waveform_player.html" with recording=recording container_id=container_id %}
@@ -133,6 +132,3 @@ Parameters:
     <!-- Include the play region extension -->
     <script src="{% static 'js/waveform_player/play_region.js' %}"></script>
 {% endif %}
-=======
-{% include "recordings/includes/waveform_player/main.html" %}
->>>>>>> upstream/master
