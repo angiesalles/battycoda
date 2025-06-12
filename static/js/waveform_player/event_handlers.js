@@ -16,6 +16,7 @@ export class EventHandlers {
         this.setupAudioEventListeners();
         this.setupControlEventListeners();
         this.setupZoomEventListeners();
+        this.player.setupSpeedEventListeners();
         this.setupSelectionEventListeners();
         this.setupWindowEventListeners();
     }
