@@ -1,13 +1,16 @@
 """
 Core views for handling recording CRUD operations.
 """
-from .views_common import *
-from .tasks import calculate_audio_duration
+from battycoda_app.audio.utils import probe_audio
+from battycoda_app.models.recording import Recording
+
 from .forms_edit import RecordingEditForm
+from .tasks import calculate_audio_duration
+from .views_common import *
+from .views_recordings_duplicates import has_duplicate_recordings
 
 # Set up logging
 
-from .views_recordings_duplicates import has_duplicate_recordings
 
 @login_required
 def recording_list_view(request):
@@ -20,14 +23,12 @@ def recording_list_view(request):
         if profile.is_current_group_admin:
             # Admin sees all recordings in their group
             recordings = Recording.objects.filter(group=profile.group).order_by("-created_at")
-            
+
             # Check if there are recordings with missing sample rates
             has_missing_sample_rates = Recording.objects.filter(
-                group=profile.group,
-                sample_rate__isnull=True,
-                file_ready=True
+                group=profile.group, sample_rate__isnull=True, file_ready=True
             ).exists()
-            
+
             # Check if there are duplicate recordings
             has_duplicate_recordings_flag = has_duplicate_recordings(profile.group)
         else:
@@ -49,6 +50,7 @@ def recording_list_view(request):
 
     return render(request, "recordings/recording_list.html", context)
 
+
 @login_required
 def recording_detail_view(request, recording_id):
     """Display details of a specific recording and its segments"""
@@ -64,16 +66,17 @@ def recording_detail_view(request, recording_id):
 
     # Import the spectrogram status function
     from .views_segmentation.segment_management import get_spectrogram_status
-    
+
     # Check spectrogram status and jobs
     spectrogram_info = get_spectrogram_status(recording)
-    
+
     context = {
         "recording": recording,
         "spectrogram_info": spectrogram_info,
     }
 
     return render(request, "recordings/recording_detail.html", context)
+
 
 @login_required
 def create_recording_view(request):
@@ -98,7 +101,12 @@ def create_recording_view(request):
 
             # Save the recording first without marking as ready
             recording.save()
-            
+
+            sample_rate, duration = probe_audio(recording.wav_file.path)
+            recording.sample_rate = sample_rate
+            recording.duration = duration
+            recording.save(update_fields=["sample_rate", "duration"])
+
             # Now mark as ready for processing and save again
             recording.file_ready = True
             recording.save(update_fields=["file_ready"])
@@ -131,6 +139,7 @@ def create_recording_view(request):
 
     return render(request, "recordings/create_recording.html", context)
 
+
 @login_required
 def edit_recording_view(request, recording_id):
     """Edit an existing recording"""
@@ -159,6 +168,7 @@ def edit_recording_view(request, recording_id):
     }
 
     return render(request, "recordings/edit_recording.html", context)
+
 
 @login_required
 def delete_recording_view(request, recording_id):
@@ -210,8 +220,9 @@ def recalculate_audio_info_view(request, recording_id):
 
     # Import the task function and run it synchronously
     import os
+
     import soundfile as sf
-    
+
     try:
         # Check if file exists
         if not os.path.exists(recording.wav_file.path):
@@ -220,17 +231,18 @@ def recalculate_audio_info_view(request, recording_id):
 
         # Extract audio information from file
         info = sf.info(recording.wav_file.path)
-        
+
         # Update the recording
         recording.duration = info.duration
         recording.sample_rate = info.samplerate
         recording.save(update_fields=["duration", "sample_rate"])
-        
+
         messages.success(request, "Audio information has been recalculated successfully.")
     except Exception as e:
         messages.error(request, f"Failed to recalculate audio information: {str(e)}")
-    
+
     return redirect("battycoda_app:recording_detail", recording_id=recording.id)
+
 
 @login_required
 def process_missing_sample_rates(request):
@@ -240,30 +252,26 @@ def process_missing_sample_rates(request):
     if not profile.is_current_group_admin:
         messages.error(request, "Only administrators can perform this action.")
         return redirect("battycoda_app:recording_list")
-    
+
     # Get user's group
     if not profile.group:
         messages.error(request, "You must be assigned to a group to perform this action.")
         return redirect("battycoda_app:recording_list")
-    
+
     # Find recordings without sample rates in user's group
-    recordings_to_process = Recording.objects.filter(
-        group=profile.group, 
-        sample_rate__isnull=True,
-        file_ready=True
-    )
-    
+    recordings_to_process = Recording.objects.filter(group=profile.group, sample_rate__isnull=True, file_ready=True)
+
     # Count how many were found
     count = recordings_to_process.count()
-    
+
     if count == 0:
         messages.info(request, "No recordings need sample rate measurement.")
         return redirect("battycoda_app:recording_list")
-    
+
     # Process each recording
     for recording in recordings_to_process:
         # Trigger the calculation task
         calculate_audio_duration.delay(recording.id)
-    
+
     messages.success(request, f"Sample rate calculation started for {count} recordings. This may take a few moments.")
     return redirect("battycoda_app:recording_list")
