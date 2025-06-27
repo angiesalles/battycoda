@@ -8,7 +8,26 @@
 {% block item_count %}{{ total_count|default:batches|length }}{% endblock %}
 
 {% block action_buttons %}
-<div class="d-flex gap-2">
+<div class="d-flex gap-2 align-items-center">
+    <!-- Project Filter -->
+    <div class="me-3">
+        <form method="get" class="d-flex align-items-center gap-2">
+            <label for="project-filter" class="form-label mb-0 small text-muted">Filter by Project:</label>
+            <select name="project" id="project-filter" class="form-select form-select-sm" onchange="this.form.submit()">
+                <option value="">All Projects</option>
+                {% for project in available_projects %}
+                    <option value="{{ project.id }}" {% if project.id == selected_project_id %}selected{% endif %}>
+                        {{ project.name }}
+                    </option>
+                {% endfor %}
+            </select>
+            {% if request.GET.page %}
+                <input type="hidden" name="page" value="{{ request.GET.page }}">
+            {% endif %}
+        </form>
+    </div>
+    
+    <!-- Action Buttons -->
     <a href="{% url 'battycoda_app:automation_home' %}" class="btn btn-primary" 
        data-bs-toggle="tooltip" data-bs-placement="bottom" title="Create a task batch from classification">
         <i class="fas fa-robot"></i> Create from Classification
@@ -116,12 +135,12 @@
             <ul class="pagination mb-0">
                 {% if batches.has_previous %}
                     <li class="page-item">
-                        <a class="page-link" href="?page=1" aria-label="First">
+                        <a class="page-link" href="?page=1{% if request.GET.project %}&project={{ request.GET.project }}{% endif %}" aria-label="First">
                             <span aria-hidden="true">&laquo;&laquo;</span>
                         </a>
                     </li>
                     <li class="page-item">
-                        <a class="page-link" href="?page={{ batches.previous_page_number }}" aria-label="Previous">
+                        <a class="page-link" href="?page={{ batches.previous_page_number }}{% if request.GET.project %}&project={{ request.GET.project }}{% endif %}" aria-label="Previous">
                             <span aria-hidden="true">&laquo;</span>
                         </a>
                     </li>
@@ -144,19 +163,19 @@
                         </li>
                     {% elif p > batches.number|add:"-3" and p < batches.number|add:"3" %}
                         <li class="page-item">
-                            <a class="page-link" href="?page={{ p }}">{{ p }}</a>
+                            <a class="page-link" href="?page={{ p }}{% if request.GET.project %}&project={{ request.GET.project }}{% endif %}">{{ p }}</a>
                         </li>
                     {% endif %}
                 {% endfor %}
                 
                 {% if batches.has_next %}
                     <li class="page-item">
-                        <a class="page-link" href="?page={{ batches.next_page_number }}" aria-label="Next">
+                        <a class="page-link" href="?page={{ batches.next_page_number }}{% if request.GET.project %}&project={{ request.GET.project }}{% endif %}" aria-label="Next">
                             <span aria-hidden="true">&raquo;</span>
                         </a>
                     </li>
                     <li class="page-item">
-                        <a class="page-link" href="?page={{ batches.paginator.num_pages }}" aria-label="Last">
+                        <a class="page-link" href="?page={{ batches.paginator.num_pages }}{% if request.GET.project %}&project={{ request.GET.project }}{% endif %}" aria-label="Last">
                             <span aria-hidden="true">&raquo;&raquo;</span>
                         </a>
                     </li>

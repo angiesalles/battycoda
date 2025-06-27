@@ -37,6 +37,7 @@ class AuthenticationMiddleware:
             "/accounts/check-email/",
             "/welcome/",  # Allow access to the landing page
             "/hijack/",   # Allow hijack functionality access
+            "/simple-api/",  # Allow simple API access (uses API key auth)
         ]
 
         # Skip for Let's Encrypt ACME challenges

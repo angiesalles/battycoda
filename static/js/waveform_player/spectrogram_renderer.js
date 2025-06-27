@@ -23,6 +23,11 @@ export class SpectrogramRenderer {
         this.lastZoomOffset = null;
         this.lastWidth = null;
         this.lastHeight = null;
+        
+        // Drag tracking for distinguishing clicks from drags
+        this.isDragSelect = false;
+        this.dragStartTime = 0;
+        this.dragStartX = 0;
     }
     
     /**
@@ -95,7 +100,6 @@ export class SpectrogramRenderer {
         if (!this.canvas) return;
         
         // Mouse events for selection and playback
-        this.canvas.addEventListener('click', (e) => this.handleClick(e));
         this.canvas.addEventListener('mousedown', (e) => this.handleMouseDown(e));
         this.canvas.addEventListener('mousemove', (e) => this.handleMouseMove(e));
         this.canvas.addEventListener('mouseup', (e) => this.handleMouseUp(e));
@@ -290,59 +294,78 @@ export class SpectrogramRenderer {
     }
     
     /**
-     * Handle click events
-     */
-    handleClick(e) {
-        const rect = this.canvas.getBoundingClientRect();
-        const x = e.clientX - rect.left;
-        const canvasWidth = rect.width;
-        
-        const time = this.xToTime(x, canvasWidth);
-        
-        // Seek to clicked position
-        this.player.seekTo(time);
-    }
-    
-    /**
      * Handle mouse down events
      */
     handleMouseDown(e) {
-        if (!this.player.allowSelection) return;
-        
         const rect = this.canvas.getBoundingClientRect();
-        const x = e.clientX - rect.left;
-        const canvasWidth = rect.width;
+        this.dragStartX = e.clientX - rect.left;
+        this.dragStartTime = Date.now();
+        this.isDragSelect = false;
         
-        const time = this.xToTime(x, canvasWidth);
-        this.player.selectionStart = time;
-        this.player.selectionEnd = time;
-        
-        this.isDragging = true;
-        this.render();
+        // If selection is allowed, prepare for potential drag selection
+        if (this.player.allowSelection) {
+            const canvasWidth = rect.width;
+            const time = this.xToTime(this.dragStartX, canvasWidth);
+            this.player.selectionStart = time;
+            this.player.selectionEnd = time;
+        }
     }
     
     /**
      * Handle mouse move events
      */
     handleMouseMove(e) {
-        if (!this.isDragging || !this.player.allowSelection) return;
+        if (this.dragStartTime === 0 || !this.player.allowSelection) return;
         
         const rect = this.canvas.getBoundingClientRect();
         const x = e.clientX - rect.left;
-        const canvasWidth = rect.width;
+        const deltaX = Math.abs(x - this.dragStartX);
         
-        const time = this.xToTime(x, canvasWidth);
-        this.player.selectionEnd = time;
+        // Only start drag selection if we've moved more than 5 pixels
+        if (!this.isDragSelect && deltaX > 5) {
+            this.isDragSelect = true;
+        }
         
-        this.render();
-        this.player.updateSelectionDisplay();
+        if (this.isDragSelect) {
+            const canvasWidth = rect.width;
+            const time = this.xToTime(x, canvasWidth);
+            this.player.selectionEnd = time;
+            
+            this.render();
+            this.player.updateSelectionDisplay();
+        }
     }
     
     /**
      * Handle mouse up events
      */
     handleMouseUp(e) {
-        this.isDragging = false;
+        if (this.dragStartTime === 0) return;
+        
+        const timeSinceDragStart = Date.now() - this.dragStartTime;
+        
+        // If we didn't drag (or dragged very briefly), treat as a seek click
+        if (!this.isDragSelect || timeSinceDragStart < 150) {
+            const rect = this.canvas.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const canvasWidth = rect.width;
+            const time = this.xToTime(x, canvasWidth);
+            
+            // Seek to clicked position (only if player has seekTo method)
+            if (this.player.seekTo) {
+                this.player.seekTo(time);
+            } else {
+                // Fallback: directly set current time
+                this.player.currentTime = Math.max(0, Math.min(this.player.duration, time));
+                this.player.audioPlayer.currentTime = this.player.currentTime;
+                this.player.updateTimeDisplay();
+                this.player.redrawCurrentView();
+            }
+        }
+        
+        // Reset drag state
+        this.isDragSelect = false;
+        this.dragStartTime = 0;
     }
     
     /**

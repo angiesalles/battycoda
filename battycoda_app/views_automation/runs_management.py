@@ -13,7 +13,7 @@ from django.utils import timezone
 
 from battycoda_app.models.detection import CallProbability, Classifier, DetectionResult, DetectionRun
 from battycoda_app.models.recording import Segmentation, Segment
-from battycoda_app.models.organization import Species
+from battycoda_app.models.organization import Project, Species
 
 @login_required
 def automation_home_view(request):
@@ -60,11 +60,30 @@ def automation_home_view(request):
             except (AttributeError, Exception):
                 # Skip this run if it causes errors
                 continue
+
+        # Apply project filter if provided
+        project_id = request.GET.get('project')
+        selected_project_id = None
+        if project_id:
+            try:
+                project_id = int(project_id)
+                valid_runs = [run for run in valid_runs if run.segmentation.recording.project_id == project_id]
+                selected_project_id = project_id
+            except (ValueError, TypeError):
+                pass
+
+        # Get available projects for the filter dropdown
+        if profile.group:
+            available_projects = Project.objects.filter(group=profile.group).order_by('name')
+        else:
+            available_projects = Project.objects.filter(created_by=request.user).order_by('name')
             
         context = {
             "runs": valid_runs,
             "classifiers": classifiers,
             "training_jobs": training_jobs,
+            "available_projects": available_projects,
+            "selected_project_id": selected_project_id,
         }
 
         return render(request, "automation/dashboard.html", context)
@@ -444,7 +463,7 @@ def create_classification_for_species_view(request, species_id):
             # Create a detection run for each segmentation
             run_count = 0
             for segmentation in recording_segmentation_map.values():
-                # Create the detection run
+                # Create the detection run with "queued" status
                 run = DetectionRun.objects.create(
                     name=f"{run_name} - {segmentation.recording.name}",
                     segmentation=segmentation,
@@ -452,18 +471,19 @@ def create_classification_for_species_view(request, species_id):
                     group=profile.group,
                     algorithm_type=classifier.response_format,
                     classifier=classifier,
-                    status="pending",
+                    status="queued",  # Start in queued status
                     progress=0.0,
                 )
                 
-                # Launch the appropriate Celery task
-                from battycoda_app.audio.task_modules.classification_tasks import run_call_detection
-                run_call_detection.delay(run.id)
+                # Queue the run for processing instead of launching immediately
+                from battycoda_app.audio.task_modules.queue_processor import queue_classification_run
+                queue_classification_run.delay(run.id)
                 run_count += 1
             
             messages.success(
                 request, 
-                f"Created {run_count} classification runs for {segments.count()} segments across {run_count} recordings."
+                f"Created {run_count} classification runs for {segments.count()} segments across {run_count} recordings. "
+                f"Runs have been queued and will be processed sequentially to prevent resource conflicts."
             )
             return redirect('battycoda_app:automation_home')
             

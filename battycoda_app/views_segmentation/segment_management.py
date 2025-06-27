@@ -8,6 +8,7 @@ import hashlib
 from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
+from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.db import transaction
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
@@ -117,7 +118,7 @@ def segment_recording_view(request, recording_id):
                 
             # Use this segmentation
             active_segmentation = requested_segmentation
-            segments = Segment.objects.filter(segmentation=active_segmentation).order_by("onset")
+            segments_queryset = Segment.objects.filter(segmentation=active_segmentation).order_by("onset")
             
             # Add segmentation info to context
             segmentation_info = {
@@ -136,7 +137,7 @@ def segment_recording_view(request, recording_id):
             active_segmentation = Segmentation.objects.get(recording=recording, is_active=True)
 
             # Get segments from the active segmentation
-            segments = Segment.objects.filter(segmentation=active_segmentation).order_by("onset")
+            segments_queryset = Segment.objects.filter(segmentation=active_segmentation).order_by("onset")
 
             # Add segmentation info to context
             segmentation_info = {
@@ -148,7 +149,7 @@ def segment_recording_view(request, recording_id):
             }
         except Segmentation.DoesNotExist:
             # No active segmentation, return empty queryset
-            segments = Segment.objects.none()
+            segments_queryset = Segment.objects.none()
             segmentation_info = None
 
             # Check if there are any segmentations at all
@@ -161,14 +162,63 @@ def segment_recording_view(request, recording_id):
                 # Redirect to refresh the page with the newly activated segmentation
                 return redirect("battycoda_app:segment_recording", recording_id=recording.id)
 
+    # Apply filters if provided
+    min_duration = request.GET.get('min_duration')
+    max_duration = request.GET.get('max_duration')
+    search_id = request.GET.get('search_id')
+    
+    if min_duration:
+        try:
+            min_duration = float(min_duration)
+            # Filter by duration (offset - onset)
+            segments_queryset = segments_queryset.extra(
+                where=["(offset - onset) >= %s"],
+                params=[min_duration]
+            )
+        except ValueError:
+            pass
+    
+    if max_duration:
+        try:
+            max_duration = float(max_duration)
+            segments_queryset = segments_queryset.extra(
+                where=["(offset - onset) <= %s"],
+                params=[max_duration]
+            )
+        except ValueError:
+            pass
+    
+    if search_id:
+        try:
+            search_id = int(search_id)
+            segments_queryset = segments_queryset.filter(id=search_id)
+        except ValueError:
+            pass
+
+    # Set up pagination for segments - 50 segments per page for reasonable performance
+    paginator = Paginator(segments_queryset, 50)
+    page = request.GET.get('page')
+    
+    try:
+        segments = paginator.page(page)
+    except PageNotAnInteger:
+        segments = paginator.page(1)
+    except EmptyPage:
+        segments = paginator.page(paginator.num_pages)
+
     # Check spectrogram status and jobs
     spectrogram_info = get_spectrogram_status(recording)
     spectrogram_url = spectrogram_info.get('url')
 
-    # Convert segments to JSON
+    # For waveform display, only load first 200 segments to avoid performance issues
+    # Additional segments will be loaded dynamically via AJAX as needed
+    initial_segments_for_waveform = segments_queryset[:200]
     segments_json = []
-    for segment in segments:
+    for segment in initial_segments_for_waveform:
         segments_json.append({"id": segment.id, "onset": segment.onset, "offset": segment.offset})
+
+    # Get total segment count for context
+    total_segments_count = segments_queryset.count()
 
     # Get all segmentations for the dropdown
     all_segmentations = Segmentation.objects.filter(recording=recording).order_by("-created_at")
@@ -177,10 +227,16 @@ def segment_recording_view(request, recording_id):
         "recording": recording,
         "segments": segments,
         "segments_json": json.dumps(segments_json),
+        "total_segments_count": total_segments_count,
         "spectrogram_url": spectrogram_url,
         "spectrogram_info": spectrogram_info,
         "active_segmentation": segmentation_info,
         "all_segmentations": all_segmentations,
+        "filter_values": {
+            "min_duration": request.GET.get('min_duration', ''),
+            "max_duration": request.GET.get('max_duration', ''),
+            "search_id": request.GET.get('search_id', ''),
+        },
     }
 
     return render(request, "recordings/segment_recording.html", context)

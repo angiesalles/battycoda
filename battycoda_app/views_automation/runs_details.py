@@ -7,6 +7,7 @@ import os
 
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
+from django.core.paginator import Paginator
 from django.http import FileResponse, Http404, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 
@@ -26,14 +27,20 @@ def detection_run_detail_view(request, run_id):
         return redirect("battycoda_app:automation_home")
 
     # Get results with segment ordering
-    results = DetectionResult.objects.filter(detection_run=run).order_by("segment__onset")
+    results_query = DetectionResult.objects.filter(detection_run=run).order_by("segment__onset")
 
     # Get all call types for this species to use as table headers
     call_types = Call.objects.filter(species=run.segmentation.recording.species).order_by("short_name")
 
+    # Add pagination
+    page_size = 50  # Show 50 results per page
+    paginator = Paginator(results_query, page_size)
+    page_number = request.GET.get('page', 1)
+    page_obj = paginator.get_page(page_number)
+
     # Prepare the data for rendering
     results_with_probabilities = []
-    for result in results:
+    for result in page_obj:
         # Get all probabilities for this result
         probabilities = CallProbability.objects.filter(detection_result=result)
 
@@ -52,6 +59,8 @@ def detection_run_detail_view(request, run_id):
         "run": run,
         "call_types": call_types,
         "results": results_with_probabilities,
+        "page_obj": page_obj,
+        "paginator": paginator,
     }
 
     return render(request, "automation/run_detail.html", context)

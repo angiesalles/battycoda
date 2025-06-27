@@ -7,9 +7,30 @@
 {% block item_count %}{{ segmentation_jobs|length|default:"0" }}{% endblock %}
 
 {% block action_buttons %}
-<a href="{% url 'battycoda_app:select_recording_for_segmentation' %}" class="btn btn-primary">
-    <span class="s7-plus mr-1"></span> New Segmentation Run
-</a>
+<div class="d-flex gap-2 align-items-center">
+    <!-- Project Filter -->
+    <div class="me-3">
+        <form method="get" class="d-flex align-items-center gap-2">
+            <label for="project-filter" class="form-label mb-0 small text-muted">Filter by Project:</label>
+            <select name="project" id="project-filter" class="form-select form-select-sm" onchange="this.form.submit()">
+                <option value="">All Projects</option>
+                {% for project in available_projects %}
+                    <option value="{{ project.id }}" {% if project.id == selected_project_id %}selected{% endif %}>
+                        {{ project.name }}
+                    </option>
+                {% endfor %}
+            </select>
+            {% if request.GET.page %}
+                <input type="hidden" name="page" value="{{ request.GET.page }}">
+            {% endif %}
+        </form>
+    </div>
+    
+    <!-- Action Buttons -->
+    <a href="{% url 'battycoda_app:select_recording_for_segmentation' %}" class="btn btn-primary">
+        <span class="s7-plus me-1"></span> New Segmentation Run
+    </a>
+</div>
 {% endblock %}
 
 {% block data_table %}

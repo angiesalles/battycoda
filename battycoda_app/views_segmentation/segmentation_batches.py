@@ -13,6 +13,7 @@ from django.urls import reverse
 from django.utils import timezone
 
 from battycoda_app.models.recording import Recording, Segmentation, Segment
+from battycoda_app.models.organization import Project
 
 @login_required
 def batch_segmentation_view(request):
@@ -32,10 +33,29 @@ def batch_segmentation_view(request):
         # Fallback to showing only user's recordings if no group is assigned
         recordings = Recording.objects.filter(created_by=request.user).order_by("-created_at")
 
+    # Apply project filter if provided
+    project_id = request.GET.get('project')
+    selected_project_id = None
+    if project_id:
+        try:
+            project_id = int(project_id)
+            recordings = recordings.filter(project_id=project_id)
+            selected_project_id = project_id
+        except (ValueError, TypeError):
+            pass
+
+    # Get available projects for the filter dropdown
+    if profile.group:
+        available_projects = Project.objects.filter(group=profile.group).order_by('name')
+    else:
+        available_projects = Project.objects.filter(created_by=request.user).order_by('name')
+
     context = {
         "recordings": recordings,
         "title": "Segmentations",
         "page_description": "Apply segmentation strategies to multiple recordings and monitor segmentation jobs.",
+        "available_projects": available_projects,
+        "selected_project_id": selected_project_id,
     }
 
     return render(request, "recordings/batch_segmentation.html", context)

@@ -4,6 +4,7 @@ Core views for handling recording CRUD operations.
 from .views_common import *
 from .tasks import calculate_audio_duration
 from .forms_edit import RecordingEditForm
+from .models.organization import Project
 
 # Set up logging
 
@@ -41,10 +42,29 @@ def recording_list_view(request):
         has_missing_sample_rates = False
         has_duplicate_recordings_flag = False
 
+    # Apply project filter if provided
+    project_id = request.GET.get('project')
+    selected_project_id = None
+    if project_id:
+        try:
+            project_id = int(project_id)
+            recordings = recordings.filter(project_id=project_id)
+            selected_project_id = project_id
+        except (ValueError, TypeError):
+            pass
+
+    # Get available projects for the filter dropdown
+    if profile.group:
+        available_projects = Project.objects.filter(group=profile.group).order_by('name')
+    else:
+        available_projects = Project.objects.filter(created_by=request.user).order_by('name')
+
     context = {
         "recordings": recordings,
         "has_missing_sample_rates": has_missing_sample_rates,
         "has_duplicate_recordings": has_duplicate_recordings_flag,
+        "available_projects": available_projects,
+        "selected_project_id": selected_project_id,
     }
 
     return render(request, "recordings/recording_list.html", context)

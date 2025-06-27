@@ -4,7 +4,7 @@
  * This is the main entry point for the segmentation functionality.
  */
 
-import { SegmentManager } from './segment_manager.js';
+import { SegmentManager } from './segment_manager_simple.js';
 
 // Initialize segmentation functionality
 export function initSegmentation(options) {

@@ -4,6 +4,8 @@
  * Responsible for drawing the waveform visualization
  */
 
+import { CanvasInteractions } from './canvas_interactions.js';
+
 export class WaveformRenderer {
     /**
      * Create a new WaveformRenderer
@@ -11,6 +13,7 @@ export class WaveformRenderer {
      */
     constructor(player) {
         this.player = player;
+        this.canvasInteractions = new CanvasInteractions(player);
     }
     
     /**
@@ -31,18 +34,25 @@ export class WaveformRenderer {
         const visibleStartTime = player.zoomOffset * player.duration;
         const visibleEndTime = Math.min(visibleStartTime + visibleDuration, player.duration);
         
-        // Remove only waveform canvases, preserve spectrogram canvas
-        const waveformCanvases = player.waveformContainer.querySelectorAll('canvas.waveform-canvas, canvas:not([class])');
-        waveformCanvases.forEach(canvas => canvas.remove());
+        // Get or create persistent waveform canvas
+        let canvas = player.waveformContainer.querySelector('canvas.waveform-canvas');
+        if (!canvas) {
+            canvas = document.createElement('canvas');
+            canvas.id = `${player.containerId}-waveform-canvas`;
+            canvas.className = 'waveform-canvas';
+            canvas.style.position = 'absolute';
+            canvas.style.top = '0';
+            canvas.style.left = '0';
+            canvas.style.width = '100%';
+            canvas.style.height = '100%';
+            player.waveformContainer.appendChild(canvas);
+            
+            // Setup event handlers only once when canvas is created
+            console.log('WaveformRenderer.draw(): Setting up canvas event handlers');
+            this.canvasInteractions.setupCanvasHandlers(canvas, canvas.width, visibleStartTime, visibleDuration);
+        }
         
-        const canvas = document.createElement('canvas');
-        canvas.id = `${player.containerId}-waveform-canvas`;
-        canvas.className = 'waveform-canvas';
-        canvas.style.position = 'absolute';
-        canvas.style.top = '0';
-        canvas.style.left = '0';
-        canvas.style.width = '100%';
-        canvas.style.height = '100%';
+        // Update canvas dimensions (may have changed due to resize)
         canvas.width = player.waveformContainer.clientWidth;
         canvas.height = player.waveformContainer.clientHeight;
         
@@ -52,8 +62,6 @@ export class WaveformRenderer {
             canvasWidth: canvas.width,
             canvasHeight: canvas.height
         });
-        
-        player.waveformContainer.appendChild(canvas);
         
         const ctx = canvas.getContext('2d');
         const width = canvas.width;
@@ -80,8 +88,8 @@ export class WaveformRenderer {
         // Draw cursor at current time
         this.drawPlaybackCursor(ctx, width, height, visibleStartTime, visibleDuration);
         
-        // Add click event listener to canvas for seeking
-        this.addCanvasClickHandler(canvas, width, visibleStartTime, visibleDuration);
+        // Update interaction parameters for current view (always needed)
+        this.canvasInteractions.updateViewParameters(width, visibleStartTime, visibleDuration);
     }
     
     /**
@@ -300,65 +308,6 @@ export class WaveformRenderer {
         ctx.stroke();
     }
     
-    /**
-     * Add click and mousedown handlers to the waveform canvas for seeking
-     */
-    addCanvasClickHandler(canvas, width, visibleStartTime, visibleDuration) {
-        const player = this.player;
-        
-        // Function to update the player position based on mouse position
-        const updatePlayerPosition = (e) => {
-            const rect = canvas.getBoundingClientRect();
-            const x = Math.max(0, Math.min(width, e.clientX - rect.left));
-            
-            // Calculate time position considering zoom
-            const visibleProportion = x / width;
-            
-            // Calculate the actual time position
-            const timePos = visibleStartTime + (visibleProportion * visibleDuration);
-            
-            // Store current visible window before changing position
-            const currentVisibleStart = visibleStartTime;
-            const currentVisibleEnd = visibleStartTime + visibleDuration;
-            
-            // Check if the new position is outside the current visible area
-            const positionOutsideView = timePos < currentVisibleStart || timePos > currentVisibleEnd;
-            
-            // Set current time
-            player.currentTime = Math.max(0, Math.min(player.duration, timePos));
-            player.audioPlayer.currentTime = player.currentTime;
-            player.updateTimeDisplay();
-            
-            // Only adjust the view if the position is completely outside visible area
-            if (positionOutsideView && player.zoomLevel > 1) {
-                // Calculate new offset to make the position barely visible
-                // but without centering it
-                const visibleDurationRatio = visibleDuration / player.duration;
-                
-                if (timePos < currentVisibleStart) {
-                    // If clicking to the left of visible area, show position at 25% from left edge
-                    player.zoomOffset = Math.max(0, timePos / player.duration - 0.25 * visibleDurationRatio);
-                } else if (timePos > currentVisibleEnd) {
-                    // If clicking to the right of visible area, show position at 25% from right edge
-                    player.zoomOffset = Math.min(
-                        1 - visibleDurationRatio,
-                        timePos / player.duration - 0.75 * visibleDurationRatio
-                    );
-                }
-            }
-            
-            // Update the view
-            player.redrawCurrentView();
-            player.drawTimeline();
-        };
-        
-        // Both click and mousedown do the same thing: immediately update position
-        canvas.addEventListener('click', updatePlayerPosition);
-        canvas.addEventListener('mousedown', updatePlayerPosition);
-        
-        // Set cursor to indicate it's clickable
-        canvas.style.cursor = 'pointer';
-    }
     
     /**
      * Show the waveform view

@@ -131,6 +131,24 @@
                 <small class="form-text text-muted">Creates a detailed visualization showing signal processing steps and threshold application. Useful for debugging segmentation issues.</small>
             </div>
             
+            <div class="mb-4">
+                <h6>Preview Segmentation</h6>
+                <div class="row">
+                    <div class="col-md-6">
+                        <label for="preview_start_time" class="form-label">Preview Start Time (seconds):</label>
+                        <input type="number" class="form-control" 
+                            id="preview_start_time" name="preview_start_time" value="0" 
+                            min="0" step="0.1">
+                        <small class="form-text text-muted">Start time for 10-second preview window</small>
+                    </div>
+                    <div class="col-md-6 d-flex align-items-end">
+                        <button type="button" class="btn btn-outline-info" id="previewBtn" data-recording-id="{{ recording.id }}">
+                            <i class="fas fa-search"></i> Preview Segmentation
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
             <div class="text-end">
                 <button type="submit" class="btn btn-primary" id="startSegmentationBtn">
                     <i class="fas fa-play"></i> Start Automated Segmentation
@@ -139,6 +157,33 @@
         </div>
     </div>
 </form>
+
+<!-- Preview Results Display -->
+<div class="card mt-4" id="previewResultsCard" style="display: none;">
+    <div class="card-header">
+        <h5>Segmentation Preview Results</h5>
+    </div>
+    <div class="card-body">
+        <div id="previewResults">
+            <div class="row">
+                <div class="col-md-6">
+                    <h6>Preview Statistics</h6>
+                    <p><strong>Algorithm:</strong> <span id="previewAlgorithm">-</span></p>
+                    <p><strong>Time Range:</strong> <span id="previewTimeRange">-</span></p>
+                    <p><strong>Segments Found:</strong> <span id="previewSegmentCount">0</span></p>
+                    <p><strong>Segment Density:</strong> <span id="previewDensity">0</span> segments/second</p>
+                    <p><strong>Avg Duration:</strong> <span id="previewAvgDuration">0</span> seconds</p>
+                </div>
+                <div class="col-md-6">
+                    <h6>Detected Segments</h6>
+                    <div id="previewSegmentsList" style="max-height: 200px; overflow-y: auto;">
+                        <!-- Segments will be populated here -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
 
 <!-- Status display area - hidden initially -->
 <div class="card mt-4" id="statusCard" style="display: none;">
@@ -166,5 +211,5 @@
 {% endblock %}
 
 {% block extra_js %}
-<!-- No JavaScript needed - all handled server-side -->
+<script src="{% static 'js/segmentation_preview.js' %}"></script>
 {% endblock %}

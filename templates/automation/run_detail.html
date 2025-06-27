@@ -105,7 +105,9 @@
                         <div class="col-md-6">
                             <div class="mb-3">
                                 <h5>Status</h5>
-                                {% if run.status == 'pending' %}
+                                {% if run.status == 'queued' %}
+                                <span class="badge bg-secondary fs-5">Queued</span>
+                                {% elif run.status == 'pending' %}
                                 <span class="badge bg-warning text-dark fs-5">Pending</span>
                                 {% elif run.status == 'in_progress' %}
                                 <span class="badge bg-info fs-5">In Progress</span>
@@ -168,7 +170,11 @@
         <div class="col-md-12">
             <div class="card">
                 <div class="card-header d-flex justify-content-between align-items-center">
-                    <h4 class="mb-0">Classification Results</h4>
+                    <h4 class="mb-0">Classification Results 
+                        {% if paginator.count %}
+                            <small class="text-muted">({{ paginator.count }} total)</small>
+                        {% endif %}
+                    </h4>
                     
                     <div class="input-group" style="max-width: 300px;">
                         <span class="input-group-text">
@@ -232,6 +238,9 @@
                             </tbody>
                         </table>
                     </div>
+                    
+                    {% include 'includes/pagination.html' %}
+                    
                     {% else %}
                     <div class="alert alert-info">
                         {% if run.status == 'pending' or run.status == 'in_progress' %}

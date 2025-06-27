@@ -141,6 +141,7 @@ class DetectionRun(models.Model):
     )
 
     STATUS_CHOICES = (
+        ("queued", "Queued"),
         ("pending", "Pending"),
         ("in_progress", "In Progress"),
         ("completed", "Completed"),

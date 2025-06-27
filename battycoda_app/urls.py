@@ -1,13 +1,15 @@
-from django.urls import path
+from django.urls import path, include
 
 from .views_segmentation.segment_management import (
     add_segment_view, delete_segment_view, edit_segment_view, segment_recording_view
 )
+from .views_segmentation.segment_ajax import load_segments_ajax
 from .views_segmentation.segmentation_batches import batch_segmentation_view, segmentation_jobs_status_view
 from .views_segmentation.segmentation_execution import (
     auto_segment_recording_view, auto_segment_status_view, select_recording_for_segmentation_view
 )
 from .views_segmentation.segmentation_import import upload_pickle_segments_view
+from .views_segmentation.segmentation_preview import preview_segmentation_view
 from .views_segmentation.segmentation_settings import activate_segmentation_view
 
 # Direct imports from views_automation
@@ -77,6 +79,7 @@ urlpatterns = [
     path("accounts/login-with-token/<str:token>/", views_auth.login_with_token, name="login_with_token"),
     path("accounts/check-username/", views_auth.check_username, name="check_username"),
     path("accounts/check-email/", views_auth.check_email, name="check_email"),
+    path("accounts/generate-api-key/", views_auth.generate_api_key_view, name="generate_api_key"),
     path("update_theme_preference/", views_auth.update_theme_preference, name="update_theme_preference"),
     path("update_profile_ajax/", views_auth.update_profile_ajax, name="update_profile_ajax"),
     # Admin user hijacking is now handled by django-hijack package
@@ -247,6 +250,11 @@ urlpatterns = [
         name="auto_segment_status",
     ),
     path(
+        "recordings/<int:recording_id>/auto-segment/preview/",
+        preview_segmentation_view,
+        name="preview_segmentation",
+    ),
+    path(
         "recordings/<int:recording_id>/upload-pickle/",
         upload_pickle_segments_view,
         name="upload_pickle_segments",
@@ -286,6 +294,7 @@ urlpatterns = [
     path("segments/<int:recording_id>/add/", add_segment_view, name="add_segment"),
     path("segments/<int:segment_id>/edit/", edit_segment_view, name="edit_segment"),
     path("segments/<int:segment_id>/delete/", delete_segment_view, name="delete_segment"),
+    path("segments/<int:recording_id>/load-ajax/", load_segments_ajax, name="load_segments_ajax"),
     
     # Notification routes
     path("notifications/", notification_list_view, name="notifications"),
@@ -320,4 +329,7 @@ urlpatterns = [
     # Chess proxy routes (authenticated users only)
     path("chess/", views_chess.chess_home_view, name="chess_home"),
     path("chess/<path:path>", views_chess.chess_proxy_view, name="chess_proxy"),
+    
+    # Simple API routes (API key authentication)
+    path("simple-api/", include('battycoda_app.simple_api_urls')),
 ]

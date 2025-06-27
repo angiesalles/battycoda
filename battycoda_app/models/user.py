@@ -84,6 +84,15 @@ class UserProfile(models.Model):
         null=True,
         help_text="Profile image"
     )
+    # API access
+    api_key = models.CharField(
+        max_length=40, 
+        unique=True, 
+        blank=True, 
+        null=True,
+        help_text="API key for programmatic access"
+    )
+    
     # Authentication fields (previously Cloudflare fields, kept for data compatibility)
     cloudflare_id = models.CharField(
         max_length=255, blank=True, null=True, help_text="Deprecated - kept for data compatibility"
@@ -96,6 +105,12 @@ class UserProfile(models.Model):
 
     def __str__(self):
         return self.user.username
+
+    def generate_api_key(self):
+        """Generate a new API key for this user"""
+        self.api_key = secrets.token_urlsafe(30)[:40]  # Generate a 40-character key
+        self.save(update_fields=['api_key'])
+        return self.api_key
 
     def is_admin_of_group(self, group=None):
         """Check if user is admin of the specified group (defaults to current group)"""
@@ -127,6 +142,52 @@ class UserProfile(models.Model):
             return [self.group] + result
 
         return membership_groups
+
+    @property
+    def total_storage_gb(self):
+        """Calculate total storage used by user's recordings in GB"""
+        import os
+        from django.db.models import Sum
+        
+        # Get all recordings uploaded by this user
+        recordings = self.user.recordings.all()
+        
+        total_bytes = 0
+        for recording in recordings:
+            if recording.wav_file and os.path.exists(recording.wav_file.path):
+                try:
+                    total_bytes += os.path.getsize(recording.wav_file.path)
+                except (OSError, IOError):
+                    # File might not exist or be accessible
+                    continue
+        
+        # Convert bytes to GB (1 GB = 1024^3 bytes)
+        total_gb = total_bytes / (1024 ** 3)
+        return round(total_gb, 2)
+    
+    @property
+    def storage_limit_gb(self):
+        """Get storage limit for this user in GB"""
+        # Default storage limit - can be made configurable per user/group in the future
+        return 10.0  # 10 GB default limit
+    
+    @property
+    def available_storage_gb(self):
+        """Calculate remaining available storage in GB"""
+        used = self.total_storage_gb
+        limit = self.storage_limit_gb
+        available = limit - used
+        return round(max(0, available), 2)  # Ensure non-negative
+    
+    @property
+    def storage_usage_percentage(self):
+        """Calculate storage usage as a percentage"""
+        used = self.total_storage_gb
+        limit = self.storage_limit_gb
+        if limit <= 0:
+            return 0
+        percentage = (used / limit) * 100
+        return round(min(100, percentage), 1)  # Cap at 100%
 
 # Create user profile when user is created
 @receiver(post_save, sender=User)

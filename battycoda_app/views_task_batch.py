@@ -13,6 +13,7 @@ import numpy as np
 
 from .audio.utils import process_pickle_file
 from .forms import TaskBatchForm
+from .models.organization import Project
 from .models.recording import Recording, Segment
 from .models.task import Task, TaskBatch
 from .models.user import UserProfile
@@ -22,7 +23,7 @@ from .utils_modules.task_export_utils import generate_tasks_csv
 
 @login_required
 def task_batch_list_view(request):
-    """Display list of all task batches with pagination"""
+    """Display list of all task batches with pagination and project filtering"""
     from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
     
     # Get user profile
@@ -39,6 +40,21 @@ def task_batch_list_view(request):
     else:
         # Fallback to showing only user's batches if no group is assigned
         batches_list = TaskBatch.objects.filter(created_by=request.user).order_by("-created_at")
+    
+    # Apply project filter if provided
+    project_id = request.GET.get('project')
+    if project_id:
+        try:
+            project_id = int(project_id)
+            batches_list = batches_list.filter(project_id=project_id)
+        except (ValueError, TypeError):
+            pass  # Invalid project ID, ignore filter
+    
+    # Get available projects for the filter dropdown
+    if profile.group:
+        available_projects = Project.objects.filter(group=profile.group).order_by('name')
+    else:
+        available_projects = Project.objects.filter(created_by=request.user).order_by('name')
     
     # Set up pagination - 20 batches per page
     paginator = Paginator(batches_list, 20)
@@ -57,6 +73,8 @@ def task_batch_list_view(request):
     context = {
         "batches": batches,
         "total_count": batches_list.count(),
+        "available_projects": available_projects,
+        "selected_project_id": int(project_id) if project_id else None,
     }
 
     return render(request, "tasks/batch_list.html", context)

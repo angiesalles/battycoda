@@ -42,6 +42,27 @@ services:
       - redis
     restart: unless-stopped
 
+  celery-beat:
+    build:
+      context: .
+      dockerfile: Dockerfile.celery
+    network_mode: host
+    user: "1000:1000"  # Set to match the host user to fix permission issues
+    volumes:
+      - ./:/app:rw
+    env_file:
+      - .env
+    environment:
+      - DOMAIN_NAME=${DOMAIN_NAME}
+      - REDIS_URL=redis://localhost:6379/0
+      - CELERY_BROKER_URL=redis://localhost:6379/0
+      - CELERY_RESULT_BACKEND=redis://localhost:6379/0
+    depends_on:
+      - redis
+      - celery
+    restart: unless-stopped
+    command: ["celery", "-A", "config", "beat", "--loglevel=info"]
+
   flower:
     build:
       context: .

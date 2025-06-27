@@ -65,6 +65,62 @@
                     <div id="email-update-status" class="mt-2"></div>
                 </div>
                 
+                <!-- API Key Section -->
+                <div class="mb-3">
+                    <label class="form-label">API Key for R Scripts:</label>
+                    <div class="input-group">
+                        {% if profile.api_key %}
+                            <input type="text" class="form-control" value="{{ profile.api_key }}" readonly id="api-key-display">
+                            <button type="button" class="btn btn-outline-secondary" onclick="copyApiKey()">
+                                <i class="fa fa-copy"></i> Copy
+                            </button>
+                        {% else %}
+                            <input type="text" class="form-control" value="No API key generated" readonly>
+                        {% endif %}
+                    </div>
+                    <small class="text-muted d-block mt-1">
+                        Use this key in R scripts to upload recordings and access your data programmatically.
+                        {% if not profile.api_key %}Generate one below.{% endif %}
+                    </small>
+                    
+                    <div class="mt-2">
+                        <form method="post" action="{% url 'battycoda_app:generate_api_key' %}" style="display: inline;">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-sm btn-primary" 
+                                    onclick="return confirm('{% if profile.api_key %}This will replace your existing API key. Any scripts using the old key will stop working. Continue?{% else %}Generate a new API key?{% endif %}')">
+                                <i class="fa fa-key me-1"></i> 
+                                {% if profile.api_key %}Regenerate API Key{% else %}Generate API Key{% endif %}
+                            </button>
+                        </form>
+                    </div>
+                    
+                    <div id="api-key-status" class="mt-2"></div>
+                </div>
+                
+                <!-- Storage Usage Section -->
+                <div class="mb-3">
+                    <label class="form-label">Storage Usage:</label>
+                    <div class="mb-2">
+                        <div class="d-flex justify-content-between mb-1">
+                            <span class="text-sm">{{ profile.total_storage_gb }} GB used of {{ profile.storage_limit_gb }} GB</span>
+                            <span class="text-sm">{{ profile.available_storage_gb }} GB available</span>
+                        </div>
+                        <div class="progress" style="height: 20px;">
+                            <div class="progress-bar {% if profile.storage_usage_percentage > 90 %}bg-danger{% elif profile.storage_usage_percentage > 75 %}bg-warning{% else %}bg-success{% endif %}" 
+                                 role="progressbar" 
+                                 style="width: {{ profile.storage_usage_percentage }}%;" 
+                                 aria-valuenow="{{ profile.storage_usage_percentage }}" 
+                                 aria-valuemin="0" 
+                                 aria-valuemax="100">
+                                {{ profile.storage_usage_percentage }}%
+                            </div>
+                        </div>
+                    </div>
+                    <small class="text-muted">
+                        Total size of recordings you've uploaded to BattyCoda
+                    </small>
+                </div>
+                
                 <!-- Hidden theme field since we're using the theme selector in the navbar -->
                 <input type="hidden" name="theme" value="{{ profile.theme }}" id="id_theme">
             </div>
@@ -282,5 +338,36 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
 });
+
+// Function to copy API key to clipboard
+function copyApiKey() {
+    const apiKeyInput = document.getElementById('api-key-display');
+    apiKeyInput.select();
+    apiKeyInput.setSelectionRange(0, 99999); // For mobile devices
+    
+    try {
+        document.execCommand('copy');
+        
+        // Show success message
+        const statusDiv = document.getElementById('api-key-status');
+        statusDiv.innerHTML = '<div class="alert alert-success py-2">API key copied to clipboard!</div>';
+        
+        // Clear message after 3 seconds
+        setTimeout(() => {
+            statusDiv.innerHTML = '';
+        }, 3000);
+    } catch (err) {
+        console.error('Failed to copy: ', err);
+        
+        // Show error message
+        const statusDiv = document.getElementById('api-key-status');
+        statusDiv.innerHTML = '<div class="alert alert-warning py-2">Please manually copy the API key.</div>';
+        
+        // Clear message after 3 seconds
+        setTimeout(() => {
+            statusDiv.innerHTML = '';
+        }, 3000);
+    }
+}
 </script>
 {% endblock %}

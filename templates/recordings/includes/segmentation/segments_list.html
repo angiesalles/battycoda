@@ -2,9 +2,51 @@
 <div class="card">
     <div class="card-header d-flex justify-content-between align-items-center">
         <h5 class="mb-0">Segments</h5>
-        <span id="segments-count" class="badge bg-primary">{{ segments|length }}</span>
+        <div class="d-flex align-items-center">
+            {% if segments.has_other_pages %}
+            <small class="text-muted me-2">
+                Page {{ segments.number }} of {{ segments.paginator.num_pages }}
+            </small>
+            {% endif %}
+            <span id="segments-count" class="badge bg-primary">{{ total_segments_count|default:segments.paginator.count }}</span>
+        </div>
     </div>
     <div class="card-body">
+        <!-- Filter form -->
+        <div class="mb-3">
+            <form method="get" class="row g-2">
+                {% if request.GET.segmentation_id %}
+                <input type="hidden" name="segmentation_id" value="{{ request.GET.segmentation_id }}">
+                {% endif %}
+                <div class="col-md-3">
+                    <label for="search_id" class="form-label sr-only">Search ID</label>
+                    <input type="number" class="form-control form-control-sm" id="search_id" name="search_id" 
+                           placeholder="Search by ID" value="{{ filter_values.search_id }}">
+                </div>
+                <div class="col-md-3">
+                    <label for="min_duration" class="form-label sr-only">Min Duration</label>
+                    <input type="number" class="form-control form-control-sm" id="min_duration" name="min_duration" 
+                           placeholder="Min duration (s)" step="0.01" value="{{ filter_values.min_duration }}">
+                </div>
+                <div class="col-md-3">
+                    <label for="max_duration" class="form-label sr-only">Max Duration</label>
+                    <input type="number" class="form-control form-control-sm" id="max_duration" name="max_duration" 
+                           placeholder="Max duration (s)" step="0.01" value="{{ filter_values.max_duration }}">
+                </div>
+                <div class="col-md-3">
+                    <button type="submit" class="btn btn-primary btn-sm">
+                        <i class="fas fa-filter"></i> Filter
+                    </button>
+                    {% if filter_values.search_id or filter_values.min_duration or filter_values.max_duration %}
+                    <a href="?{% if request.GET.segmentation_id %}segmentation_id={{ request.GET.segmentation_id }}{% endif %}" 
+                       class="btn btn-outline-secondary btn-sm ms-1">
+                        <i class="fas fa-times"></i> Clear
+                    </a>
+                    {% endif %}
+                </div>
+            </form>
+        </div>
+        
         <div id="segments-container">
             <div class="table-responsive" {% if not segments %}style="display: none;"{% endif %}>
                 <table class="table table-hover table-striped">
@@ -42,5 +84,52 @@
                 <p class="text-muted">Create segments by selecting regions on the waveform</p>
             </div>
         </div>
+        
+        <!-- Pagination controls -->
+        {% if segments.has_other_pages %}
+        <div class="card-footer">
+            <nav aria-label="Segments pagination">
+                <ul class="pagination pagination-sm mb-0 justify-content-center">
+                    {% if segments.has_previous %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page=1{% if request.GET.segmentation_id %}&segmentation_id={{ request.GET.segmentation_id }}{% endif %}{% if request.GET.search_id %}&search_id={{ request.GET.search_id }}{% endif %}{% if request.GET.min_duration %}&min_duration={{ request.GET.min_duration }}{% endif %}{% if request.GET.max_duration %}&max_duration={{ request.GET.max_duration }}{% endif %}" aria-label="First">
+                                <span aria-hidden="true">&laquo;&laquo;</span>
+                            </a>
+                        </li>
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ segments.previous_page_number }}{% if request.GET.segmentation_id %}&segmentation_id={{ request.GET.segmentation_id }}{% endif %}{% if request.GET.search_id %}&search_id={{ request.GET.search_id }}{% endif %}{% if request.GET.min_duration %}&min_duration={{ request.GET.min_duration }}{% endif %}{% if request.GET.max_duration %}&max_duration={{ request.GET.max_duration }}{% endif %}" aria-label="Previous">
+                                <span aria-hidden="true">&laquo;</span>
+                            </a>
+                        </li>
+                    {% endif %}
+                    
+                    {% for num in segments.paginator.page_range %}
+                        {% if num == segments.number %}
+                            <li class="page-item active" aria-current="page">
+                                <span class="page-link">{{ num }}</span>
+                            </li>
+                        {% elif num > segments.number|add:'-3' and num < segments.number|add:'3' %}
+                            <li class="page-item">
+                                <a class="page-link" href="?page={{ num }}{% if request.GET.segmentation_id %}&segmentation_id={{ request.GET.segmentation_id }}{% endif %}{% if request.GET.search_id %}&search_id={{ request.GET.search_id }}{% endif %}{% if request.GET.min_duration %}&min_duration={{ request.GET.min_duration }}{% endif %}{% if request.GET.max_duration %}&max_duration={{ request.GET.max_duration }}{% endif %}">{{ num }}</a>
+                            </li>
+                        {% endif %}
+                    {% endfor %}
+                    
+                    {% if segments.has_next %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ segments.next_page_number }}{% if request.GET.segmentation_id %}&segmentation_id={{ request.GET.segmentation_id }}{% endif %}{% if request.GET.search_id %}&search_id={{ request.GET.search_id }}{% endif %}{% if request.GET.min_duration %}&min_duration={{ request.GET.min_duration }}{% endif %}{% if request.GET.max_duration %}&max_duration={{ request.GET.max_duration }}{% endif %}" aria-label="Next">
+                                <span aria-hidden="true">&raquo;</span>
+                            </a>
+                        </li>
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ segments.paginator.num_pages }}{% if request.GET.segmentation_id %}&segmentation_id={{ request.GET.segmentation_id }}{% endif %}{% if request.GET.search_id %}&search_id={{ request.GET.search_id }}{% endif %}{% if request.GET.min_duration %}&min_duration={{ request.GET.min_duration }}{% endif %}{% if request.GET.max_duration %}&max_duration={{ request.GET.max_duration }}{% endif %}" aria-label="Last">
+                                <span aria-hidden="true">&raquo;&raquo;</span>
+                            </a>
+                        </li>
+                    {% endif %}
+                </ul>
+            </nav>
+        </div>
+        {% endif %}
     </div>
 </div>

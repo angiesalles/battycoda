@@ -319,6 +319,18 @@ def edit_profile_view(request):
 
     return render(request, "auth/edit_profile.html", context)
 
+
+@login_required
+@require_POST
+def generate_api_key_view(request):
+    """Generate a new API key for the user"""
+    profile, created = UserProfile.objects.get_or_create(user=request.user)
+    new_key = profile.generate_api_key()
+    
+    messages.success(request, f"New API key generated: {new_key}")
+    return redirect("battycoda_app:edit_profile")
+
+
 def password_reset_request(request):
     """Handle password reset request"""
     if request.method == "POST":

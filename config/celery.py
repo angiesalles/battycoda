@@ -20,8 +20,18 @@ app.autodiscover_tasks([
     "battycoda_app.audio.task_modules.segmentation_tasks",
     "battycoda_app.audio.task_modules.classification_tasks",
     "battycoda_app.audio.task_modules.training_tasks",
-    "battycoda_app.audio.task_modules.clustering.tasks"
+    "battycoda_app.audio.task_modules.clustering.tasks",
+    "battycoda_app.audio.task_modules.queue_processor"
 ])
+
+# Periodic task schedule for queue processing
+app.conf.beat_schedule = {
+    'process-classification-queue': {
+        'task': 'battycoda_app.audio.task_modules.queue_processor.process_classification_queue',
+        'schedule': 30.0,  # Run every 30 seconds
+    },
+}
+app.conf.timezone = 'UTC'
 
 @app.task(bind=True, ignore_result=True)
 def debug_task(self):
