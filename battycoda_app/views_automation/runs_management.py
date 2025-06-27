@@ -334,52 +334,75 @@ def classify_unclassified_segments_view(request):
     """Display species with unclassified segments for batch classification."""
     profile = request.user.profile
     
+    # Apply project filter if provided
+    project_id = request.GET.get('project')
+    project_filter = {}
+    if project_id:
+        try:
+            project_id = int(project_id)
+            project_filter['recordings__project_id'] = project_id
+        except (ValueError, TypeError):
+            project_id = None
+    
     # Get all species with segments that don't have detection results
     if profile.group:
         if profile.is_current_group_admin:
             # Admin sees all species in their group
             species_list = Species.objects.filter(
                 recordings__segments__isnull=False,
-                recordings__group=profile.group
+                recordings__group=profile.group,
+                **project_filter
             ).distinct()
         else:
             # Regular user sees only species for their own recordings
             species_list = Species.objects.filter(
                 recordings__segments__isnull=False,
-                recordings__created_by=request.user
+                recordings__created_by=request.user,
+                **project_filter
             ).distinct()
     else:
         # User with no group sees only their own species
         species_list = Species.objects.filter(
             recordings__segments__isnull=False,
-            recordings__created_by=request.user
+            recordings__created_by=request.user,
+            **project_filter
         ).distinct()
     
     items = []
     for species in species_list:
         if profile.group and profile.is_current_group_admin:
-            # Count unclassified segments for this species within the group
-            unclassified_count = Segment.objects.filter(
-                recording__species=species,
-                recording__group=profile.group,
-                detection_results__isnull=True
-            ).count()
+            # Count unclassified segments for this species within the group (and project if filtered)
+            segment_filter = {
+                'recording__species': species,
+                'recording__group': profile.group,
+                'detection_results__isnull': True
+            }
+            if project_id:
+                segment_filter['recording__project_id'] = project_id
+            unclassified_count = Segment.objects.filter(**segment_filter).count()
         else:
-            # Count unclassified segments for this species created by the user
-            unclassified_count = Segment.objects.filter(
-                recording__species=species,
-                recording__created_by=request.user,
-                detection_results__isnull=True
-            ).count()
+            # Count unclassified segments for this species created by the user (and project if filtered)
+            segment_filter = {
+                'recording__species': species,
+                'recording__created_by': request.user,
+                'detection_results__isnull': True
+            }
+            if project_id:
+                segment_filter['recording__project_id'] = project_id
+            unclassified_count = Segment.objects.filter(**segment_filter).count()
         
         if unclassified_count > 0:
+            action_url = reverse('battycoda_app:create_classification_for_species', args=[species.id])
+            if project_id:
+                action_url += f'?project={project_id}'
+            
             items.append({
                 'name': species.name,
                 'type_name': 'Bat Species',
                 'count': unclassified_count,
                 'created_at': species.created_at,
                 'detail_url': reverse('battycoda_app:species_detail', args=[species.id]),
-                'action_url': reverse('battycoda_app:create_classification_for_species', args=[species.id])
+                'action_url': action_url
             })
     
     context = {
@@ -406,15 +429,43 @@ def create_classification_for_species_view(request, species_id):
     species = get_object_or_404(Species, id=species_id)
     profile = request.user.profile
     
+    # Apply project filter if provided
+    project_id = request.GET.get('project')
+    project_filter = {}
+    if project_id:
+        try:
+            project_id = int(project_id)
+            project_filter['recording__project_id'] = project_id
+        except (ValueError, TypeError):
+            project_id = None
+    
     # Check permissions
     if profile.group and profile.is_current_group_admin:
-        if not Segment.objects.filter(recording__species=species, recording__group=profile.group).exists():
-            messages.error(request, "No segments for this species in your group.")
-            return redirect('battycoda_app:classify_unclassified_segments')
+        permission_filter = {
+            'recording__species': species,
+            'recording__group': profile.group,
+            **project_filter
+        }
+        if not Segment.objects.filter(**permission_filter).exists():
+            messages.error(request, "No segments for this species in your group" + 
+                         (f" and selected project" if project_id else "") + ".")
+            redirect_url = 'battycoda_app:classify_unclassified_segments'
+            if project_id:
+                redirect_url += f'?project={project_id}'
+            return redirect(redirect_url)
     else:
-        if not Segment.objects.filter(recording__species=species, recording__created_by=request.user).exists():
-            messages.error(request, "You don't have permission to classify segments for this species.")
-            return redirect('battycoda_app:classify_unclassified_segments')
+        permission_filter = {
+            'recording__species': species,
+            'recording__created_by': request.user,
+            **project_filter
+        }
+        if not Segment.objects.filter(**permission_filter).exists():
+            messages.error(request, "You don't have permission to classify segments for this species" +
+                         (f" in the selected project" if project_id else "") + ".")
+            redirect_url = 'battycoda_app:classify_unclassified_segments'
+            if project_id:
+                redirect_url += f'?project={project_id}'
+            return redirect(redirect_url)
     
     # For POST request, create the classification run
     if request.method == "POST":
@@ -434,21 +485,31 @@ def create_classification_for_species_view(request, species_id):
 
         # Get unclassified segments
         if profile.group and profile.is_current_group_admin:
-            segments = Segment.objects.filter(
-                recording__species=species,
-                recording__group=profile.group,
-                detection_results__isnull=True
-            )
+            segment_filter = {
+                'recording__species': species,
+                'recording__group': profile.group,
+                'detection_results__isnull': True
+            }
+            if project_id:
+                segment_filter['recording__project_id'] = project_id
+            segments = Segment.objects.filter(**segment_filter)
         else:
-            segments = Segment.objects.filter(
-                recording__species=species,
-                recording__created_by=request.user,
-                detection_results__isnull=True
-            )
+            segment_filter = {
+                'recording__species': species,
+                'recording__created_by': request.user,
+                'detection_results__isnull': True
+            }
+            if project_id:
+                segment_filter['recording__project_id'] = project_id
+            segments = Segment.objects.filter(**segment_filter)
         
         if not segments.exists():
-            messages.error(request, "No unclassified segments found for this species.")
-            return redirect('battycoda_app:classify_unclassified_segments')
+            messages.error(request, "No unclassified segments found for this species" + 
+                         (f" in the selected project" if project_id else "") + ".")
+            redirect_url = 'battycoda_app:classify_unclassified_segments'
+            if project_id:
+                redirect_url += f'?project={project_id}'
+            return redirect(redirect_url)
         
         try:
             # Group segments by recording/segmentation to create detection runs
@@ -485,11 +546,17 @@ def create_classification_for_species_view(request, species_id):
                 f"Created {run_count} classification runs for {segments.count()} segments across {run_count} recordings. "
                 f"Runs have been queued and will be processed sequentially to prevent resource conflicts."
             )
-            return redirect('battycoda_app:automation_home')
+            redirect_url = 'battycoda_app:automation_home'
+            if project_id:
+                redirect_url += f'?project={project_id}'
+            return redirect(redirect_url)
             
         except Exception as e:
             messages.error(request, f"Error creating classification runs: {str(e)}")
-            return redirect('battycoda_app:classify_unclassified_segments')
+            redirect_url = 'battycoda_app:classify_unclassified_segments'
+            if project_id:
+                redirect_url += f'?project={project_id}'
+            return redirect(redirect_url)
     
     # For GET request, show form with available classifiers
     # Get compatible classifiers (based on species or null species)
@@ -509,17 +576,23 @@ def create_classification_for_species_view(request, species_id):
     
     # Get count of unclassified segments
     if profile.group and profile.is_current_group_admin:
-        unclassified_count = Segment.objects.filter(
-            recording__species=species,
-            recording__group=profile.group,
-            detection_results__isnull=True
-        ).count()
+        count_filter = {
+            'recording__species': species,
+            'recording__group': profile.group,
+            'detection_results__isnull': True
+        }
+        if project_id:
+            count_filter['recording__project_id'] = project_id
+        unclassified_count = Segment.objects.filter(**count_filter).count()
     else:
-        unclassified_count = Segment.objects.filter(
-            recording__species=species,
-            recording__created_by=request.user,
-            detection_results__isnull=True
-        ).count()
+        count_filter = {
+            'recording__species': species,
+            'recording__created_by': request.user,
+            'detection_results__isnull': True
+        }
+        if project_id:
+            count_filter['recording__project_id'] = project_id
+        unclassified_count = Segment.objects.filter(**count_filter).count()
     
     context = {
         'species': species,
