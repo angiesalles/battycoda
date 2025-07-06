@@ -3,9 +3,6 @@ from celery import shared_task
 from django.core.management import call_command
 from django.conf import settings
 
-# Import task batch creation tasks
-from .tasks.task_batch_creation import create_task_batch_async
-
 logger = logging.getLogger(__name__)
 
 @shared_task
