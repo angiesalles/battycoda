@@ -11,14 +11,14 @@ from django.core.paginator import Paginator
 from django.http import FileResponse, Http404, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 
-from battycoda_app.models.detection import CallProbability, DetectionResult, DetectionRun
+from battycoda_app.models.classification import CallProbability, ClassificationResult, ClassificationRun
 from battycoda_app.models.organization import Call
 
 @login_required
 def detection_run_detail_view(request, run_id):
     """Display details of a specific classification run."""
     # Get the detection run by ID
-    run = get_object_or_404(DetectionRun, id=run_id)
+    run = get_object_or_404(ClassificationRun, id=run_id)
 
     # Check if the user has permission to view this run
     profile = request.user.profile
@@ -27,7 +27,7 @@ def detection_run_detail_view(request, run_id):
         return redirect("battycoda_app:automation_home")
 
     # Get results with segment ordering
-    results_query = DetectionResult.objects.filter(detection_run=run).order_by("segment__onset")
+    results_query = ClassificationResult.objects.filter(classification_run=run).order_by("segment__onset")
 
     # Get all call types for this species to use as table headers
     call_types = Call.objects.filter(species=run.segmentation.recording.species).order_by("short_name")
@@ -42,7 +42,7 @@ def detection_run_detail_view(request, run_id):
     results_with_probabilities = []
     for result in page_obj:
         # Get all probabilities for this result
-        probabilities = CallProbability.objects.filter(detection_result=result)
+        probabilities = CallProbability.objects.filter(classification_result=result)
 
         # Create a dictionary mapping call type ID to probability
         prob_dict = {prob.call_id: prob.probability for prob in probabilities}
@@ -69,7 +69,7 @@ def detection_run_detail_view(request, run_id):
 def detection_run_status_view(request, run_id):
     """AJAX view for checking status of a detection run."""
     # Get the detection run by ID
-    run = get_object_or_404(DetectionRun, id=run_id)
+    run = get_object_or_404(ClassificationRun, id=run_id)
 
     # Check if the user has permission to view this run
     profile = request.user.profile
@@ -90,7 +90,7 @@ def detection_run_status_view(request, run_id):
 def download_features_file_view(request, run_id):
     """Download the features CSV file for a detection run."""
     # Get the detection run by ID
-    run = get_object_or_404(DetectionRun, id=run_id)
+    run = get_object_or_404(ClassificationRun, id=run_id)
 
     # Check if the user has permission to view this run
     profile = request.user.profile

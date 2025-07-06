@@ -163,31 +163,106 @@ class UserProfile(models.Model):
         
         # Convert bytes to GB (1 GB = 1024^3 bytes)
         total_gb = total_bytes / (1024 ** 3)
-        return round(total_gb, 2)
+        return round(total_gb, 3)  # Use 3 decimal places for better precision
+    
+    @property
+    def total_storage_display(self):
+        """Get a user-friendly display of total storage used"""
+        import os
+        
+        # Get all recordings uploaded by this user
+        recordings = self.user.recordings.all()
+        
+        total_bytes = 0
+        for recording in recordings:
+            if recording.wav_file and os.path.exists(recording.wav_file.path):
+                try:
+                    total_bytes += os.path.getsize(recording.wav_file.path)
+                except (OSError, IOError):
+                    continue
+        
+        # Convert to appropriate unit
+        if total_bytes == 0:
+            return "0 MB"
+        elif total_bytes < 1024 ** 3:  # Less than 1 GB, show in MB
+            total_mb = total_bytes / (1024 ** 2)
+            return f"{total_mb:.1f} MB"
+        else:  # 1 GB or more, show in GB
+            total_gb = total_bytes / (1024 ** 3)
+            return f"{total_gb:.2f} GB"
     
     @property
     def storage_limit_gb(self):
-        """Get storage limit for this user in GB"""
-        # Default storage limit - can be made configurable per user/group in the future
-        return 10.0  # 10 GB default limit
+        """Get storage limit based on available disk space on media drive"""
+        import shutil
+        from django.conf import settings
+        
+        try:
+            # Get the media root path where recordings are stored
+            media_root = getattr(settings, 'MEDIA_ROOT', '/home/ubuntu/battycoda/media')
+            
+            # Get disk usage statistics for the media drive
+            total, used, free = shutil.disk_usage(media_root)
+            
+            # Convert bytes to GB and return total available space
+            total_gb = total / (1024 ** 3)
+            return round(total_gb, 1)
+            
+        except Exception:
+            # Fallback to a reasonable default if we can't get disk info
+            return 100.0  # 100 GB fallback
     
     @property
     def available_storage_gb(self):
-        """Calculate remaining available storage in GB"""
-        used = self.total_storage_gb
-        limit = self.storage_limit_gb
-        available = limit - used
-        return round(max(0, available), 2)  # Ensure non-negative
+        """Calculate remaining available storage in GB based on actual disk space"""
+        import shutil
+        from django.conf import settings
+        
+        try:
+            # Get the media root path where recordings are stored
+            media_root = getattr(settings, 'MEDIA_ROOT', '/home/ubuntu/battycoda/media')
+            
+            # Get disk usage statistics for the media drive
+            total, used, free = shutil.disk_usage(media_root)
+            
+            # Convert bytes to GB and return actual free space
+            free_gb = free / (1024 ** 3)
+            return round(free_gb, 1)
+            
+        except Exception:
+            # Fallback calculation using the old method
+            used = self.total_storage_gb
+            limit = self.storage_limit_gb
+            available = limit - used
+            return round(max(0, available), 2)
     
     @property
     def storage_usage_percentage(self):
-        """Calculate storage usage as a percentage"""
-        used = self.total_storage_gb
-        limit = self.storage_limit_gb
-        if limit <= 0:
-            return 0
-        percentage = (used / limit) * 100
-        return round(min(100, percentage), 1)  # Cap at 100%
+        """Calculate storage usage as a percentage of total disk space"""
+        import shutil
+        from django.conf import settings
+        
+        try:
+            # Get the media root path where recordings are stored
+            media_root = getattr(settings, 'MEDIA_ROOT', '/home/ubuntu/battycoda/media')
+            
+            # Get disk usage statistics for the media drive
+            total, used_disk, free = shutil.disk_usage(media_root)
+            
+            # Calculate percentage of total disk that is used (not just by this user)
+            if total <= 0:
+                return 0
+            percentage = (used_disk / total) * 100
+            return round(min(100, percentage), 1)  # Cap at 100%
+            
+        except Exception:
+            # Fallback calculation using user's storage vs limit
+            used = self.total_storage_gb
+            limit = self.storage_limit_gb
+            if limit <= 0:
+                return 0
+            percentage = (used / limit) * 100
+            return round(min(100, percentage), 1)
 
 # Create user profile when user is created
 @receiver(post_save, sender=User)

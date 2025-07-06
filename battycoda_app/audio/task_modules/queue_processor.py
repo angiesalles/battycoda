@@ -13,20 +13,20 @@ from django.utils import timezone
 @shared_task(bind=True, name="battycoda_app.audio.task_modules.queue_processor.process_classification_queue")
 def process_classification_queue(self):
     """
-    Process the classification queue by picking up queued DetectionRuns
+    Process the classification queue by picking up queued ClassificationRuns
     and processing them one at a time.
     
     This task should be run periodically (e.g., every 30 seconds) to
     ensure queued classification runs are processed.
     """
-    from ...models.detection import DetectionRun
+    from ...models.detection import ClassificationRun
     
     try:
         # Get the next queued run to process
         with transaction.atomic():
             # Use select_for_update to prevent race conditions
             queued_run = (
-                DetectionRun.objects
+                ClassificationRun.objects
                 .select_for_update(skip_locked=True)
                 .filter(status="queued")
                 .order_by("created_at")
@@ -44,11 +44,15 @@ def process_classification_queue(self):
         # Now process this run outside the transaction
         print(f"Processing queued classification run: {queued_run.id} - {queued_run.name}")
         
-        # Import and launch the classification task
-        from .classification_tasks import run_call_detection
-        
-        # Launch the classification task
-        result = run_call_detection.delay(queued_run.id)
+        # Choose the appropriate task based on classifier
+        if queued_run.classifier and queued_run.classifier.name == "Dummy Classifier":
+            # Use the dummy classifier task directly
+            from .classification_tasks import run_dummy_classifier
+            result = run_dummy_classifier.delay(queued_run.id)
+        else:
+            # For other classifiers, use the standard task
+            from .classification_tasks import run_call_detection
+            result = run_call_detection.delay(queued_run.id)
         
         return {
             "status": "success", 
@@ -64,18 +68,18 @@ def process_classification_queue(self):
 @shared_task(bind=True, name="battycoda_app.audio.task_modules.queue_processor.queue_classification_run")
 def queue_classification_run(self, detection_run_id):
     """
-    Add a DetectionRun to the queue for processing.
+    Add a ClassificationRun to the queue for processing.
     
     This is a lightweight task that just updates the status to "queued"
     and lets the queue processor handle the actual classification.
     
     Args:
-        detection_run_id: ID of the DetectionRun to queue
+        detection_run_id: ID of the ClassificationRun to queue
     """
-    from ...models.detection import DetectionRun
+    from ...models.detection import ClassificationRun
     
     try:
-        run = DetectionRun.objects.get(id=detection_run_id)
+        run = ClassificationRun.objects.get(id=detection_run_id)
         run.status = "queued"
         run.save(update_fields=["status"])
         
@@ -86,8 +90,8 @@ def queue_classification_run(self, detection_run_id):
             "message": f"Run {run.id} queued for processing"
         }
         
-    except DetectionRun.DoesNotExist:
-        error_msg = f"DetectionRun {detection_run_id} not found"
+    except ClassificationRun.DoesNotExist:
+        error_msg = f"ClassificationRun {detection_run_id} not found"
         print(error_msg)
         return {"status": "error", "message": error_msg}
     except Exception as e:
@@ -103,12 +107,12 @@ def get_queue_status(self):
     
     Returns information about queued, pending, and running classification runs.
     """
-    from ...models.detection import DetectionRun
+    from ...models.detection import ClassificationRun
     
     try:
-        queued_count = DetectionRun.objects.filter(status="queued").count()
-        pending_count = DetectionRun.objects.filter(status="pending").count()
-        in_progress_count = DetectionRun.objects.filter(status="in_progress").count()
+        queued_count = ClassificationRun.objects.filter(status="queued").count()
+        pending_count = ClassificationRun.objects.filter(status="pending").count()
+        in_progress_count = ClassificationRun.objects.filter(status="in_progress").count()
         
         return {
             "status": "success",

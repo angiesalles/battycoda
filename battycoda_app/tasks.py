@@ -1,4 +1,12 @@
+import logging
 from celery import shared_task
+from django.core.management import call_command
+from django.conf import settings
+
+# Import task batch creation tasks
+from .tasks.task_batch_creation import create_task_batch_async
+
+logger = logging.getLogger(__name__)
 
 @shared_task
 def process_audio_file(file_path):
@@ -133,3 +141,29 @@ def generate_spectrogram(file_path, output_path=None):
 
     # TODO: Implement actual spectrogram generation
     return True
+
+
+@shared_task(bind=True, max_retries=3)
+def backup_database_to_s3(self, bucket_name=None, prefix=None):
+    """
+    Celery task to backup the database to S3
+    """
+    try:
+        # Use settings defaults if not provided
+        bucket_name = bucket_name or settings.DATABASE_BACKUP_BUCKET
+        prefix = prefix or settings.DATABASE_BACKUP_PREFIX
+        
+        logger.info(f"Starting database backup to S3 bucket: {bucket_name}")
+        
+        # Call the Django management command
+        call_command('backup_database', bucket=bucket_name, prefix=prefix)
+        
+        logger.info("Database backup completed successfully")
+        return "Database backup completed successfully"
+        
+    except Exception as exc:
+        logger.error(f"Database backup failed: {str(exc)}")
+        
+        # Retry the task with exponential backoff
+        retry_delay = 60 * (2 ** self.request.retries)  # 60s, 120s, 240s
+        raise self.retry(exc=exc, countdown=retry_delay)

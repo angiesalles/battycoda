@@ -5,7 +5,7 @@ from django.dispatch import receiver
 from django.utils import timezone
 
 from .models.recording import Recording, Segmentation
-from .models.detection import DetectionRun, ClassifierTrainingJob
+from .models.classification import ClassificationRun, ClassifierTrainingJob
 from .models.notification import UserNotification
 from .models.user import UserProfile
 from .tasks import calculate_audio_duration
@@ -69,17 +69,17 @@ def segmentation_status_changed(sender, instance, **kwargs):
             success=False
         )
 
-@receiver(post_save, sender=DetectionRun)
-def detection_run_status_changed(sender, instance, **kwargs):
+@receiver(post_save, sender=ClassificationRun)
+def classification_run_status_changed(sender, instance, **kwargs):
     """
-    Signal handler to create notifications when detection run status changes to completed or failed
+    Signal handler to create notifications when classification run status changes to completed or failed
     """
-    # Skip notifications for detection runs created in the last minute with initial completed status
+    # Skip notifications for classification runs created in the last minute with initial completed status
     # This avoids generating notifications for demo data during user creation
     created_just_now = instance.created_at > timezone.now() - timezone.timedelta(minutes=1)
     first_save = kwargs.get('created', False)
     
-    # Only notify about real detection runs, not demo data being created initially as completed
+    # Only notify about real classification runs, not demo data being created initially as completed
     if created_just_now and first_save and instance.status == 'completed':
         return
         
@@ -88,14 +88,14 @@ def detection_run_status_changed(sender, instance, **kwargs):
         # Create success notification
         UserNotification.add_classification_notification(
             user=instance.created_by,
-            detection_run=instance,
+            classification_run=instance,
             success=True
         )
     elif instance.status == 'failed':
         # Create failure notification
         UserNotification.add_classification_notification(
             user=instance.created_by,
-            detection_run=instance,
+            classification_run=instance,
             success=False
         )
 

@@ -4,7 +4,7 @@ from django.contrib.auth.models import User
 from django.contrib.admin.widgets import AdminTextInputWidget
 from hijack.contrib.admin import HijackUserAdminMixin
 
-from .models.detection import CallProbability, Classifier, ClassifierTrainingJob, DetectionResult, DetectionRun
+from .models.classification import CallProbability, Classifier, ClassifierTrainingJob, ClassificationResult, ClassificationRun
 from .models.organization import Species, Call, Project
 from .models.recording import Recording, Segment, Segmentation, SegmentationAlgorithm
 from .models.task import Task, TaskBatch
@@ -87,21 +87,21 @@ class RecordingAdmin(admin.ModelAdmin):
     list_filter = ("species", "project", "group")
     search_fields = ("name", "description")
 
-@admin.register(DetectionRun)
-class DetectionRunAdmin(admin.ModelAdmin):
+@admin.register(ClassificationRun)
+class ClassificationRunAdmin(admin.ModelAdmin):
     list_display = ("name", "status", "classifier", "created_at", "created_by")
     list_filter = ("status", "classifier", "group")
     search_fields = ("name",)
 
 @admin.register(CallProbability)
 class CallProbabilityAdmin(admin.ModelAdmin):
-    list_display = ("call", "probability", "detection_result")
+    list_display = ("call", "probability", "classification_result")
     list_filter = ("call",)
     search_fields = ("call__short_name",)
 
 # Register the rest of the models
 admin.site.register(ClassifierTrainingJob)
-admin.site.register(DetectionResult)
+admin.site.register(ClassificationResult)
 admin.site.register(Segment)
 admin.site.register(Segmentation)
 admin.site.register(SegmentationAlgorithm)

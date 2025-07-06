@@ -29,7 +29,7 @@
                     <h5 class="card-title text-primary">
                         <i class="s7-scissors"></i> Segmentation
                     </h5>
-                    <h3 id="segmentation-count" class="mb-0">{{ segmentation_jobs|length }}</h3>
+                    <h3 id="segmentation-count" class="mb-0">{{ segmentation_active_count|default:0 }}</h3>
                     <small class="text-muted">Active Jobs</small>
                 </div>
             </div>
@@ -40,7 +40,7 @@
                     <h5 class="card-title text-info">
                         <i class="s7-display1"></i> Classification
                     </h5>
-                    <h3 id="detection-count" class="mb-0">{{ detection_jobs|length }}</h3>
+                    <h3 id="detection-count" class="mb-0">{{ detection_active_count|default:0 }}</h3>
                     <small class="text-muted">Active Jobs</small>
                 </div>
             </div>

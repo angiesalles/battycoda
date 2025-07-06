@@ -102,8 +102,8 @@
                     <label class="form-label">Storage Usage:</label>
                     <div class="mb-2">
                         <div class="d-flex justify-content-between mb-1">
-                            <span class="text-sm">{{ profile.total_storage_gb }} GB used of {{ profile.storage_limit_gb }} GB</span>
-                            <span class="text-sm">{{ profile.available_storage_gb }} GB available</span>
+                            <span class="text-sm">Your files: {{ profile.total_storage_display }}</span>
+                            <span class="text-sm">{{ profile.available_storage_gb }} GB free on disk</span>
                         </div>
                         <div class="progress" style="height: 20px;">
                             <div class="progress-bar {% if profile.storage_usage_percentage > 90 %}bg-danger{% elif profile.storage_usage_percentage > 75 %}bg-warning{% else %}bg-success{% endif %}" 
@@ -115,9 +115,12 @@
                                 {{ profile.storage_usage_percentage }}%
                             </div>
                         </div>
+                        <div class="d-flex justify-content-between mb-1">
+                            <span class="text-xs text-muted">Disk usage: {{ profile.storage_usage_percentage }}% of {{ profile.storage_limit_gb }} GB total</span>
+                        </div>
                     </div>
                     <small class="text-muted">
-                        Total size of recordings you've uploaded to BattyCoda
+                        Shows your uploaded files and remaining disk space on the server
                     </small>
                 </div>
                 

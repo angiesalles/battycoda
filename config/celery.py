@@ -30,6 +30,10 @@ app.conf.beat_schedule = {
         'task': 'battycoda_app.audio.task_modules.queue_processor.process_classification_queue',
         'schedule': 30.0,  # Run every 30 seconds
     },
+    'weekly-database-backup': {
+        'task': 'battycoda_app.tasks.backup_database_to_s3',
+        'schedule': 604800.0,  # Run every week (7 days * 24 hours * 60 minutes * 60 seconds)
+    },
 }
 app.conf.timezone = 'UTC'
 

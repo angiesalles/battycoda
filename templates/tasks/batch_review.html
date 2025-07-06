@@ -1,0 +1,322 @@
+{% extends 'base.html' %}
+{% load battycoda_tags %}
+{% load static %}
+
+{% block title %}Batch Review: {{ batch.name }} | BattyCoda{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{% url 'battycoda_app:task_batch_list' %}">Task Batches</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'battycoda_app:task_batch_detail' batch_id=batch.id %}">{{ batch.name }}</a></li>
+            <li class="breadcrumb-item active" aria-current="page">Review</li>
+        </ol>
+    </nav>
+
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <div class="row align-items-center">
+                        <div class="col-md-6">
+                            <h4 class="mb-0">
+                                <i class="fas fa-clipboard-check me-2"></i>
+                                Batch Review: {{ batch.name }}
+                            </h4>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="d-flex justify-content-end gap-2">
+                                <a href="{% url 'battycoda_app:task_batch_detail' batch.id %}" class="btn btn-outline-secondary">
+                                    <i class="fas fa-list me-1"></i> View Details
+                                </a>
+                                <a href="{% url 'battycoda_app:annotate_batch' batch.id %}" class="btn btn-primary">
+                                    <i class="fas fa-play me-1"></i> Start Annotation
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-4">
+                            <label for="call-type-filter" class="form-label">Filter by Call Type:</label>
+                            <select id="call-type-filter" class="form-select" onchange="filterByCallType()">
+                                {% for call_type in available_call_types %}
+                                    <option value="{{ call_type }}" {% if call_type == selected_call_type %}selected{% endif %}>
+                                        {% if call_type == 'all' %}
+                                            All Call Types
+                                        {% else %}
+                                            {{ call_type }}
+                                        {% endif %}
+                                    </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-8">
+                            <div class="row text-center">
+                                <div class="col-md-4">
+                                    <div class="stat-box">
+                                        <div class="stat-number">{{ tasks_with_spectrograms|length }}</div>
+                                        <div class="stat-label">Tasks Shown</div>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="stat-box">
+                                        <div class="stat-number">{{ batch.species.name }}</div>
+                                        <div class="stat-label">Species</div>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="stat-box">
+                                        <div class="stat-number">{{ batch.project.name }}</div>
+                                        <div class="stat-label">Project</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {% if tasks_with_spectrograms %}
+        <div class="row">
+            {% for task_data in tasks_with_spectrograms %}
+                <div class="col-xl-3 col-lg-4 col-md-6 mb-4">
+                    <div class="card task-card h-100">
+                        <div class="card-header py-2">
+                            <div class="row align-items-center">
+                                <div class="col-8">
+                                    <small class="text-muted">Task #{{ task_data.task.id }}</small>
+                                </div>
+                                <div class="col-4 text-end">
+                                    {% if task_data.confidence %}
+                                        <span class="badge bg-info">{{ task_data.confidence|floatformat:2 }}</span>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                        <div class="card-body p-0">
+                            <!-- Spectrogram Display -->
+                            <div class="spectrogram-container mb-3">
+                                <img src="{{ task_data.spectrogram_url }}" 
+                                     alt="Spectrogram for Task {{ task_data.task.id }}"
+                                     class="img-fluid spectrogram-image"
+                                     style="width: 100%; height: 200px; object-fit: cover;">
+                            </div>
+                            
+                            <!-- Task Info -->
+                            <div class="px-3 pb-3">
+                                <div class="row mb-2">
+                                    <div class="col-12">
+                                        <small class="text-muted">Time:</small>
+                                        <span class="badge bg-secondary">{{ task_data.task.onset|floatformat:3 }}s - {{ task_data.task.offset|floatformat:3 }}s</span>
+                                    </div>
+                                </div>
+                                
+                                <div class="row mb-2">
+                                    <div class="col-12">
+                                        <small class="text-muted">Current Label:</small>
+                                        <span class="badge bg-primary">{{ task_data.display_label|default:"Unlabeled" }}</span>
+                                        {% if task_data.task.annotated_by %}
+                                            <i class="fas fa-user-check text-success ms-1" title="Annotated by {{ task_data.task.annotated_by.username }}"></i>
+                                        {% else %}
+                                            <i class="fas fa-robot text-warning ms-1" title="Classification result"></i>
+                                        {% endif %}
+                                    </div>
+                                </div>
+
+                                <!-- Relabeling Dropdown -->
+                                <div class="row mb-2">
+                                    <div class="col-12">
+                                        <label class="form-label small">Relabel as:</label>
+                                        <select class="form-select form-select-sm relabel-dropdown" 
+                                                data-task-id="{{ task_data.task.id }}"
+                                                onchange="relabelTask(this)">
+                                            <option value="">-- Select new label --</option>
+                                            {% for call_type in all_call_types_for_dropdown %}
+                                                <option value="{{ call_type }}">{{ call_type }}</option>
+                                            {% endfor %}
+                                        </select>
+                                    </div>
+                                </div>
+
+                                <!-- Action Buttons -->
+                                <div class="row">
+                                    <div class="col-12">
+                                        <div class="d-grid">
+                                            <a href="{{ task_data.annotation_url }}" 
+                                               class="btn btn-outline-primary btn-sm">
+                                                <i class="fas fa-edit me-1"></i> Full Annotation
+                                            </a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="row">
+            <div class="col-12">
+                <div class="alert alert-info text-center">
+                    <i class="fas fa-info-circle me-2"></i>
+                    No tasks found for the selected call type filter.
+                </div>
+            </div>
+        </div>
+    {% endif %}
+</div>
+
+<!-- Loading overlay -->
+<div id="loading-overlay" class="loading-overlay" style="display: none;">
+    <div class="spinner-border text-primary" role="status">
+        <span class="visually-hidden">Loading...</span>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    .task-card {
+        border: 1px solid #dee2e6;
+        transition: all 0.3s ease;
+    }
+    
+    .task-card:hover {
+        box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        transform: translateY(-2px);
+    }
+    
+    .spectrogram-container {
+        border-bottom: 1px solid #dee2e6;
+    }
+    
+    .spectrogram-image {
+        border-radius: 0;
+    }
+    
+    .stat-box {
+        text-align: center;
+    }
+    
+    .stat-number {
+        font-size: 1.5rem;
+        font-weight: bold;
+        color: #007bff;
+    }
+    
+    .stat-label {
+        font-size: 0.875rem;
+        color: #6c757d;
+    }
+    
+    .loading-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(255, 255, 255, 0.8);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        z-index: 9999;
+    }
+    
+    .relabel-dropdown {
+        font-size: 0.875rem;
+    }
+    
+    .card-header {
+        background-color: #f8f9fa;
+        border-bottom: 1px solid #dee2e6;
+    }
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    function filterByCallType() {
+        const select = document.getElementById('call-type-filter');
+        const selectedCallType = select.value;
+        
+        // Update URL with the selected call type
+        const url = new URL(window.location);
+        url.searchParams.set('call_type', selectedCallType);
+        window.location.href = url.toString();
+    }
+    
+    function relabelTask(selectElement) {
+        const taskId = selectElement.getAttribute('data-task-id');
+        const newLabel = selectElement.value;
+        
+        if (!newLabel) {
+            return;
+        }
+        
+        // Show loading
+        document.getElementById('loading-overlay').style.display = 'flex';
+        
+        // Prepare form data
+        const formData = new FormData();
+        formData.append('task_id', taskId);
+        formData.append('new_label', newLabel);
+        formData.append('csrfmiddlewaretoken', document.querySelector('[name=csrfmiddlewaretoken]').value);
+        
+        fetch('{% url "battycoda_app:relabel_task_ajax" %}', {
+            method: 'POST',
+            body: formData
+        })
+        .then(response => response.json())
+        .then(data => {
+            document.getElementById('loading-overlay').style.display = 'none';
+            
+            if (data.success) {
+                // Show success message
+                showToast('Task relabeled successfully', 'success');
+                
+                // Reload the page to reflect changes
+                setTimeout(() => {
+                    window.location.reload();
+                }, 1000);
+            } else {
+                showToast('Error: ' + data.error, 'error');
+                selectElement.value = ''; // Reset dropdown
+            }
+        })
+        .catch(error => {
+            document.getElementById('loading-overlay').style.display = 'none';
+            showToast('Error relabeling task: ' + error, 'error');
+            selectElement.value = ''; // Reset dropdown
+        });
+    }
+    
+    function showToast(message, type) {
+        // Create toast element
+        const toast = document.createElement('div');
+        toast.className = `alert alert-${type === 'success' ? 'success' : 'danger'} alert-dismissible fade show position-fixed`;
+        toast.style.cssText = 'top: 20px; right: 20px; z-index: 10000; min-width: 300px;';
+        toast.innerHTML = `
+            ${message}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        `;
+        
+        document.body.appendChild(toast);
+        
+        // Remove toast after 5 seconds
+        setTimeout(() => {
+            if (toast && toast.parentNode) {
+                toast.parentNode.removeChild(toast);
+            }
+        }, 5000);
+    }
+</script>
+
+<!-- Add CSRF token for AJAX requests -->
+{% csrf_token %}
+{% endblock %}

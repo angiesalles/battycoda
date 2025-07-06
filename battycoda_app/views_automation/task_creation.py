@@ -12,7 +12,7 @@ from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
 from django.utils import timezone
 
-from battycoda_app.models.detection import CallProbability, DetectionResult, DetectionRun
+from battycoda_app.models.classification import CallProbability, ClassificationResult, ClassificationRun
 from battycoda_app.models.organization import Species
 from battycoda_app.models.task import Task, TaskBatch
 
@@ -20,7 +20,7 @@ from battycoda_app.models.task import Task, TaskBatch
 def create_task_batch_from_detection_run(request, run_id):
     """Create a task batch from a detection run's results for manual review and correction."""
     # Get the detection run
-    run = get_object_or_404(DetectionRun, id=run_id)
+    run = get_object_or_404(ClassificationRun, id=run_id)
 
     # Check if the user has permission
     profile = request.user.profile
@@ -37,90 +37,107 @@ def create_task_batch_from_detection_run(request, run_id):
         # Get form data
         batch_name = request.POST.get("name") or f"Review of {run.name}"
         description = request.POST.get("description") or f"Manual review of classification run: {run.name}"
+        confidence_threshold = request.POST.get("confidence_threshold")
+        
+        # Parse confidence threshold
+        max_confidence = None
+        if confidence_threshold:
+            try:
+                max_confidence = float(confidence_threshold)
+                if max_confidence < 0 or max_confidence > 1:
+                    messages.error(request, "Confidence threshold must be between 0 and 1.")
+                    return redirect("battycoda_app:detection_run_detail", run_id=run_id)
+            except ValueError:
+                messages.error(request, "Invalid confidence threshold value.")
+                return redirect("battycoda_app:detection_run_detail", run_id=run_id)
 
         try:
-            with transaction.atomic():
-                # Get the recording from the segmentation
-                recording = run.segmentation.recording
+            # Get the recording from the segmentation
+            recording = run.segmentation.recording
 
-                # Use the batch name as is, no need for timestamps or unique constraints
-                # batch_name is already set from the form data above
+            # Create the task batch first (outside the main transaction)
+            batch = TaskBatch.objects.create(
+                name=batch_name,
+                description=description,
+                created_by=request.user,
+                wav_file_name=recording.wav_file.name if recording.wav_file else '',
+                wav_file=recording.wav_file,
+                species=recording.species,
+                project=recording.project,
+                group=profile.group,
+                classification_run=run,
+            )
 
-                # Lock segments to prevent race conditions
-                from battycoda_app.models.recording import Segment
+            # Get all classification results with related data in one query
+            results = ClassificationResult.objects.filter(
+                classification_run=run
+            ).select_related('segment').prefetch_related('probabilities__call')
+
+            # Prepare bulk data for task creation
+            tasks_to_create = []
+            segments_to_update = []
+            tasks_created = 0
+            tasks_filtered = 0
+
+            for result in results:
+                segment = result.segment
                 
-                # Get segment IDs for this run
-                result_segments = DetectionResult.objects.filter(
-                    detection_run=run
-                ).values_list('segment_id', flat=True)
-                
-                # Lock these segments using SELECT FOR UPDATE
-                locked_segments = list(Segment.objects.filter(
-                    id__in=result_segments
-                ).select_for_update())  # This locks the rows
+                # Skip segments that already have tasks
+                if hasattr(segment, 'task') and segment.task:
+                    continue
 
-                # Create the task batch
-                batch = TaskBatch.objects.create(
-                    name=batch_name,
-                    description=description,
-                    created_by=request.user,
-                    wav_file_name=recording.wav_file.name,
-                    wav_file=recording.wav_file,
+                # Get the highest probability call type from prefetched data
+                top_probability = None
+                if result.probabilities.exists():
+                    top_probability = max(result.probabilities.all(), key=lambda p: p.probability)
+                
+                # Skip if confidence threshold is set and this result's confidence is too high
+                if max_confidence is not None and top_probability and top_probability.probability > max_confidence:
+                    tasks_filtered += 1
+                    continue
+
+                # Prepare task for bulk creation
+                task_data = Task(
+                    wav_file_name=recording.wav_file.name if recording.wav_file else '',
+                    onset=segment.onset,
+                    offset=segment.offset,
                     species=recording.species,
                     project=recording.project,
+                    batch=batch,
+                    created_by=request.user,
                     group=profile.group,
-                    detection_run=run,  # Link to the detection run
+                    label=top_probability.call.short_name if top_probability else None,
+                    classification_result=top_probability.call.short_name if top_probability else None,
+                    confidence=top_probability.probability if top_probability else None,
+                    status="pending",
                 )
+                tasks_to_create.append(task_data)
+                segments_to_update.append(segment)
+                tasks_created += 1
 
-                # Get all detection results from this run
-                results = DetectionResult.objects.filter(detection_run=run)
+            # Bulk create tasks and update segments in smaller transactions
+            if tasks_created == 0:
+                batch.delete()
+                messages.warning(request, "No tasks were created. All segments may already have tasks or were filtered out.")
+                return redirect("battycoda_app:detection_run_detail", run_id=run_id)
 
-                # Create tasks for each detection result's segment
-                tasks_created = 0
-                for result in results:
-                    # Get the fresh segment object (which we've locked)
-                    segment = Segment.objects.get(id=result.segment_id)
-                    
-                    # Skip segments that already have tasks
-                    if segment.task:
-                        continue
-
-                    # Get the highest probability call type
-                    top_probability = (
-                        CallProbability.objects.filter(detection_result=result).order_by("-probability").first()
-                    )
-
-                    # Create a task for this segment
-                    task = Task.objects.create(
-                        wav_file_name=recording.wav_file.name,
-                        onset=segment.onset,
-                        offset=segment.offset,
-                        species=recording.species,
-                        project=recording.project,
-                        batch=batch,
-                        created_by=request.user,
-                        group=profile.group,
-                        # Use the highest probability call type as the initial label AND the classification result
-                        label=top_probability.call.short_name if top_probability else None,
-                        classification_result=top_probability.call.short_name if top_probability else None,
-                        confidence=top_probability.probability if top_probability else None,
-                        status="pending",
-                    )
-
-                    # Link the task back to the segment
-                    segment.task = task
-                    segment.save()
-
-                    tasks_created += 1
-                
-                # If no tasks were created, delete the batch
-                if tasks_created == 0:
-                    batch.delete()
-                    messages.warning(request, "No tasks were created. All segments may already have tasks.")
-                    return redirect("battycoda_app:detection_run_detail", run_id=run_id)
-                
-                messages.success(request, f"Created task batch '{batch.name}' with {tasks_created} tasks for review.")
-                return redirect("battycoda_app:task_batch_detail", batch_id=batch.id)
+            # Use bulk_create for better performance
+            created_tasks = Task.objects.bulk_create(tasks_to_create)
+            
+            # Update segments to link to tasks (this is the remaining bottleneck, but much faster)
+            for i, segment in enumerate(segments_to_update):
+                segment.task = created_tasks[i]
+            
+            # Bulk update segments
+            from battycoda_app.models.recording import Segment
+            Segment.objects.bulk_update(segments_to_update, ['task'], batch_size=100)
+            
+            # Create success message with filtering info
+            success_msg = f"Created task batch '{batch.name}' with {tasks_created} tasks for review."
+            if tasks_filtered > 0:
+                success_msg += f" ({tasks_filtered} high-confidence tasks filtered out)"
+            messages.success(request, success_msg)
+            return redirect("battycoda_app:task_batch_detail", batch_id=batch.id)
 
         except Exception as e:
             import traceback
@@ -142,7 +159,7 @@ def create_task_batch_from_detection_run(request, run_id):
 
 def get_pending_runs_for_species(species, user_profile):
     """Helper function to get completed runs without task batches for a species."""
-    base_query = DetectionRun.objects.filter(
+    base_query = ClassificationRun.objects.filter(
         segmentation__recording__species=species,
         status="completed", 
     )
@@ -220,7 +237,7 @@ def create_tasks_for_species_view(request, species_id):
     
     # Check permissions
     if profile.group and profile.is_current_group_admin:
-        if not DetectionRun.objects.filter(
+        if not ClassificationRun.objects.filter(
             segmentation__recording__species=species, 
             segmentation__recording__group=profile.group,
             status="completed"
@@ -228,7 +245,7 @@ def create_tasks_for_species_view(request, species_id):
             messages.error(request, "No completed classification runs for this species in your group.")
             return redirect('battycoda_app:create_task_batches_for_species')
     else:
-        if not DetectionRun.objects.filter(
+        if not ClassificationRun.objects.filter(
             segmentation__recording__species=species, 
             segmentation__recording__created_by=request.user,
             status="completed"
@@ -239,6 +256,19 @@ def create_tasks_for_species_view(request, species_id):
     # For POST request, create task batches for each completed run
     if request.method == "POST":
         batch_prefix = request.POST.get('name_prefix') or f"Review of {species.name} classifications"
+        confidence_threshold = request.POST.get("confidence_threshold")
+        
+        # Parse confidence threshold
+        max_confidence = None
+        if confidence_threshold:
+            try:
+                max_confidence = float(confidence_threshold)
+                if max_confidence < 0 or max_confidence > 1:
+                    messages.error(request, "Confidence threshold must be between 0 and 1.")
+                    return redirect('battycoda_app:create_task_batches_for_species')
+            except ValueError:
+                messages.error(request, "Invalid confidence threshold value.")
+                return redirect('battycoda_app:create_task_batches_for_species')
         
         try:
             # Get all completed runs without task batches
@@ -247,6 +277,7 @@ def create_tasks_for_species_view(request, species_id):
             # Create task batches for each run
             batches_created = 0
             tasks_created = 0
+            total_filtered = 0
             
             # Use a single transaction for the entire process to prevent race conditions
             with transaction.atomic():
@@ -257,8 +288,8 @@ def create_tasks_for_species_view(request, species_id):
                 
                 for run in runs:
                     # Get segment IDs for this run
-                    result_segments = DetectionResult.objects.filter(
-                        detection_run=run
+                    result_segments = ClassificationResult.objects.filter(
+                        classification_run=run
                     ).values_list('segment_id', flat=True)
                     all_segments_ids.extend(result_segments)
                 
@@ -287,14 +318,15 @@ def create_tasks_for_species_view(request, species_id):
                             species=recording.species,
                             project=recording.project,
                             group=profile.group,
-                            detection_run=run,  # Link to the detection run
+                            classification_run=run,  # Link to the detection run
                         )
                         
                         # Get all detection results from this run
-                        results = DetectionResult.objects.filter(detection_run=run)
+                        results = ClassificationResult.objects.filter(classification_run=run)
                         
                         # Create tasks for each detection result's segment
                         run_tasks_created = 0
+                        run_tasks_filtered = 0
                         for result in results:
                             # Get the fresh segment object (which we've locked)
                             segment = Segment.objects.get(id=result.segment_id)
@@ -305,8 +337,13 @@ def create_tasks_for_species_view(request, species_id):
                                 
                             # Get the highest probability call type
                             top_probability = (
-                                CallProbability.objects.filter(detection_result=result).order_by("-probability").first()
+                                CallProbability.objects.filter(classification_result=result).order_by("-probability").first()
                             )
+                            
+                            # Skip if confidence threshold is set and this result's confidence is too high
+                            if max_confidence is not None and top_probability and top_probability.probability > max_confidence:
+                                run_tasks_filtered += 1
+                                continue
                             
                             # Create a task for this segment
                             task = Task.objects.create(
@@ -337,6 +374,7 @@ def create_tasks_for_species_view(request, species_id):
                         else:
                             batches_created += 1
                             tasks_created += run_tasks_created
+                            total_filtered += run_tasks_filtered
                         
                     except Exception as e:
                         # Log the error but continue with other runs
@@ -347,10 +385,11 @@ def create_tasks_for_species_view(request, species_id):
                         raise
             
             if batches_created > 0:
-                messages.success(
-                    request, 
-                    f"Created {batches_created} task batches with a total of {tasks_created} tasks for {species.name}."
-                )
+                # Create success message with filtering info
+                success_msg = f"Created {batches_created} task batches with a total of {tasks_created} tasks for {species.name}."
+                if total_filtered > 0:
+                    success_msg += f" ({total_filtered} high-confidence tasks filtered out)"
+                messages.success(request, success_msg)
             else:
                 messages.warning(request, f"No task batches were created. All segments may already have tasks.")
                 

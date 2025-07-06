@@ -64,7 +64,7 @@ def create_equal_probabilities(detection_result, calls):
     equal_prob = 1.0 / len(calls)
     for call in calls:
         CallProbability.objects.create(
-            detection_result=detection_result,
+            classification_result=detection_result,
             call=call,
             probability=equal_prob
         )
@@ -90,14 +90,14 @@ def process_classification_result(classifier, result, prediction_data, calls):
                 
                 # Create probability record for predicted call
                 CallProbability.objects.create(
-                    detection_result=result, call=predicted_call, probability=confidence
+                    classification_result=result, call=predicted_call, probability=confidence
                 )
                 
                 # Create zero probability records for all other calls
                 for call in calls:
                     if call.short_name != predicted_call_name:
                         CallProbability.objects.create(
-                            detection_result=result, call=call, probability=0.0
+                            classification_result=result, call=call, probability=0.0
                         )
             else:
                 # Call not found - create even probabilities
@@ -125,7 +125,7 @@ def process_classification_result(classifier, result, prediction_data, calls):
                 
                 # Create probability record
                 CallProbability.objects.create(
-                    detection_result=result, call=call, probability=prob_value
+                    classification_result=result, call=call, probability=prob_value
                 )
         else:
             # Missing probabilities - create equal probabilities

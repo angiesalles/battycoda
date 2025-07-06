@@ -5,7 +5,7 @@ Dashboard view for the BattyCoda application.
 from django.db import models
 from django.shortcuts import redirect, render
 
-from .models.detection import DetectionRun
+from .models.classification import ClassificationRun
 from .models.organization import Project, Species
 from .models.recording import Recording, Segmentation
 from .models.task import Task, TaskBatch
@@ -52,13 +52,13 @@ def index(request):
         if profile.group:
             if profile.is_current_group_admin:
                 # Admin sees all runs in their group
-                recent_runs = DetectionRun.objects.filter(group=profile.group).order_by("-created_at")[:5]
+                recent_runs = ClassificationRun.objects.filter(group=profile.group).order_by("-created_at")[:5]
             else:
                 # Regular user only sees their own runs
-                recent_runs = DetectionRun.objects.filter(created_by=request.user).order_by("-created_at")[:5]
+                recent_runs = ClassificationRun.objects.filter(created_by=request.user).order_by("-created_at")[:5]
         else:
             # Fallback to showing only user's runs if no group is assigned
-            recent_runs = DetectionRun.objects.filter(created_by=request.user).order_by("-created_at")[:5]
+            recent_runs = ClassificationRun.objects.filter(created_by=request.user).order_by("-created_at")[:5]
 
         context["recent_runs"] = recent_runs
 
@@ -114,7 +114,7 @@ def index(request):
             ).count()
 
             # Get in-progress classifications
-            context["active_classifications"] = DetectionRun.objects.filter(
+            context["active_classifications"] = ClassificationRun.objects.filter(
                 group=profile.group, status__in=["pending", "in_progress"]
             ).count()
         else:
@@ -132,7 +132,7 @@ def index(request):
             ).count()
 
             # Get in-progress classifications
-            context["active_classifications"] = DetectionRun.objects.filter(
+            context["active_classifications"] = ClassificationRun.objects.filter(
                 created_by=request.user, status__in=["pending", "in_progress"]
             ).count()
 

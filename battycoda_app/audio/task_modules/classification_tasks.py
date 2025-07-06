@@ -29,16 +29,16 @@ def run_call_detection(self, detection_run_id):
     Processes segments in small batches for better progress tracking and reliability.
 
     Args:
-        detection_run_id: ID of the DetectionRun model
+        detection_run_id: ID of the ClassificationRun model
 
     Returns:
         dict: Result of the classification process
     """
-    from ...models.detection import CallProbability, Classifier, DetectionResult, DetectionRun
+    from ...models.detection import CallProbability, Classifier, ClassificationResult, ClassificationRun
 
     try:
         # Get the detection run
-        detection_run = DetectionRun.objects.get(id=detection_run_id)
+        detection_run = ClassificationRun.objects.get(id=detection_run_id)
         
         # Update status to in progress
         update_detection_run_status(detection_run, "in_progress", progress=0)
@@ -374,7 +374,7 @@ def run_call_detection(self, detection_run_id):
                     segment = segments.get(id=segment_id)
                     
                     # Create a detection result
-                    result = DetectionResult.objects.create(detection_run=detection_run, segment=segment)
+                    result = ClassificationResult.objects.create(classification_run=detection_run, segment=segment)
                     
                     # Get predicted class and probabilities
                     predicted_class = result_data.get('predicted_class')
@@ -408,7 +408,7 @@ def run_call_detection(self, detection_run_id):
                         
                         # Create probability record
                         CallProbability.objects.create(
-                            detection_result=result, 
+                            classification_result=result, 
                             call=call, 
                             probability=prob_value
                         )
@@ -446,7 +446,7 @@ def run_call_detection(self, detection_run_id):
 
     except Exception as e:
         # Update run status and return error
-        detection_run = DetectionRun.objects.get(id=detection_run_id)
+        detection_run = ClassificationRun.objects.get(id=detection_run_id)
         update_detection_run_status(detection_run, "failed", str(e))
         return {"status": "error", "message": str(e)}
 
@@ -458,16 +458,16 @@ def run_dummy_classifier(self, detection_run_id):
     This is for testing purposes only and doesn't perform actual classification.
 
     Args:
-        detection_run_id: ID of the DetectionRun model
+        detection_run_id: ID of the ClassificationRun model
 
     Returns:
         dict: Result of the dummy classification process
     """
-    from ...models.detection import CallProbability, DetectionResult, DetectionRun
+    from ...models.detection import CallProbability, ClassificationResult, ClassificationRun
     
     try:
         # Get the detection run
-        detection_run = DetectionRun.objects.get(id=detection_run_id)
+        detection_run = ClassificationRun.objects.get(id=detection_run_id)
         
         # Update status
         update_detection_run_status(detection_run, "in_progress", progress=0)
@@ -496,12 +496,12 @@ def run_dummy_classifier(self, detection_run_id):
             try:
                 with transaction.atomic():
                     # Create detection result
-                    result = DetectionResult.objects.create(detection_run=detection_run, segment=segment)
+                    result = ClassificationResult.objects.create(classification_run=detection_run, segment=segment)
                     
                     # Create equal probability for each call type
                     for call in calls:
                         CallProbability.objects.create(
-                            detection_result=result, call=call, probability=equal_probability
+                            classification_result=result, call=call, probability=equal_probability
                         )
                 
                 # Update progress
@@ -523,6 +523,6 @@ def run_dummy_classifier(self, detection_run_id):
         
     except Exception as e:
         # Update run status and return error
-        detection_run = DetectionRun.objects.get(id=detection_run_id)
+        detection_run = ClassificationRun.objects.get(id=detection_run_id)
         update_detection_run_status(detection_run, "failed", str(e))
         return {"status": "error", "message": str(e)}

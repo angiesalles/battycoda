@@ -11,7 +11,7 @@ from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
 from django.utils import timezone
 
-from battycoda_app.models.detection import CallProbability, Classifier, DetectionResult, DetectionRun
+from battycoda_app.models.classification import CallProbability, Classifier, ClassificationResult, ClassificationRun
 from battycoda_app.models.recording import Segmentation, Segment
 from battycoda_app.models.organization import Project, Species
 
@@ -22,20 +22,20 @@ def automation_home_view(request):
         profile = request.user.profile
         
         # Import classifier training job model
-        from battycoda_app.models.detection import ClassifierTrainingJob
+        from battycoda_app.models.classification import ClassifierTrainingJob
 
         # Get all detection runs, classifiers, and training jobs for user's groups
         if profile.group:
             if profile.is_current_group_admin:
                 # Admin can see all group items
-                runs = DetectionRun.objects.filter(group=profile.group).order_by("-created_at")
+                runs = ClassificationRun.objects.filter(group=profile.group).order_by("-created_at")
                 classifiers = Classifier.objects.filter(
                     models.Q(group=profile.group) | models.Q(group__isnull=True)
                 ).order_by("-created_at")
                 training_jobs = ClassifierTrainingJob.objects.filter(group=profile.group).order_by("-created_at")
             else:
                 # Regular users see only their own items plus global items
-                runs = DetectionRun.objects.filter(group=profile.group, created_by=request.user).order_by("-created_at")
+                runs = ClassificationRun.objects.filter(group=profile.group, created_by=request.user).order_by("-created_at")
                 classifiers = Classifier.objects.filter(
                     models.Q(group=profile.group, created_by=request.user) | models.Q(group__isnull=True)
                 ).order_by("-created_at")
@@ -44,7 +44,7 @@ def automation_home_view(request):
                 ).order_by("-created_at")
         else:
             # No group - only see personal items plus global items
-            runs = DetectionRun.objects.filter(created_by=request.user).order_by("-created_at")
+            runs = ClassificationRun.objects.filter(created_by=request.user).order_by("-created_at")
             classifiers = Classifier.objects.filter(
                 models.Q(created_by=request.user) | models.Q(group__isnull=True)
             ).order_by("-created_at")
@@ -148,7 +148,7 @@ def create_detection_run_view(request, segmentation_id=None):
 
         # Create the detection run
         try:
-            run = DetectionRun.objects.create(
+            run = ClassificationRun.objects.create(
                 name=name or f"Classification for {segmentation.recording.name}",
                 segmentation=segmentation,
                 created_by=request.user,
@@ -303,7 +303,7 @@ def create_detection_run_view(request, segmentation_id=None):
 def delete_detection_run_view(request, run_id):
     """Delete a classification run."""
     # Get the detection run by ID
-    run = get_object_or_404(DetectionRun, id=run_id)
+    run = get_object_or_404(ClassificationRun, id=run_id)
 
     # Check if the user has permission
     profile = request.user.profile
@@ -313,8 +313,8 @@ def delete_detection_run_view(request, run_id):
 
     if request.method == "POST":
         # Delete all related results first
-        CallProbability.objects.filter(detection_result__detection_run=run).delete()
-        DetectionResult.objects.filter(detection_run=run).delete()
+        CallProbability.objects.filter(detection_result__classification_run=run).delete()
+        ClassificationResult.objects.filter(classification_run=run).delete()
 
         # Store name for confirmation message
         run_name = run.name
@@ -525,7 +525,7 @@ def create_classification_for_species_view(request, species_id):
             run_count = 0
             for segmentation in recording_segmentation_map.values():
                 # Create the detection run with "queued" status
-                run = DetectionRun.objects.create(
+                run = ClassificationRun.objects.create(
                     name=f"{run_name} - {segmentation.recording.name}",
                     segmentation=segmentation,
                     created_by=request.user,

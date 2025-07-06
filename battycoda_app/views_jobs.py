@@ -10,7 +10,7 @@ from celery import current_app
 from django.core.paginator import Paginator
 from django.contrib import messages
 
-from .models.detection import ClassifierTrainingJob, DetectionRun
+from .models.classification import ClassifierTrainingJob, ClassificationRun
 from .models.recording import Segmentation
 from .models.clustering import ClusteringRun
 from .models.spectrogram import SpectrogramJob
@@ -33,33 +33,62 @@ def jobs_dashboard_view(request):
     }
     
     if profile.group:
-        # Get segmentation jobs
+        # Get active segmentation jobs (pending/in_progress only)
         if profile.is_current_group_admin:
-            segmentations = Segmentation.objects.filter(
+            segmentations_active = Segmentation.objects.filter(
                 recording__group=profile.group,
-                status__in=['pending', 'in_progress', 'completed', 'failed']
-            ).order_by('-created_at')[:20]
+                status__in=['pending', 'in_progress']
+            ).order_by('-created_at')
+            
+            # Get recent completed/failed for display (last 10)
+            segmentations_recent = Segmentation.objects.filter(
+                recording__group=profile.group,
+                status__in=['completed', 'failed']
+            ).order_by('-created_at')[:10]
         else:
-            segmentations = Segmentation.objects.filter(
+            segmentations_active = Segmentation.objects.filter(
                 created_by=request.user,
-                status__in=['pending', 'in_progress', 'completed', 'failed']
-            ).order_by('-created_at')[:20]
+                status__in=['pending', 'in_progress']
+            ).order_by('-created_at')
+            
+            # Get recent completed/failed for display (last 10)
+            segmentations_recent = Segmentation.objects.filter(
+                created_by=request.user,
+                status__in=['completed', 'failed']
+            ).order_by('-created_at')[:10]
+        
+        # Combine active and recent for display
+        segmentations = list(segmentations_active) + list(segmentations_recent)
         
         context['segmentation_jobs'] = segmentations
+        context['segmentation_active_count'] = segmentations_active.count()
         
         # Get classification/detection runs
         if profile.is_current_group_admin:
-            detection_runs = DetectionRun.objects.filter(
+            detection_runs_active = ClassificationRun.objects.filter(
                 group=profile.group,
-                status__in=['pending', 'running', 'completed', 'failed']
-            ).order_by('-created_at')[:20]
+                status__in=['queued', 'pending', 'in_progress']
+            ).order_by('-created_at')
+            
+            detection_runs_recent = ClassificationRun.objects.filter(
+                group=profile.group,
+                status__in=['completed', 'failed']
+            ).order_by('-created_at')[:10]
         else:
-            detection_runs = DetectionRun.objects.filter(
+            detection_runs_active = ClassificationRun.objects.filter(
                 created_by=request.user,
-                status__in=['pending', 'running', 'completed', 'failed']
-            ).order_by('-created_at')[:20]
+                status__in=['queued', 'pending', 'in_progress']
+            ).order_by('-created_at')
+            
+            detection_runs_recent = ClassificationRun.objects.filter(
+                created_by=request.user,
+                status__in=['completed', 'failed']
+            ).order_by('-created_at')[:10]
+        
+        detection_runs = list(detection_runs_active) + list(detection_runs_recent)
         
         context['detection_jobs'] = detection_runs
+        context['detection_active_count'] = detection_runs_active.count()
         
         # Get classifier training jobs
         if profile.is_current_group_admin:
@@ -128,7 +157,7 @@ def job_status_api_view(request):
                 recording__group=profile.group,
                 status__in=['pending', 'in_progress']
             )
-            detection_runs = DetectionRun.objects.filter(
+            detection_runs = ClassificationRun.objects.filter(
                 group=profile.group,
                 status__in=['pending', 'running']
             )
@@ -154,7 +183,7 @@ def job_status_api_view(request):
                 created_by=request.user,
                 status__in=['pending', 'in_progress']
             )
-            detection_runs = DetectionRun.objects.filter(
+            detection_runs = ClassificationRun.objects.filter(
                 created_by=request.user,
                 status__in=['pending', 'running']
             )
@@ -258,7 +287,7 @@ def cancel_job_view(request, job_type, job_id):
                 return JsonResponse({'success': True, 'message': 'Segmentation job cancelled'})
         
         elif job_type == 'detection':
-            job = DetectionRun.objects.get(id=job_id)
+            job = ClassificationRun.objects.get(id=job_id)
             # Check permissions
             if job.created_by != request.user and not (
                 profile.is_current_group_admin and job.group == profile.group

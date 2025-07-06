@@ -9,7 +9,7 @@ from django.db import models
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 
-from battycoda_app.models.detection import Classifier, ClassifierTrainingJob
+from battycoda_app.models.classification import Classifier, ClassifierTrainingJob
 from battycoda_app.models.task import TaskBatch
 
 

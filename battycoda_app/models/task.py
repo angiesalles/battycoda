@@ -26,7 +26,7 @@ class TaskBatch(models.Model):
     group = models.ForeignKey(Group, on_delete=models.CASCADE, related_name="task_batches", null=True)
     # Reference to the source detection run if this batch was created from classification results
     detection_run = models.ForeignKey(
-        "battycoda_app.DetectionRun", on_delete=models.SET_NULL, related_name="task_batches", null=True, blank=True
+        "battycoda_app.ClassificationRun", on_delete=models.SET_NULL, related_name="task_batches", null=True, blank=True
     )
 
     class Meta:

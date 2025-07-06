@@ -73,10 +73,12 @@ prepare_training_data <- function(data_folder, test_split = 0.2) {
   all_features <- NULL
   num_files <- length(sound.files)
   
+  # Progress tracking variables
+  start_time <- Sys.time()
+  success_count <- 0
+  failure_count <- 0
+  
   for (i in 1:num_files) {
-    if (i %% 100 == 0) {
-      debug_log(sprintf("Processing file %d of %d", i, num_files))
-    }
     
     # Get the file name and path
     file_name <- sound.files[i]
@@ -84,6 +86,19 @@ prepare_training_data <- function(data_folder, test_split = 0.2) {
     
     # Get the class label from the filename
     file_label <- labels[i]
+    
+    # Show progress for every file
+    elapsed_time <- as.numeric(difftime(Sys.time(), start_time, units = "secs"))
+    if (elapsed_time > 0 && i > 1) {
+      files_per_sec <- (i - 1) / elapsed_time
+      eta_secs <- (num_files - i + 1) / files_per_sec
+      eta_mins <- round(eta_secs / 60, 1)
+      debug_log(sprintf("Processing file %d/%d (%.1f%%) [%s] - %.1f files/sec - ETA: %.1f min - Success: %d, Failed: %d", 
+                       i, num_files, (i/num_files)*100, file_name, files_per_sec, eta_mins, success_count, failure_count))
+    } else {
+      debug_log(sprintf("Processing file %d/%d (%.1f%%) [%s] - Success: %d, Failed: %d", 
+                       i, num_files, (i/num_files)*100, file_name, success_count, failure_count))
+    }
     
     # Process file using the enhanced process_segment function
     features <- process_segment(file_path)
@@ -99,6 +114,9 @@ prepare_training_data <- function(data_folder, test_split = 0.2) {
       } else {
         all_features <- rbind(all_features, features)
       }
+      success_count <- success_count + 1
+    } else {
+      failure_count <- failure_count + 1
     }
   }
   
@@ -107,7 +125,12 @@ prepare_training_data <- function(data_folder, test_split = 0.2) {
     stop("Failed to extract features from any files")
   }
   
-  debug_log(sprintf("Successfully extracted features from %d files", nrow(all_features)))
+  total_time <- as.numeric(difftime(Sys.time(), start_time, units = "secs"))
+  debug_log(sprintf("Feature extraction completed in %.1f seconds", total_time))
+  debug_log(sprintf("Successfully extracted features from %d files (%.1f%% success rate)", 
+                   success_count, (success_count/num_files)*100))
+  debug_log(sprintf("Failed files: %d (%.1f%% failure rate)", 
+                   failure_count, (failure_count/num_files)*100))
   ftable <- all_features
   
   # Prepare data for classification

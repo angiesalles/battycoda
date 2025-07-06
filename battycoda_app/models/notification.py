@@ -111,23 +111,23 @@ class UserNotification(models.Model):
         )
     
     @classmethod
-    def add_classification_notification(cls, user, detection_run, success=True):
+    def add_classification_notification(cls, user, classification_run, success=True):
         """
         Create a notification for a completed classification run
         """
-        recording_name = detection_run.segmentation.recording.name
+        recording_name = classification_run.segmentation.recording.name
         
         if success:
             title = "Classification Complete"
-            message = f"Classification run '{detection_run.name}' for '{recording_name}' has completed successfully."
+            message = f"Classification run '{classification_run.name}' for '{recording_name}' has completed successfully."
             icon = "s7-check"
         else:
             title = "Classification Failed"
-            message = f"Classification run '{detection_run.name}' for '{recording_name}' has failed."
+            message = f"Classification run '{classification_run.name}' for '{recording_name}' has failed."
             icon = "s7-close"
         
-        # Generate link to the detection run detail page
-        link = reverse('battycoda_app:detection_run_detail', kwargs={'run_id': detection_run.id})
+        # Generate link to the classification run detail page
+        link = reverse('battycoda_app:classification_run_detail', kwargs={'run_id': classification_run.id})
         
         return cls.add_notification(
             user=user,

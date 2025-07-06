@@ -6,7 +6,7 @@ This package contains all the application models organized into logical modules:
 - organization.py: Projects, species, and organizational models
 - recording.py: Recording, segments, and segmentation models
 - task.py: Task and task batch models
-- detection.py: Detection and classification models
+- classification.py: Detection and classification models
 - notification.py: User notification models
 - clustering.py: Unsupervised clustering models
 """
@@ -16,10 +16,10 @@ from .user import Group, UserProfile
 from .organization import Project, Species, Call
 from .recording import Recording, Segment, Segmentation, SegmentationAlgorithm
 from .task import Task, TaskBatch
-from .detection import (
+from .classification import (
     Classifier, 
-    DetectionRun, 
-    DetectionResult, 
+    ClassificationRun, 
+    ClassificationResult, 
     CallProbability,
     ClassifierTrainingJob
 )

@@ -195,7 +195,7 @@ def delete_species_view(request, species_id):
     recording_count = Recording.objects.filter(species=species).count()
     
     # Check if this species has classifiers
-    from .models.detection import Classifier
+    from .models.classification import Classifier
     classifier_count = Classifier.objects.filter(species=species).count()
 
     # Check if deletion is allowed (no tasks, batches, recordings, or classifiers associated)

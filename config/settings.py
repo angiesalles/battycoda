@@ -74,7 +74,6 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
-    "fontawesomefree",
     "battycoda_app",
     "hijack",
 ]
@@ -245,6 +244,10 @@ AWS_SES_ACCESS_KEY_ID = os.environ.get("AWS_SES_ACCESS_KEY_ID")
 AWS_SES_SECRET_ACCESS_KEY = os.environ.get("AWS_SES_SECRET_ACCESS_KEY")
 AWS_SES_CONFIGURATION_SET = os.environ.get("AWS_SES_CONFIGURATION_SET", "")
 DEFAULT_FROM_EMAIL = os.environ.get("DEFAULT_FROM_EMAIL", f"noreply@{DOMAIN_NAME}")
+
+# Database Backup Configuration
+DATABASE_BACKUP_BUCKET = os.environ.get("DATABASE_BACKUP_BUCKET", "backup-battycoda")
+DATABASE_BACKUP_PREFIX = os.environ.get("DATABASE_BACKUP_PREFIX", "database-backups/")
 
 # Django REST Framework Configuration
 REST_FRAMEWORK = {

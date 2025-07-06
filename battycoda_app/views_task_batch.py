@@ -4,10 +4,11 @@ from datetime import datetime
 
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
-from django.db import transaction
+from django.db import models, transaction
 from django.http import HttpResponse, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
+from django.utils import timezone
 
 import numpy as np
 
@@ -160,3 +161,135 @@ def check_taskbatch_name(request):
         return JsonResponse({"exists": exists})
     
     return JsonResponse({"error": "Invalid request method"}, status=400)
+
+
+@login_required
+def task_batch_review_view(request, batch_id):
+    """Interface for reviewing and relabeling tasks in a batch by call type"""
+    # Get the batch by ID
+    batch = get_object_or_404(TaskBatch, id=batch_id)
+
+    # Check if the user has permission to view this batch
+    profile = request.user.profile
+    if batch.created_by != request.user and (not profile.group or batch.group != profile.group):
+        messages.error(request, "You don't have permission to view this batch.")
+        return redirect("battycoda_app:task_batch_list")
+
+    # Get selected call type from query parameter
+    selected_call_type = request.GET.get('call_type', 'all')
+    
+    # Get all tasks in the batch
+    tasks = Task.objects.filter(batch=batch).order_by("id")
+    
+    # Filter tasks by call type if specified
+    if selected_call_type != 'all':
+        # Show tasks that have this label (annotated) or classification_result (unannotated)
+        tasks = tasks.filter(
+            models.Q(label=selected_call_type) | 
+            models.Q(label__isnull=True, classification_result=selected_call_type) |
+            models.Q(label='', classification_result=selected_call_type)
+        )
+    
+    # Get all available call types from the species
+    species = batch.species
+    available_call_types = ['all']  # Start with 'all' option
+    
+    # Add call types from species
+    if species:
+        call_types_from_species = list(species.calls.values_list('short_name', flat=True))
+        available_call_types.extend(call_types_from_species)
+    
+    # Add any additional call types found in the tasks
+    task_call_types = set()
+    for task in Task.objects.filter(batch=batch):
+        if task.label:
+            task_call_types.add(task.label)
+        if task.classification_result:
+            task_call_types.add(task.classification_result)
+    
+    # Add any call types not already in the list
+    for call_type in task_call_types:
+        if call_type not in available_call_types:
+            available_call_types.append(call_type)
+    
+    # Remove None values and sort
+    available_call_types = [ct for ct in available_call_types if ct]
+    available_call_types.sort()
+    
+    # Get spectrogram URLs for each task
+    tasks_with_spectrograms = []
+    for task in tasks:
+        # Get spectrogram URL
+        import hashlib
+        import os
+        from .audio.utils import appropriate_file
+        
+        # Get file path
+        if task.batch and task.batch.wav_file:
+            full_path = task.batch.wav_file.path
+            os_path = full_path
+        else:
+            full_path = os.path.join("home", request.user.username, task.species.name, task.project.name, task.wav_file_name)
+            os_path = full_path
+        
+        # Create hash
+        file_hash = hashlib.md5(os_path.encode()).hexdigest()
+        
+        # Create spectrogram URL for channel 0, detailed view
+        spectrogram_url = f"/spectrogram/?wav_path={full_path}&call=0&channel=0&numcalls=1&hash={file_hash}&overview=0&contrast=4.0&onset={task.onset}&offset={task.offset}"
+        
+        # Get the display label (what the user sees in the UI)
+        display_label = task.label if task.label else task.classification_result
+        
+        tasks_with_spectrograms.append({
+            'task': task,
+            'spectrogram_url': spectrogram_url,
+            'display_label': display_label,
+            'confidence': task.confidence,
+            'annotation_url': reverse('battycoda_app:annotate_task', args=[task.id])
+        })
+    
+    context = {
+        'batch': batch,
+        'tasks_with_spectrograms': tasks_with_spectrograms,
+        'available_call_types': available_call_types,
+        'selected_call_type': selected_call_type,
+        'species': species,
+        'all_call_types_for_dropdown': available_call_types[1:],  # Exclude 'all' for relabeling dropdown
+    }
+    
+    return render(request, "tasks/batch_review.html", context)
+
+
+@login_required
+def relabel_task_ajax(request):
+    """AJAX endpoint for relabeling a task"""
+    if request.method == 'POST':
+        task_id = request.POST.get('task_id')
+        new_label = request.POST.get('new_label')
+        
+        if not task_id or not new_label:
+            return JsonResponse({'success': False, 'error': 'Missing task_id or new_label'})
+        
+        try:
+            task = get_object_or_404(Task, id=task_id)
+            
+            # Check if the user has permission to modify this task
+            profile = request.user.profile
+            if task.batch.created_by != request.user and (not profile.group or task.batch.group != profile.group):
+                return JsonResponse({'success': False, 'error': 'Permission denied'})
+            
+            # Update the task
+            task.label = new_label
+            task.annotated_by = request.user
+            task.annotated_at = timezone.now()
+            task.is_done = True
+            task.status = "done"
+            task.save()
+            
+            return JsonResponse({'success': True})
+            
+        except Exception as e:
+            return JsonResponse({'success': False, 'error': str(e)})
+    
+    return JsonResponse({'success': False, 'error': 'Invalid request method'})

@@ -38,15 +38,41 @@ process_segment <- function(file_path, min_window_length = 50) {
       return(NULL)
     }
     
-    # Calculate frequency resolution
-    freq_resolution <- sample_rate / min_window_length
-    
-    # Check if bandpass filter range (9-200 Hz) is appropriate for this sample rate
+    # Adaptive parameters based on sample rate
     nyquist_freq <- sample_rate / 2
-    if (nyquist_freq < 200) {
-      cat(sprintf("WARNING: File %s has Nyquist frequency %.1f Hz - below upper bandpass limit of 200 Hz\n", 
-                 file_name, nyquist_freq))
+    
+    # Choose appropriate parameters for different sample rates and file durations
+    if (sample_rate >= 150000) {
+      # High sample rate (Rousettus): optimize for speed and bat calls
+      # But adapt window length based on file duration
+      if (duration_sec >= 0.1) {
+        adaptive_wl <- 1024  # Large window for longer files
+      } else if (duration_sec >= 0.05) {
+        adaptive_wl <- 512   # Medium window for medium files
+      } else {
+        adaptive_wl <- 256   # Smaller window for very short files
+      }
+      adaptive_bp <- c(1000, 95000)  # Very wide range - use almost full spectrum
+      adaptive_threshold <- 10  # Lower threshold for weak bat calls
+    } else if (sample_rate >= 80000) {
+      # Medium-high sample rate: moderate optimization
+      adaptive_wl <- 512
+      adaptive_bp <- c(1000, nyquist_freq * 0.95)  # Use most of available spectrum
+      adaptive_threshold <- 12
+    } else {
+      # Lower sample rate (Carollia/Efuscus): use original parameters
+      adaptive_wl <- min_window_length  # Keep original (50)
+      adaptive_bp <- c(9, 200)  # Keep original bandpass filter
+      adaptive_threshold <- 15  # Keep original threshold
     }
+    
+    # Final safety check: ensure window length doesn't exceed half the file length
+    max_safe_wl <- n_samples / 4  # Conservative: window should be at most 1/4 of file
+    if (adaptive_wl > max_safe_wl) {
+      adaptive_wl <- max(50, floor(max_safe_wl))  # Use smaller window, but at least 50
+    }
+    
+    freq_resolution <- sample_rate / adaptive_wl
     
     # Create selection table with measured duration
     sel_table <- data.frame(
@@ -64,27 +90,29 @@ process_segment <- function(file_path, min_window_length = 50) {
     # Use verbose=FALSE to suppress validation messages
     selt <- selection_table(sel_table, verbose = FALSE)
     
-    # Extract features with appropriate window size for short segments
+    # Extract features with adaptive parameters based on sample rate
     # Use a specific tryCatch for spectro_analysis to catch subscript issues
     features <- tryCatch({
-      spectro_analysis(selt, bp = c(9, 200), threshold = 15, 
-                      wl = min_window_length, ovlp = 50)
+      # Always use bandpass filter, but with appropriate ranges for each sample rate
+      spectro_analysis(selt, bp = adaptive_bp, threshold = adaptive_threshold, 
+                      wl = adaptive_wl, ovlp = 50)
     }, error = function(se) {
       # Enhanced error diagnostics for subscript out of bounds
       if (grepl("subscript out of bounds", se$message, fixed = TRUE)) {
         cat(sprintf("SUBSCRIPT ERROR in %s: Duration=%.4fs, Samples=%d, Rate=%d Hz, WinLen=%d\n", 
-                   file_name, duration_sec, n_samples, sample_rate, min_window_length))
+                   file_name, duration_sec, n_samples, sample_rate, adaptive_wl))
         
         # Detailed diagnosis
-        min_duration_needed <- (min_window_length / sample_rate) * 2  # Minimum for FFT
+        min_duration_needed <- (adaptive_wl / sample_rate) * 2  # Minimum for FFT
         if (duration_sec < min_duration_needed) {
           cat(sprintf("  Diagnosis: File too short (%.4fs) - needs minimum %.4fs for FFT window\n", 
                      duration_sec, min_duration_needed))
-        } else if (n_samples < min_window_length) {
+        } else if (n_samples < adaptive_wl) {
           cat(sprintf("  Diagnosis: Insufficient samples (%d) - needs at least %d for FFT window\n", 
-                     n_samples, min_window_length))
+                     n_samples, adaptive_wl))
         } else {
-          cat(sprintf("  Diagnosis: Possible empty frequency bins in %.1f-200Hz range\n", 9.0))
+          cat(sprintf("  Diagnosis: Possible empty frequency bins in %.1f-%.1fHz range\n", 
+                     adaptive_bp[1], adaptive_bp[2]))
         }
       }
       # Rethrow the error to be caught by outer tryCatch

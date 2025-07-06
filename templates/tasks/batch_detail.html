@@ -77,6 +77,9 @@
                                 <a href="{% url 'battycoda_app:annotate_batch' batch.id %}" class="btn btn-primary">
                                     <i class="fas fa-tasks"></i> Annotate Tasks
                                 </a>
+                                <a href="{% url 'battycoda_app:task_batch_review' batch.id %}" class="btn btn-info">
+                                    <i class="fas fa-clipboard-check"></i> Review & Relabel
+                                </a>
                                 <!-- "Run Automated Detection" button removed as it's no longer applicable in new workflow -->
                                 <a href="{% url 'battycoda_app:export_task_batch' batch.id %}" class="btn btn-success">
                                     <i class="fas fa-file-export"></i> Export Results

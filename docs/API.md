@@ -1,494 +1,383 @@
 # BattyCoda API Documentation
 
-This document describes the APIs available in BattyCoda for integration and extension.
-
 ## Overview
+BattyCoda provides a simple, API key-based REST API designed for easy integration with R scripts and other programmatic clients. The API enables the complete classification workflow: upload recordings → segment → classify → create task batches → annotate.
 
-BattyCoda provides two types of APIs:
+## Authentication
+- **Method**: API Key authentication via query parameter or POST data
+- **Parameter**: `api_key`
+- **Example**: `GET /simple-api/species/?api_key=your_key_here`
 
-1. **Django REST API**: For web and mobile client integration
-2. **R API Endpoints**: For audio processing and machine learning tasks
+## Base URL
+```
+https://yourdomain.com/simple-api/
+```
 
-## Django REST API
+## Core Classification Workflow
 
-### Authentication
+The typical workflow for classification is:
 
-All API endpoints require authentication using Django's session-based authentication or token authentication.
+1. **Upload a recording** (`POST /upload/`)
+2. **Segment the recording** (`POST /recordings/{id}/segment/`)
+3. **Run classification** (`POST /recordings/{id}/classify/`)
+4. **Check classification status** (`GET /classification-runs/`)
+5. **Create task batch for review** (`POST /classification-runs/{id}/create-task-batch/`)
+6. **Review and annotate tasks** (`GET /task-batches/{id}/tasks/`)
 
-To use token authentication:
+## Endpoints
 
-1. Obtain a token:
-   ```
-   POST /api/auth/token/
-   {
-     "username": "your_username",
-     "password": "your_password"
-   }
-   ```
+### 1. User Management
 
-2. Include the token in subsequent requests:
-   ```
-   Authorization: Token your_token_here
-   ```
+#### Get User Info
+```
+GET /simple-api/user/?api_key={api_key}
+```
+Returns information about the current user.
 
-### Recordings API
+#### Generate API Key
+```
+POST /simple-api/generate-key/?api_key={api_key}
+```
+Generates a new API key for the user (requires existing valid API key).
+
+### 2. Data Listing
+
+#### List Species
+```
+GET /simple-api/species/?api_key={api_key}
+```
+Returns all species available to the user's group.
+
+#### List Projects
+```
+GET /simple-api/projects/?api_key={api_key}
+```
+Returns all projects available to the user's group.
 
 #### List Recordings
-
 ```
-GET /api/recordings/
+GET /simple-api/recordings/?api_key={api_key}
 ```
+Optional parameters:
+- `project_id`: Filter recordings by project
 
-Response:
-```json
-[
-  {
-    "id": 1,
-    "name": "Recording1",
-    "description": "Night recording from site A",
-    "duration": 120.5,
-    "species": {
-      "id": 1,
-      "name": "Eptesicus fuscus"
-    },
-    "project": {
-      "id": 1,
-      "name": "Summer 2023 Survey"
-    },
-    "created_at": "2023-06-15T20:45:32Z"
-  },
-  ...
-]
+#### List Classifiers
 ```
-
-#### Get Recording Details
-
+GET /simple-api/classifiers/?api_key={api_key}
 ```
-GET /api/recordings/{id}/
-```
+Returns all ML classifiers available to the user (e.g., Carollia, Efuscus models).
 
-Response:
+**Response:**
 ```json
 {
-  "id": 1,
-  "name": "Recording1",
-  "description": "Night recording from site A",
-  "duration": 120.5,
-  "sample_rate": 44100,
-  "species": {
-    "id": 1,
-    "name": "Eptesicus fuscus"
-  },
-  "project": {
-    "id": 1,
-    "name": "Summer 2023 Survey"
-  },
-  "location": "Forest edge, site A",
-  "equipment": "Pettersson D500X",
-  "recorded_date": "2023-06-10",
-  "created_at": "2023-06-15T20:45:32Z",
-  "segments": [
+  "success": true,
+  "classifiers": [
     {
       "id": 1,
-      "onset": 2.4,
-      "offset": 3.2
-    },
-    ...
-  ]
-}
-```
-
-#### Create Recording
-
-```
-POST /api/recordings/
-```
-
-Request:
-```json
-{
-  "name": "New Recording",
-  "description": "Recording from location B",
-  "species": 1,
-  "project": 1,
-  "wav_file": [binary data]
-}
-```
-
-### Segments API
-
-#### List Segments
-
-```
-GET /api/segments/?recording_id={recording_id}
-```
-
-Response:
-```json
-[
-  {
-    "id": 1,
-    "recording": 1,
-    "onset": 2.4,
-    "offset": 3.2,
-    "notes": "Clear call sequence"
-  },
-  ...
-]
-```
-
-#### Create Segment
-
-```
-POST /api/segments/
-```
-
-Request:
-```json
-{
-  "recording": 1,
-  "onset": 15.2,
-  "offset": 16.1,
-  "notes": "Feeding buzz"
-}
-```
-
-### Tasks API
-
-#### List Tasks
-
-```
-GET /api/tasks/?batch_id={batch_id}
-```
-
-Response:
-```json
-[
-  {
-    "id": 1,
-    "wav_file_name": "Recording1.wav",
-    "onset": 2.4,
-    "offset": 3.2,
-    "status": "pending",
-    "label": null,
-    "notes": ""
-  },
-  ...
-]
-```
-
-#### Update Task
-
-```
-PATCH /api/tasks/{id}/
-```
-
-Request:
-```json
-{
-  "status": "done",
-  "label": "echolocation calls",
-  "notes": "Clear FM sweep pattern"
-}
-```
-
-### Classification API
-
-#### Run Classification
-
-```
-POST /api/classify/
-```
-
-Request:
-```json
-{
-  "classifier_id": 1,
-  "recording_ids": [1, 2, 3]
-}
-```
-
-Response:
-```json
-{
-  "run_id": 42,
-  "status": "pending",
-  "message": "Classification job started"
-}
-```
-
-#### Get Classification Results
-
-```
-GET /api/classify/results/{run_id}/
-```
-
-Response:
-```json
-{
-  "run_id": 42,
-  "status": "completed",
-  "created_at": "2023-06-20T14:25:11Z",
-  "results": [
-    {
-      "segment_id": 1,
-      "prediction": "echolocation calls",
-      "confidence": 0.92
-    },
-    ...
-  ]
-}
-```
-
-## R API Endpoints
-
-The R API is primarily used internally by the Django application but can be accessed directly for advanced usage.
-
-### Base URL
-
-The R API is accessible at:
-
-```
-http://localhost:8000/r-api/
-```
-
-### Health Check
-
-```
-GET /r-api/ping
-```
-
-Response:
-```json
-{
-  "status": "alive",
-  "timestamp": "2023-06-20 14:30:22",
-  "r_version": "R version 4.2.0"
-}
-```
-
-### Prediction API
-
-#### KNN Prediction
-
-```
-POST /r-api/predict/knn
-```
-
-Parameters:
-- `wav_folder`: Path to folder containing WAV files
-- `model_path`: Full path to the model file
-
-Response:
-```json
-{
-  "status": "success",
-  "predictions": [
-    {
-      "file": "call1.wav",
-      "prediction": "echolocation calls",
-      "probability": 0.85
-    },
-    ...
-  ],
-  "summary": {
-    "total": 10,
-    "by_class": {
-      "echolocation calls": 8,
-      "social calls": 2
+      "name": "LDA Carollia",
+      "description": "Linear Discriminant Analysis classifier for Carollia perspicillata",
+      "species_name": "Carollia perspicillata",
+      "species_id": 1,
+      "response_format": "full_probability"
     }
-  }
-}
-```
-
-#### LDA Prediction
-
-```
-POST /r-api/predict/lda
-```
-
-Parameters:
-- `wav_folder`: Path to folder containing WAV files
-- `model_path`: Full path to the model file
-
-Response: Same format as KNN prediction
-
-### Training API
-
-#### Train KNN Model
-
-```
-POST /r-api/train/knn
-```
-
-Parameters:
-- `data_folder`: Path to training data directory
-- `output_model_path`: Full path where the model should be saved
-- `test_split`: Fraction of data to use for testing (0.0-1.0)
-
-Response:
-```json
-{
-  "status": "success",
-  "model_info": {
-    "type": "knn",
-    "training_files": 120,
-    "classes": ["echolocation calls", "social calls", "noise"],
-    "accuracy": 0.92,
-    "model_path": "/app/data/models/knn_model.RData"
-  },
-  "confusion_matrix": [
-    [28, 1, 1],
-    [2, 25, 3],
-    [0, 2, 38]
   ],
-  "class_metrics": {
-    "echolocation calls": {
-      "precision": 0.93,
-      "recall": 0.88,
-      "f1_score": 0.90
-    },
-    ...
+  "count": 1
+}
+```
+
+### 3. File Upload
+
+#### Upload Recording
+```
+POST /simple-api/upload/?api_key={api_key}
+```
+Uploads a new audio recording.
+
+**Required Parameters:**
+- `name`: Recording name
+- `species_id`: Species ID
+- `wav_file`: WAV file upload
+
+**Optional Parameters:**
+- `project_id`: Project ID
+- `description`: Recording description
+- `location`: Recording location
+- `recorded_date`: Date recorded (YYYY-MM-DD format)
+
+### 4. Classification Workflow
+
+#### Start Classification
+```
+POST /simple-api/recordings/{recording_id}/classify/?api_key={api_key}
+```
+Starts classification on a recording's segments.
+
+**Required Parameters:**
+- `classifier_id`: ID of classifier to use
+
+**Optional Parameters:**
+- `name`: Custom name for the classification run
+
+**Response:**
+```json
+{
+  "success": true,
+  "message": "Classification started using LDA Carollia",
+  "classification_run": {
+    "id": 1,
+    "name": "LDA Carollia_on_recording_20250706_1420",
+    "status": "queued",
+    "classifier_name": "LDA Carollia",
+    "recording_name": "my_recording.wav",
+    "task_id": "task-uuid",
+    "created_at": "2025-07-06T14:20:30Z"
   }
 }
 ```
 
-#### Train LDA Model
-
+#### List Classification Runs
 ```
-POST /r-api/train/lda
+GET /simple-api/classification-runs/?api_key={api_key}
 ```
+Lists classification runs and their status.
 
-Parameters:
-- `data_folder`: Path to training data directory
-- `output_model_path`: Full path where the model should be saved
-- `test_split`: Fraction of data to use for testing (0.0-1.0)
+**Optional Parameters:**
+- `recording_id`: Filter by recording
 
-Response: Same format as KNN training
-
-## Websocket API
-
-BattyCoda also provides real-time updates through websockets.
-
-### Connect to Websocket
-
-```
-ws://your-server/ws/notifications/
-```
-
-Authentication required via Django session or token in the URL:
-```
-ws://your-server/ws/notifications/?token=your_token_here
-```
-
-### Message Format
-
-Incoming messages:
-
+**Response:**
 ```json
 {
-  "type": "task_status_change",
-  "data": {
-    "task_id": 42,
-    "status": "completed",
-    "updated_at": "2023-06-20T14:35:22Z"
+  "success": true,
+  "classification_runs": [
+    {
+      "id": 1,
+      "name": "LDA Carollia_on_recording_20250706_1420",
+      "status": "completed",
+      "progress": 100,
+      "classifier_name": "LDA Carollia",
+      "recording_name": "my_recording.wav",
+      "species_name": "Carollia perspicillata",
+      "created_at": "2025-07-06T14:20:30Z",
+      "result_summary": {
+        "echolocation calls": 45,
+        "distress calls": 3,
+        "noise": 12
+      }
+    }
+  ]
+}
+```
+
+#### Create Task Batch
+```
+POST /simple-api/classification-runs/{run_id}/create-task-batch/?api_key={api_key}
+```
+Creates a task batch from completed classification for manual review.
+
+**Required Parameters:**
+- `name`: Task batch name
+
+**Optional Parameters:**
+- `description`: Task batch description
+- `confidence_threshold`: Only include calls with confidence below this threshold (0-1)
+
+**Response:**
+```json
+{
+  "success": true,
+  "message": "Task batch created successfully",
+  "task_batch": {
+    "id": 1,
+    "name": "Review Carollia Classifications",
+    "description": "Manual review of low-confidence calls",
+    "species_name": "Carollia perspicillata",
+    "total_tasks": 23,
+    "created_at": "2025-07-06T14:25:30Z"
   }
 }
 ```
 
-Message types:
-- `task_status_change`: When a task status changes
-- `segmentation_progress`: Progress updates during segmentation
-- `classification_complete`: When a classification run completes
-- `notification`: General user notifications
+### 5. Task Management
 
-## Error Handling
+#### List Task Batches
+```
+GET /simple-api/task-batches/?api_key={api_key}
+```
+Lists existing task batches.
 
-All API endpoints return standard HTTP status codes:
+**Optional Parameters:**
+- `project_id`: Filter by project
 
-- 200: Success
-- 400: Bad request
-- 401: Unauthorized
-- 403: Forbidden
-- 404: Not found
-- 500: Server error
+#### List Tasks in Batch
+```
+GET /simple-api/task-batches/{batch_id}/tasks/?api_key={api_key}
+```
+Lists tasks in a batch for annotation.
 
-Error responses include a message:
+**Optional Parameters:**
+- `call_type`: Filter by call type
+- `limit`: Number of tasks per page (default: 50)
+- `offset`: Pagination offset
 
+**Response:**
 ```json
 {
-  "error": "Invalid parameters",
-  "detail": "The following parameters are required: data_folder, output_model_path"
+  "success": true,
+  "task_batch": {
+    "id": 1,
+    "name": "Review Carollia Classifications",
+    "species_name": "Carollia perspicillata",
+    "available_call_types": ["echolocation calls", "distress calls", "noise"]
+  },
+  "tasks": [
+    {
+      "id": 1,
+      "onset": 1.25,
+      "offset": 1.8,
+      "label": null,
+      "classification_result": "echolocation calls",
+      "confidence": 0.73,
+      "is_done": false,
+      "status": "pending"
+    }
+  ],
+  "pagination": {
+    "total": 23,
+    "limit": 50,
+    "offset": 0,
+    "has_next": false,
+    "has_previous": false
+  }
 }
 ```
 
-## Rate Limiting
+**Parameters:**
+- `file`: Audio file (WAV format recommended)
+- `project_id`: ID of the project (optional)
+- `species_id`: ID of the species (optional)
+- `filename`: Custom filename (optional)
 
-API endpoints are rate-limited to prevent abuse:
-
-- Authenticated users: 100 requests per minute
-- Unauthenticated users: 20 requests per minute
-
-Rate limit headers are included in responses:
-
-```
-X-RateLimit-Limit: 100
-X-RateLimit-Remaining: 95
-X-RateLimit-Reset: 1623345600
-```
-
-## Integration Examples
-
-### Python Example
-
-```python
-import requests
-
-# Authenticate
-response = requests.post('https://your-server/api/auth/token/', {
-    'username': 'your_username',
-    'password': 'your_password'
-})
-token = response.json()['token']
-
-# Get recordings
-headers = {'Authorization': f'Token {token}'}
-recordings = requests.get('https://your-server/api/recordings/', headers=headers)
-
-# Process results
-for recording in recordings.json():
-    print(f"Recording: {recording['name']}, Duration: {recording['duration']}s")
+**Response:**
+```json
+{
+  "success": true,
+  "recording_id": 123,
+  "message": "Recording uploaded successfully"
+}
 ```
 
-### R Example
+### 4. Segmentation
 
+#### Start Segmentation
+```
+POST /simple-api/recordings/{recording_id}/segment/?api_key={api_key}
+```
+Starts automatic segmentation of a recording.
+
+**Parameters:**
+- `algorithm_id`: ID of segmentation algorithm (optional)
+
+**Response:**
+```json
+{
+  "success": true,
+  "segmentation_id": 456,
+  "status": "in_progress"
+}
+```
+
+#### List Segmentation Algorithms
+```
+GET /simple-api/algorithms/?api_key={api_key}
+```
+Returns available segmentation algorithms.
+
+**Response:**
+```json
+{
+  "algorithms": [
+    {
+      "id": 1,
+      "name": "Default Segmentation",
+      "description": "Standard bat call segmentation"
+    }
+  ]
+}
+```
+
+## Error Responses
+
+All endpoints return consistent error responses:
+
+```json
+{
+  "error": "Error message",
+  "status": "error"
+}
+```
+
+**Common HTTP Status Codes:**
+- `200`: Success
+- `400`: Bad Request (missing parameters)
+- `401`: Unauthorized (invalid/missing API key)
+- `404`: Not Found (resource doesn't exist)
+- `500`: Internal Server Error
+
+## Usage Examples
+
+### R Script Example
 ```r
 library(httr)
 library(jsonlite)
 
-# Call the R API directly
-result <- POST(
-  "http://your-server/r-api/predict/knn",
-  body = list(
-    wav_folder = "/path/to/wav/files",
-    model_path = "/path/to/model.RData"
-  ),
-  encode = "json"
-)
+api_key <- "your_api_key_here"
+base_url <- "https://yourdomain.com/simple-api"
 
-# Process the response
-prediction_data <- content(result)
-cat("Prediction results:", toJSON(prediction_data, pretty=TRUE))
+# List species
+response <- GET(paste0(base_url, "/species/"), 
+               query = list(api_key = api_key))
+species_data <- content(response, "parsed")
+
+# Upload a file
+upload_response <- POST(paste0(base_url, "/upload/"),
+                       body = list(
+                         api_key = api_key,
+                         file = upload_file("recording.wav"),
+                         project_id = 1
+                       ),
+                       encode = "multipart")
 ```
 
-## Further Documentation
+### Python Example
+```python
+import requests
 
-For detailed information about the API methods, parameters, and responses, access the interactive API documentation at:
+api_key = "your_api_key_here"
+base_url = "https://yourdomain.com/simple-api"
 
+# List recordings
+response = requests.get(f"{base_url}/recordings/", 
+                       params={"api_key": api_key})
+recordings = response.json()
+
+# Upload file
+with open("recording.wav", "rb") as f:
+    response = requests.post(f"{base_url}/upload/",
+                           data={"api_key": api_key, "project_id": 1},
+                           files={"file": f})
 ```
-https://your-server/api/docs/
-```
 
-## Support
+## Getting an API Key
 
-For API support, contact the BattyCoda development team or open an issue on the GitHub repository.
+1. Log into the BattyCoda web interface
+2. Go to Profile → Account Settings  
+3. Click "Generate API Key"
+4. Copy and securely store your key
+
+## Rate Limits
+
+Currently no rate limits are enforced, but reasonable usage is expected.
+
+---
+
+This API is specifically designed to be simple and easy to use from R scripts and other automated tools, avoiding the complexity of OAuth or session-based authentication.

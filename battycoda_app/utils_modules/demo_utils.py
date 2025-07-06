@@ -23,7 +23,7 @@ def create_demo_task_batch(user):
     from battycoda_app.audio.task_modules.classification_tasks import run_dummy_classifier
     from battycoda_app.audio.utils import process_pickle_file
     # Import from specific model modules
-    from battycoda_app.models.detection import CallProbability, Classifier, DetectionResult, DetectionRun
+    from battycoda_app.models.classification import CallProbability, Classifier, ClassificationResult, ClassificationRun
     from battycoda_app.models.organization import Project, Species
     from battycoda_app.models.recording import Recording, Segment, Segmentation
     from battycoda_app.models.task import Task, TaskBatch
@@ -236,17 +236,17 @@ def _run_demo_classification(user, group, segmentation):
         segmentation: The Segmentation object
 
     Returns:
-        DetectionRun: The created DetectionRun object or None if creation failed
+        ClassificationRun: The created ClassificationRun object or None if creation failed
     """
     from battycoda_app.audio.task_modules.classification_tasks import run_dummy_classifier
-    from battycoda_app.models.detection import Classifier, DetectionRun
+    from battycoda_app.models.classification import Classifier, ClassificationRun
 
     try:
         # Find the dummy classifier
         dummy_classifier = Classifier.objects.get(name="Dummy Classifier")
 
         # Create a detection run
-        detection_run = DetectionRun.objects.create(
+        detection_run = ClassificationRun.objects.create(
             name="Demo Classification Run",
             segmentation=segmentation,
             created_by=user,
@@ -284,12 +284,12 @@ def _create_task_batch_from_detection(user, group, project, species, recording, 
         project: The Project object
         species: The Species object
         recording: The Recording object
-        detection_run: The DetectionRun object
+        detection_run: The ClassificationRun object
 
     Returns:
         TaskBatch: The created TaskBatch object or None if creation failed
     """
-    from battycoda_app.models.detection import CallProbability, DetectionResult
+    from battycoda_app.models.classification import CallProbability, ClassificationResult
     from battycoda_app.models.task import Task, TaskBatch
 
     try:
@@ -306,21 +306,21 @@ def _create_task_batch_from_detection(user, group, project, species, recording, 
             species=species,
             project=project,
             group=group,
-            detection_run=detection_run,  # Link to the detection run
+            classification_run=detection_run,  # Link to the detection run
         )
 
         # Create tasks for each detection result's segment
         tasks_created = 0
         with transaction.atomic():
             # Get all detection results from this run
-            results = DetectionResult.objects.filter(detection_run=detection_run)
+            results = ClassificationResult.objects.filter(classification_run=detection_run)
 
             for result in results:
                 segment = result.segment
 
                 # Get the highest probability call type
                 top_probability = (
-                    CallProbability.objects.filter(detection_result=result).order_by("-probability").first()
+                    CallProbability.objects.filter(classification_result=result).order_by("-probability").first()
                 )
 
                 # Create a task for this segment

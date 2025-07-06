@@ -1,4 +1,4 @@
-"""Detection models for BattyCoda application."""
+"""Classification models for BattyCoda application."""
 
 from django.contrib.auth.models import User
 from django.core.exceptions import ValidationError
@@ -27,7 +27,7 @@ class Classifier(models.Model):
     celery_task = models.CharField(
         max_length=255,
         help_text="Fully qualified Celery task name to execute this algorithm",
-        default="battycoda_app.audio.task_modules.detection_tasks.run_call_detection",
+        default="battycoda_app.audio.task_modules.classification_tasks.run_classification",
     )
 
     # External service parameters
@@ -107,16 +107,16 @@ class Classifier(models.Model):
     class Meta:
         ordering = ["name"]
 
-class DetectionRun(models.Model):
-    """Detection run model for tracking automated detection jobs."""
+class ClassificationRun(models.Model):
+    """Classification run model for tracking automated classification jobs."""
 
     name = models.CharField(max_length=255)
     segmentation = models.ForeignKey(
-        "battycoda_app.Segmentation", on_delete=models.CASCADE, related_name="detection_runs"
+        "battycoda_app.Segmentation", on_delete=models.CASCADE, related_name="classification_runs"
     )
     created_at = models.DateTimeField(auto_now_add=True)
-    created_by = models.ForeignKey(User, on_delete=models.CASCADE, related_name="detection_runs")
-    group = models.ForeignKey(Group, on_delete=models.CASCADE, related_name="detection_runs", null=True)
+    created_by = models.ForeignKey(User, on_delete=models.CASCADE, related_name="classification_runs")
+    group = models.ForeignKey(Group, on_delete=models.CASCADE, related_name="classification_runs", null=True)
 
     # Algorithm type choices (for backward compatibility)
     ALGORITHM_TYPE_CHOICES = (
@@ -134,10 +134,10 @@ class DetectionRun(models.Model):
     classifier = models.ForeignKey(
         Classifier,
         on_delete=models.CASCADE,
-        related_name="detection_runs",
+        related_name="classification_runs",
         null=True,
         blank=True,
-        help_text="The classifier algorithm used for this detection run",
+        help_text="The classifier algorithm used for this classification run",
     )
 
     STATUS_CHOICES = (
@@ -163,23 +163,23 @@ class DetectionRun(models.Model):
     def __str__(self):
         return f"{self.name} - {self.segmentation.recording.name}"
 
-class DetectionResult(models.Model):
-    """Detection Result model for storing individual call detection probabilities."""
+class ClassificationResult(models.Model):
+    """Classification Result model for storing individual call classification probabilities."""
 
-    detection_run = models.ForeignKey(DetectionRun, on_delete=models.CASCADE, related_name="results")
-    segment = models.ForeignKey("battycoda_app.Segment", on_delete=models.CASCADE, related_name="detection_results")
+    classification_run = models.ForeignKey(ClassificationRun, on_delete=models.CASCADE, related_name="results")
+    segment = models.ForeignKey("battycoda_app.Segment", on_delete=models.CASCADE, related_name="classification_results")
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
         ordering = ["segment__onset"]
 
     def __str__(self):
-        return f"Detection for {self.segment}"
+        return f"Classification for {self.segment}"
 
 class CallProbability(models.Model):
     """Call probability model for storing probability for each call type."""
 
-    detection_result = models.ForeignKey(DetectionResult, on_delete=models.CASCADE, related_name="probabilities")
+    classification_result = models.ForeignKey(ClassificationResult, on_delete=models.CASCADE, related_name="probabilities")
     call = models.ForeignKey(Call, on_delete=models.CASCADE, related_name="probabilities")
     probability = models.FloatField(help_text="Probability value between 0-1")
 
