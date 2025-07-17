@@ -1,4 +1,9 @@
-"""User models for BattyCoda application."""
+"""User models for BattyCoda application.
+
+IMPORTANT: Email Uniqueness
+A database-level unique constraint exists on auth_user.email (migration 0014_auto_20250716_1838).
+Use get_user_by_email() utility function for safe email lookups.
+"""
 
 import secrets
 from django.contrib.auth.models import User
@@ -6,6 +11,26 @@ from django.db import models
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 from django.utils import timezone
+
+
+def get_user_by_email(email):
+    """
+    Safely get a user by email address.
+    
+    Args:
+        email (str): Email address to search for
+        
+    Returns:
+        User or None: User object if found, None if not found
+        
+    Raises:
+        User.MultipleObjectsReturned: If multiple users have the same email
+                                     (should not happen with unique constraint)
+    """
+    try:
+        return User.objects.get(email=email)
+    except User.DoesNotExist:
+        return None
 
 class Group(models.Model):
     """Group model for user grouping and permissions."""

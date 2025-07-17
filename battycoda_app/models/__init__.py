@@ -9,6 +9,12 @@ This package contains all the application models organized into logical modules:
 - classification.py: Detection and classification models
 - notification.py: User notification models
 - clustering.py: Unsupervised clustering models
+
+IMPORTANT: Email Uniqueness Constraint
+The built-in Django User model does not enforce email uniqueness by default.
+A database-level unique constraint has been added to the auth_user.email field
+via migration 0014_auto_20250716_1838.py to prevent duplicate email addresses.
+All code that queries users by email should handle the uniqueness properly.
 """
 
 # Import all models for Django model registration

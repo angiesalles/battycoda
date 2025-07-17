@@ -81,6 +81,14 @@ def invite_user_view(request):
             except User.DoesNotExist:
                 # No existing user with this email, which is fine for invitation
                 pass
+            except User.MultipleObjectsReturned:
+                # Multiple users with the same email - check if any are already members
+                users_with_email = User.objects.filter(email=email)
+                if GroupMembership.objects.filter(user__in=users_with_email, group=group).exists():
+                    messages.info(request, f"{email} is already a member of this group.")
+                    return redirect("battycoda_app:group_users")
+                # If none are members, continue with invitation
+                pass
 
             # Create a new invitation
             token = str(uuid.uuid4())
