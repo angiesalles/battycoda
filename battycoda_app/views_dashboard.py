@@ -9,6 +9,7 @@ from .models.classification import ClassificationRun
 from .models.organization import Project, Species
 from .models.recording import Recording, Segmentation
 from .models.task import Task, TaskBatch
+from .models.user import GroupInvitation
 
 # Set up logging
 
@@ -20,121 +21,71 @@ def index(request):
 
         # Initialize context dictionary
         context = {}
-
-        if profile.group:
-            if profile.is_current_group_admin:
-                # Admin sees all batches in their group
-                recent_batches = TaskBatch.objects.filter(group=profile.group).order_by("-created_at")[:5]
-            else:
-                # Regular user only sees their own batches
-                recent_batches = TaskBatch.objects.filter(created_by=request.user).order_by("-created_at")[:5]
-        else:
-            # Fallback to showing only user's batches if no group is assigned
-            recent_batches = TaskBatch.objects.filter(created_by=request.user).order_by("-created_at")[:5]
-
-        context["recent_batches"] = recent_batches
-
-        # Get recent recordings
-        if profile.group:
-            if profile.is_current_group_admin:
-                # Admin sees all recordings in their group
-                recent_recordings = Recording.objects.filter(group=profile.group).order_by("-created_at")[:5]
-            else:
-                # Regular user only sees their own recordings
-                recent_recordings = Recording.objects.filter(created_by=request.user).order_by("-created_at")[:5]
-        else:
-            # Fallback to showing only user's recordings if no group is assigned
-            recent_recordings = Recording.objects.filter(created_by=request.user).order_by("-created_at")[:5]
-
-        context["recent_recordings"] = recent_recordings
-
-        # Get recent classification runs
-        if profile.group:
-            if profile.is_current_group_admin:
-                # Admin sees all runs in their group
-                recent_runs = ClassificationRun.objects.filter(group=profile.group).order_by("-created_at")[:5]
-            else:
-                # Regular user only sees their own runs
-                recent_runs = ClassificationRun.objects.filter(created_by=request.user).order_by("-created_at")[:5]
-        else:
-            # Fallback to showing only user's runs if no group is assigned
-            recent_runs = ClassificationRun.objects.filter(created_by=request.user).order_by("-created_at")[:5]
-
-        context["recent_runs"] = recent_runs
-
-        # Get recent species, including system species
-        if profile.group:
-            # Include system species and group species
-            recent_species = Species.objects.filter(
-                models.Q(is_system=True) | models.Q(group=profile.group)
-            ).order_by("-created_at")[:5]
-        else:
-            # Include system species and user's species
-            recent_species = Species.objects.filter(
-                models.Q(is_system=True) | models.Q(created_by=request.user)
-            ).order_by("-created_at")[:5]
-
-        context["recent_species"] = recent_species
-
-        # Get recent projects
-        if profile.group:
-            recent_projects = Project.objects.filter(group=profile.group).order_by("-created_at")[:5]
-        else:
-            recent_projects = Project.objects.filter(created_by=request.user).order_by("-created_at")[:5]
-
-        context["recent_projects"] = recent_projects
         
-        # Get recent segmentations
+        # Check for pending invitations for this user
+        if request.user.email:
+            from django.utils import timezone
+            pending_invitations = GroupInvitation.objects.filter(
+                email=request.user.email,
+                accepted=False,
+                expires_at__gt=timezone.now()
+            ).select_related('group', 'invited_by')
+            context["pending_invitations"] = pending_invitations
+
+        # Get pending tasks for this user to work on
+        pending_tasks_query = Task.objects.filter(is_done=False)
         if profile.group:
-            if profile.is_current_group_admin:
-                # Admin sees all segmentations in their group
-                recent_segmentations = Segmentation.objects.filter(recording__group=profile.group).order_by("-created_at")[:5]
-            else:
-                # Regular user only sees their own segmentations
-                recent_segmentations = Segmentation.objects.filter(created_by=request.user).order_by("-created_at")[:5]
+            pending_tasks_query = pending_tasks_query.filter(group=profile.group)
         else:
-            # Fallback to showing only user's segmentations if no group is assigned
-            recent_segmentations = Segmentation.objects.filter(created_by=request.user).order_by("-created_at")[:5]
+            pending_tasks_query = pending_tasks_query.filter(created_by=request.user)
+        
+        pending_tasks = pending_tasks_query.select_related(
+            'batch', 'species', 'project'
+        ).order_by('created_at')[:10]
+        context["pending_tasks"] = pending_tasks
+        
+        # Get recently completed tasks by this user
+        recent_completed_tasks = Task.objects.filter(
+            is_done=True,
+            annotated_by=request.user
+        ).select_related('batch', 'species', 'project').order_by('-annotated_at')[:5]
+        context["recent_completed_tasks"] = recent_completed_tasks
+        
+        # Get task batches that need work
+        task_batches_needing_work = []
+        if profile.group:
+            batches_query = TaskBatch.objects.filter(group=profile.group)
+        else:
+            batches_query = TaskBatch.objects.filter(created_by=request.user)
             
-        context["recent_segmentations"] = recent_segmentations
-
-        # Get stats
+        for batch in batches_query.order_by("-created_at")[:10]:
+            pending_count = batch.tasks.filter(is_done=False).count()
+            if pending_count > 0:
+                total_count = batch.tasks.count()
+                progress = int((total_count - pending_count) / total_count * 100) if total_count > 0 else 0
+                
+                batch.pending_count = pending_count
+                batch.total_count = total_count
+                batch.progress = progress
+                task_batches_needing_work.append(batch)
+        
+        context["task_batches_needing_work"] = task_batches_needing_work[:5]
+        
+        # Get user's work statistics
+        context["my_pending_tasks"] = pending_tasks_query.count()
+        context["my_completed_tasks"] = Task.objects.filter(annotated_by=request.user, is_done=True).count()
+        context["my_total_annotations"] = Task.objects.filter(annotated_by=request.user).exclude(annotated_at__isnull=True).count()
+        
+        # Get recent activity from other users in the group (if user is in a group)
         if profile.group:
-            context["total_recordings"] = Recording.objects.filter(group=profile.group).count()
-            context["total_batches"] = TaskBatch.objects.filter(group=profile.group).count()
-            # Count system species plus group species
-            context["total_species"] = Species.objects.filter(
-                models.Q(is_system=True) | models.Q(group=profile.group)
-            ).count()
-            context["total_projects"] = Project.objects.filter(group=profile.group).count()
-
-            # Get in-progress segmentations
-            context["active_segmentations"] = Segmentation.objects.filter(
-                recording__group=profile.group, status__in=["pending", "in_progress"]
-            ).count()
-
-            # Get in-progress classifications
-            context["active_classifications"] = ClassificationRun.objects.filter(
-                group=profile.group, status__in=["pending", "in_progress"]
-            ).count()
-        else:
-            context["total_recordings"] = Recording.objects.filter(created_by=request.user).count()
-            context["total_batches"] = TaskBatch.objects.filter(created_by=request.user).count()
-            # Count system species plus user-created species
-            context["total_species"] = Species.objects.filter(
-                models.Q(is_system=True) | models.Q(created_by=request.user)
-            ).count()
-            context["total_projects"] = Project.objects.filter(created_by=request.user).count()
-
-            # Get in-progress segmentations
-            context["active_segmentations"] = Segmentation.objects.filter(
-                created_by=request.user, status__in=["pending", "in_progress"]
-            ).count()
-
-            # Get in-progress classifications
-            context["active_classifications"] = ClassificationRun.objects.filter(
-                created_by=request.user, status__in=["pending", "in_progress"]
-            ).count()
+            recent_group_activity = Task.objects.filter(
+                group=profile.group,
+                is_done=True,
+                annotated_at__isnull=False
+            ).exclude(annotated_by=request.user).select_related(
+                'annotated_by', 'batch', 'species'
+            ).order_by('-annotated_at')[:5]
+            context["recent_group_activity"] = recent_group_activity
 
         # Get available batches for task selection dropdown
         available_batches = []

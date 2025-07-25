@@ -124,6 +124,31 @@
                     </small>
                 </div>
                 
+                <!-- Management Features Section -->
+                <div class="mb-3">
+                    <label class="form-label">Management Features:</label>
+                    <div class="form-check">
+                        <input type="checkbox" class="form-check-input" id="id_management_features_enabled" 
+                               name="management_features_enabled" 
+                               {% if profile.management_features_enabled %}checked{% endif %}>
+                        <label class="form-check-label" for="id_management_features_enabled">
+                            Enable Management Features
+                        </label>
+                    </div>
+                    <small class="text-muted">
+                        Enable access to administrative features like viewing all group data, 
+                        managing recordings and task batches for other users, and system-wide statistics.
+                    </small>
+                    
+                    <div class="mt-2">
+                        <button type="button" id="update-management-features-btn" class="btn btn-sm btn-primary">
+                            <i class="fa fa-save me-1"></i> Update Management Features
+                        </button>
+                    </div>
+                    
+                    <div id="management-features-status" class="mt-2"></div>
+                </div>
+                
                 <!-- Hidden theme field since we're using the theme selector in the navbar -->
                 <input type="hidden" name="theme" value="{{ profile.theme }}" id="id_theme">
             </div>
@@ -144,8 +169,11 @@ document.addEventListener('DOMContentLoaded', function() {
     const removeImageBtn = document.getElementById('remove-image-btn');
     const updateEmailBtn = document.getElementById('update-email-btn');
     const emailInput = document.getElementById('id_email');
+    const updateManagementFeaturesBtn = document.getElementById('update-management-features-btn');
+    const managementFeaturesCheckbox = document.getElementById('id_management_features_enabled');
     const imageUploadStatus = document.getElementById('image-upload-status');
     const emailUpdateStatus = document.getElementById('email-update-status');
+    const managementFeaturesStatus = document.getElementById('management-features-status');
     
     // Function to show status messages
     function showStatus(element, message, isSuccess) {
@@ -338,6 +366,46 @@ document.addEventListener('DOMContentLoaded', function() {
             // Reset button state
             updateEmailBtn.disabled = false;
             updateEmailBtn.innerHTML = '<i class="fa fa-save me-1"></i> Update Email';
+        });
+    });
+    
+    // Handle management features update
+    updateManagementFeaturesBtn.addEventListener('click', function() {
+        const isEnabled = managementFeaturesCheckbox.checked;
+        
+        // Create FormData and append management features setting
+        const formData = new FormData();
+        formData.append('management_features_enabled', isEnabled);
+        formData.append('action', 'update_management_features');
+        
+        // Show loading state
+        updateManagementFeaturesBtn.disabled = true;
+        updateManagementFeaturesBtn.innerHTML = '<i class="fa fa-spinner fa-spin me-1"></i> Updating...';
+        
+        // Send AJAX request
+        fetch('{% url "battycoda_app:update_profile_ajax" %}', {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': csrfToken
+            },
+            body: formData
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                showStatus(managementFeaturesStatus, data.message, true);
+            } else {
+                showStatus(managementFeaturesStatus, data.message || 'An error occurred.', false);
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            showStatus(managementFeaturesStatus, 'An error occurred while updating management features.', false);
+        })
+        .finally(() => {
+            // Reset button state
+            updateManagementFeaturesBtn.disabled = false;
+            updateManagementFeaturesBtn.innerHTML = '<i class="fa fa-save me-1"></i> Update Management Features';
         });
     });
 });

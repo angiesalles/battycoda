@@ -734,6 +734,18 @@ def update_profile_ajax(request):
                 'has_image': False
             })
             
+        elif action == 'update_management_features':
+            # Update management features flag
+            enabled = request.POST.get('enabled') == 'true'
+            profile.management_features_enabled = enabled
+            profile.save(update_fields=['management_features_enabled'])
+            
+            return JsonResponse({
+                'success': True,
+                'message': f'Management features {"enabled" if enabled else "disabled"} successfully',
+                'enabled': enabled
+            })
+            
         else:
             return JsonResponse({'success': False, 'message': 'Invalid action'})
             

@@ -102,6 +102,16 @@ class UserProfile(models.Model):
     theme = models.CharField(
         max_length=20, choices=THEME_CHOICES, default="default", help_text="Color theme preference"
     )
+    
+    # Activity tracking
+    last_activity = models.DateTimeField(
+        null=True, blank=True, help_text="Last time the user performed any significant action"
+    )
+    
+    # Management features toggle
+    management_features_enabled = models.BooleanField(
+        default=False, help_text="Enable access to management and administrative features"
+    )
     # Profile image
     profile_image = models.ImageField(
         upload_to="profile_images/", 
@@ -136,6 +146,11 @@ class UserProfile(models.Model):
         self.api_key = secrets.token_urlsafe(30)[:40]  # Generate a 40-character key
         self.save(update_fields=['api_key'])
         return self.api_key
+    
+    def update_last_activity(self):
+        """Update the last activity timestamp for this user"""
+        self.last_activity = timezone.now()
+        self.save(update_fields=['last_activity'])
 
     def is_admin_of_group(self, group=None):
         """Check if user is admin of the specified group (defaults to current group)"""
@@ -453,3 +468,4 @@ class PasswordResetToken(models.Model):
     def is_valid(self):
         """Check if the token is still valid"""
         return not self.used and self.expires_at > timezone.now()
+

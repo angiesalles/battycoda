@@ -24,7 +24,7 @@
                                 <th>Username</th>
                                 <th>Email</th>
                                 <th>Role</th>
-                                <th>Last Login</th>
+                                <th>Last Activity</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -32,8 +32,14 @@
                             <tr>
                                 <td>{{ membership.user.username }}</td>
                                 <td>{{ membership.user.email }}</td>
-                                <td>{% if membership.is_admin %}<span class="badge bg-primary">Admin</span>{% else %}Member{% endif %}</td>
-                                <td>{{ membership.user.last_login|date:"Y-m-d H:i" }}</td>
+                                <td>{% if membership.is_admin %}<span class="badge badge-primary">Admin</span>{% else %}Member{% endif %}</td>
+                                <td>
+                                    {% if membership.user.profile.last_activity %}
+                                        {{ membership.user.profile.last_activity|date:"Y-m-d H:i" }}
+                                    {% else %}
+                                        <span class="text-muted">Never</span>
+                                    {% endif %}
+                                </td>
                             </tr>
                             {% empty %}
                             <tr>

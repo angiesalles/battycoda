@@ -28,7 +28,7 @@ class UserLoginForm(AuthenticationForm):
 class UserProfileForm(forms.ModelForm):
     class Meta:
         model = UserProfile
-        fields = ["theme", "profile_image"]  # Added profile_image
+        fields = ["theme", "profile_image", "management_features_enabled"]
 
     def __init__(self, *args, **kwargs):
         # Get the user making the request
@@ -49,6 +49,16 @@ class UserProfileForm(forms.ModelForm):
             })
             self.fields["profile_image"].required = False
             self.fields["profile_image"].help_text = "Upload a profile image (JPG, PNG, etc.)"
+            
+        # Add styling and help text to the management features field
+        if "management_features_enabled" in self.fields:
+            self.fields["management_features_enabled"].widget.attrs.update({
+                "class": "form-check-input"
+            })
+            self.fields["management_features_enabled"].help_text = (
+                "Enable access to administrative features like viewing all group data, "
+                "managing recordings and task batches for other users, and system-wide statistics."
+            )
 
 class TaskBatchForm(forms.ModelForm):
     wav_file = forms.FileField(

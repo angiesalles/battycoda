@@ -6,6 +6,7 @@ This middleware ensures users are authenticated and handles redirects to login p
 
 from django.http import HttpResponseRedirect
 from django.urls import reverse
+from django.utils import timezone
 
 # Set up logging
 
@@ -66,6 +67,16 @@ class AuthenticationMiddleware:
                 login_url = "/accounts/login/"
 
             return HttpResponseRedirect(login_url)
+
+        # Update last activity for authenticated users (throttled to avoid too many DB writes)
+        if hasattr(request.user, 'profile'):
+            profile = request.user.profile
+            now = timezone.now()
+            
+            # Only update if more than 5 minutes have passed since last update
+            if not profile.last_activity or (now - profile.last_activity).total_seconds() > 300:
+                profile.last_activity = now
+                profile.save(update_fields=['last_activity'])
 
         # Process the request and return the response
         return self.get_response(request)

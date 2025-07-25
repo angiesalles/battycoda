@@ -53,6 +53,37 @@ def invite_user_view(request):
     group = request.user.profile.group
 
     if request.method == "POST":
+        # Check if this is a resend request
+        if 'resend' in request.POST:
+            invitation_id = request.POST.get('resend')
+            try:
+                invitation = GroupInvitation.objects.get(id=invitation_id, group=group)
+                
+                # Create the invitation link
+                invitation_link = request.build_absolute_uri(
+                    reverse("battycoda_app:accept_invitation", kwargs={"token": invitation.token})
+                )
+                
+                # Resend the invitation email
+                email_sent = send_invitation_email(
+                    group_name=group.name,
+                    inviter_name=request.user.username,
+                    recipient_email=invitation.email,
+                    invitation_link=invitation_link,
+                    expires_at=invitation.expires_at,
+                )
+                
+                if email_sent:
+                    messages.success(request, f"Invitation resent successfully to {invitation.email}.")
+                else:
+                    messages.error(request, "Failed to resend invitation email. Check the email settings.")
+                    
+            except GroupInvitation.DoesNotExist:
+                messages.error(request, "Invitation not found.")
+                
+            return redirect("battycoda_app:group_users")
+        
+        # Regular invitation form submission
         form = GroupInvitationForm(request.POST)
         if form.is_valid():
             email = form.cleaned_data["email"]
