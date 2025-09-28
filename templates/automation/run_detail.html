@@ -53,7 +53,7 @@
                                 <tr>
                                     <th>Segmentation</th>
                                     <td>
-                                        <a href="{% url 'battycoda_app:segment_recording' recording_id=run.segmentation.recording.id %}">
+                                        <a href="{% url 'battycoda_app:segmentation_detail' segmentation_id=run.segmentation.id %}">
                                             {{ run.segmentation.name }}
                                         </a>
                                     </td>
@@ -202,7 +202,7 @@
                                 {% for result_item in results %}
                                 <tr>
                                     <td>
-                                        <a href="{% url 'battycoda_app:segment_recording' recording_id=run.segmentation.recording.id %}#segment-{{ result_item.segment.id }}" target="_blank">
+                                        <a href="{% url 'battycoda_app:segmentation_detail' segmentation_id=run.segmentation.id %}#segment-{{ result_item.segment.id }}" target="_blank">
                                             Segment #{{ result_item.segment.id }}
                                         </a>
                                     </td>
@@ -227,7 +227,7 @@
                                     
                                     <td>
                                         <div class="btn-group" role="group">
-                                            <a href="{% url 'battycoda_app:segment_recording' recording_id=run.segmentation.recording.id %}#segment-{{ result_item.segment.id }}" 
+                                            <a href="{% url 'battycoda_app:segmentation_detail' segmentation_id=run.segmentation.id %}#segment-{{ result_item.segment.id }}" 
                                                class="btn btn-sm btn-primary" target="_blank">
                                                 <i class="fas fa-external-link-alt"></i> View in Editor
                                             </a>

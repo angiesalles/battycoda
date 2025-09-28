@@ -214,6 +214,16 @@ CELERY_TIMEZONE = TIME_ZONE
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
+# Audio processing configuration
+# Configure librosa and numba cache to avoid permission issues in containers
+os.environ['LIBROSA_CACHE_DIR'] = '/tmp/librosa_cache'
+os.environ['LIBROSA_CACHE_LEVEL'] = '0'  # Disable caching
+os.environ['NUMBA_CACHE_DIR'] = '/tmp/numba_cache'
+os.environ['NUMBA_DISABLE_JIT'] = '1'  # Disable JIT compilation entirely
+# Create cache directories
+os.makedirs('/tmp/librosa_cache', exist_ok=True)
+os.makedirs('/tmp/numba_cache', exist_ok=True)
+
 # Logging Configuration
 LOGGING = {
     "version": 1,

@@ -32,7 +32,7 @@ def train_classifier(self, training_job_id):
     Returns:
         dict: Result of the training process
     """
-    from ...models.detection import Classifier, ClassifierTrainingJob
+    from ...models.classification import Classifier, ClassifierTrainingJob
     from ...models.task import Task
     
     try:

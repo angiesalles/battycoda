@@ -34,7 +34,7 @@ def run_call_detection(self, detection_run_id):
     Returns:
         dict: Result of the classification process
     """
-    from ...models.detection import CallProbability, Classifier, ClassificationResult, ClassificationRun
+    from ...models.classification import CallProbability, Classifier, ClassificationResult, ClassificationRun
 
     try:
         # Get the detection run
@@ -463,7 +463,7 @@ def run_dummy_classifier(self, detection_run_id):
     Returns:
         dict: Result of the dummy classification process
     """
-    from ...models.detection import CallProbability, ClassificationResult, ClassificationRun
+    from ...models.classification import CallProbability, ClassificationResult, ClassificationRun
     
     try:
         # Get the detection run

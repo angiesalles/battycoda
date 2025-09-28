@@ -82,7 +82,7 @@ class Species(models.Model):
             return False
             
         # Import here to avoid circular imports
-        from .detection import Classifier
+        from .classification import Classifier
         return not Classifier.objects.filter(species=self).exists()
     
     @classmethod

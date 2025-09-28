@@ -1,7 +1,7 @@
 {% extends 'base.html' %}
 {% load static %}
 
-{% block title %}BattyCoda - Segment Recording{% endblock %}
+{% block title %}BattyCoda - {{ active_segmentation.name }}{% endblock %}
 
 {% block extra_css %}
 <link rel="stylesheet" href="{% static 'css/waveform_viewer.css' %}">
@@ -13,9 +13,9 @@
     <div class="d-flex justify-content-between align-items-center mb-4">
         <nav aria-label="breadcrumb">
             <ol class="breadcrumb">
-                <li class="breadcrumb-item"><a href="{% url 'battycoda_app:recording_list' %}">Recordings</a></li>
+                <li class="breadcrumb-item"><a href="{% url 'battycoda_app:segmentation_list' %}">Segmentations</a></li>
                 <li class="breadcrumb-item"><a href="{% url 'battycoda_app:recording_detail' recording_id=recording.id %}">{{ recording.name }}</a></li>
-                <li class="breadcrumb-item active" aria-current="page">Segment</li>
+                <li class="breadcrumb-item active" aria-current="page">{{ active_segmentation.name }}</li>
             </ol>
         </nav>
         <div class="d-flex">
@@ -54,7 +54,7 @@
         <!-- Waveform and segmentation tools -->
         <div class="col-lg-8">
             <!-- Include the reusable waveform player with selection and zoom enabled -->
-            {% include "recordings/includes/waveform_player.html" with recording=recording container_id="segment-waveform" height=300 allow_selection=True show_zoom=True segments=segments_json spectrogram_url=spectrogram_url %}
+            {% include "recordings/includes/waveform_player.html" with recording=recording container_id="segment-waveform" height=300 allow_selection=True show_zoom=True segments=segments_json spectrogram_url=spectrogram_url spectrogram_info=spectrogram_info %}
             
             <!-- Include segment form component -->
             {% include "recordings/includes/segmentation/segment_form.html" %}

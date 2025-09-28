@@ -19,7 +19,7 @@ def process_classification_queue(self):
     This task should be run periodically (e.g., every 30 seconds) to
     ensure queued classification runs are processed.
     """
-    from ...models.detection import ClassificationRun
+    from ...models.classification import ClassificationRun
     
     try:
         # Get the next queued run to process
@@ -76,7 +76,7 @@ def queue_classification_run(self, detection_run_id):
     Args:
         detection_run_id: ID of the ClassificationRun to queue
     """
-    from ...models.detection import ClassificationRun
+    from ...models.classification import ClassificationRun
     
     try:
         run = ClassificationRun.objects.get(id=detection_run_id)
@@ -107,7 +107,7 @@ def get_queue_status(self):
     
     Returns information about queued, pending, and running classification runs.
     """
-    from ...models.detection import ClassificationRun
+    from ...models.classification import ClassificationRun
     
     try:
         queued_count = ClassificationRun.objects.filter(status="queued").count()

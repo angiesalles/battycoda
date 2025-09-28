@@ -154,7 +154,7 @@ export class SpectrogramRenderer {
         const srcWidth = viewportEndX - viewportStartX;
         const srcHeight = this.imageHeight;
         
-        // Calculate destination rectangle on canvas
+        // Stretch image to fill entire canvas area
         const destX = 0;
         const destY = 0;
         const destWidth = canvasWidth;
@@ -402,7 +402,9 @@ export class SpectrogramRenderer {
      * Show the spectrogram canvas
      */
     show() {
+        console.log('SpectrogramRenderer.show() called - canvas exists:', !!this.canvas, 'image loaded:', this.imageLoaded);
         if (this.canvas) {
+            console.log('Setting canvas display to block');
             this.canvas.style.display = 'block';
             this.resize();
             this.render();
@@ -413,7 +415,9 @@ export class SpectrogramRenderer {
      * Hide the spectrogram canvas
      */
     hide() {
+        console.log('SpectrogramRenderer.hide() called - canvas exists:', !!this.canvas);
         if (this.canvas) {
+            console.log('Setting canvas display to none');
             this.canvas.style.display = 'none';
         }
     }

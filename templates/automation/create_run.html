@@ -73,7 +73,7 @@
                                 <tr>
                                     <th>Source Recording</th>
                                     <td>
-                                        <a href="{% url 'battycoda_app:segment_recording' recording_id=segmentation.recording.id %}">
+                                        <a href="{% url 'battycoda_app:segmentation_detail' segmentation_id=segmentation.id %}">
                                             {{ segmentation.recording.name }}
                                         </a>
                                     </td>
@@ -100,7 +100,7 @@
                         </div>
                         
                         <div class="text-end">
-                            <a href="{% url 'battycoda_app:segment_recording' recording_id=segmentation.recording.id %}" class="btn btn-secondary me-2">
+                            <a href="{% url 'battycoda_app:segmentation_detail' segmentation_id=segmentation.id %}" class="btn btn-secondary me-2">
                                 Cancel
                             </a>
                             <button type="submit" class="btn btn-primary">

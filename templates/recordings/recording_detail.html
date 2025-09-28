@@ -113,7 +113,7 @@
         <!-- Spectrogram and segments section -->
         <div id="spectrogramCol" class="col-md-8 mb-4">
             <!-- Include the reusable waveform player -->
-            {% include "recordings/includes/waveform_player.html" with recording=recording container_id="detail-waveform" spectrogram_info=spectrogram_info %}
+            {% include "recordings/includes/waveform_player.html" with recording=recording container_id="detail-waveform" spectrogram_info=spectrogram_info spectrogram_url=spectrogram_url %}
             
             <!-- Segmentation links card -->
             <div id="segmentationCard" class="card mt-4">
@@ -125,7 +125,11 @@
                         To view and manage segments for this recording, use the segmentation tool.
                     </p>
                     <div id="segmentationButtons" class="d-flex flex-wrap">
-                        <a id="segmentRecordingBtn" href="{% url 'battycoda_app:segment_recording' recording_id=recording.id %}" class="btn btn-primary mr-2 mb-2">
+                        {% if recording.segmentation %}
+                            <a id="segmentRecordingBtn" href="{% url 'battycoda_app:segmentation_detail' segmentation_id=recording.segmentation.id %}" class="btn btn-primary mr-2 mb-2">
+                        {% else %}
+                            <a id="segmentRecordingBtn" href="{% url 'battycoda_app:create_segmentation' %}?recording={{ recording.id }}" class="btn btn-primary mr-2 mb-2">
+                        {% endif %}
                             <span id="segmentIcon" class="s7-scissors mr-1"></span> Segment Recording
                         </a>
                         <a id="uploadPickleBtn" href="{% url 'battycoda_app:upload_pickle_segments' recording_id=recording.id %}" class="btn btn-primary mr-2 mb-2">
@@ -147,8 +151,6 @@
 </div>
 
 {% block extra_scripts %}
-<!-- Include the waveform player script -->
-<script id="waveformPlayerScript" src="{% static 'js/waveform_player.js' %}"></script>
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {

@@ -10,16 +10,39 @@ from .models.user import Group, UserProfile
 
 class UserRegisterForm(UserCreationForm):
     email = forms.EmailField(required=True)
+    captcha_answer = forms.IntegerField(
+        label="CAPTCHA (Anti-spam verification)",
+        help_text="Please solve the math problem above to verify you're human"
+    )
 
     class Meta:
         model = User
-        fields = ["username", "email", "password1", "password2"]
+        fields = ["username", "email", "password1", "password2", "captcha_answer"]
+        
+    def __init__(self, *args, **kwargs):
+        # Extract captcha values from kwargs if provided
+        self.captcha_num1 = kwargs.pop('captcha_num1', None)
+        self.captcha_num2 = kwargs.pop('captcha_num2', None)
+        super().__init__(*args, **kwargs)
         
     def clean_username(self):
         username = self.cleaned_data.get('username')
         if '@' in username:
             raise forms.ValidationError("Username cannot contain the @ symbol. Please choose a different username.")
         return username
+    
+    def clean_captcha_answer(self):
+        answer = self.cleaned_data.get('captcha_answer')
+        
+        # Check if we have the captcha values (they should be passed from the view)
+        if self.captcha_num1 is None or self.captcha_num2 is None:
+            raise forms.ValidationError("CAPTCHA verification failed. Please try again.")
+        
+        correct_answer = self.captcha_num1 + self.captcha_num2
+        if answer != correct_answer:
+            raise forms.ValidationError("Incorrect answer. Please solve the math problem correctly.")
+        
+        return answer
 
 class UserLoginForm(AuthenticationForm):
     username = forms.CharField(label="Username")

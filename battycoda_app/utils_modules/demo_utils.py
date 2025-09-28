@@ -306,7 +306,7 @@ def _create_task_batch_from_detection(user, group, project, species, recording, 
             species=species,
             project=project,
             group=group,
-            classification_run=detection_run,  # Link to the detection run
+            detection_run=detection_run,  # Link to the detection run
         )
 
         # Create tasks for each detection result's segment

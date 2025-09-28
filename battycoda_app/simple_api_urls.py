@@ -8,6 +8,8 @@ from django.urls import path
 from .simple_api.user_views import simple_user_info, simple_generate_api_key
 from .simple_api.data_views import simple_species_list, simple_projects_list, simple_recordings_list
 from .simple_api.upload_views import simple_upload_recording
+from .simple_api.recording_upload import upload_recording
+from .simple_api.pickle_upload import upload_pickle_segmentation
 from .simple_api.segmentation_views import simple_segmentation_algorithms, simple_start_segmentation
 from .simple_api.classification_views import (
     simple_classifiers_list, simple_start_classification, simple_classification_runs_list
@@ -24,8 +26,9 @@ urlpatterns = [
     path('projects/', simple_projects_list, name='projects_list'),
     path('recordings/', simple_recordings_list, name='recordings_list'),
     
-    # Upload endpoint
-    path('upload/', simple_upload_recording, name='upload_recording'),
+    # Upload endpoints
+    path('upload/', upload_recording, name='upload_recording'),
+    path('recordings/<int:recording_id>/upload-pickle/', upload_pickle_segmentation, name='upload_pickle'),
     
     # Segmentation endpoints
     path('recordings/<int:recording_id>/segment/', simple_start_segmentation, name='start_segmentation'),

@@ -89,6 +89,7 @@ urlpatterns = [
     path("spectrogram/", views_audio.spectrogram_view, name="spectrogram"),
     path("status/task/<str:task_id>/", views_audio.task_status, name="task_status"),
     path("audio/snippet/", views_audio.audio_snippet_view, name="audio_snippet"),
+    path("audio/bit/", views_audio.simple_audio_bit_view, name="simple_audio_bit"),
     # Test static file serving (disabled - using built-in Django static file handling)
     # path('test-static/<path:filename>', views_audio.test_static_view, name='test_static'),
     # Task management routes
@@ -234,8 +235,37 @@ urlpatterns = [
     path("recordings/duplicates/remove/", views_recordings_duplicates.remove_duplicate_recordings, name="remove_duplicate_recordings"),
     # Batch Upload
     path("recordings/batch-upload/", views_batch_upload.batch_upload_recordings_view, name="batch_upload_recordings"),
-    # Segmentation related views
-    path("recordings/<int:recording_id>/segment/", segment_recording_view, name="segment_recording"),
+    # Segmentations as top-level resource
+    path("segmentations/", segment_recording_view, name="segmentation_list"),
+    path("segmentations/create/", segment_recording_view, name="create_segmentation"), 
+    path("segmentations/<int:segmentation_id>/", segment_recording_view, name="segmentation_detail"),
+    path(
+        "segmentations/<int:segmentation_id>/auto-segment/",
+        auto_segment_recording_view,
+        name="auto_segment_segmentation",
+    ),
+    path(
+        "segmentations/<int:segmentation_id>/auto-segment/<int:algorithm_id>/",
+        auto_segment_recording_view,
+        name="auto_segment_segmentation_with_algorithm",
+    ),
+    path(
+        "segmentations/<int:segmentation_id>/auto-segment/status/",
+        auto_segment_status_view,
+        name="auto_segment_segmentation_status",
+    ),
+    path(
+        "segmentations/<int:segmentation_id>/auto-segment/preview/",
+        preview_segmentation_view,
+        name="preview_segmentation_detail",
+    ),
+    path(
+        "segmentations/<int:segmentation_id>/upload-pickle/",
+        upload_pickle_segments_view,
+        name="upload_pickle_to_segmentation",
+    ),
+    
+    # Auto-segmentation (recording-based - creates new segmentation)
     path(
         "recordings/<int:recording_id>/auto-segment/",
         auto_segment_recording_view,
@@ -281,22 +311,22 @@ urlpatterns = [
         views_tasks.create_tasks_from_segments_view,
         name="create_tasks_from_segments",
     ),
-    # Segmentation management
-    path("segmentation/", batch_segmentation_view, name="batch_segmentation"),
-    path("segmentation/select-recording/", select_recording_for_segmentation_view, name="select_recording_for_segmentation"),
+    # Batch segmentation management
+    path("segmentation/batch-jobs/", batch_segmentation_view, name="batch_segmentation"),
+    path("segmentation/batch-jobs/select-recording/", select_recording_for_segmentation_view, name="select_recording_for_segmentation"),
     path(
-        "segmentation/jobs/status/", segmentation_jobs_status_view, name="segmentation_jobs_status"
+        "segmentation/batch-jobs/status/", segmentation_jobs_status_view, name="segmentation_jobs_status"
     ),
     path(
-        "segmentation/<int:segmentation_id>/activate/",
+        "segmentations/<int:segmentation_id>/activate/",
         activate_segmentation_view,
         name="activate_segmentation",
     ),
-    # Segment management
-    path("segments/<int:recording_id>/add/", add_segment_view, name="add_segment"),
-    path("segments/<int:segment_id>/edit/", edit_segment_view, name="edit_segment"),
-    path("segments/<int:segment_id>/delete/", delete_segment_view, name="delete_segment"),
-    path("segments/<int:recording_id>/load-ajax/", load_segments_ajax, name="load_segments_ajax"),
+    # Segment management under segmentations
+    path("segmentations/<int:segmentation_id>/segments/add/", add_segment_view, name="add_segment"),
+    path("segmentations/<int:segmentation_id>/segments/<int:segment_id>/edit/", edit_segment_view, name="edit_segment"),
+    path("segmentations/<int:segmentation_id>/segments/<int:segment_id>/delete/", delete_segment_view, name="delete_segment"),
+    path("segmentations/<int:segmentation_id>/segments/load-ajax/", load_segments_ajax, name="load_segments_ajax"),
     
     # Notification routes
     path("notifications/", notification_list_view, name="notifications"),

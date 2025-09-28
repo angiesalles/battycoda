@@ -5,20 +5,36 @@ function setupViewToggle() {
     const viewLabel = document.getElementById('{{ container_id }}-view-label');
     const playerInstance = window.waveformPlayers["{{ container_id }}"];
     
+    console.log('setupViewToggle - elements found:', {
+        waveformRadio: !!waveformRadio,
+        spectrogramRadio: !!spectrogramRadio,
+        viewLabel: !!viewLabel,
+        playerInstance: !!playerInstance
+    });
+    
     // Check if player instance is available
     if (!playerInstance || !playerInstance.setViewMode) {
+        console.log('Player not ready, retrying...', { playerInstance: !!playerInstance, setViewMode: playerInstance?.setViewMode });
         // Retry after a short delay
         setTimeout(setupViewToggle, 100);
         return;
     }
     
+    console.log('Player instance ready:', {
+        isSpectrogramAvailable: playerInstance.isSpectrogramAvailable(),
+        currentViewMode: playerInstance.getViewMode()
+    });
+    
     function toggleView() {
+        console.log('toggleView called - spectrogramRadio.checked:', spectrogramRadio.checked);
         if (spectrogramRadio.checked) {
             // Switch to spectrogram view
+            console.log('Switching to spectrogram view');
             playerInstance.setViewMode('spectrogram');
             viewLabel.textContent = 'Spectrogram';
         } else {
             // Switch to waveform view
+            console.log('Switching to waveform view');
             playerInstance.setViewMode('waveform');
             viewLabel.textContent = 'Waveform';
         }

@@ -62,7 +62,7 @@ def get_spectrogram_status(recording):
         
         if completed_job and completed_job.output_file_path and os.path.exists(completed_job.output_file_path):
             # Extract the relative URL from the full path
-            relative_path = completed_job.output_file_path.replace(settings.MEDIA_ROOT, '').lstrip('/')
+            relative_path = str(completed_job.output_file_path).replace(settings.MEDIA_ROOT, '').lstrip('/')
             return {
                 'status': 'available',
                 'url': f"/media/{relative_path}",
@@ -89,78 +89,133 @@ def get_spectrogram_status(recording):
 
 
 @login_required
-def segment_recording_view(request, recording_id):
-    """View for segmenting a recording (marking regions)"""
-    recording = get_object_or_404(Recording, id=recording_id)
+def segment_recording_view(request, segmentation_id=None):
+    """View for segmenting - handles list, create, and detail views"""
+    profile = request.user.profile
+    
+    # Handle different URL patterns
+    if segmentation_id is None:
+        # /segmentations/ - list view
+        if request.path == '/segmentations/':
+            return segmentation_list_view(request)
+        # /segmentations/create/ - create view  
+        elif request.path == '/segmentations/create/':
+            return create_segmentation_view(request)
+        else:
+            # Fallback for old recording-based URLs - extract recording_id from kwargs
+            recording_id = request.resolver_match.kwargs.get('recording_id')
+            if recording_id:
+                return segment_recording_legacy_view(request, recording_id)
+            else:
+                return redirect("battycoda_app:segmentation_list")
+    else:
+        # /segmentations/<segmentation_id>/ - detail view
+        return segmentation_detail_view(request, segmentation_id)
 
-    # Check if the user has permission to edit this recording
+
+@login_required  
+def segment_recording_legacy_view(request, recording_id):
+    """Legacy view for segmenting a recording (marking regions) - redirects to new URL"""
+    recording = get_object_or_404(Recording, id=recording_id)
+    
+    # Find active segmentation or create one
+    try:
+        active_segmentation = Segmentation.objects.get(recording=recording, is_active=True)
+    except Segmentation.DoesNotExist:
+        # Check if there are any segmentations at all
+        if Segmentation.objects.filter(recording=recording).exists():
+            # Activate the most recent segmentation
+            latest_segmentation = Segmentation.objects.filter(recording=recording).order_by("-created_at").first()
+            latest_segmentation.is_active = True
+            latest_segmentation.save()
+            active_segmentation = latest_segmentation
+        else:
+            # No segmentation exists - redirect to create one
+            return redirect("battycoda_app:create_segmentation", recording=recording.id)
+    
+    # Redirect to the new URL structure
+    return redirect("battycoda_app:segmentation_detail", segmentation_id=active_segmentation.id)
+
+
+@login_required
+def segmentation_list_view(request):
+    """List all segmentations available to the user"""
+    profile = request.user.profile
+    
+    # Filter segmentations by user's permissions
+    if profile.group and profile.is_current_group_admin:
+        segmentations = Segmentation.objects.filter(recording__group=profile.group).order_by("-created_at")
+    else:
+        segmentations = Segmentation.objects.filter(recording__created_by=request.user).order_by("-created_at")
+    
+    context = {
+        "segmentations": segmentations,
+    }
+    return render(request, "segmentations/segmentation_list.html", context)
+
+
+@login_required  
+def create_segmentation_view(request):
+    """Create a new segmentation for a recording"""
+    recording_id = request.GET.get('recording')
+    if not recording_id:
+        messages.error(request, "No recording specified for segmentation.")
+        return redirect("battycoda_app:recording_list")
+        
+    recording = get_object_or_404(Recording, id=recording_id)
+    
+    # Check permissions
     profile = request.user.profile
     if recording.created_by != request.user and (not profile.group or recording.group != profile.group):
-        messages.error(request, "You don't have permission to segment this recording.")
+        messages.error(request, "You don't have permission to create segmentations for this recording.")
         return redirect("battycoda_app:recording_list")
-
-    # Check if a specific segmentation ID is requested in the query parameters
-    requested_segmentation_id = request.GET.get('segmentation_id')
     
-    if requested_segmentation_id:
-        try:
-            # Try to get the requested segmentation
-            requested_segmentation = Segmentation.objects.get(id=requested_segmentation_id, recording=recording)
-            
-            # Automatically make it active
-            if not requested_segmentation.is_active:
-                # Deactivate all other segmentations for this recording
-                Segmentation.objects.filter(recording=recording).update(is_active=False)
-                
-                # Activate the requested one
-                requested_segmentation.is_active = True
-                requested_segmentation.save()
-                
-            # Use this segmentation
-            active_segmentation = requested_segmentation
-            segments_queryset = Segment.objects.filter(segmentation=active_segmentation).order_by("onset")
-            
-            # Add segmentation info to context
-            segmentation_info = {
-                "id": active_segmentation.id,
-                "name": active_segmentation.name,
-                "algorithm": active_segmentation.algorithm.name if active_segmentation.algorithm else "Manual",
-                "created_at": active_segmentation.created_at,
-                "manually_edited": active_segmentation.manually_edited,
-            }
-        except Segmentation.DoesNotExist:
-            # If the requested segmentation doesn't exist, fall back to the active one
-            return redirect("battycoda_app:segment_recording", recording_id=recording.id)
-    else:
-        # No specific segmentation requested, use the active one
-        try:
-            active_segmentation = Segmentation.objects.get(recording=recording, is_active=True)
+    # For now, just create a default empty segmentation and redirect to it
+    # TODO: Add a proper creation form later
+    segmentation = Segmentation.objects.create(
+        recording=recording,
+        name=f"Segmentation for {recording.name}",
+        created_by=request.user,
+        is_active=True
+    )
+    
+    messages.success(request, f"Created new segmentation for {recording.name}")
+    return redirect("battycoda_app:segmentation_detail", segmentation_id=segmentation.id)
 
-            # Get segments from the active segmentation
-            segments_queryset = Segment.objects.filter(segmentation=active_segmentation).order_by("onset")
 
-            # Add segmentation info to context
-            segmentation_info = {
-                "id": active_segmentation.id,
-                "name": active_segmentation.name,
-                "algorithm": active_segmentation.algorithm.name if active_segmentation.algorithm else "Manual",
-                "created_at": active_segmentation.created_at,
-                "manually_edited": active_segmentation.manually_edited,
-            }
-        except Segmentation.DoesNotExist:
-            # No active segmentation, return empty queryset
-            segments_queryset = Segment.objects.none()
-            segmentation_info = None
+@login_required
+def segmentation_detail_view(request, segmentation_id):
+    """View for editing a specific segmentation (marking regions)"""  
+    segmentation = get_object_or_404(Segmentation, id=segmentation_id)
+    recording = segmentation.recording
 
-            # Check if there are any segmentations at all
-            if Segmentation.objects.filter(recording=recording).exists():
-                # Activate the most recent segmentation
-                latest_segmentation = Segmentation.objects.filter(recording=recording).order_by("-created_at").first()
-                latest_segmentation.is_active = True
-                latest_segmentation.save()
+    # Check if the user has permission to edit this segmentation
+    profile = request.user.profile
+    if recording.created_by != request.user and (not profile.group or recording.group != profile.group):
+        messages.error(request, "You don't have permission to edit this segmentation.")
+        return redirect("battycoda_app:segmentation_list")
 
-                # Redirect to refresh the page with the newly activated segmentation
-                return redirect("battycoda_app:segment_recording", recording_id=recording.id)
+    # Make this segmentation active if it's not already
+    if not segmentation.is_active:
+        # Deactivate all other segmentations for this recording
+        Segmentation.objects.filter(recording=recording).update(is_active=False)
+        
+        # Activate this one
+        segmentation.is_active = True
+        segmentation.save()
+    
+    # Use this specific segmentation
+    active_segmentation = segmentation
+    segments_queryset = Segment.objects.filter(segmentation=active_segmentation).order_by("onset")
+    
+    # Add segmentation info to context
+    segmentation_info = {
+        "id": active_segmentation.id,
+        "name": active_segmentation.name,
+        "algorithm": active_segmentation.algorithm.name if active_segmentation.algorithm else "Manual",
+        "created_at": active_segmentation.created_at,
+        "manually_edited": active_segmentation.manually_edited,
+    }
 
     # Apply filters if provided
     min_duration = request.GET.get('min_duration')
@@ -239,12 +294,13 @@ def segment_recording_view(request, recording_id):
         },
     }
 
-    return render(request, "recordings/segment_recording.html", context)
+    return render(request, "segmentations/segmentation_detail.html", context)
 
 @login_required
-def add_segment_view(request, recording_id):
-    """Add a segment to a recording via AJAX"""
-    recording = get_object_or_404(Recording, id=recording_id)
+def add_segment_view(request, segmentation_id):
+    """Add a segment to a segmentation via AJAX"""
+    segmentation = get_object_or_404(Segmentation, id=segmentation_id)
+    recording = segmentation.recording
 
     # Check if the user has permission
     profile = request.user.profile
@@ -256,6 +312,7 @@ def add_segment_view(request, recording_id):
         if form.is_valid():
             segment = form.save(commit=False)
             segment.recording = recording
+            segment.segmentation = segmentation
             segment.created_by = request.user
             segment.save(manual_edit=True)  # Mark as manually edited
 
@@ -278,7 +335,7 @@ def add_segment_view(request, recording_id):
     return JsonResponse({"success": False, "error": "Invalid request method"}, status=405)
 
 @login_required
-def edit_segment_view(request, segment_id):
+def edit_segment_view(request, segmentation_id, segment_id):
     """Edit a segment via AJAX"""
     segment = get_object_or_404(Segment, id=segment_id)
     recording = segment.recording
@@ -313,7 +370,7 @@ def edit_segment_view(request, segment_id):
     return JsonResponse({"success": False, "error": "Invalid request method"}, status=405)
 
 @login_required
-def delete_segment_view(request, segment_id):
+def delete_segment_view(request, segmentation_id, segment_id):
     """Delete a segment via AJAX"""
     segment = get_object_or_404(Segment, id=segment_id)
     recording = segment.recording

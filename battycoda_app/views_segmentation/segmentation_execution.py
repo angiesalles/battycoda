@@ -146,11 +146,26 @@ def auto_segment_recording_view(request, recording_id, algorithm_id=None):
                 messages.error(request, "No segmentation algorithm was selected and no default algorithm is available.")
                 return redirect("battycoda_app:auto_segment_recording", recording_id=recording_id)
 
+        # Extract bandpass filter parameters
+        low_freq = request.POST.get("low_freq")
+        high_freq = request.POST.get("high_freq")
+        
         # Convert to appropriate types
         try:
             min_duration_ms = int(min_duration_ms)
             smooth_window = int(smooth_window)
             threshold_factor = float(threshold_factor)
+            
+            # Convert frequency parameters to integers or None
+            if low_freq and low_freq.strip():
+                low_freq = int(low_freq)
+            else:
+                low_freq = None
+                
+            if high_freq and high_freq.strip():
+                high_freq = int(high_freq)
+            else:
+                high_freq = None
 
             # Validate parameters
             if min_duration_ms < 1:
@@ -167,8 +182,6 @@ def auto_segment_recording_view(request, recording_id, algorithm_id=None):
         try:
             from celery import current_app
 
-            # Check if debug visualization is requested
-            debug_visualization = request.POST.get("debug_visualization", False) == "on"
 
             # Create a Segmentation entry first to track this job
             segmentation = Segmentation.objects.create(
@@ -186,7 +199,7 @@ def auto_segment_recording_view(request, recording_id, algorithm_id=None):
             # Launch Celery task with segmentation_id as the first parameter
             task = current_app.send_task(
                 algorithm.celery_task,
-                args=[recording.id, segmentation.id, min_duration_ms, smooth_window, threshold_factor, debug_visualization],
+                args=[recording.id, segmentation.id, min_duration_ms, smooth_window, threshold_factor, low_freq, high_freq],
             )
             
             # Update the segmentation with the actual task ID
@@ -325,9 +338,6 @@ def auto_segment_status_view(request, recording_id):
                         "result": task_result,
                     }
 
-                    # Add debug visualization info if available
-                    if task_result.get("debug_visualization"):
-                        response_data["debug_visualization"] = task_result["debug_visualization"]
 
                     return JsonResponse(response_data)
                 else:

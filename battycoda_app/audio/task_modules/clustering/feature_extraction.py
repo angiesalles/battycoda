@@ -3,8 +3,12 @@ Feature extraction utilities for clustering.
 """
 
 import numpy as np
+import os
 import librosa
 from ....models import Segmentation, Segment
+
+# Configure librosa cache to avoid permission issues
+os.environ['LIBROSA_CACHE_DIR'] = '/tmp/librosa_cache'
 
 
 def extract_features(audio_path, start_time, end_time, method='mfcc', params=None):

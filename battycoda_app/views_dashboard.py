@@ -89,7 +89,7 @@ def index(request):
 
         # Get available batches for task selection dropdown
         available_batches = []
-        batches_query = TaskBatch.objects.all()
+        batches_query = TaskBatch.objects.select_related('species', 'project')
         
         # Filter batches based on user access
         if profile.group:

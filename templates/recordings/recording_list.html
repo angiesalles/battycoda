@@ -80,12 +80,21 @@
 {% block item_actions %}
 {{ block.super }}
 <!-- Additional segment button -->
-<a href="{% url 'battycoda_app:segment_recording' recording_id=item.id %}" 
-   class="btn btn-outline-primary" 
-   data-bs-toggle="tooltip" data-bs-placement="top" 
-   title="Create segments to identify bat calls">
-    <i class="fas fa-cut"></i>
-</a>
+{% if item.segmentation %}
+    <a href="{% url 'battycoda_app:segmentation_detail' segmentation_id=item.segmentation.id %}" 
+       class="btn btn-outline-primary" 
+       data-bs-toggle="tooltip" data-bs-placement="top" 
+       title="Edit existing segmentation">
+        <i class="fas fa-cut"></i>
+    </a>
+{% else %}
+    <a href="{% url 'battycoda_app:create_segmentation' %}?recording={{ item.id }}" 
+       class="btn btn-outline-primary" 
+       data-bs-toggle="tooltip" data-bs-placement="top" 
+       title="Create segmentation to identify bat calls">
+        <i class="fas fa-cut"></i>
+    </a>
+{% endif %}
 {% endblock %}
 
 {% block empty_icon %}fas fa-file-audio{% endblock %}

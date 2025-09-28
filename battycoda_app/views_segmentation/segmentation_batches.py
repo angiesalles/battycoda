@@ -2,7 +2,6 @@
 Views for managing batch segmentation operations.
 """
 import os
-import fnmatch
 
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
@@ -138,22 +137,6 @@ def segmentation_jobs_status_view(request):
             "is_active": segmentation.is_active,
         }
 
-        # Check for debug visualization
-        debug_path = os.path.join(settings.MEDIA_ROOT, "segmentation_debug")
-        if os.path.exists(debug_path):
-            # Look for debug images associated with this recording
-            debug_pattern = f"segmentation_debug_{segmentation.recording.id}_*.png"
-            debug_files = []
-            for file in os.listdir(debug_path):
-                if fnmatch.fnmatch(file, debug_pattern):
-                    debug_files.append(file)
-
-            # Sort by newest first (based on filename timestamp)
-            debug_files.sort(reverse=True)
-
-            # If we found any debug visualizations, add the URL to the most recent one
-            if debug_files:
-                formatted_job["debug_visualization"] = {"url": f"/media/segmentation_debug/{debug_files[0]}"}
 
         formatted_jobs.append(formatted_job)
 

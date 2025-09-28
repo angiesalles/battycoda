@@ -25,7 +25,6 @@ from .models.clustering import (
     ClusterCallMapping
 )
 from .models.organization import Species
-from .audio.task_modules.clustering.tasks import run_clustering
 
 
 @login_required
@@ -152,6 +151,7 @@ def create_clustering_run(request):
             task = task_func.delay(clustering_run.id)
         else:
             # Fallback to the default clustering task for older algorithms
+            from .audio.task_modules.clustering.tasks import run_clustering
             task = run_clustering.delay(clustering_run.id)
             
         clustering_run.task_id = task.id

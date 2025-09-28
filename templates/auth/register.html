@@ -84,6 +84,43 @@
                             {% endif %}
                         </div>
                         
+                        <!-- CAPTCHA Field -->
+                        <div class="form-group mb-4">
+                            <div class="card border-info">
+                                <div class="card-header bg-info text-white">
+                                    <h6 class="mb-0"><i class="fas fa-shield-alt mr-2"></i>Anti-Spam Verification</h6>
+                                </div>
+                                <div class="card-body">
+                                    <div class="row align-items-center">
+                                        <div class="col-md-6">
+                                            <div class="bg-light p-3 text-center rounded">
+                                                <h4 class="mb-2">What is {{ captcha_num1 }} + {{ captcha_num2 }}?</h4>
+                                                <small class="text-muted">Please solve this simple math problem to verify you're human</small>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6 mt-3 mt-md-0">
+                                            <label for="id_captcha_answer" class="form-control-label">Your Answer</label>
+                                            <div class="input-group">
+                                                <div class="input-group-prepend">
+                                                    <span class="input-group-text bg-info text-white"><i class="fas fa-calculator"></i></span>
+                                                </div>
+                                                {{ form.captcha_answer }}
+                                            </div>
+                                            {% if form.captcha_answer.errors %}
+                                            <span class="text-danger small">
+                                                {{ form.captcha_answer.errors }}
+                                            </span>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Hidden fields to store CAPTCHA values -->
+                            <input type="hidden" name="captcha_num1" value="{{ captcha_num1 }}">
+                            <input type="hidden" name="captcha_num2" value="{{ captcha_num2 }}">
+                        </div>
+                        
                         {% if form.non_field_errors %}
                         <div class="alert alert-danger mb-4" role="alert">
                             {{ form.non_field_errors }}

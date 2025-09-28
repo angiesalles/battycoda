@@ -11,9 +11,10 @@ from battycoda_app.models.recording import Recording, Segment, Segmentation
 
 
 @login_required
-def load_segments_ajax(request, recording_id):
+def load_segments_ajax(request, segmentation_id):
     """AJAX endpoint to load segments within a specific time range for waveform display"""
-    recording = get_object_or_404(Recording, id=recording_id)
+    segmentation = get_object_or_404(Segmentation, id=segmentation_id)
+    recording = segmentation.recording
     
     # Check if the user has permission
     profile = request.user.profile
@@ -21,12 +22,7 @@ def load_segments_ajax(request, recording_id):
         return JsonResponse({"success": False, "error": "Permission denied"}, status=403)
     
     if request.method == "GET":
-        # Get the active segmentation
-        try:
-            active_segmentation = Segmentation.objects.get(recording=recording, is_active=True)
-        except Segmentation.DoesNotExist:
-            return JsonResponse({"success": False, "error": "No active segmentation"}, status=404)
-        
+        # Use the specific segmentation
         # Get time range parameters
         start_time = request.GET.get('start_time', 0)
         end_time = request.GET.get('end_time')
@@ -34,7 +30,7 @@ def load_segments_ajax(request, recording_id):
         try:
             start_time = float(start_time)
             segments_query = Segment.objects.filter(
-                segmentation=active_segmentation,
+                segmentation=segmentation,
                 onset__gte=start_time
             ).order_by("onset")
             

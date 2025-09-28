@@ -11,6 +11,7 @@ import sys
 # Environment setup for Numba and librosa
 os.environ['NUMBA_DISABLE_JIT'] = '1'
 os.environ['LIBROSA_CACHE_LEVEL'] = '0'
+os.environ['LIBROSA_CACHE_DIR'] = '/tmp/librosa_cache'
 
 # Patch Numba before any imports
 import importlib.util

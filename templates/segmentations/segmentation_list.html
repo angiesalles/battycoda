@@ -1,0 +1,72 @@
+{% extends 'list_view_base.html' %}
+{% load static %}
+
+{% block page_title %}Segmentations{% endblock %}
+{% block list_title %}Segmentations{% endblock %}
+{% block card_title %}All Segmentations{% endblock %}
+{% block item_count %}{{ segmentations|length }}{% endblock %}
+
+{% block action_buttons %}
+<div class="d-flex gap-2 align-items-center">
+    <a href="{% url 'battycoda_app:recording_list' %}" class="btn btn-secondary">
+        <i class="fas fa-arrow-left"></i> Back to Recordings
+    </a>
+</div>
+{% endblock %}
+
+{% block table_header %}
+<th>Name</th>
+<th>Recording</th>
+<th>Segments</th>
+<th>Algorithm</th>
+<th>Type</th>
+<th>Created</th>
+<th>Actions</th>
+{% endblock %}
+
+{% block data_table %}
+{% with items=segmentations %}
+    {{ block.super }}
+{% endwith %}
+{% endblock %}
+
+{% block detail_url %}{% url 'battycoda_app:segmentation_detail' segmentation_id=item.id %}{% endblock %}
+{% block view_url %}{% url 'battycoda_app:segmentation_detail' segmentation_id=item.id %}{% endblock %}
+{% block edit_url %}{% url 'battycoda_app:segmentation_detail' segmentation_id=item.id %}{% endblock %}
+{% block delete_url %}#{% endblock %}
+
+{% block item_fields %}
+<td>
+    <a href="{% url 'battycoda_app:recording_detail' recording_id=item.recording.id %}">
+        {{ item.recording.name }}
+    </a>
+</td>
+<td>
+    <span class="badge bg-info">{{ item.segments.count }} segments</span>
+</td>
+<td>{{ item.algorithm.name|default:"Manual" }}</td>
+<td>
+    {% if item.manually_edited %}
+        <span class="badge bg-warning">Manually Edited</span>
+    {% else %}
+        <span class="badge bg-info">{{ item.algorithm.name|default:"Manual" }}</span>
+    {% endif %}
+</td>
+<td data-utc-date="{{ item.created_at|date:'c' }}" data-date-format="datetime">{{ item.created_at|date:"M d, Y H:i" }}</td>
+{% endblock %}
+
+{% block item_actions %}
+<!-- Override the default actions with segmentation-specific ones -->
+<a href="{% url 'battycoda_app:segmentation_detail' segmentation_id=item.id %}" 
+   class="btn btn-primary" 
+   data-bs-toggle="tooltip" data-bs-placement="top" 
+   title="Edit segmentation">
+    <i class="fas fa-edit"></i>
+</a>
+{% endblock %}
+
+{% block empty_icon %}fas fa-cut{% endblock %}
+{% block empty_title %}No Segmentations Found{% endblock %}
+{% block empty_text %}Create your first segmentation from a recording.{% endblock %}
+{% block create_url %}{% url 'battycoda_app:recording_list' %}{% endblock %}
+{% block create_text %}Go to Recordings{% endblock %}

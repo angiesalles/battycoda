@@ -1,5 +1,6 @@
 
 import json
+import random
 
 from django.contrib import messages
 from django.contrib.auth import authenticate, login, logout
@@ -179,8 +180,14 @@ def register_view(request):
     else:
         initial_email = ""
 
+    # Generate or get CAPTCHA values
     if request.method == "POST":
-        form = UserRegisterForm(request.POST)
+        # Get CAPTCHA values from POST data (hidden fields)
+        captcha_num1 = int(request.POST.get('captcha_num1', 0))
+        captcha_num2 = int(request.POST.get('captcha_num2', 0))
+        
+        # Pass CAPTCHA values to form for validation
+        form = UserRegisterForm(request.POST, captcha_num1=captcha_num1, captcha_num2=captcha_num2)
         if form.is_valid():
             user = form.save()
 
@@ -239,10 +246,25 @@ def register_view(request):
                 
             # In case authentication fails (very unlikely), redirect to login page
             return redirect("battycoda_app:login")
+        else:
+            # Form validation failed - regenerate CAPTCHA for security
+            captcha_num1 = random.randint(1, 20)
+            captcha_num2 = random.randint(1, 20)
     else:
+        # Generate new CAPTCHA values for GET request
+        captcha_num1 = random.randint(1, 20)
+        captcha_num2 = random.randint(1, 20)
         form = UserRegisterForm()
 
-    return render(request, "auth/register.html", {"form": form})
+    # Pass CAPTCHA values to template
+    context = {
+        "form": form,
+        "captcha_num1": captcha_num1,
+        "captcha_num2": captcha_num2,
+        "initial_email": initial_email,
+        "invitation": invitation,
+    }
+    return render(request, "auth/register.html", context)
 
 @login_required
 def logout_view(request):

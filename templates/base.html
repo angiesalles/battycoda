@@ -69,7 +69,7 @@
           <li id="navHomeItem" class="nav-item"><a id="navHome" class="nav-link" href="{% url 'battycoda_app:index' %}"><span class="s7-home mr-1"></span> Home</a></li>
           {% if user.profile.management_features_enabled %}
           <li id="navRecordingsItem" class="nav-item"><a id="navRecordings" class="nav-link" href="{% url 'battycoda_app:recording_list' %}"><span class="s7-micro mr-1"></span> Recordings</a></li>
-          <li id="navSegmentationItem" class="nav-item"><a id="navSegmentation" class="nav-link" href="{% url 'battycoda_app:batch_segmentation' %}"><span class="s7-scissors mr-1"></span> Segmentation</a></li>
+          <li id="navSegmentationItem" class="nav-item"><a id="navSegmentation" class="nav-link" href="{% url 'battycoda_app:segmentation_list' %}"><span class="s7-scissors mr-1"></span> Segmentation</a></li>
           <li id="navClassificationItem" class="nav-item"><a id="navClassification" class="nav-link" href="{% url 'battycoda_app:automation_home' %}"><span class="s7-display1 mr-1"></span> Classification</a></li>
           <li id="navClusteringItem" class="nav-item"><a id="navClustering" class="nav-link" href="{% url 'battycoda_app:clustering_dashboard' %}"><span class="fa fa-cluster mr-1"></span> Clustering</a></li>
           <li id="navJobsItem" class="nav-item"><a id="navJobs" class="nav-link" href="{% url 'battycoda_app:jobs_dashboard' %}"><span class="s7-clock mr-1"></span> Jobs</a></li>

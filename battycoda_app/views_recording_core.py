@@ -87,10 +87,12 @@ def recording_detail_view(request, recording_id):
     
     # Check spectrogram status and jobs
     spectrogram_info = get_spectrogram_status(recording)
+    spectrogram_url = spectrogram_info.get('url')
     
     context = {
         "recording": recording,
         "spectrogram_info": spectrogram_info,
+        "spectrogram_url": spectrogram_url,
     }
 
     return render(request, "recordings/recording_detail.html", context)

@@ -22,12 +22,25 @@ if (window.waveformPlayers === undefined) {
  * @param {string} [spectrogramUrl] - Optional URL of the spectrogram image
  */
 export function initWaveformPlayer(containerId, recordingId, allowSelection, showZoom, segmentsData, spectrogramUrl) {
+    // Debug: Log what we receive
+    console.log('initWaveformPlayer called with:', {
+        containerId, 
+        recordingId, 
+        allowSelection, 
+        showZoom, 
+        segmentsData: segmentsData ? segmentsData.length : 'null',
+        spectrogramUrl
+    });
+    
     // Create a new WaveformPlayer instance
     const player = new WaveformPlayer(containerId, recordingId, allowSelection, showZoom, segmentsData);
     
     // Initialize spectrogram if URL provided
     if (spectrogramUrl) {
+        console.log('Initializing spectrogram with URL:', spectrogramUrl);
         player.viewManager.initializeSpectrogram(spectrogramUrl);
+    } else {
+        console.log('No spectrogram URL provided - spectrogramUrl is:', spectrogramUrl);
     }
     
     // Register the player instance in the global registry

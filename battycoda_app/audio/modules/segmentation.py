@@ -6,8 +6,50 @@ import traceback
 
 # Configure logging
 
+def apply_bandpass_filter(audio_data, sample_rate, low_freq=None, high_freq=None):
+    """
+    Apply bandpass filter to audio data.
+    
+    Args:
+        audio_data: Audio signal array
+        sample_rate: Sample rate in Hz
+        low_freq: High-pass filter frequency in Hz (optional)
+        high_freq: Low-pass filter frequency in Hz (optional)
+    
+    Returns:
+        Filtered audio data
+    """
+    if low_freq is None and high_freq is None:
+        return audio_data
+    
+    from scipy import signal
+    
+    # Ensure we have valid frequency bounds
+    nyquist_freq = sample_rate / 2
+    if low_freq is not None:
+        low_freq = min(low_freq, nyquist_freq - 1)
+    if high_freq is not None:
+        high_freq = min(high_freq, nyquist_freq - 1)
+    
+    # Apply appropriate filter
+    if low_freq is not None and high_freq is not None:
+        # Bandpass filter
+        if low_freq < high_freq:
+            sos = signal.butter(4, [low_freq, high_freq], btype='band', fs=sample_rate, output='sos')
+            return signal.sosfilt(sos, audio_data)
+    elif low_freq is not None:
+        # High-pass filter only
+        sos = signal.butter(4, low_freq, btype='high', fs=sample_rate, output='sos')
+        return signal.sosfilt(sos, audio_data)
+    elif high_freq is not None:
+        # Low-pass filter only
+        sos = signal.butter(4, high_freq, btype='low', fs=sample_rate, output='sos')
+        return signal.sosfilt(sos, audio_data)
+    
+    return audio_data
+
 def auto_segment_audio(
-    audio_path, min_duration_ms=10, smooth_window=3, threshold_factor=0.5, debug_visualization=False
+    audio_path, min_duration_ms=10, smooth_window=3, threshold_factor=0.5, low_freq=None, high_freq=None
 ):
     """
     Automatically segment audio using the following steps:
@@ -21,23 +63,17 @@ def auto_segment_audio(
         min_duration_ms: Minimum segment duration in milliseconds
         smooth_window: Window size for smoothing filter
         threshold_factor: Threshold factor (between 0-1) to apply
-        debug_visualization: If True, generates a visualization of the segmentation process
+        low_freq: High-pass filter frequency in Hz (optional)
+        high_freq: Low-pass filter frequency in Hz (optional)
 
     Returns:
-        tuple: (onsets, offsets, [debug_path]) as lists of floats in seconds and optional debug image path
+        tuple: (onsets, offsets) as lists of floats in seconds
     """
     import os
-    import tempfile
 
     import numpy as np
     import soundfile as sf
 
-    # Import visualization libraries if debug_visualization is enabled
-    if debug_visualization:
-        import matplotlib
-
-        matplotlib.use("Agg")  # Use non-interactive backend
-        import matplotlib.pyplot as plt
 
     # Load the audio file
     audio_data, sample_rate = sf.read(audio_path)
@@ -45,6 +81,9 @@ def auto_segment_audio(
     # For stereo files, use the first channel for detection
     if len(audio_data.shape) > 1 and audio_data.shape[1] > 1:
         audio_data = audio_data[:, 0]
+    
+    # Apply bandpass filter if specified
+    audio_data = apply_bandpass_filter(audio_data, sample_rate, low_freq, high_freq)
 
     # Step 1: Take absolute value of the signal
     abs_signal = np.abs(audio_data)
@@ -107,83 +146,10 @@ def auto_segment_audio(
     filtered_onsets = [onsets[i] for i in valid_segments]
     filtered_offsets = [offsets[i] for i in valid_segments]
 
-    # Generate debug visualization if requested
-    if debug_visualization:
-        debug_path = None
-        # Create a figure with multiple subplots
-        fig, axes = plt.subplots(4, 1, figsize=(15, 12), sharex=True)
-
-        # Time axis in seconds
-        time_axis = np.arange(len(audio_data)) / sample_rate
-
-        # 1. Plot the original signal
-        axes[0].plot(time_axis, audio_data)
-        axes[0].set_title("Original Signal")
-        axes[0].set_ylabel("Amplitude")
-
-        # 2. Plot the absolute signal
-        axes[1].plot(time_axis, abs_signal)
-        axes[1].set_title("Absolute Signal")
-        axes[1].set_ylabel("Amplitude")
-
-        # 3. Plot the smoothed signal with threshold
-        axes[2].plot(time_axis, smoothed_signal)
-        axes[2].axhline(y=threshold, color="r", linestyle="--", label=f"Threshold: {threshold:.6f}")
-        axes[2].set_title(
-            f"Smoothed Signal (window={smooth_window}) with Threshold (factor={threshold_factor})"
-        )
-        axes[2].set_ylabel("Amplitude")
-        axes[2].legend()
-
-        # 4. Plot the binary mask with detected segments
-        # Make sure binary_mask and time_axis have the same length for plotting
-        if len(binary_mask) != len(time_axis):
-
-            if len(binary_mask) < len(time_axis):
-                # Pad binary mask if it's too short
-                padding = np.zeros(len(time_axis) - len(binary_mask))
-                binary_mask_plot = np.concatenate([binary_mask, padding])
-            else:
-                # Truncate binary mask if it's too long
-                binary_mask_plot = binary_mask[: len(time_axis)]
-        else:
-            binary_mask_plot = binary_mask
-
-        axes[3].plot(time_axis, binary_mask_plot, label="Binary mask")
-
-        # Add vertical lines for onsets (green) and offsets (red)
-        for onset in filtered_onsets:
-            axes[3].axvline(x=onset, color="g", linestyle="--")
-
-        for offset in filtered_offsets:
-            axes[3].axvline(x=offset, color="r", linestyle="-.")
-
-        # Marking segments that were filtered out (too short)
-        for i in range(len(onsets)):
-            if i not in valid_segments:
-                # Draw a light red box over rejected segments
-                axes[3].axvspan(onsets[i], offsets[i], alpha=0.2, color="red")
-
-        axes[3].set_title(f"Binary Mask with Detected Segments (min duration={min_duration_ms}ms)")
-        axes[3].set_xlabel("Time (s)")
-        axes[3].set_ylabel("State (0/1)")
-
-        # Adjust layout
-        plt.tight_layout()
-
-        # Save to a temporary file
-        with tempfile.NamedTemporaryFile(suffix=".png", delete=False) as tmp_file:
-            debug_path = tmp_file.name
-            plt.savefig(debug_path, dpi=100)
-            plt.close()
-
-        return filtered_onsets, filtered_offsets, debug_path
-
-    # Return without visualization path if debug_visualization is False
     return filtered_onsets, filtered_offsets
 
 def energy_based_segment_audio(
-    audio_path, min_duration_ms=10, smooth_window=3, threshold_factor=0.5, debug_visualization=False
+    audio_path, min_duration_ms=10, smooth_window=3, threshold_factor=0.5, low_freq=None, high_freq=None
 ):
     """
     Segment audio based on energy levels using the following steps:
@@ -197,23 +163,17 @@ def energy_based_segment_audio(
         min_duration_ms: Minimum segment duration in milliseconds
         smooth_window: Window size for smoothing filter
         threshold_factor: Threshold factor (between 0-1) to apply to energy detection
-        debug_visualization: If True, generates a visualization of the segmentation process
+        low_freq: High-pass filter frequency in Hz (optional)
+        high_freq: Low-pass filter frequency in Hz (optional)
 
     Returns:
-        tuple: (onsets, offsets, [debug_path]) as lists of floats in seconds and optional debug image path
+        tuple: (onsets, offsets) as lists of floats in seconds
     """
     import os
-    import tempfile
 
     import numpy as np
     import soundfile as sf
 
-    # Import visualization libraries if debug_visualization is enabled
-    if debug_visualization:
-        import matplotlib
-
-        matplotlib.use("Agg")  # Use non-interactive backend
-        import matplotlib.pyplot as plt
 
     # Load the audio file
     audio_data, sample_rate = sf.read(audio_path)
@@ -221,6 +181,9 @@ def energy_based_segment_audio(
     # For stereo files, use the first channel for detection
     if len(audio_data.shape) > 1 and audio_data.shape[1] > 1:
         audio_data = audio_data[:, 0]
+    
+    # Apply bandpass filter if specified
+    audio_data = apply_bandpass_filter(audio_data, sample_rate, low_freq, high_freq)
 
     # Step 1: Calculate short-time energy
     # Set the frame size for energy calculation (adjust based on expected call frequency)
@@ -294,77 +257,4 @@ def energy_based_segment_audio(
     filtered_onsets = [onsets[i] for i in valid_segments]
     filtered_offsets = [offsets[i] for i in valid_segments]
 
-    # Generate debug visualization if requested
-    if debug_visualization:
-        debug_path = None
-        # Create a figure with multiple subplots
-        fig, axes = plt.subplots(4, 1, figsize=(15, 12), sharex=True)
-
-        # Time axis in seconds
-        time_axis = np.arange(len(audio_data)) / sample_rate
-
-        # 1. Plot the original signal
-        axes[0].plot(time_axis, audio_data)
-        axes[0].set_title("Original Signal")
-        axes[0].set_ylabel("Amplitude")
-
-        # 2. Plot the energy curve
-        axes[1].plot(time_axis, energy_full)
-        axes[1].set_title("Energy")
-        axes[1].set_ylabel("Energy")
-
-        # 3. Plot the smoothed energy with threshold
-        axes[2].plot(time_axis, smoothed_energy)
-        axes[2].axhline(y=threshold, color="r", linestyle="--", label=f"Threshold: {threshold:.6f}")
-        axes[2].set_title(
-            f"Smoothed Energy (window={smooth_window}) with Threshold (factor={threshold_factor})"
-        )
-        axes[2].set_ylabel("Energy")
-        axes[2].legend()
-
-        # 4. Plot the binary mask with detected segments
-        # Make sure binary_mask and time_axis have the same length for plotting
-        if len(binary_mask) != len(time_axis):
-
-            if len(binary_mask) < len(time_axis):
-                # Pad binary mask if it's too short
-                padding = np.zeros(len(time_axis) - len(binary_mask))
-                binary_mask_plot = np.concatenate([binary_mask, padding])
-            else:
-                # Truncate binary mask if it's too long
-                binary_mask_plot = binary_mask[: len(time_axis)]
-        else:
-            binary_mask_plot = binary_mask
-
-        axes[3].plot(time_axis, binary_mask_plot, label="Binary mask")
-
-        # Add vertical lines for onsets (green) and offsets (red)
-        for onset in filtered_onsets:
-            axes[3].axvline(x=onset, color="g", linestyle="--")
-
-        for offset in filtered_offsets:
-            axes[3].axvline(x=offset, color="r", linestyle="-.")
-
-        # Marking segments that were filtered out (too short)
-        for i in range(len(onsets)):
-            if i not in valid_segments:
-                # Draw a light red box over rejected segments
-                axes[3].axvspan(onsets[i], offsets[i], alpha=0.2, color="red")
-
-        axes[3].set_title(f"Binary Mask with Detected Segments (min duration={min_duration_ms}ms)")
-        axes[3].set_xlabel("Time (s)")
-        axes[3].set_ylabel("State (0/1)")
-
-        # Adjust layout
-        plt.tight_layout()
-
-        # Save to a temporary file
-        with tempfile.NamedTemporaryFile(suffix=".png", delete=False) as tmp_file:
-            debug_path = tmp_file.name
-            plt.savefig(debug_path, dpi=100)
-            plt.close()
-
-        return filtered_onsets, filtered_offsets, debug_path
-
-    # Return without visualization path if debug_visualization is False
     return filtered_onsets, filtered_offsets

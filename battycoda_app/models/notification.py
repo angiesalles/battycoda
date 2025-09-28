@@ -126,8 +126,8 @@ class UserNotification(models.Model):
             message = f"Classification run '{classification_run.name}' for '{recording_name}' has failed."
             icon = "s7-close"
         
-        # Generate link to the classification run detail page
-        link = reverse('battycoda_app:classification_run_detail', kwargs={'run_id': classification_run.id})
+        # Generate link to the dashboard (classification run detail page doesn't exist yet)
+        link = reverse('battycoda_app:index')
         
         return cls.add_notification(
             user=user,

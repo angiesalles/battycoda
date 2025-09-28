@@ -16,6 +16,112 @@ from ..utils import appropriate_file, get_audio_bit, normal_hwin, overview_hwin
 
 # Import soundfile in the functions where needed
 
+
+def make_spectrogram(audio_data, sample_rate, nperseg=512, noverlap=None, use_mel=True, n_mels=128):
+    """
+    Core spectrogram generation function with mel scale and logarithmic color scaling.
+    
+    Args:
+        audio_data: 1D numpy array of audio samples
+        sample_rate: Sample rate of the audio
+        nperseg: Window size for spectrogram
+        noverlap: Overlap size (defaults to nperseg//2 if None)
+        use_mel: Whether to use mel scale (default True)
+        n_mels: Number of mel bins if using mel scale
+        
+    Returns:
+        tuple: (frequencies, times, spectrogram_data) where spectrogram_data is log-scaled
+    """
+    import librosa
+    
+    if noverlap is None:
+        noverlap = nperseg // 2
+    
+    if use_mel:
+        # Use mel-scale spectrogram for better frequency representation
+        hop_length = nperseg - noverlap
+        mel_spectrogram = librosa.feature.melspectrogram(
+            y=audio_data,
+            sr=sample_rate,
+            n_fft=nperseg,
+            hop_length=hop_length,
+            n_mels=n_mels,
+            fmax=sample_rate/2
+        )
+        
+        # Convert to format similar to scipy output
+        spectrogram_data = mel_spectrogram
+        times = np.linspace(0, len(audio_data)/sample_rate, mel_spectrogram.shape[1])
+        frequencies = librosa.mel_frequencies(n_mels=n_mels, fmax=sample_rate/2)
+    else:
+        # Use standard linear frequency spectrogram
+        from scipy import signal
+        frequencies, times, spectrogram_data = signal.spectrogram(
+            audio_data, 
+            fs=sample_rate,
+            nperseg=nperseg,
+            noverlap=noverlap
+        )
+    
+    return frequencies, times, spectrogram_data
+
+
+def roseus_colormap(val):
+    """Convert value [0,1] to roseus (pink-rose-purple) RGB"""
+    r = np.interp(val, [0, 0.2, 0.4, 0.6, 0.8, 1.0],
+                 [0.1, 0.3, 0.7, 0.9, 0.95, 1.0])
+    g = np.interp(val, [0, 0.2, 0.4, 0.6, 0.8, 1.0],
+                 [0.0, 0.1, 0.3, 0.6, 0.8, 0.9])
+    b = np.interp(val, [0, 0.2, 0.4, 0.6, 0.8, 1.0],
+                 [0.2, 0.4, 0.6, 0.7, 0.8, 0.9])
+    return r, g, b
+
+
+def apply_logarithmic_color_scaling_and_colormap(spectrogram_data, contrast=1.0):
+    """
+    Apply logarithmic color scaling and roseus colormap to spectrogram data.
+    
+    Args:
+        spectrogram_data: 2D numpy array of spectrogram power values
+        contrast: Contrast enhancement factor
+        
+    Returns:
+        numpy.ndarray: RGB image data (height, width, 3) with values 0-255
+    """
+    # Apply logarithmic color scaling for better dynamic range visualization
+    # First convert to dB scale
+    sxx_db = 10 * np.log10(spectrogram_data + 1e-10)
+    
+    # Apply contrast enhancement with logarithmic scaling
+    temocontrast = 10**contrast
+    processed_data = np.arctan(temocontrast * sxx_db)
+    
+    # Apply additional logarithmic scaling to colors for better contrast
+    log_scaled = np.log10(processed_data - np.min(processed_data) + 1)
+    
+    # Normalize to 0-255 range with logarithmic scaling
+    normalized_data = (log_scaled - log_scaled.min()) / (log_scaled.max() - log_scaled.min()) * 255
+    
+    # Flip vertically (frequencies should go from low to high, bottom to top)
+    normalized_data = np.flipud(normalized_data)
+    
+    # Convert to 8-bit unsigned integer
+    img_data = normalized_data.astype(np.uint8)
+    
+    # Apply roseus colormap
+    height, width = img_data.shape
+    rgb_data = np.zeros((height, width, 3), dtype=np.uint8)
+    
+    for i in range(height):
+        for j in range(width):
+            val = img_data[i, j] / 255.0
+            r, g, b = roseus_colormap(val)
+            rgb_data[i, j, 0] = int(255 * r)
+            rgb_data[i, j, 1] = int(255 * g)
+            rgb_data[i, j, 2] = int(255 * b)
+    
+    return rgb_data
+
 @shared_task(
     bind=True,
     name="battycoda_app.audio.task_modules.spectrogram_tasks.generate_spectrogram_task",
@@ -192,62 +298,22 @@ def generate_recording_spectrogram(self, recording_id):
         # Generate spectrogram using scipy directly
         update_job_progress(70)
         
-        # Calculate spectrogram parameters for good time/frequency resolution
-        nperseg = 512  # Window size for frequency resolution
-        noverlap = nperseg // 2  # 50% overlap
-        
-        # Generate spectrogram data
-        from scipy import signal
-        frequencies, times, spectrogram_data = signal.spectrogram(
-            audio_data, 
-            fs=effective_sample_rate,
-            nperseg=nperseg,
-            noverlap=noverlap
+        # Generate spectrogram using shared function
+        nperseg = 512
+        noverlap = nperseg // 2
+        frequencies, times, spectrogram_data = make_spectrogram(
+            audio_data, effective_sample_rate, nperseg, noverlap, use_mel=True, n_mels=128
         )
         
-        # Convert to log scale for better visualization
-        spectrogram_db = 10 * np.log10(spectrogram_data + 1e-10)  # Add small value to avoid log(0)
-        
-        # Normalize to 0-255 range
-        spec_min = np.min(spectrogram_db)
-        spec_max = np.max(spectrogram_db)
-        normalized_spec = ((spectrogram_db - spec_min) / (spec_max - spec_min) * 255).astype(np.uint8)
-        
-        # Flip vertically (frequencies should go from low to high, bottom to top)
-        normalized_spec = np.flipud(normalized_spec)
+        # Apply logarithmic color scaling and roseus colormap
+        rgb_image = apply_logarithmic_color_scaling_and_colormap(spectrogram_data, contrast=1.0)
         
         update_job_progress(80)
         
         # Calculate target image dimensions
-        # Scale width based on recording duration for better time resolution
         duration_seconds = len(audio_data) / effective_sample_rate
         target_width = max(800, int(duration_seconds * 50))  # ~50 pixels per second minimum
         target_height = 400  # Fixed height for good frequency resolution
-        
-        # Create PIL image from spectrogram data using proper viridis colormap
-        height, width = normalized_spec.shape
-        rgb_image = np.zeros((height, width, 3), dtype=np.uint8)
-        
-        # Proper viridis colormap implementation
-        def viridis_colormap(val):
-            """Convert value [0,1] to viridis RGB"""
-            # Viridis colormap coefficients (approximation)
-            r = np.interp(val, [0, 0.13, 0.25, 0.38, 0.5, 0.63, 0.75, 0.88, 1.0],
-                         [0.267, 0.282, 0.253, 0.206, 0.173, 0.196, 0.388, 0.682, 0.993])
-            g = np.interp(val, [0, 0.13, 0.25, 0.38, 0.5, 0.63, 0.75, 0.88, 1.0],
-                         [0.005, 0.141, 0.265, 0.371, 0.467, 0.573, 0.682, 0.795, 0.906])
-            b = np.interp(val, [0, 0.13, 0.25, 0.38, 0.5, 0.63, 0.75, 0.88, 1.0],
-                         [0.329, 0.458, 0.562, 0.640, 0.708, 0.762, 0.776, 0.706, 0.144])
-            return r, g, b
-        
-        # Apply viridis colormap
-        for i in range(height):
-            for j in range(width):
-                val = normalized_spec[i, j] / 255.0
-                r, g, b = viridis_colormap(val)
-                rgb_image[i, j, 0] = int(255 * r)
-                rgb_image[i, j, 1] = int(255 * g)
-                rgb_image[i, j, 2] = int(255 * b)
         
         # Create PIL image and resize to target dimensions
         pil_image = Image.fromarray(rgb_image)
@@ -306,6 +372,7 @@ def generate_spectrogram(path, args, output_path=None):
         overview = args.get("overview") == "1" or args.get("overview") == "True"
         channel = int(args.get("channel", 0))
         contrast = float(args.get("contrast", 4))
+        low_overlap = args.get("low_overlap") == "1" or args.get("low_overlap") == "True"
 
         # Select window size
         hwin = overview_hwin() if overview else normal_hwin()
@@ -338,7 +405,11 @@ def generate_spectrogram(path, args, output_path=None):
         if overview:
             # For overview, use very high detail since we're showing more
             nperseg = 2**9  # 512
-            noverlap = int(nperseg * 0.99)  # 99% overlap for highest quality
+            if low_overlap:
+                # Use 50% overlap for memory efficiency (e.g., for previews)
+                noverlap = nperseg // 2  # 50% overlap
+            else:
+                noverlap = int(nperseg * 0.99)  # 99% overlap for highest quality
             nfft = 2**10  # 1024 for excellent frequency resolution
         else:
             # For call detail view, use high quality parameters
@@ -346,50 +417,14 @@ def generate_spectrogram(path, args, output_path=None):
             noverlap = 254
             nfft = 2**8
 
-        # Generate spectrogram with optimized parameters
-        import scipy.signal
+        # Generate spectrogram using shared function
+        n_mels = 128 if overview else 64  # More mel bins for overview
+        f, t, sxx = make_spectrogram(
+            thr_x1, fs, nperseg=nfft, noverlap=noverlap, use_mel=True, n_mels=n_mels
+        )
 
-        f, t, sxx = scipy.signal.spectrogram(thr_x1, fs, nperseg=nperseg, noverlap=noverlap, nfft=nfft)
-
-        # Process data for image creation - measure time
-        # Time tracking removed
-
-        # Apply contrast enhancement
-        temocontrast = 10**contrast
-        processed_data = np.arctan(temocontrast * sxx)
-
-        # Normalize the data to 0-255 range for image
-        processed_data = (processed_data - processed_data.min()) / (processed_data.max() - processed_data.min()) * 255
-
-        # Flip the spectrogram vertically (low frequencies at bottom)
-        processed_data = np.flipud(processed_data)
-
-        # Convert to 8-bit unsigned integer
-        img_data = processed_data.astype(np.uint8)
-
-        # For a more colorful image, you can create an RGB version:
-        # Here we're using a purple-blue colormap similar to the original
-        height, width = img_data.shape
-        rgb_data = np.zeros((height, width, 3), dtype=np.uint8)
-
-        # Check if this spectrogram is generated on-the-fly - if so, use inverted colors
-        if args.get("generated_on_fly") == "1":
-
-            # Inverted colormap (yellow-green instead of purple-blue)
-            # R channel - more for brighter areas
-            rgb_data[:, :, 0] = np.clip(img_data * 0.9, 0, 255).astype(np.uint8)
-            # G channel - more overall
-            rgb_data[:, :, 1] = np.clip(img_data * 0.8, 0, 255).astype(np.uint8)
-            # B channel - less in all areas
-            rgb_data[:, :, 2] = np.clip(img_data * 0.3, 0, 255).astype(np.uint8)
-        else:
-            # Standard colormap: convert grayscale to indigo-purple
-            # R channel - more for brighter areas
-            rgb_data[:, :, 0] = np.clip(img_data * 0.7, 0, 255).astype(np.uint8)
-            # G channel - less overall
-            rgb_data[:, :, 1] = np.clip(img_data * 0.2, 0, 255).astype(np.uint8)
-            # B channel - more in all areas for blue/indigo base
-            rgb_data[:, :, 2] = np.clip(img_data * 0.9, 0, 255).astype(np.uint8)
+        # Apply logarithmic color scaling and roseus colormap using shared function
+        rgb_data = apply_logarithmic_color_scaling_and_colormap(sxx, contrast=contrast)
 
         # Performance logging removed
 

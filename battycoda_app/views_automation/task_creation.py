@@ -65,7 +65,7 @@ def create_task_batch_from_detection_run(request, run_id):
                 species=recording.species,
                 project=recording.project,
                 group=profile.group,
-                classification_run=run,
+                detection_run=run,
             )
 
             # Get all classification results with related data in one query
@@ -185,13 +185,13 @@ def create_task_batches_for_species_view(request):
     if profile.group and profile.is_current_group_admin:
         # Admin sees all species in their group
         species_list = Species.objects.filter(
-            recordings__segmentations__detection_runs__status="completed",
+            recordings__segmentations__classification_runs__status="completed",
             recordings__group=profile.group
         ).distinct()
     else:
         # Regular user sees only species for their own recordings
         species_list = Species.objects.filter(
-            recordings__segmentations__detection_runs__status="completed",
+            recordings__segmentations__classification_runs__status="completed",
             recordings__created_by=request.user
         ).distinct()
     
@@ -318,7 +318,7 @@ def create_tasks_for_species_view(request, species_id):
                             species=recording.species,
                             project=recording.project,
                             group=profile.group,
-                            classification_run=run,  # Link to the detection run
+                            detection_run=run,  # Link to the detection run
                         )
                         
                         # Get all detection results from this run

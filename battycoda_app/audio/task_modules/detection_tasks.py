@@ -59,7 +59,7 @@ def get_segments(recording, segmentation=None):
 
 def create_equal_probabilities(detection_result, calls):
     """Create equal probability records for all calls."""
-    from ...models.detection import CallProbability
+    from ...models.classification import CallProbability
     
     equal_prob = 1.0 / len(calls)
     for call in calls:
@@ -71,7 +71,7 @@ def create_equal_probabilities(detection_result, calls):
 
 def process_classification_result(classifier, result, prediction_data, calls):
     """Process the response from the classifier service and create probability records."""
-    from ...models.detection import CallProbability
+    from ...models.classification import CallProbability
     
     if classifier.response_format == "highest_only":
         # For highest-only algorithm type

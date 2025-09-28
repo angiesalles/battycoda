@@ -33,22 +33,27 @@ export class ViewManager {
      * @param {string} mode - 'waveform' or 'spectrogram'
      */
     setViewMode(mode) {
+        console.log('ViewManager.setViewMode called with:', mode, 'Current mode:', this.viewMode, 'Spectrogram initialized:', this.spectrogramInitialized);
+        
         if (mode === this.viewMode) return;
         
         // Don't switch to spectrogram if it's not available
         if (mode === 'spectrogram' && !this.spectrogramInitialized) {
-            console.warn('Spectrogram not available');
+            console.warn('Spectrogram not available - initialized:', this.spectrogramInitialized, 'URL:', this.spectrogramUrl);
             return;
         }
         
         this.viewMode = mode;
+        console.log('Switching to view mode:', mode);
         
         if (mode === 'spectrogram') {
             // Show spectrogram, hide waveform
+            console.log('Hiding waveform, showing spectrogram');
             this.hideWaveform();
             this.showSpectrogram();
         } else {
             // Show waveform, hide spectrogram
+            console.log('Hiding spectrogram, showing waveform');
             this.hideSpectrogram();
             this.showWaveform();
         }

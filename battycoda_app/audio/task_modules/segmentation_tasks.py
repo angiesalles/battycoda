@@ -2,7 +2,6 @@
 Segmentation tasks for BattyCoda.
 """
 import os
-import shutil
 import traceback
 
 from celery import shared_task
@@ -11,7 +10,7 @@ from celery import shared_task
 
 @shared_task(bind=True, name="battycoda_app.audio.task_modules.segmentation_tasks.auto_segment_recording_task")
 def auto_segment_recording_task(
-    self, recording_id, segmentation_id, min_duration_ms=10, smooth_window=3, threshold_factor=0.5, debug_visualization=False
+    self, recording_id, segmentation_id, min_duration_ms=10, smooth_window=3, threshold_factor=0.5, low_freq=None, high_freq=None
 ):
     """
     Automatically segment a recording using the steps:
@@ -26,7 +25,6 @@ def auto_segment_recording_task(
         min_duration_ms: Minimum segment duration in milliseconds
         smooth_window: Window size for smoothing filter (number of samples)
         threshold_factor: Threshold factor (between 0-1) relative to signal statistics
-        debug_visualization: If True, generates a visualization of the segmentation process
 
     Returns:
         dict: Result information including number of segments created and optional debug image path
@@ -63,85 +61,31 @@ def auto_segment_recording_task(
             if algorithm and hasattr(algorithm, "algorithm_type"):
                 algorithm_type = algorithm.algorithm_type
 
-            debug_path = None
-            if debug_visualization:
-                # Run with debug visualization using the appropriate algorithm
-                if algorithm_type == "energy":
+            if algorithm_type == "energy":
 
-                    from ..utils import energy_based_segment_audio
+                from ..utils import energy_based_segment_audio
 
-                    onsets, offsets, debug_path = energy_based_segment_audio(
-                        recording.wav_file.path,
-                        min_duration_ms=min_duration_ms,
-                        smooth_window=smooth_window,
-                        threshold_factor=threshold_factor,
-                        debug_visualization=True,
-                    )
-                else:
-                    # Default to threshold-based
-
-                    from ..utils import auto_segment_audio
-
-                    onsets, offsets, debug_path = auto_segment_audio(
-                        recording.wav_file.path,
-                        min_duration_ms=min_duration_ms,
-                        smooth_window=smooth_window,
-                        threshold_factor=threshold_factor,
-                        debug_visualization=True,
-                    )
-
-                # Move the debug image to a more permanent location in media directory
-                if debug_path and os.path.exists(debug_path):
-                    # Create directory for debug visualizations if it doesn't exist
-                    debug_dir = os.path.join(settings.MEDIA_ROOT, "segmentation_debug")
-                    os.makedirs(debug_dir, exist_ok=True)
-
-                    # Create a unique filename using recording ID and timestamp
-                    from django.utils import timezone
-
-                    debug_filename = f"segmentation_debug_{recording_id}_{timezone.now().strftime('%Y%m%d_%H%M%S')}.png"
-                    permanent_debug_path = os.path.join(debug_dir, debug_filename)
-
-                    # Copy the file to the permanent location
-                    shutil.copy(debug_path, permanent_debug_path)
-
-                    # Remove the temporary file
-                    try:
-                        os.unlink(debug_path)
-                    except:
-                        pass  # Ignore errors when cleaning up temporary file
-
-                    # Update debug_path to the permanent location
-                    debug_path = permanent_debug_path
-
-                    # Get the URL-friendly path (relative to MEDIA_ROOT)
-                    from django.conf import settings
-
-                    debug_url = permanent_debug_path.replace(settings.MEDIA_ROOT, "").lstrip("/")
-
+                onsets, offsets = energy_based_segment_audio(
+                    recording.wav_file.path,
+                    min_duration_ms=min_duration_ms,
+                    smooth_window=smooth_window,
+                    threshold_factor=threshold_factor,
+                    low_freq=low_freq,
+                    high_freq=high_freq,
+                )
             else:
-                # Run without debug visualization using the appropriate algorithm
-                if algorithm_type == "energy":
+                # Default to threshold-based
 
-                    from ..utils import energy_based_segment_audio
+                from ..utils import auto_segment_audio
 
-                    onsets, offsets = energy_based_segment_audio(
-                        recording.wav_file.path,
-                        min_duration_ms=min_duration_ms,
-                        smooth_window=smooth_window,
-                        threshold_factor=threshold_factor,
-                    )
-                else:
-                    # Default to threshold-based
-
-                    from ..utils import auto_segment_audio
-
-                    onsets, offsets = auto_segment_audio(
-                        recording.wav_file.path,
-                        min_duration_ms=min_duration_ms,
-                        smooth_window=smooth_window,
-                        threshold_factor=threshold_factor,
-                    )
+                onsets, offsets = auto_segment_audio(
+                    recording.wav_file.path,
+                    min_duration_ms=min_duration_ms,
+                    smooth_window=smooth_window,
+                    threshold_factor=threshold_factor,
+                    low_freq=low_freq,
+                    high_freq=high_freq,
+                )
         except Exception as e:
             error_msg = f"Error during auto-segmentation: {str(e)}"
 
@@ -190,13 +134,6 @@ def auto_segment_recording_task(
             },
         }
 
-        # Add debug visualization information if available
-        if debug_visualization and debug_path:
-            # Add the relative URL path for web access
-            result["debug_visualization"] = {
-                "file_path": debug_path,
-                "url": f"/media/segmentation_debug/{os.path.basename(debug_path)}",
-            }
 
         return result
 

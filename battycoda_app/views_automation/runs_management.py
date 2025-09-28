@@ -313,7 +313,7 @@ def delete_detection_run_view(request, run_id):
 
     if request.method == "POST":
         # Delete all related results first
-        CallProbability.objects.filter(detection_result__classification_run=run).delete()
+        CallProbability.objects.filter(classification_result__classification_run=run).delete()
         ClassificationResult.objects.filter(classification_run=run).delete()
 
         # Store name for confirmation message
@@ -375,7 +375,7 @@ def classify_unclassified_segments_view(request):
             segment_filter = {
                 'recording__species': species,
                 'recording__group': profile.group,
-                'detection_results__isnull': True
+                'classification_results__isnull': True
             }
             if project_id:
                 segment_filter['recording__project_id'] = project_id
@@ -385,7 +385,7 @@ def classify_unclassified_segments_view(request):
             segment_filter = {
                 'recording__species': species,
                 'recording__created_by': request.user,
-                'detection_results__isnull': True
+                'classification_results__isnull': True
             }
             if project_id:
                 segment_filter['recording__project_id'] = project_id
@@ -488,7 +488,7 @@ def create_classification_for_species_view(request, species_id):
             segment_filter = {
                 'recording__species': species,
                 'recording__group': profile.group,
-                'detection_results__isnull': True
+                'classification_results__isnull': True
             }
             if project_id:
                 segment_filter['recording__project_id'] = project_id
@@ -497,7 +497,7 @@ def create_classification_for_species_view(request, species_id):
             segment_filter = {
                 'recording__species': species,
                 'recording__created_by': request.user,
-                'detection_results__isnull': True
+                'classification_results__isnull': True
             }
             if project_id:
                 segment_filter['recording__project_id'] = project_id
@@ -579,7 +579,7 @@ def create_classification_for_species_view(request, species_id):
         count_filter = {
             'recording__species': species,
             'recording__group': profile.group,
-            'detection_results__isnull': True
+            'classification_results__isnull': True
         }
         if project_id:
             count_filter['recording__project_id'] = project_id
@@ -588,7 +588,7 @@ def create_classification_for_species_view(request, species_id):
         count_filter = {
             'recording__species': species,
             'recording__created_by': request.user,
-            'detection_results__isnull': True
+            'classification_results__isnull': True
         }
         if project_id:
             count_filter['recording__project_id'] = project_id
