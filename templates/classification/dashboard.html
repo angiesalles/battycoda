@@ -1,16 +1,16 @@
 {% extends 'base.html' %}
 
-{% block title %}Classification & Automation | BattyCoda{% endblock %}
+{% block title %}Classification | BattyCoda{% endblock %}
 
 {% block content %}
 <div class="container mt-4">
     <div class="row mb-4">
         <div class="col-md-12">
-            <h1 class="mb-4">Classification & Automation</h1>
+            <h1 class="mb-4">Classification</h1>
             <p class="lead">View and manage your automated classification runs and custom classifiers.</p>
             
             <!-- Navigation tabs -->
-            <ul class="nav nav-tabs" id="automationTabs" role="tablist">
+            <ul class="nav nav-tabs" id="classificationTabs" role="tablist">
                 <li class="nav-item" role="presentation">
                     <button class="nav-link active" id="runs-tab" data-bs-toggle="tab" data-bs-target="#runs-content" type="button" role="tab" aria-controls="runs-content" aria-selected="true">
                         <i class="fas fa-bolt me-1"></i> Classification Runs
@@ -28,7 +28,7 @@
                 </li>
             </ul>
             
-            <div class="tab-content mt-4" id="automationTabsContent">
+            <div class="tab-content mt-4" id="classificationTabsContent">
                 <!-- Runs Tab Content -->
                 <div class="tab-pane fade show active" id="runs-content" role="tabpanel" aria-labelledby="runs-tab">
                     <div class="d-flex justify-content-between align-items-center mb-3">
@@ -479,7 +479,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 const runId = row.getAttribute('data-run-id');
                 if (!runId) return;
                 
-                fetch(`/automation/runs/${runId}/status/`)
+                fetch(`/classification/runs/${runId}/status/`)
                     .then(response => response.json())
                     .then(data => {
                         if (data.success) {
@@ -508,7 +508,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 const jobId = row.getAttribute('data-job-id');
                 if (!jobId) return;
                 
-                fetch(`/automation/classifiers/${jobId}/status/`)
+                fetch(`/classification/classifiers/${jobId}/status/`)
                     .then(response => response.json())
                     .then(data => {
                         if (data.success) {

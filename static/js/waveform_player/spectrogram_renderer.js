@@ -28,6 +28,10 @@ export class SpectrogramRenderer {
         this.isDragSelect = false;
         this.dragStartTime = 0;
         this.dragStartX = 0;
+        
+        // Image processing settings
+        this.contrast = 1.5; // Default to higher contrast
+        this.brightness = 0.2; // Slightly brighter
     }
     
     /**
@@ -162,15 +166,27 @@ export class SpectrogramRenderer {
         
         // Draw the spectrogram portion
         if (srcWidth > 0 && srcHeight > 0) {
+            // Save canvas state before drawing image
+            this.ctx.save();
+            
+            // Apply contrast/brightness adjustments if set
+            if (this.contrast !== undefined || this.brightness !== undefined) {
+                const contrast = this.contrast || 1.0;
+                const brightness = this.brightness || 0;
+                this.ctx.filter = `contrast(${contrast}) brightness(${1 + brightness})`;
+            }
+            
             this.ctx.drawImage(
                 this.spectrogramImage,
                 srcX, srcY, srcWidth, srcHeight,
                 destX, destY, destWidth, destHeight
             );
+            // Restore canvas state after drawing image
+            this.ctx.restore();
         }
         
-        // Draw segments overlay
-        this.drawSegments();
+        // NOTE: Segments are shown in the timeline below, no need to clutter the spectrogram
+        // this.drawSegments();
         
         // Draw selection
         this.drawSelection();
@@ -426,6 +442,24 @@ export class SpectrogramRenderer {
      * Update the spectrogram rendering (called by player)
      */
     update() {
+        this.render();
+    }
+    
+    /**
+     * Set contrast level
+     * @param {number} contrast - Contrast multiplier (1.0 = normal, >1.0 = higher contrast)
+     */
+    setContrast(contrast) {
+        this.contrast = contrast;
+        this.render();
+    }
+    
+    /**
+     * Set brightness level
+     * @param {number} brightness - Brightness adjustment (-1.0 to 1.0, 0 = normal)
+     */
+    setBrightness(brightness) {
+        this.brightness = brightness;
         this.render();
     }
 }

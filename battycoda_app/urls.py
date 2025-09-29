@@ -9,21 +9,21 @@ from .views_segmentation.segmentation_execution import (
     auto_segment_recording_view, auto_segment_status_view, select_recording_for_segmentation_view
 )
 from .views_segmentation.segmentation_import import upload_pickle_segments_view
-from .views_segmentation.segmentation_preview import preview_segmentation_view
+from .views_segmentation.segmentation_preview import preview_segmentation_view, create_preview_recording_view
 from .views_segmentation.segmentation_settings import activate_segmentation_view
 
-# Direct imports from views_automation
-from .views_automation.results_application import apply_detection_results_view
-from .views_automation.runs_details import detection_run_detail_view, detection_run_status_view, download_features_file_view
-from .views_automation.runs_management import (
-    automation_home_view, create_detection_run_view, delete_detection_run_view,
+# Direct imports from views_classification
+from .views_classification.results_application import apply_detection_results_view
+from .views_classification.runs_details import detection_run_detail_view, detection_run_status_view, download_features_file_view
+from .views_classification.runs_management import (
+    classification_home_view, create_detection_run_view, delete_detection_run_view,
     classify_unclassified_segments_view, create_classification_for_species_view
 )
-from .views_automation.task_creation import (
+from .views_classification.task_creation import (
     create_task_batch_from_detection_run, create_task_batches_for_species_view,
     create_tasks_for_species_view
 )
-from .views_automation.classifier_training import (
+from .views_classification.classifier_training import (
     classifier_list_view, create_classifier_training_job_view, 
     classifier_training_job_detail_view, classifier_training_job_status_view,
     delete_classifier_training_job_view
@@ -36,6 +36,9 @@ from .views_notifications import (
 
 # Import batch export views
 from .views_batch_export import export_completed_batches
+
+# Import task batch management views
+from .views_task_batch_management import delete_task_batch_view
 
 from . import (
     views_audio,
@@ -99,6 +102,7 @@ urlpatterns = [
     path("tasks/batches/<int:batch_id>/", views_task_batch.task_batch_detail_view, name="task_batch_detail"),
     path("tasks/batches/<int:batch_id>/export/", views_task_batch.export_task_batch_view, name="export_task_batch"),
     path("tasks/batches/<int:batch_id>/review/", views_task_batch.task_batch_review_view, name="task_batch_review"),
+    path("tasks/batches/<int:batch_id>/delete/", delete_task_batch_view, name="delete_task_batch"),
     path("tasks/batches/export-completed/", export_completed_batches, name="export_completed_batches"),
     path("tasks/batches/create/", views_task_batch.create_task_batch_view, name="create_task_batch"),
     path("tasks/batches/check-name/", views_task_batch.check_taskbatch_name, name="check_taskbatch_name"),
@@ -111,87 +115,87 @@ urlpatterns = [
         name="annotate_batch",
     ),
     path("tasks/annotate/<int:task_id>/", views_task_annotation.task_annotation_view, name="annotate_task"),
-    # Automation routes
-    path("automation/", automation_home_view, name="automation_home"),
-    path("automation/runs/<int:run_id>/", detection_run_detail_view, name="detection_run_detail"),
-    path("automation/runs/create/", create_detection_run_view, name="create_detection_run"),
+    # Classification routes
+    path("classification/", classification_home_view, name="classification_home"),
+    path("classification/runs/<int:run_id>/", detection_run_detail_view, name="detection_run_detail"),
+    path("classification/runs/create/", create_detection_run_view, name="create_detection_run"),
     path(
-        "automation/runs/create/<int:segmentation_id>/",
+        "classification/runs/create/<int:segmentation_id>/",
         create_detection_run_view,
         name="create_detection_run_for_segmentation",
     ),
     path(
-        "automation/runs/<int:run_id>/status/", detection_run_status_view, name="detection_run_status"
+        "classification/runs/<int:run_id>/status/", detection_run_status_view, name="detection_run_status"
     ),
     path(
-        "automation/runs/<int:run_id>/download-features/", 
+        "classification/runs/<int:run_id>/download-features/", 
         download_features_file_view, 
         name="download_features_file"
     ),
     path(
-        "automation/runs/<int:run_id>/apply/",
+        "classification/runs/<int:run_id>/apply/",
         apply_detection_results_view,
         name="apply_detection_results",
     ),
     path(
-        "automation/runs/<int:run_id>/apply/<int:segment_id>/",
+        "classification/runs/<int:run_id>/apply/<int:segment_id>/",
         apply_detection_results_view,
         name="apply_detection_result_for_segment",
     ),
     path(
-        "automation/runs/<int:run_id>/create-tasks/",
+        "classification/runs/<int:run_id>/create-tasks/",
         create_task_batch_from_detection_run,
         name="create_task_batch_from_detection_run",
     ),
     path(
-        "automation/runs/<int:run_id>/delete/", delete_detection_run_view, name="delete_detection_run"
+        "classification/runs/<int:run_id>/delete/", delete_detection_run_view, name="delete_detection_run"
     ),
     # Classify unclassified segments
     path(
-        "automation/unclassified/",
+        "classification/unclassified/",
         classify_unclassified_segments_view,
         name="classify_unclassified_segments"
     ),
     path(
-        "automation/unclassified/<int:species_id>/classify/",
+        "classification/unclassified/<int:species_id>/classify/",
         create_classification_for_species_view,
         name="create_classification_for_species"
     ),
     # Create task batches from classification runs
     path(
-        "automation/task-batches/",
+        "classification/task-batches/",
         create_task_batches_for_species_view,
         name="create_task_batches_for_species"
     ),
     path(
-        "automation/task-batches/<int:species_id>/create/",
+        "classification/task-batches/<int:species_id>/create/",
         create_tasks_for_species_view,
         name="create_tasks_for_species"
     ),
     # Classifier training routes
-    path("automation/classifiers/", classifier_list_view, name="classifier_list"),
+    path("classification/classifiers/", classifier_list_view, name="classifier_list"),
     path(
-        "automation/classifiers/create/", 
+        "classification/classifiers/create/", 
         create_classifier_training_job_view, 
         name="create_classifier_training_job"
     ),
     path(
-        "automation/classifiers/create/<int:batch_id>/",
+        "classification/classifiers/create/<int:batch_id>/",
         create_classifier_training_job_view,
         name="create_classifier_training_job_for_batch"
     ),
     path(
-        "automation/classifiers/<int:job_id>/",
+        "classification/classifiers/<int:job_id>/",
         classifier_training_job_detail_view,
         name="classifier_training_job_detail"
     ),
     path(
-        "automation/classifiers/<int:job_id>/status/",
+        "classification/classifiers/<int:job_id>/status/",
         classifier_training_job_status_view,
         name="classifier_training_job_status"
     ),
     path(
-        "automation/classifiers/<int:job_id>/delete/",
+        "classification/classifiers/<int:job_id>/delete/",
         delete_classifier_training_job_view,
         name="delete_classifier_training_job"
     ),
@@ -287,6 +291,11 @@ urlpatterns = [
         name="preview_segmentation",
     ),
     path(
+        "recordings/<int:recording_id>/create-preview/",
+        create_preview_recording_view,
+        name="create_preview_recording",
+    ),
+    path(
         "recordings/<int:recording_id>/upload-pickle/",
         upload_pickle_segments_view,
         name="upload_pickle_segments",
@@ -305,11 +314,6 @@ urlpatterns = [
         "recordings/<int:recording_id>/spectrogram-status/",
         views_tasks.recording_spectrogram_status_view,
         name="recording_spectrogram_status",
-    ),
-    path(
-        "recordings/<int:recording_id>/create-tasks/",
-        views_tasks.create_tasks_from_segments_view,
-        name="create_tasks_from_segments",
     ),
     # Batch segmentation management
     path("segmentation/batch-jobs/", batch_segmentation_view, name="batch_segmentation"),

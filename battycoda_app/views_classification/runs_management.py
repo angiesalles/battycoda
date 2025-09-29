@@ -16,7 +16,7 @@ from battycoda_app.models.recording import Segmentation, Segment
 from battycoda_app.models.organization import Project, Species
 
 @login_required
-def automation_home_view(request):
+def classification_home_view(request):
     """Display a list of classification runs with a button to start a new one."""
     try:
         profile = request.user.profile
@@ -86,18 +86,18 @@ def automation_home_view(request):
             "selected_project_id": selected_project_id,
         }
 
-        return render(request, "automation/dashboard.html", context)
+        return render(request, "classification/dashboard.html", context)
     except Exception as e:
 
         messages.error(request, f"An error occurred: {str(e)}")
         # Provide a fallback response
-        return render(request, "automation/dashboard.html", {"runs": [], "classifiers": []})
+        return render(request, "classification/dashboard.html", {"runs": [], "classifiers": []})
 
 @login_required
 def detection_run_list_view(request):
     """Display list of all detection runs - redirects to main automation view."""
     # We've combined this view with the main automation view
-    return redirect("battycoda_app:automation_home")
+    return redirect("battycoda_app:classification_home")
 
 @login_required
 def create_detection_run_view(request, segmentation_id=None):
@@ -248,7 +248,7 @@ def create_detection_run_view(request, segmentation_id=None):
             "default_classifier": classifiers.filter(name="R-direct Classifier").first(),
         }
 
-        return render(request, "automation/create_run.html", context)
+        return render(request, "classification/create_run.html", context)
 
     # If no segmentation_id provided, show list of available segmentations
     profile = request.user.profile
@@ -256,18 +256,26 @@ def create_detection_run_view(request, segmentation_id=None):
     # Filter segmentations by group if the user is in a group
     if profile.group:
         if profile.is_current_group_admin:
-            # Admin sees all segmentations in their group
-            segmentations = Segmentation.objects.filter(recording__group=profile.group, status="completed").order_by(
-                "-created_at"
-            )
+            # Admin sees all segmentations in their group (excluding hidden recordings)
+            segmentations = Segmentation.objects.filter(
+                recording__group=profile.group, 
+                recording__hidden=False,
+                status="completed"
+            ).order_by("-created_at")
         else:
-            # Regular user only sees their own segmentations
-            segmentations = Segmentation.objects.filter(created_by=request.user, status="completed").order_by(
-                "-created_at"
-            )
+            # Regular user only sees their own segmentations (excluding hidden recordings)
+            segmentations = Segmentation.objects.filter(
+                created_by=request.user, 
+                recording__hidden=False,
+                status="completed"
+            ).order_by("-created_at")
     else:
-        # Fallback to showing only user's segmentations if no group is assigned
-        segmentations = Segmentation.objects.filter(created_by=request.user, status="completed").order_by("-created_at")
+        # Fallback to showing only user's segmentations if no group is assigned (excluding hidden recordings)
+        segmentations = Segmentation.objects.filter(
+            created_by=request.user, 
+            recording__hidden=False,
+            status="completed"
+        ).order_by("-created_at")
 
     # Format data for the select_entity template
     items = []
@@ -278,7 +286,7 @@ def create_detection_run_view(request, segmentation_id=None):
             "count": segmentation.segments.count(),
             "created_at": segmentation.created_at,
             "detail_url": f"/recordings/{segmentation.recording.id}/segment/?segmentation_id={segmentation.id}",
-            "action_url": f"/automation/runs/create/{segmentation.id}/",
+            "action_url": f"/classification/runs/create/{segmentation.id}/",
         })
 
     context = {
@@ -286,8 +294,8 @@ def create_detection_run_view(request, segmentation_id=None):
         "list_title": "Available Segmentation Runs",
         "action_text": "Create Run",
         "action_icon": "bolt",
-        "parent_url": "battycoda_app:automation_home",
-        "parent_name": "Automation",
+        "parent_url": "battycoda_app:classification_home",
+        "parent_name": "Classification",
         "th1": "Segmentation Run",
         "th2": "Type",
         "th3": "Segments",
@@ -297,7 +305,7 @@ def create_detection_run_view(request, segmentation_id=None):
         "items": items,
     }
 
-    return render(request, "automation/select_entity.html", context)
+    return render(request, "classification/select_entity.html", context)
 
 @login_required
 def delete_detection_run_view(request, run_id):
@@ -309,7 +317,7 @@ def delete_detection_run_view(request, run_id):
     profile = request.user.profile
     if run.created_by != request.user and (not profile.group or run.group != profile.group):
         messages.error(request, "You don't have permission to delete this classification run.")
-        return redirect("battycoda_app:automation_home")
+        return redirect("battycoda_app:classification_home")
 
     if request.method == "POST":
         # Delete all related results first
@@ -323,10 +331,10 @@ def delete_detection_run_view(request, run_id):
         run.delete()
 
         messages.success(request, f"Classification run '{run_name}' has been deleted.")
-        return redirect("battycoda_app:automation_home")
+        return redirect("battycoda_app:classification_home")
 
     # For GET requests, show confirmation page
-    return render(request, "automation/delete_run.html", {"run": run})
+    return render(request, "classification/delete_run.html", {"run": run})
 
 
 @login_required
@@ -408,8 +416,8 @@ def classify_unclassified_segments_view(request):
     context = {
         'title': 'Classify Unclassified Segments',
         'list_title': 'Species with Unclassified Segments',
-        'parent_url': 'battycoda_app:automation_home',
-        'parent_name': 'Automation',
+        'parent_url': 'battycoda_app:classification_home',
+        'parent_name': 'Classification',
         'th1': 'Species',
         'th2': 'Type',
         'th3': 'Unclassified Segments',
@@ -420,7 +428,7 @@ def classify_unclassified_segments_view(request):
         'items': items
     }
     
-    return render(request, "automation/select_entity.html", context)
+    return render(request, "classification/select_entity.html", context)
 
 
 @login_required
@@ -546,7 +554,7 @@ def create_classification_for_species_view(request, species_id):
                 f"Created {run_count} classification runs for {segments.count()} segments across {run_count} recordings. "
                 f"Runs have been queued and will be processed sequentially to prevent resource conflicts."
             )
-            redirect_url = 'battycoda_app:automation_home'
+            redirect_url = 'battycoda_app:classification_home'
             if project_id:
                 redirect_url += f'?project={project_id}'
             return redirect(redirect_url)
@@ -601,4 +609,4 @@ def create_classification_for_species_view(request, species_id):
         'default_classifier': classifiers.filter(name="R-direct Classifier").first(),
     }
     
-    return render(request, 'automation/create_species_classification.html', context)
+    return render(request, 'classification/create_species_classification.html', context)

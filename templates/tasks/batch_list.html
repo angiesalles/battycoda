@@ -5,7 +5,7 @@
 {% block page_title %}Task Batches{% endblock %}
 {% block list_title %}Task Batches{% endblock %}
 {% block card_title %}All Task Batches{% endblock %}
-{% block item_count %}{{ total_count|default:batches|length }}{% endblock %}
+{% block item_count %}{{ total_count|default:"0" }}{% endblock %}
 
 {% block action_buttons %}
 <div class="d-flex gap-2 align-items-center">
@@ -28,12 +28,12 @@
     </div>
     
     <!-- Action Buttons -->
-    <a href="{% url 'battycoda_app:automation_home' %}" class="btn btn-primary" 
+    <a href="{% url 'battycoda_app:classification_home' %}" class="btn btn-primary" 
        data-bs-toggle="tooltip" data-bs-placement="bottom" title="Create a task batch from classification">
         <i class="fas fa-robot"></i> Create from Classification
     </a>
-    <a href="{% url 'battycoda_app:export_completed_batches' %}" class="btn btn-success" 
-       data-bs-toggle="tooltip" data-bs-placement="bottom" title="Download all completed batches as a ZIP file">
+    <a href="{% url 'battycoda_app:export_completed_batches' %}{% if selected_project_id %}?project={{ selected_project_id }}{% endif %}" class="btn btn-success" 
+       data-bs-toggle="tooltip" data-bs-placement="bottom" title="Download {% if selected_project_id %}filtered{% else %}all{% endif %} completed batches as a ZIP file">
         <i class="fas fa-file-archive"></i> Download Completed Batches
     </a>
 </div>
@@ -122,6 +122,7 @@
 </tr>
 {% endfor %}
 {% endblock %}
+
 
 {% block card_footer %}
 {% if batches.paginator.num_pages > 1 %}
@@ -216,7 +217,7 @@
             <li>Create a task batch from the classification results</li>
         </ol>
     </div>
-    <a href="{% url 'battycoda_app:automation_home' %}" class="btn btn-primary mt-2">
+    <a href="{% url 'battycoda_app:classification_home' %}" class="btn btn-primary mt-2">
         <i class="fas fa-robot"></i> View Classifications
     </a>
 </div>

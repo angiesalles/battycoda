@@ -21,12 +21,7 @@ def activate_segmentation_view(request, segmentation_id):
         messages.error(request, "You don't have permission to modify segmentations for this recording.")
         return redirect("battycoda_app:recording_list")
 
-    # Deactivate all segmentations for this recording
-    Segmentation.objects.filter(recording=recording).update(is_active=False)
-
-    # Activate the requested segmentation
-    segmentation.is_active = True
-    segmentation.save()
+    # No longer need to manage is_active field - segmentations are used directly
 
     # Handle AJAX requests
     if request.headers.get("x-requested-with") == "XMLHttpRequest":

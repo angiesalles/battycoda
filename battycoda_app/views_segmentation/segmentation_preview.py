@@ -41,7 +41,11 @@ from django.shortcuts import get_object_or_404
 from battycoda_app.models.recording import Recording, SegmentationAlgorithm
 import hashlib
 import os
+import uuid
 from django.conf import settings
+from django.core.files.base import ContentFile
+from django.http import HttpResponseRedirect
+from django.urls import reverse
 
 # Import librosa with caching disabled
 import librosa
@@ -69,6 +73,21 @@ def preview_segmentation_view(request, recording_id):
         smooth_window = int(request.POST.get("smooth_window", 3))
         threshold_factor = float(request.POST.get("threshold_factor", 0.5))
         start_time = float(request.POST.get("start_time", 0))  # Default to beginning
+        
+        # Get bandpass filter parameters
+        low_freq = request.POST.get("low_freq")
+        high_freq = request.POST.get("high_freq")
+        
+        # Convert frequency parameters to integers or None
+        if low_freq and low_freq.strip():
+            low_freq = int(low_freq)
+        else:
+            low_freq = None
+            
+        if high_freq and high_freq.strip():
+            high_freq = int(high_freq)
+        else:
+            high_freq = None
 
         # Validate parameters
         if min_duration_ms < 1:
@@ -79,6 +98,12 @@ def preview_segmentation_view(request, recording_id):
             raise ValueError("Threshold factor must be between 0 and 10")
         if start_time < 0:
             raise ValueError("Start time must be non-negative")
+        if low_freq is not None and low_freq <= 0:
+            raise ValueError("Low frequency must be positive")
+        if high_freq is not None and high_freq <= 0:
+            raise ValueError("High frequency must be positive")
+        if low_freq is not None and high_freq is not None and low_freq >= high_freq:
+            raise ValueError("Low frequency must be less than high frequency")
 
         # Get algorithm
         algorithm = get_object_or_404(SegmentationAlgorithm, id=int(algorithm_id), is_active=True)
@@ -117,14 +142,18 @@ def preview_segmentation_view(request, recording_id):
                     temp_audio_file,
                     min_duration_ms=min_duration_ms,
                     smooth_window=smooth_window, 
-                    threshold_factor=threshold_factor
+                    threshold_factor=threshold_factor,
+                    low_freq=low_freq,
+                    high_freq=high_freq
                 )
             else:  # threshold-based (default)
                 segments = auto_segment_audio(
                     temp_audio_file,
                     min_duration_ms=min_duration_ms,
                     smooth_window=smooth_window, 
-                    threshold_factor=threshold_factor
+                    threshold_factor=threshold_factor,
+                    low_freq=low_freq,
+                    high_freq=high_freq
                 )
 
             # Extract onset and offset lists from the returned tuple
@@ -171,7 +200,9 @@ def preview_segmentation_view(request, recording_id):
                 "parameters": {
                     "min_duration_ms": min_duration_ms,
                     "smooth_window": smooth_window,
-                    "threshold_factor": threshold_factor
+                    "threshold_factor": threshold_factor,
+                    "low_freq": low_freq,
+                    "high_freq": high_freq
                 }
             }
             
@@ -241,3 +272,205 @@ def get_or_generate_preview_spectrogram(recording, start_time, duration):
     except Exception as e:
         print(f"Failed to setup preview spectrogram generation: {e}")
         return None
+
+
+@login_required
+def create_preview_recording_view(request, recording_id):
+    """
+    Create a hidden preview recording with a 10-second audio segment,
+    then redirect to the segmentation detail view for maximum code reuse.
+    """
+    if request.method != 'POST':
+        return JsonResponse({"success": False, "error": "Only POST requests allowed"}, status=405)
+    
+    # Get the original recording
+    recording = get_object_or_404(Recording.all_objects, id=recording_id)  # Use all_objects in case original is hidden
+    
+    # Check permissions
+    profile = request.user.profile
+    if recording.created_by != request.user and (not profile.group or recording.group != profile.group):
+        return JsonResponse({"success": False, "error": "Permission denied"}, status=403)
+    
+    try:
+        # Get parameters
+        start_time = float(request.POST.get("start_time", 0))
+        duration = float(request.POST.get("duration", 10.0))
+        
+        # Get segmentation parameters 
+        algorithm_id = request.POST.get("algorithm")
+        min_duration_ms = int(request.POST.get("min_duration_ms", 10))
+        smooth_window = int(request.POST.get("smooth_window", 3))
+        threshold_factor = float(request.POST.get("threshold_factor", 0.5))
+        
+        # Get bandpass filter parameters
+        low_freq = request.POST.get("low_freq")
+        high_freq = request.POST.get("high_freq")
+        
+        # Convert frequency parameters to integers or None
+        if low_freq and low_freq.strip():
+            low_freq = int(low_freq)
+        else:
+            low_freq = None
+            
+        if high_freq and high_freq.strip():
+            high_freq = int(high_freq)
+        else:
+            high_freq = None
+        
+        # Validate parameters
+        if start_time < 0:
+            raise ValueError("Start time must be non-negative")
+        if duration <= 0 or duration > 60:
+            raise ValueError("Duration must be between 0 and 60 seconds")
+        if min_duration_ms < 1:
+            raise ValueError("Minimum duration must be at least 1ms")
+        if smooth_window < 1:
+            raise ValueError("Smooth window must be at least 1 sample")
+        if threshold_factor <= 0 or threshold_factor > 10:
+            raise ValueError("Threshold factor must be between 0 and 10")
+        if low_freq is not None and low_freq <= 0:
+            raise ValueError("Low frequency must be positive")
+        if high_freq is not None and high_freq <= 0:
+            raise ValueError("High frequency must be positive")
+        if low_freq is not None and high_freq is not None and low_freq >= high_freq:
+            raise ValueError("Low frequency must be less than high frequency")
+        
+        # Get and validate algorithm
+        if not algorithm_id:
+            raise ValueError("Algorithm is required")
+        
+        from battycoda_app.models.recording import SegmentationAlgorithm
+        try:
+            algorithm = SegmentationAlgorithm.objects.get(id=int(algorithm_id), is_active=True)
+        except SegmentationAlgorithm.DoesNotExist:
+            raise ValueError(f"Algorithm with ID {algorithm_id} not found")
+        
+        # Check algorithm access permission
+        if algorithm.group and (not profile.group or algorithm.group != profile.group):
+            raise ValueError("You don't have permission to use this algorithm")
+        
+        # Load the audio segment
+        audio_path = recording.wav_file.path
+        y, sr = librosa.load(audio_path, sr=None, offset=start_time, duration=duration)
+        
+        if len(y) == 0:
+            return JsonResponse({"success": False, "error": "No audio data in the selected time range"})
+        
+        # Calculate actual duration from loaded audio
+        actual_duration = len(y) / sr
+        
+        # Create temporary audio file in memory
+        import io
+        audio_buffer = io.BytesIO()
+        sf.write(audio_buffer, y, sr, format='WAV', subtype='PCM_16')
+        audio_buffer.seek(0)
+        audio_content = ContentFile(audio_buffer.read())
+        
+        # Create hidden preview recording
+        preview_name = f"Preview {recording.name} ({start_time:.1f}s-{start_time+actual_duration:.1f}s)"
+        preview_filename = f"preview_{uuid.uuid4().hex}.wav"
+        
+        hidden_recording = Recording.all_objects.create(
+            name=preview_name,
+            description=f"Preview of {recording.name} from {start_time:.1f}s to {start_time+actual_duration:.1f}s",
+            duration=actual_duration,  # Use actual duration from loaded audio
+            sample_rate=int(sr),  # Ensure it's an integer
+            file_ready=True,
+            hidden=True,  # Mark as hidden so it doesn't appear in normal lists
+            species=recording.species,
+            project=recording.project,
+            group=recording.group,
+            created_by=request.user,
+            # Copy metadata
+            recorded_date=recording.recorded_date,
+            location=recording.location,
+            equipment=recording.equipment,
+            environmental_conditions=recording.environmental_conditions,
+        )
+        
+        # Save the audio file - ensure it's saved properly
+        hidden_recording.wav_file.save(preview_filename, audio_content, save=False)
+        hidden_recording.save()  # Save the recording after file is attached
+        
+        # Create a segmentation for the hidden recording
+        from battycoda_app.models.recording import Segmentation
+        preview_segmentation = Segmentation.objects.create(
+            name=f"Preview Segmentation for {preview_name}",
+            recording=hidden_recording,
+            algorithm=algorithm,
+            is_active=True,
+            created_by=request.user,
+            status='in_progress',  # Will be updated when task starts
+            progress=0
+        )
+        
+        # First, generate spectrogram for the hidden recording
+        try:
+            from battycoda_app.audio.task_modules.spectrogram_tasks import generate_recording_spectrogram
+            
+            # Generate spectrogram synchronously for the preview
+            spectrogram_filename = f"spectrogram_{uuid.uuid4().hex}.png"
+            hidden_recording.spectrogram_file = spectrogram_filename
+            hidden_recording.save()
+            
+            # Generate the spectrogram (this will run synchronously)
+            generate_recording_spectrogram(hidden_recording.id)
+            
+        except Exception as e:
+            # If spectrogram generation fails, continue anyway but log the error
+            print(f"Warning: Failed to generate spectrogram for preview recording: {e}")
+        
+        # Automatically trigger the segmentation task and wait for completion
+        try:
+            from celery import current_app
+            from celery.result import AsyncResult
+            import time
+            
+            # Launch Celery task with the same parameters as the normal segmentation
+            task = current_app.send_task(
+                algorithm.celery_task,
+                args=[hidden_recording.id, preview_segmentation.id, min_duration_ms, smooth_window, threshold_factor, low_freq, high_freq],
+            )
+            
+            # Update the segmentation with the actual task ID
+            preview_segmentation.task_id = task.id
+            preview_segmentation.save(update_fields=['task_id'])
+            
+            # Wait for task completion (with timeout for safety)
+            result = AsyncResult(task.id)
+            timeout = 30  # 30 seconds timeout for 10s audio segment
+            start_time = time.time()
+            
+            while not result.ready():
+                if time.time() - start_time > timeout:
+                    raise ValueError("Segmentation task timed out")
+                time.sleep(0.5)  # Check every 500ms
+            
+            # Check if task completed successfully
+            if result.successful():
+                task_result = result.get()
+                if task_result.get("status") != "success":
+                    raise ValueError(f"Segmentation failed: {task_result.get('message', 'Unknown error')}")
+            else:
+                raise ValueError(f"Segmentation task failed: {str(result.result)}")
+            
+        except Exception as e:
+            # If task launching or completion fails, mark segmentation as failed
+            preview_segmentation.status = 'failed'
+            preview_segmentation.save()
+            raise ValueError(f"Failed to complete segmentation task: {str(e)}")
+        
+        # Redirect to the segmentation detail view
+        segmentation_url = reverse('battycoda_app:segmentation_detail', kwargs={'segmentation_id': preview_segmentation.id})
+        return JsonResponse({
+            "success": True,
+            "preview_url": segmentation_url,
+            "preview_recording_id": hidden_recording.id,
+            "preview_segmentation_id": preview_segmentation.id,
+            "message": "Preview recording created successfully"
+        })
+        
+    except ValueError as e:
+        return JsonResponse({"success": False, "error": f"Invalid parameter: {str(e)}"}, status=400)
+    except Exception as e:
+        return JsonResponse({"success": False, "error": f"Failed to create preview: {str(e)}"}, status=500)

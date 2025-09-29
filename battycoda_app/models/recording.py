@@ -7,6 +7,18 @@ from django.utils import timezone
 from .organization import Project, Species
 from .user import Group
 
+
+class RecordingManager(models.Manager):
+    """Manager that excludes hidden recordings by default"""
+    def get_queryset(self):
+        return super().get_queryset().filter(hidden=False)
+
+
+class AllRecordingManager(models.Manager):
+    """Manager that includes all recordings, including hidden ones"""
+    pass
+
+
 class Recording(models.Model):
     """Recording model for storing full audio recordings."""
 
@@ -17,6 +29,8 @@ class Recording(models.Model):
     duration = models.FloatField(blank=True, null=True, help_text="Duration of the recording in seconds")
     sample_rate = models.IntegerField(blank=True, null=True, help_text="Sample rate of the recording in Hz")
     file_ready = models.BooleanField(default=False, help_text="Flag indicating if the file is fully uploaded and ready for processing")
+    spectrogram_file = models.CharField(max_length=255, blank=True, null=True, help_text="Filename of the generated spectrogram PNG")
+    hidden = models.BooleanField(default=False, help_text="Hidden recordings are temporary previews that don't appear in normal lists")
 
     # Recording metadata
     recorded_date = models.DateField(blank=True, null=True, help_text="Date when the recording was made")
@@ -46,6 +60,10 @@ class Recording(models.Model):
     # Creation metadata
     created_at = models.DateTimeField(auto_now_add=True)
     created_by = models.ForeignKey(User, on_delete=models.CASCADE, related_name="recordings")
+
+    # Managers
+    objects = RecordingManager()  # Default manager excludes hidden recordings
+    all_objects = AllRecordingManager()  # Includes all recordings including hidden
 
     class Meta:
         ordering = ["-created_at"]
@@ -134,9 +152,6 @@ class Segmentation(models.Model):
     )
     name = models.CharField(
         max_length=255, default="Default Segmentation", help_text="Descriptive name for this segmentation run"
-    )
-    is_active = models.BooleanField(
-        default=True, help_text="Whether this is the currently active segmentation for the recording"
     )
     algorithm = models.ForeignKey(
         SegmentationAlgorithm,
@@ -236,29 +251,10 @@ class Segment(models.Model):
         # If manual_edit is explicitly set to False, don't mark as manually edited
         manual_edit = kwargs.pop("manual_edit", True)
 
-        # Check if we need a segmentation for this segment
+        # All segments must be explicitly assigned to a segmentation
+        # No auto-creation of segmentations anymore
         if not hasattr(self, "segmentation") or self.segmentation is None:
-            # Find active segmentation for this recording or create a new one
-            # Get the Segmentation model through the apps registry to avoid circular imports
-            Segmentation = self.__class__._meta.apps.get_model("battycoda_app", "Segmentation")
-
-            # Look for an active segmentation
-            try:
-                segmentation = Segmentation.objects.get(recording=self.recording, is_active=True)
-            except Segmentation.DoesNotExist:
-                # No active segmentation, create a new one
-                segmentation = Segmentation.objects.create(
-                    recording=self.recording,
-                    name="Manual Segmentation",
-                    created_by=self.created_by,
-                    status="completed",
-                    progress=100,
-                    is_active=True,
-                    manually_edited=manual_edit,  # Only mark as manually edited if it's a manual save
-                )
-
-            # Assign this segmentation to the segment
-            self.segmentation = segmentation
+            raise ValueError("Segment must be explicitly assigned to a segmentation")
 
         # Call the original save method
         super().save(*args, **kwargs)
@@ -278,43 +274,3 @@ class Segment(models.Model):
         # Call the original delete method
         super().delete(*args, **kwargs)
 
-    def create_task(self):
-        """Create a Task from this segment"""
-        from .task import Task, TaskBatch
-
-        if self.task:
-            return self.task
-
-        # Create a new batch if needed or use the existing one
-        batch_name = f"Batch from {self.recording.name} - {timezone.now().strftime('%Y%m%d-%H%M%S')}"
-
-        batch = TaskBatch.objects.create(
-            name=batch_name,
-            description=f"Automatically created from recording segments at {timezone.now().strftime('%Y-%m-%d %H:%M:%S')}",
-            created_by=self.created_by,
-            wav_file_name=self.recording.wav_file.name,
-            wav_file=self.recording.wav_file,
-            species=self.recording.species,
-            project=self.recording.project,
-            group=self.recording.group,
-        )
-
-        # Create task
-        task = Task.objects.create(
-            wav_file_name=self.recording.wav_file.name,
-            onset=self.onset,
-            offset=self.offset,
-            species=self.recording.species,
-            project=self.recording.project,
-            batch=batch,
-            created_by=self.created_by,
-            group=self.recording.group,
-            label=None,  # Call type is no longer on segment
-            notes=self.notes,
-        )
-
-        # Link the task back to this segment
-        self.task = task
-        self.save()
-
-        return task

@@ -20,7 +20,7 @@ def apply_detection_results_view(request, run_id, segment_id=None):
     profile = request.user.profile
     if run.created_by != request.user and (not profile.group or run.group != profile.group):
         messages.error(request, "You don't have permission to apply classification results.")
-        return redirect("battycoda_app:automation_home")
+        return redirect("battycoda_app:classification_home")
 
     # Check if the run is completed
     if run.status != "completed":

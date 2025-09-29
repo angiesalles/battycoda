@@ -194,7 +194,16 @@ export class TimelineRenderer {
                 segmentMarker.style.backgroundColor = '#007bff';
                 segmentMarker.style.opacity = '0.7';
                 segmentMarker.style.borderRadius = '2px';
+                segmentMarker.style.cursor = 'pointer';
                 segmentMarker.title = `Segment ${segment.id}: ${segment.onset.toFixed(2)}s - ${segment.offset.toFixed(2)}s`;
+                
+                // Store segment data for hover effects
+                segmentMarker.dataset.segmentId = segment.id;
+                segmentMarker.dataset.segmentStart = segmentStartTime;
+                segmentMarker.dataset.segmentEnd = segmentEndTime;
+                
+                // Add hover effects
+                this.addSegmentHoverEffects(segmentMarker, segmentStart, segmentEnd, visibleStart, visibleEnd);
                 
                 // Add clipping indicators if segment extends beyond visible area
                 if (segmentStart < 0) {
@@ -214,5 +223,86 @@ export class TimelineRenderer {
                 player.timelineContainer.appendChild(segmentMarker);
             }
         });
+    }
+    
+    /**
+     * Add hover effects to segment markers
+     */
+    addSegmentHoverEffects(segmentMarker, segmentStart, segmentEnd, visibleStart, visibleEnd) {
+        const player = this.player;
+        
+        let hoverLines = null;
+        
+        // Mouse enter handler
+        segmentMarker.addEventListener('mouseenter', () => {
+            // Create hover lines that extend to the top of the waveform
+            hoverLines = this.createSegmentHoverLines(visibleStart, visibleEnd);
+            
+            // Highlight the segment marker
+            segmentMarker.style.opacity = '1.0';
+            segmentMarker.style.backgroundColor = '#ff6b35';
+        });
+        
+        // Mouse leave handler
+        segmentMarker.addEventListener('mouseleave', () => {
+            // Remove hover lines
+            if (hoverLines) {
+                hoverLines.forEach(line => line.remove());
+                hoverLines = null;
+            }
+            
+            // Restore segment marker appearance
+            segmentMarker.style.opacity = '0.7';
+            segmentMarker.style.backgroundColor = '#007bff';
+        });
+    }
+    
+    /**
+     * Create hover lines that extend from timeline to top of waveform
+     */
+    createSegmentHoverLines(visibleStart, visibleEnd) {
+        const player = this.player;
+        const lines = [];
+        
+        // Get waveform container for positioning
+        const waveformContainer = player.waveformContainer;
+        if (!waveformContainer) return lines;
+        
+        // Calculate positions relative to waveform container
+        const waveformRect = waveformContainer.getBoundingClientRect();
+        const timelineRect = player.timelineContainer.getBoundingClientRect();
+        
+        // Create start line
+        const startLine = document.createElement('div');
+        startLine.style.position = 'absolute';
+        startLine.style.left = visibleStart + 'px';
+        startLine.style.top = '0px';
+        startLine.style.width = '2px';
+        startLine.style.height = waveformContainer.clientHeight + 'px';
+        startLine.style.backgroundColor = '#ff6b35';
+        startLine.style.opacity = '0.8';
+        startLine.style.pointerEvents = 'none';
+        startLine.style.zIndex = '10';
+        startLine.className = 'segment-hover-line';
+        
+        // Create end line
+        const endLine = document.createElement('div');
+        endLine.style.position = 'absolute';
+        endLine.style.left = visibleEnd + 'px';
+        endLine.style.top = '0px';
+        endLine.style.width = '2px';
+        endLine.style.height = waveformContainer.clientHeight + 'px';
+        endLine.style.backgroundColor = '#ff6b35';
+        endLine.style.opacity = '0.8';
+        endLine.style.pointerEvents = 'none';
+        endLine.style.zIndex = '10';
+        endLine.className = 'segment-hover-line';
+        
+        // Add lines to waveform container
+        waveformContainer.appendChild(startLine);
+        waveformContainer.appendChild(endLine);
+        
+        lines.push(startLine, endLine);
+        return lines;
     }
 }

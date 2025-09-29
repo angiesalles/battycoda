@@ -37,12 +37,14 @@ def jobs_dashboard_view(request):
         if profile.is_current_group_admin:
             segmentations_active = Segmentation.objects.filter(
                 recording__group=profile.group,
+                recording__hidden=False,  # Exclude hidden recordings
                 status__in=['pending', 'in_progress']
             ).order_by('-created_at')
             
             # Get recent completed/failed for display (last 10)
             segmentations_recent = Segmentation.objects.filter(
                 recording__group=profile.group,
+                recording__hidden=False,  # Exclude hidden recordings
                 status__in=['completed', 'failed']
             ).order_by('-created_at')[:10]
         else:
@@ -155,6 +157,7 @@ def job_status_api_view(request):
             # Admin sees all group jobs
             segmentations = Segmentation.objects.filter(
                 recording__group=profile.group,
+                recording__hidden=False,  # Exclude hidden recordings
                 status__in=['pending', 'in_progress']
             )
             detection_runs = ClassificationRun.objects.filter(
@@ -181,6 +184,7 @@ def job_status_api_view(request):
             # Regular user sees only their own jobs
             segmentations = Segmentation.objects.filter(
                 created_by=request.user,
+                recording__hidden=False,  # Exclude hidden recordings
                 status__in=['pending', 'in_progress']
             )
             detection_runs = ClassificationRun.objects.filter(
@@ -223,7 +227,7 @@ def job_status_api_view(request):
                 'status': run.status,
                 'created_at': run.created_at.isoformat(),
                 'progress': run.progress if hasattr(run, 'progress') else None,
-                'url': f"/automation/runs/{run.id}/",
+                'url': f"/classification/runs/{run.id}/",
             })
         
         # Format training jobs
@@ -234,7 +238,7 @@ def job_status_api_view(request):
                 'status': job.status,
                 'created_at': job.created_at.isoformat(),
                 'progress': job.progress if hasattr(job, 'progress') else None,
-                'url': f"/automation/classifiers/{job.id}/",
+                'url': f"/classification/classifiers/{job.id}/",
             })
         
         # Format clustering jobs

@@ -14,28 +14,43 @@
         <nav aria-label="breadcrumb">
             <ol class="breadcrumb">
                 <li class="breadcrumb-item"><a href="{% url 'battycoda_app:segmentation_list' %}">Segmentations</a></li>
-                <li class="breadcrumb-item"><a href="{% url 'battycoda_app:recording_detail' recording_id=recording.id %}">{{ recording.name }}</a></li>
+                {% if recording.hidden %}
+                    <li class="breadcrumb-item">{{ recording.name }}</li>
+                {% else %}
+                    <li class="breadcrumb-item"><a href="{% url 'battycoda_app:recording_detail' recording_id=recording.id %}">{{ recording.name }}</a></li>
+                {% endif %}
                 <li class="breadcrumb-item active" aria-current="page">{{ active_segmentation.name }}</li>
             </ol>
         </nav>
         <div class="d-flex">
-            {% if active_segmentation %}
-            <a id="create-tasks-btn" href="{% url 'battycoda_app:create_detection_run_for_segmentation' segmentation_id=active_segmentation.id %}" class="btn btn-primary mr-2" {% if not segments %}disabled{% endif %}>
-                <i class="fas fa-tag"></i> Create Classification
-            </a>
+            {% if recording.hidden %}
+                <!-- Read-only preview mode - limited actions -->
+                <span class="badge bg-info mr-2 d-flex align-items-center">
+                    <i class="fas fa-eye mr-1"></i> Preview Mode
+                </span>
+                <button type="button" class="btn btn-outline-secondary" onclick="window.close();">
+                    <i class="fas fa-times"></i> Close Preview
+                </button>
+            {% else %}
+                <!-- Normal editing mode - full actions -->
+                {% if active_segmentation %}
+                <a id="create-classification-btn" href="{% url 'battycoda_app:create_detection_run_for_segmentation' segmentation_id=active_segmentation.id %}" class="btn btn-primary mr-2" {% if not segments %}disabled{% endif %}>
+                    <i class="fas fa-tag"></i> Create Classification
+                </a>
+                {% endif %}
+                <a href="{% url 'battycoda_app:auto_segment_recording' recording_id=recording.id %}" class="btn btn-info mr-2">
+                    <i class="fas fa-magic"></i> Auto Segment
+                </a>
+                <a href="{% url 'battycoda_app:upload_pickle_segments' recording_id=recording.id %}" class="btn btn-outline-primary mr-2">
+                    <i class="fas fa-file-upload"></i> Upload Pickle
+                </a>
+                <a href="{% url 'battycoda_app:batch_segmentation' %}" class="btn btn-secondary mr-2">
+                    <i class="fas fa-tasks"></i> Segmentation Jobs
+                </a>
+                <a href="{% url 'battycoda_app:recording_detail' recording_id=recording.id %}" class="btn btn-outline-secondary">
+                    <i class="fas fa-arrow-left"></i> Back to Recording
+                </a>
             {% endif %}
-            <a href="{% url 'battycoda_app:auto_segment_recording' recording_id=recording.id %}" class="btn btn-info mr-2">
-                <i class="fas fa-magic"></i> Auto Segment
-            </a>
-            <a href="{% url 'battycoda_app:upload_pickle_segments' recording_id=recording.id %}" class="btn btn-outline-primary mr-2">
-                <i class="fas fa-file-upload"></i> Upload Pickle
-            </a>
-            <a href="{% url 'battycoda_app:batch_segmentation' %}" class="btn btn-secondary mr-2">
-                <i class="fas fa-tasks"></i> Segmentation Jobs
-            </a>
-            <a href="{% url 'battycoda_app:recording_detail' recording_id=recording.id %}" class="btn btn-outline-secondary">
-                <i class="fas fa-arrow-left"></i> Back to Recording
-            </a>
         </div>
     </div>
 
@@ -53,17 +68,23 @@
     <div class="row">
         <!-- Waveform and segmentation tools -->
         <div class="col-lg-8">
-            <!-- Include the reusable waveform player with selection and zoom enabled -->
-            {% include "recordings/includes/waveform_player.html" with recording=recording container_id="segment-waveform" height=300 allow_selection=True show_zoom=True segments=segments_json spectrogram_url=spectrogram_url spectrogram_info=spectrogram_info %}
+            <!-- Include the reusable waveform player with selection disabled for hidden recordings -->
+            {% if recording.hidden %}
+                {% include "recordings/includes/waveform_player.html" with recording=recording container_id="segment-waveform" height=300 allow_selection=False show_zoom=True segments=segments_json spectrogram_url=spectrogram_url spectrogram_info=spectrogram_info %}
+            {% else %}
+                {% include "recordings/includes/waveform_player.html" with recording=recording container_id="segment-waveform" height=300 allow_selection=True show_zoom=True segments=segments_json spectrogram_url=spectrogram_url spectrogram_info=spectrogram_info %}
+            {% endif %}
             
-            <!-- Include segment form component -->
+            <!-- Include segment form component only for non-hidden recordings -->
+            {% if not recording.hidden %}
             {% include "recordings/includes/segmentation/segment_form.html" %}
+            {% endif %}
         </div>
         
         <!-- Segments list -->
         <div class="col-lg-4">
-            <!-- Include segments list component -->
-            {% include "recordings/includes/segmentation/segments_list.html" %}
+            <!-- Include segments list component with read-only flag for hidden recordings -->
+            {% include "recordings/includes/segmentation/segments_list.html" with read_only=recording.hidden %}
         </div>
     </div>
 </div>
@@ -82,14 +103,55 @@
         const csrfToken = document.querySelector('input[name=csrfmiddlewaretoken]').value;
         const segmentsData = {{ segments_json|safe }};
         
-        // Initialize segmentation
-        initSegmentation({
-            recordingId: {{ recording.id }},
-            waveformId: 'segment-waveform',
-            csrfToken: csrfToken,
-            segments: segmentsData,
-            containerId: 'segment-waveform-container'
-        });
+        // Check if this is a preview recording and auto-populate parameters
+        const isHidden = {{ recording.hidden|yesno:"true,false" }};
+        if (isHidden) {
+            // This is a preview recording, check for stored parameters
+            const storedParams = sessionStorage.getItem('segmentationPreviewParams');
+            if (storedParams) {
+                try {
+                    const params = JSON.parse(storedParams);
+                    
+                    // Auto-populate form fields
+                    const algorithmRadio = document.querySelector(`input[name="algorithm"][value="${params.algorithm}"]`);
+                    if (algorithmRadio) algorithmRadio.checked = true;
+                    
+                    const minDuration = document.getElementById('min_duration_ms');
+                    if (minDuration) minDuration.value = params.min_duration_ms;
+                    
+                    const smoothWindow = document.getElementById('smooth_window');
+                    if (smoothWindow) smoothWindow.value = params.smooth_window;
+                    
+                    const thresholdFactor = document.getElementById('threshold_factor');
+                    if (thresholdFactor) thresholdFactor.value = params.threshold_factor;
+                    
+                    const lowFreq = document.getElementById('low_freq');
+                    if (lowFreq && params.low_freq) lowFreq.value = params.low_freq;
+                    
+                    const highFreq = document.getElementById('high_freq');
+                    if (highFreq && params.high_freq) highFreq.value = params.high_freq;
+                    
+                    // Clear the stored parameters
+                    sessionStorage.removeItem('segmentationPreviewParams');
+                    
+                    console.log('Auto-populated preview parameters:', params);
+                } catch (e) {
+                    console.error('Error parsing preview parameters:', e);
+                }
+            }
+        }
+        
+        // Initialize segmentation (only for non-hidden recordings)
+        const isReadOnly = {{ recording.hidden|yesno:"true,false" }};
+        if (!isReadOnly) {
+            initSegmentation({
+                recordingId: {{ recording.id }},
+                waveformId: 'segment-waveform',
+                csrfToken: csrfToken,
+                segments: segmentsData,
+                containerId: 'segment-waveform-container'
+            });
+        }
     });
 </script>
 {% endblock %}

@@ -5,47 +5,6 @@ from .views_common import *
 
 # Set up logging
 
-@login_required
-def create_tasks_from_segments_view(request, recording_id):
-    """Create tasks from all segments in a recording"""
-    recording = get_object_or_404(Recording, id=recording_id)
-
-    # Check if the user has permission
-    profile = request.user.profile
-    if recording.created_by != request.user and (not profile.group or recording.group != profile.group):
-        messages.error(request, "You don't have permission to create tasks from this recording.")
-        return redirect("battycoda_app:recording_detail", recording_id=recording.id)
-
-    # Get all segments for this recording
-    segments = Segment.objects.filter(recording=recording)
-
-    if not segments.exists():
-        messages.warning(request, "No segments found in this recording. Please add segments first.")
-        return redirect("battycoda_app:segment_recording", recording_id=recording.id)
-
-    # Create tasks for all segments
-    tasks_created = 0
-    with transaction.atomic():
-        for segment in segments:
-            if segment.task:
-                # Skip segments that already have tasks
-                continue
-
-            try:
-                # Create a task from this segment
-                task = segment.create_task()
-                tasks_created += 1
-            except Exception as e:
-
-                messages.error(request, f"Error creating task for segment {segment.id}: {str(e)}")
-                # Continue with other segments
-
-    if tasks_created > 0:
-        messages.success(request, f"Successfully created {tasks_created} tasks from segments.")
-    else:
-        messages.info(request, "No new tasks were created. All segments may already have associated tasks.")
-
-    return redirect("battycoda_app:recording_detail", recording_id=recording.id)
 
 @login_required
 def recording_spectrogram_status_view(request, recording_id):

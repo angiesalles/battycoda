@@ -84,6 +84,9 @@
                                 <a href="{% url 'battycoda_app:export_task_batch' batch.id %}" class="btn btn-success">
                                     <i class="fas fa-file-export"></i> Export Results
                                 </a>
+                                <button type="button" class="btn btn-danger" id="delete-batch-btn" data-batch-id="{{ batch.id }}" data-batch-name="{{ batch.name }}">
+                                    <i class="fas fa-trash"></i> Delete Batch
+                                </button>
                             </div>
                         </div>
                     </div>
@@ -163,4 +166,77 @@
         </div>
     </div>
 </div>
+
+<!-- Delete Batch Confirmation Modal -->
+<div class="modal fade" id="deleteBatchModal" tabindex="-1" aria-labelledby="deleteBatchModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="deleteBatchModalLabel">Confirm Delete</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p>Are you sure you want to delete the batch <strong id="batch-name-display"></strong>?</p>
+                <p class="text-danger"><i class="fas fa-exclamation-triangle"></i> This action cannot be undone. All tasks in this batch will be permanently deleted.</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-danger" id="confirm-delete-btn">Delete Batch</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Delete batch functionality
+document.addEventListener('DOMContentLoaded', function() {
+    const deleteBtn = document.getElementById('delete-batch-btn');
+    const modal = new bootstrap.Modal(document.getElementById('deleteBatchModal'));
+    const batchNameDisplay = document.getElementById('batch-name-display');
+    const confirmDeleteBtn = document.getElementById('confirm-delete-btn');
+    
+    if (deleteBtn) {
+        deleteBtn.addEventListener('click', function() {
+            const batchId = this.getAttribute('data-batch-id');
+            const batchName = this.getAttribute('data-batch-name');
+            
+            batchNameDisplay.textContent = batchName;
+            confirmDeleteBtn.setAttribute('data-batch-id', batchId);
+            modal.show();
+        });
+    }
+    
+    if (confirmDeleteBtn) {
+        confirmDeleteBtn.addEventListener('click', function() {
+            const batchId = this.getAttribute('data-batch-id');
+            
+            // Create form and submit DELETE request
+            const form = document.createElement('form');
+            form.method = 'POST';
+            form.action = `/tasks/batches/${batchId}/delete/`;
+            
+            // Add CSRF token
+            const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]')?.value;
+            if (csrfToken) {
+                const csrfInput = document.createElement('input');
+                csrfInput.type = 'hidden';
+                csrfInput.name = 'csrfmiddlewaretoken';
+                csrfInput.value = csrfToken;
+                form.appendChild(csrfInput);
+            }
+            
+            // Add method override for DELETE
+            const methodInput = document.createElement('input');
+            methodInput.type = 'hidden';
+            methodInput.name = '_method';
+            methodInput.value = 'DELETE';
+            form.appendChild(methodInput);
+            
+            document.body.appendChild(form);
+            form.submit();
+        });
+    }
+});
+</script>
+
 {% endblock %}

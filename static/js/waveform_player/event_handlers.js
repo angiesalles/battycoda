@@ -16,6 +16,7 @@ export class EventHandlers {
         this.setupAudioEventListeners();
         this.setupControlEventListeners();
         this.setupZoomEventListeners();
+        this.setupSpeedEventListeners();
         this.setupSelectionEventListeners();
         this.setupWindowEventListeners();
     }
@@ -227,6 +228,16 @@ export class EventHandlers {
                 this.player.drawTimeline();
                 this.player.updateTimeDisplay();
             });
+        }
+    }
+
+    /**
+     * Set up speed control event listeners
+     */
+    setupSpeedEventListeners() {
+        // Delegate to the player's method
+        if (this.player.setupSpeedEventListeners) {
+            this.player.setupSpeedEventListeners();
         }
     }
 

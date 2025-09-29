@@ -127,11 +127,6 @@ def process_batch_upload(wav_zip, pickle_zip, form_data, user, group):
                                     # Process the pickle file
                                     onsets, offsets = process_pickle_file(pickle_file)
 
-                                    # Mark all existing segmentations as inactive first
-                                    Segmentation.objects.filter(recording=recording, is_active=True).update(
-                                        is_active=False
-                                    )
-
                                     # Create a new segmentation for this batch of segments
                                     segmentation = Segmentation.objects.create(
                                         recording=recording,
@@ -139,7 +134,6 @@ def process_batch_upload(wav_zip, pickle_zip, form_data, user, group):
                                         algorithm=None,  # No algorithm for uploaded pickles
                                         status="completed",
                                         progress=100,
-                                        is_active=True,
                                         manually_edited=False,
                                         created_by=user,
                                     )

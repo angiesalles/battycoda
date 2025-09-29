@@ -49,7 +49,7 @@ def simple_classifiers_list(request):
 @csrf_exempt
 @require_http_methods(["POST"])
 @api_key_required
-def simple_start_classification(request, recording_id):
+def simple_start_classification(request, segmentation_id):
     """Start classification on a recording's segments"""
     user = request.api_user
     
@@ -60,30 +60,24 @@ def simple_start_classification(request, recording_id):
         }, status=400)
     
     try:
-        # Get the recording
+        # Get the segmentation
         try:
-            recording = Recording.objects.get(id=recording_id)
-        except Recording.DoesNotExist:
+            from ..models.recording import Segmentation
+            segmentation = Segmentation.objects.get(id=segmentation_id)
+        except Segmentation.DoesNotExist:
             return JsonResponse({
                 'success': False,
-                'error': f'Recording with ID {recording_id} not found'
+                'error': f'Segmentation with ID {segmentation_id} not found'
             }, status=404)
         
-        # Check permissions
+        # Check permissions - user must have access to the recording
+        recording = segmentation.recording
         user_group = user.profile.group
         if recording.created_by != user and (not user_group or recording.group != user_group):
             return JsonResponse({
                 'success': False,
-                'error': 'You do not have permission to classify this recording'
+                'error': 'You do not have permission to classify this segmentation'
             }, status=403)
-        
-        # Check if recording has active segmentation
-        active_segmentation = recording.segmentations.filter(is_active=True).first()
-        if not active_segmentation:
-            return JsonResponse({
-                'success': False,
-                'error': 'Recording must have an active segmentation before classification'
-            }, status=400)
         
         # Get classifier parameters
         classifier_id = request.POST.get('classifier_id')
@@ -122,7 +116,7 @@ def simple_start_classification(request, recording_id):
         # Create the classification run
         classification_run = ClassificationRun.objects.create(
             name=name,
-            segmentation=active_segmentation,
+            segmentation=segmentation,
             created_by=user,
             group=user_group,
             classifier=classifier,
@@ -184,6 +178,18 @@ def simple_classification_runs_list(request):
             return JsonResponse({
                 'success': False,
                 'error': 'Invalid recording_id format'
+            }, status=400)
+    
+    # Apply project filter if provided
+    project_id = request.GET.get('project_id')
+    if project_id:
+        try:
+            project_id = int(project_id)
+            runs = runs.filter(segmentation__recording__project_id=project_id)
+        except (ValueError, TypeError):
+            return JsonResponse({
+                'success': False,
+                'error': 'Invalid project_id format'
             }, status=400)
     
     runs_data = []

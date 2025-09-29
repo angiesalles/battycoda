@@ -26,7 +26,7 @@ def create_task_batch_from_detection_run(request, run_id):
     profile = request.user.profile
     if run.created_by != request.user and (not profile.group or run.group != profile.group):
         messages.error(request, "You don't have permission to create a task batch from this classification run.")
-        return redirect("battycoda_app:automation_home")
+        return redirect("battycoda_app:classification_home")
 
     # Check if the run is completed
     if run.status != "completed":
@@ -154,7 +154,7 @@ def create_task_batch_from_detection_run(request, run_id):
         "default_description": f"Manual review of classification run: {run.name}",
     }
 
-    return render(request, "automation/create_task_batch.html", context)
+    return render(request, "classification/create_task_batch.html", context)
 
 
 def get_pending_runs_for_species(species, user_profile):
@@ -214,8 +214,8 @@ def create_task_batches_for_species_view(request):
     context = {
         'title': 'Create Task Batches for Classified Segments',
         'list_title': 'Species with Completed Classification Runs',
-        'parent_url': 'battycoda_app:automation_home',
-        'parent_name': 'Automation',
+        'parent_url': 'battycoda_app:classification_home',
+        'parent_name': 'Classification',
         'th1': 'Species',
         'th2': 'Type',
         'th3': 'Classification Runs',
@@ -226,7 +226,7 @@ def create_task_batches_for_species_view(request):
         'items': items
     }
     
-    return render(request, "automation/select_entity.html", context)
+    return render(request, "classification/select_entity.html", context)
 
 
 @login_required
@@ -409,4 +409,4 @@ def create_tasks_for_species_view(request, species_id):
         'default_name_prefix': f"Review of {species.name} classifications"
     }
     
-    return render(request, 'automation/create_species_tasks.html', context)
+    return render(request, 'classification/create_species_tasks.html', context)

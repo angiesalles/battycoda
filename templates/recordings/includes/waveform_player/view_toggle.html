@@ -27,21 +27,70 @@ function setupViewToggle() {
     
     function toggleView() {
         console.log('toggleView called - spectrogramRadio.checked:', spectrogramRadio.checked);
+        
+        const spectrogramControls = document.getElementById('{{ container_id }}-spectrogram-controls');
+        
         if (spectrogramRadio.checked) {
             // Switch to spectrogram view
             console.log('Switching to spectrogram view');
             playerInstance.setViewMode('spectrogram');
             viewLabel.textContent = 'Spectrogram';
+            
+            // Show spectrogram controls
+            if (spectrogramControls) {
+                spectrogramControls.style.display = 'flex';
+            }
         } else {
             // Switch to waveform view
             console.log('Switching to waveform view');
             playerInstance.setViewMode('waveform');
             viewLabel.textContent = 'Waveform';
+            
+            // Hide spectrogram controls
+            if (spectrogramControls) {
+                spectrogramControls.style.display = 'none';
+            }
         }
     }
     
     waveformRadio.addEventListener('change', toggleView);
     spectrogramRadio.addEventListener('change', toggleView);
+    
+    // Setup spectrogram controls
+    const contrastSlider = document.getElementById('{{ container_id }}-contrast-slider');
+    const brightnessSlider = document.getElementById('{{ container_id }}-brightness-slider');
+    const resetImageBtn = document.getElementById('{{ container_id }}-reset-image-btn');
+    
+    if (contrastSlider) {
+        contrastSlider.addEventListener('input', function() {
+            const contrast = parseFloat(this.value);
+            if (playerInstance.spectrogramRenderer) {
+                playerInstance.spectrogramRenderer.setContrast(contrast);
+            }
+        });
+    }
+    
+    if (brightnessSlider) {
+        brightnessSlider.addEventListener('input', function() {
+            const brightness = parseFloat(this.value);
+            if (playerInstance.spectrogramRenderer) {
+                playerInstance.spectrogramRenderer.setBrightness(brightness);
+            }
+        });
+    }
+    
+    if (resetImageBtn) {
+        resetImageBtn.addEventListener('click', function() {
+            // Reset to default values
+            contrastSlider.value = 1.5;
+            brightnessSlider.value = 0.2;
+            
+            if (playerInstance.spectrogramRenderer) {
+                playerInstance.spectrogramRenderer.setContrast(1.5);
+                playerInstance.spectrogramRenderer.setBrightness(0.2);
+            }
+        });
+    }
 }
 
 // Setup view toggle with retry mechanism

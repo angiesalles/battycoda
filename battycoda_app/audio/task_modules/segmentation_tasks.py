@@ -35,8 +35,8 @@ def auto_segment_recording_task(
     from ...models.recording import Recording, Segment, Segmentation
 
     try:
-        # Get the recording
-        recording = Recording.objects.get(id=recording_id)
+        # Get the recording (use all_objects to include hidden recordings)
+        recording = Recording.all_objects.get(id=recording_id)
 
         # Check if recording file exists
         if not recording.wav_file or not os.path.exists(recording.wav_file.path):

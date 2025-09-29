@@ -58,7 +58,7 @@ def select_recording_for_segmentation_view(request):
         'create_url': 'battycoda_app:create_recording',
     }
 
-    return render(request, "automation/select_entity.html", context)
+    return render(request, "classification/select_entity.html", context)
 
 @login_required
 def auto_segment_recording_view(request, recording_id, algorithm_id=None):
@@ -192,7 +192,6 @@ def auto_segment_recording_view(request, recording_id, algorithm_id=None):
                 task_id="pending",  # Will be updated with actual task ID
                 status="in_progress",
                 progress=0,
-                is_active=True,
                 manually_edited=False,
             )
 
@@ -217,9 +216,6 @@ def auto_segment_recording_view(request, recording_id, algorithm_id=None):
 
                     Segment.objects.filter(recording=recording).delete()
 
-                # Mark all existing segmentations as inactive
-                Segmentation.objects.filter(recording=recording, is_active=True).update(is_active=False)
-                
                 # The segmentation was already created before launching the task
 
             # Set success message

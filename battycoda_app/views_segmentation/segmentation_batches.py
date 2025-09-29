@@ -134,7 +134,6 @@ def segmentation_jobs_status_view(request):
             ),
             "is_processing": segmentation.is_processing,
             "manually_edited": segmentation.manually_edited,
-            "is_active": segmentation.is_active,
         }
 
 

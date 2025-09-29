@@ -36,7 +36,7 @@ urlpatterns = [
     
     # Core Classification API endpoints
     path('classifiers/', simple_classifiers_list, name='classifiers_list'),
-    path('recordings/<int:recording_id>/classify/', simple_start_classification, name='start_classification'),
+    path('segmentations/<int:segmentation_id>/classify/', simple_start_classification, name='start_classification'),
     path('classification-runs/', simple_classification_runs_list, name='classification_runs_list'),
     path('classification-runs/<int:run_id>/create-task-batch/', simple_create_task_batch, name='create_task_batch'),
     path('task-batches/', simple_task_batches_list, name='task_batches_list'),

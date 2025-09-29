@@ -47,9 +47,6 @@ def upload_pickle_segments_view(request, recording_id):
             # Create segments from the onset/offset pairs
             segments_created = 0
             with transaction.atomic():
-                # Mark all existing segmentations as inactive
-                Segmentation.objects.filter(recording=recording, is_active=True).update(is_active=False)
-
                 # Create a new Segmentation entry first
                 segmentation = Segmentation.objects.create(
                     recording=recording,
@@ -57,7 +54,6 @@ def upload_pickle_segments_view(request, recording_id):
                     algorithm=None,  # No algorithm for manual upload
                     status="completed",
                     progress=100,
-                    is_active=True,
                     manually_edited=False,
                     created_by=request.user,
                 )

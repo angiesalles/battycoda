@@ -499,24 +499,66 @@ export class WaveformPlayer {
     }
 
     setupSpeedEventListeners() {
-    const updateActive = (activeBtn, inactiveBtn) => {
-        activeBtn.classList.add('active');
-        inactiveBtn.classList.remove('active');
-    };
+        console.log('Setting up speed event listeners', {
+            speed1xBtn: !!this.speed1xBtn,
+            speedSlowBtn: !!this.speedSlowBtn,
+            audioPlayer: !!this.audioPlayer,
+            speed1xBtnId: `${this.containerId}-speed-1x`,
+            speedSlowBtnId: `${this.containerId}-speed-slow`,
+            actualSpeed1xBtn: document.getElementById(`${this.containerId}-speed-1x`),
+            actualSpeedSlowBtn: document.getElementById(`${this.containerId}-speed-slow`)
+        });
+        
+        const updateActive = (activeBtn, inactiveBtn) => {
+            try {
+                if (activeBtn) activeBtn.classList.add('active');
+                if (inactiveBtn) inactiveBtn.classList.remove('active');
+                console.log('Updated button states:', {
+                    activeBtn: activeBtn?.classList.contains('active'),
+                    inactiveBtn: inactiveBtn?.classList.contains('active')
+                });
+            } catch (error) {
+                console.error('Error updating button states:', error);
+            }
+        };
 
-    if (this.speed1xBtn && this.speedSlowBtn && this.audioPlayer) {
-        // Normal speed
-        this.speed1xBtn.addEventListener('click', () => {
-            this.audioPlayer.playbackRate = 1.0;
-            updateActive(this.speed1xBtn, this.speedSlowBtn);
+        // Re-query DOM elements if they weren't found during initialization
+        if (!this.speed1xBtn) {
+            this.speed1xBtn = document.getElementById(`${this.containerId}-speed-1x`);
+        }
+        if (!this.speedSlowBtn) {
+            this.speedSlowBtn = document.getElementById(`${this.containerId}-speed-slow`);
+        }
+        
+        console.log('After re-query attempt:', {
+            speed1xBtn: !!this.speed1xBtn,
+            speedSlowBtn: !!this.speedSlowBtn,
+            audioPlayer: !!this.audioPlayer
         });
 
-        // 1⁄8 speed
-        this.speedSlowBtn.addEventListener('click', () => {
-            this.audioPlayer.playbackRate = 0.125;
-            updateActive(this.speedSlowBtn, this.speed1xBtn);
-        });
-    }
+        if (this.speed1xBtn && this.speedSlowBtn && this.audioPlayer) {
+            console.log('Attaching speed button event listeners');
+            
+            // Normal speed
+            this.speed1xBtn.addEventListener('click', () => {
+                console.log('1x speed button clicked, setting playbackRate to 1.0');
+                this.audioPlayer.playbackRate = 1.0;
+                updateActive(this.speed1xBtn, this.speedSlowBtn);
+            });
+
+            // 1⁄8 speed
+            this.speedSlowBtn.addEventListener('click', () => {
+                console.log('1/8 speed button clicked, setting playbackRate to 0.125');
+                this.audioPlayer.playbackRate = 0.125;
+                updateActive(this.speedSlowBtn, this.speed1xBtn);
+            });
+        } else {
+            console.log('Cannot set up speed buttons - missing elements:', {
+                speed1xBtn: !!this.speed1xBtn,
+                speedSlowBtn: !!this.speedSlowBtn,
+                audioPlayer: !!this.audioPlayer
+            });
+        }
 }
     
     /**

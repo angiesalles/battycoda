@@ -67,6 +67,7 @@ export function initWaveformPlayer(containerId, recordingId, allowSelection, sho
         initializeSpectrogram: function(url) {
             player.viewManager.initializeSpectrogram(url);
         },
+        spectrogramRenderer: player.spectrogramRenderer, // Expose spectrogram renderer for controls
         player: player // Expose the underlying player directly
     };
     

@@ -44,7 +44,7 @@ def classifier_list_view(request):
             "classifiers": classifiers,
         }
 
-        return render(request, "automation/classifier_list.html", context)
+        return render(request, "classification/classifier_list.html", context)
     except Exception as e:
         messages.error(request, f"An error occurred: {str(e)}")
         return render(request, "automation/classifier_list.html", {"training_jobs": [], "classifiers": []})
@@ -137,7 +137,7 @@ def create_classifier_training_job_view(request, batch_id=None):
             "response_format_choices": Classifier.RESPONSE_FORMAT_CHOICES,
         }
         
-        return render(request, "automation/create_classifier.html", context)
+        return render(request, "classification/create_classifier.html", context)
         
     # If no batch_id provided, show list of available task batches
     profile = request.user.profile
@@ -188,7 +188,7 @@ def create_classifier_training_job_view(request, batch_id=None):
         "items": items,
     }
     
-    return render(request, "automation/select_batch_for_classifier.html", context)
+    return render(request, "classification/select_batch_for_classifier.html", context)
 
 
 @login_required
@@ -222,7 +222,7 @@ def classifier_training_job_detail_view(request, job_id):
         "label_distribution": label_distribution,
     }
     
-    return render(request, "automation/classifier_job_detail.html", context)
+    return render(request, "classification/classifier_job_detail.html", context)
 
 
 @login_required
@@ -284,4 +284,4 @@ def delete_classifier_training_job_view(request, job_id):
         return redirect("battycoda_app:classifier_list")
     
     # For GET requests, show confirmation page
-    return render(request, "automation/delete_classifier_job.html", {"job": job})
+    return render(request, "classification/delete_classifier_job.html", {"job": job})

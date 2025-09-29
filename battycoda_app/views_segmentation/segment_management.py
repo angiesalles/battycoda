@@ -27,18 +27,18 @@ def get_spectrogram_status(recording):
         dict: Contains 'status', 'url', 'job', 'progress' information
     """
     try:
-        # Hash the recording file path for cache key
-        file_hash = hashlib.md5(recording.wav_file.path.encode()).hexdigest()
-        spectrogram_path = os.path.join(settings.MEDIA_ROOT, "spectrograms", "recordings", f"{file_hash}.png")
-        
-        # Check if spectrogram file already exists
-        if os.path.exists(spectrogram_path) and os.path.getsize(spectrogram_path) > 0:
-            return {
-                'status': 'available',
-                'url': f"/media/spectrograms/recordings/{file_hash}.png",
-                'job': None,
-                'progress': 100
-            }
+        # Check if recording has spectrogram file stored in database
+        if recording.spectrogram_file:
+            spectrogram_path = os.path.join(settings.MEDIA_ROOT, "spectrograms", "recordings", recording.spectrogram_file)
+            
+            # Check if spectrogram file actually exists
+            if os.path.exists(spectrogram_path) and os.path.getsize(spectrogram_path) > 0:
+                return {
+                    'status': 'available',
+                    'url': f"/media/spectrograms/recordings/{recording.spectrogram_file}",
+                    'job': None,
+                    'progress': 100
+                }
         
         # Check for existing jobs
         active_job = SpectrogramJob.objects.filter(
@@ -118,20 +118,12 @@ def segment_recording_legacy_view(request, recording_id):
     """Legacy view for segmenting a recording (marking regions) - redirects to new URL"""
     recording = get_object_or_404(Recording, id=recording_id)
     
-    # Find active segmentation or create one
-    try:
-        active_segmentation = Segmentation.objects.get(recording=recording, is_active=True)
-    except Segmentation.DoesNotExist:
-        # Check if there are any segmentations at all
-        if Segmentation.objects.filter(recording=recording).exists():
-            # Activate the most recent segmentation
-            latest_segmentation = Segmentation.objects.filter(recording=recording).order_by("-created_at").first()
-            latest_segmentation.is_active = True
-            latest_segmentation.save()
-            active_segmentation = latest_segmentation
-        else:
-            # No segmentation exists - redirect to create one
-            return redirect("battycoda_app:create_segmentation", recording=recording.id)
+    # Find most recent segmentation or create one
+    active_segmentation = Segmentation.objects.filter(recording=recording).order_by("-created_at").first()
+    
+    if not active_segmentation:
+        # No segmentation exists - redirect to create one
+        return redirect("battycoda_app:create_segmentation", recording=recording.id)
     
     # Redirect to the new URL structure
     return redirect("battycoda_app:segmentation_detail", segmentation_id=active_segmentation.id)
@@ -142,11 +134,17 @@ def segmentation_list_view(request):
     """List all segmentations available to the user"""
     profile = request.user.profile
     
-    # Filter segmentations by user's permissions
+    # Filter segmentations by user's permissions (exclude hidden recordings)
     if profile.group and profile.is_current_group_admin:
-        segmentations = Segmentation.objects.filter(recording__group=profile.group).order_by("-created_at")
+        segmentations = Segmentation.objects.filter(
+            recording__group=profile.group,
+            recording__hidden=False  # Exclude hidden recordings
+        ).order_by("-created_at")
     else:
-        segmentations = Segmentation.objects.filter(recording__created_by=request.user).order_by("-created_at")
+        segmentations = Segmentation.objects.filter(
+            recording__created_by=request.user,
+            recording__hidden=False  # Exclude hidden recordings
+        ).order_by("-created_at")
     
     context = {
         "segmentations": segmentations,
@@ -175,8 +173,7 @@ def create_segmentation_view(request):
     segmentation = Segmentation.objects.create(
         recording=recording,
         name=f"Segmentation for {recording.name}",
-        created_by=request.user,
-        is_active=True
+        created_by=request.user
     )
     
     messages.success(request, f"Created new segmentation for {recording.name}")
@@ -187,7 +184,7 @@ def create_segmentation_view(request):
 def segmentation_detail_view(request, segmentation_id):
     """View for editing a specific segmentation (marking regions)"""  
     segmentation = get_object_or_404(Segmentation, id=segmentation_id)
-    recording = segmentation.recording
+    recording = segmentation.recording  # This works through FK even if recording is hidden
 
     # Check if the user has permission to edit this segmentation
     profile = request.user.profile
@@ -195,14 +192,7 @@ def segmentation_detail_view(request, segmentation_id):
         messages.error(request, "You don't have permission to edit this segmentation.")
         return redirect("battycoda_app:segmentation_list")
 
-    # Make this segmentation active if it's not already
-    if not segmentation.is_active:
-        # Deactivate all other segmentations for this recording
-        Segmentation.objects.filter(recording=recording).update(is_active=False)
-        
-        # Activate this one
-        segmentation.is_active = True
-        segmentation.save()
+    # No need to manage is_active field anymore - just use the current segmentation
     
     # Use this specific segmentation
     active_segmentation = segmentation

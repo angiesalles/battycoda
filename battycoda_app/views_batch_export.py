@@ -36,6 +36,15 @@ def export_completed_batches(request):
         # Fallback to showing only user's batches if no group is assigned
         batches = TaskBatch.objects.filter(created_by=request.user)
     
+    # Apply project filter if provided (same as task_batch_list_view)
+    project_id = request.GET.get('project')
+    if project_id:
+        try:
+            project_id = int(project_id)
+            batches = batches.filter(project_id=project_id)
+        except (ValueError, TypeError):
+            pass  # Ignore invalid project IDs
+    
     # Filter for completed batches (all tasks in the batch are done)
     completed_batches = []
     for batch in batches:
@@ -51,7 +60,10 @@ def export_completed_batches(request):
             completed_batches.append(batch)
     
     if not completed_batches:
-        messages.info(request, "No completed batches found to export.")
+        if project_id:
+            messages.info(request, "No completed batches found to export for the selected project.")
+        else:
+            messages.info(request, "No completed batches found to export.")
         return redirect("battycoda_app:task_batch_list")
     
     # Create a temporary directory to store CSV files

@@ -15,6 +15,22 @@
                         <span class="custom-control-label">Spectrogram</span>
                     </label>
                 </div>
+                
+                <!-- Spectrogram controls (only show when in spectrogram mode) -->
+                <div id="{{ container_id }}-spectrogram-controls" class="d-flex align-items-center me-2" style="display: none;">
+                    <small class="text-muted me-2">Contrast:</small>
+                    <input type="range" id="{{ container_id }}-contrast-slider" 
+                           class="form-range me-2" min="0.5" max="3" step="0.1" value="1.5" 
+                           style="width: 80px;">
+                    <small class="text-muted me-2">Brightness:</small>
+                    <input type="range" id="{{ container_id }}-brightness-slider" 
+                           class="form-range me-2" min="-0.5" max="0.5" step="0.1" value="0.2" 
+                           style="width: 80px;">
+                    <button id="{{ container_id }}-reset-image-btn" class="btn btn-sm btn-outline-secondary" 
+                            title="Reset contrast and brightness">
+                        <i class="fas fa-undo"></i>
+                    </button>
+                </div>
             {% elif spectrogram_info.status == 'generating' %}
                 <!-- Spectrogram is being generated - show progress -->
                 <div class="d-flex align-items-center me-2">

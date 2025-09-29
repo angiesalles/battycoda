@@ -158,7 +158,6 @@ def simple_start_segmentation(request, recording_id):
             task_id="pending",
             status="in_progress",
             progress=0,
-            is_active=True,
             manually_edited=False,
         )
         
@@ -172,9 +171,7 @@ def simple_start_segmentation(request, recording_id):
         segmentation.task_id = task.id
         segmentation.save(update_fields=['task_id'])
         
-        # Mark any existing segmentations as inactive
-        with transaction.atomic():
-            Segmentation.objects.filter(recording=recording, is_active=True).exclude(id=segmentation.id).update(is_active=False)
+        # No need to manage is_active field anymore
         
         return JsonResponse({
             'success': True,

@@ -33,20 +33,53 @@ export function initializePreviewHandler() {
         previewBtn.disabled = true;
         previewBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Previewing...';
         
-        // Get preview URL from data attribute or construct it
+        // Use new hidden recording approach
         const recordingId = previewBtn.dataset.recordingId;
-        const previewUrl = `/recordings/${recordingId}/auto-segment/preview/`;
+        const createPreviewUrl = `/recordings/${recordingId}/create-preview/`;
         
-        // Make request
-        fetch(previewUrl, {
+        // Prepare form data for hidden recording creation
+        const previewFormData = new FormData();
+        previewFormData.append('start_time', document.getElementById('preview_start_time').value);
+        previewFormData.append('duration', '10.0');  // Fixed 10-second duration
+        previewFormData.append('csrfmiddlewaretoken', document.querySelector('[name=csrfmiddlewaretoken]').value);
+        
+        // Add segmentation parameters to the request
+        previewFormData.append('algorithm', selectedAlgorithm.value);
+        previewFormData.append('min_duration_ms', document.getElementById('min_duration_ms').value);
+        previewFormData.append('smooth_window', document.getElementById('smooth_window').value);
+        previewFormData.append('threshold_factor', document.getElementById('threshold_factor').value);
+        
+        // Add bandpass filter parameters
+        const lowFreq = document.getElementById('low_freq');
+        const highFreq = document.getElementById('high_freq');
+        if (lowFreq && lowFreq.value) previewFormData.append('low_freq', lowFreq.value);
+        if (highFreq && highFreq.value) previewFormData.append('high_freq', highFreq.value);
+        
+        // Add all segmentation parameters to pass through URL fragment or store temporarily
+        const segmentationParams = {
+            algorithm: selectedAlgorithm.value,
+            min_duration_ms: document.getElementById('min_duration_ms').value,
+            smooth_window: document.getElementById('smooth_window').value,
+            threshold_factor: document.getElementById('threshold_factor').value,
+            low_freq: document.getElementById('low_freq')?.value || '',
+            high_freq: document.getElementById('high_freq')?.value || ''
+        };
+        
+        // Make request to create hidden recording
+        fetch(createPreviewUrl, {
             method: 'POST',
-            body: formData
+            body: previewFormData
         })
         .then(response => response.json())
         .then(data => {
-            console.log('Preview response:', data);
+            console.log('Preview recording response:', data);
             if (data.success) {
-                displayPreviewResults(data);
+                // Store segmentation parameters in sessionStorage for the preview page
+                sessionStorage.setItem('segmentationPreviewParams', JSON.stringify(segmentationParams));
+                
+                // Open the segmentation detail view for the hidden recording
+                const previewWindow = window.open(data.preview_url, '_blank');
+                previewWindow.focus();
             } else {
                 alert('Preview failed: ' + data.error);
             }

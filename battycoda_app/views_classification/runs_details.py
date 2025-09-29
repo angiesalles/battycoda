@@ -24,7 +24,7 @@ def detection_run_detail_view(request, run_id):
     profile = request.user.profile
     if run.created_by != request.user and (not profile.group or run.group != profile.group):
         messages.error(request, "You don't have permission to view this classification run.")
-        return redirect("battycoda_app:automation_home")
+        return redirect("battycoda_app:classification_home")
 
     # Get results with segment ordering
     results_query = ClassificationResult.objects.filter(classification_run=run).order_by("segment__onset")
@@ -63,7 +63,7 @@ def detection_run_detail_view(request, run_id):
         "paginator": paginator,
     }
 
-    return render(request, "automation/run_detail.html", context)
+    return render(request, "classification/run_detail.html", context)
 
 @login_required
 def detection_run_status_view(request, run_id):
@@ -96,7 +96,7 @@ def download_features_file_view(request, run_id):
     profile = request.user.profile
     if run.created_by != request.user and (not profile.group or run.group != profile.group):
         messages.error(request, "You don't have permission to access this classification run.")
-        return redirect("battycoda_app:automation_home")
+        return redirect("battycoda_app:classification_home")
 
     # Check if features file exists
     if not run.features_file:

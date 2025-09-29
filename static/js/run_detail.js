@@ -8,7 +8,7 @@ document.addEventListener('DOMContentLoaded', function() {
         const progressBar = document.querySelector('.progress-bar');
         
         const refreshInterval = setInterval(function() {
-            fetch(`/automation/runs/${runId}/status/`)
+            fetch(`/classification/runs/${runId}/status/`)
                 .then(response => response.json())
                 .then(data => {
                     if (data.success) {

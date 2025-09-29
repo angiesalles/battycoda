@@ -65,11 +65,16 @@
                             <td>{{ segment.onset|floatformat:2 }}s - {{ segment.offset|floatformat:2 }}s</td>
                             <td>{{ segment.duration|floatformat:2 }}s</td>
                             <td>
+                                {% if not read_only %}
                                 <!-- Action buttons will be dynamically generated via JavaScript -->
                                 <div class="segment-actions" data-segment-id="{{ segment.id }}" 
                                      data-onset="{{ segment.onset }}" data-offset="{{ segment.offset }}"
                                      data-name="{{ segment.name|default:'' }}" 
                                      data-notes="{{ segment.notes|default:'' }}"></div>
+                                {% else %}
+                                <!-- Read-only mode - no actions -->
+                                <span class="text-muted small">Preview</span>
+                                {% endif %}
                             </td>
                         </tr>
                         {% endfor %}

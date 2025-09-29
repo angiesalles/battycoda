@@ -1,9 +1,9 @@
 /**
  * Convert UTC timestamps to local time
  */
-document.addEventListener('DOMContentLoaded', function() {
-    // Find all elements with the data-utc-date attribute
-    const utcDateElements = document.querySelectorAll('[data-utc-date]');
+function formatDateTimeElements(container = document) {
+    // Find all elements with the data-utc-date attribute in the given container
+    const utcDateElements = container.querySelectorAll('[data-utc-date]');
     
     utcDateElements.forEach(function(element) {
         const utcDateStr = element.getAttribute('data-utc-date');
@@ -33,4 +33,12 @@ document.addEventListener('DOMContentLoaded', function() {
             element.textContent = formattedDate;
         }
     });
+}
+
+// Format dates on page load
+document.addEventListener('DOMContentLoaded', function() {
+    formatDateTimeElements();
 });
+
+// Make the function globally available for AJAX content
+window.formatDateTimeElements = formatDateTimeElements;

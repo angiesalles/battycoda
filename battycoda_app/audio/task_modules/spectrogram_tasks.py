@@ -4,6 +4,7 @@ Spectrogram generation tasks for BattyCoda.
 import os
 import tempfile
 import time
+import uuid
 
 from django.conf import settings
 
@@ -88,16 +89,24 @@ def apply_logarithmic_color_scaling_and_colormap(spectrogram_data, contrast=1.0)
     Returns:
         numpy.ndarray: RGB image data (height, width, 3) with values 0-255
     """
-    # Apply logarithmic color scaling for better dynamic range visualization
-    # First convert to dB scale
-    sxx_db = 10 * np.log10(spectrogram_data + 1e-10)
+    # Smart handling of zeros for single log scaling step
+    data = spectrogram_data.copy()
     
-    # Apply contrast enhancement with logarithmic scaling
-    temocontrast = 10**contrast
-    processed_data = np.arctan(temocontrast * sxx_db)
+    # Check if the whole image is zeros
+    if np.all(data == 0):
+        # Return a black image
+        height, width = data.shape
+        return np.zeros((height, width, 3), dtype=np.uint8)
     
-    # Apply additional logarithmic scaling to colors for better contrast
-    log_scaled = np.log10(processed_data - np.min(processed_data) + 1)
+    # Find zeros and replace them smartly
+    nonzero_data = data[data > 0]
+    if len(nonzero_data) > 0:
+        min_nonzero = np.min(nonzero_data)
+        replacement_value = min_nonzero / 10.0
+        data[data == 0] = replacement_value
+    
+    # Single logarithmic scaling step
+    log_scaled = np.log10(data)
     
     # Normalize to 0-255 range with logarithmic scaling
     normalized_data = (log_scaled - log_scaled.min()) / (log_scaled.max() - log_scaled.min()) * 255
@@ -108,17 +117,14 @@ def apply_logarithmic_color_scaling_and_colormap(spectrogram_data, contrast=1.0)
     # Convert to 8-bit unsigned integer
     img_data = normalized_data.astype(np.uint8)
     
-    # Apply roseus colormap
+    # Return as grayscale RGB (same value for R, G, B channels)
     height, width = img_data.shape
     rgb_data = np.zeros((height, width, 3), dtype=np.uint8)
     
-    for i in range(height):
-        for j in range(width):
-            val = img_data[i, j] / 255.0
-            r, g, b = roseus_colormap(val)
-            rgb_data[i, j, 0] = int(255 * r)
-            rgb_data[i, j, 1] = int(255 * g)
-            rgb_data[i, j, 2] = int(255 * b)
+    # Set all channels to the same grayscale value
+    rgb_data[:, :, 0] = img_data  # Red
+    rgb_data[:, :, 1] = img_data  # Green  
+    rgb_data[:, :, 2] = img_data  # Blue
     
     return rgb_data
 
@@ -213,7 +219,6 @@ def generate_recording_spectrogram(self, recording_id):
     Returns:
         dict: Result with the spectrogram file path
     """
-    import hashlib
     import os
     import tempfile
 
@@ -252,20 +257,28 @@ def generate_recording_spectrogram(self, recording_id):
                 pass  # Don't fail if job update fails
 
     try:
-        # Get the recording
-        recording = Recording.objects.get(id=recording_id)
+        # Get the recording (use all_objects to include hidden recordings)
+        from ...models.recording import Recording
+        recording = Recording.all_objects.get(id=recording_id)
         update_job_progress(20, 'in_progress')
 
         # Get the WAV file path
         wav_path = recording.wav_file.path
 
-        # Create a hash of the file path for caching
-        file_hash = hashlib.md5(wav_path.encode()).hexdigest()
+        # Generate a UUID-based filename or use existing one
+        if recording.spectrogram_file:
+            # Use existing filename
+            spectrogram_filename = recording.spectrogram_file
+        else:
+            # Generate new UUID-based filename
+            spectrogram_filename = f"{uuid.uuid4().hex}.png"
+            recording.spectrogram_file = spectrogram_filename
+            recording.save()
 
-        # Create the output directory and filename
+        # Create the output directory and full path
         output_dir = os.path.join(settings.MEDIA_ROOT, "spectrograms", "recordings")
         os.makedirs(output_dir, exist_ok=True)
-        output_path = os.path.join(output_dir, f"{file_hash}.png")
+        output_path = os.path.join(output_dir, spectrogram_filename)
 
         # Check if file already exists
         if os.path.exists(output_path) and os.path.getsize(output_path) > 0:

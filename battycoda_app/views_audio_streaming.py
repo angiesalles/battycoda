@@ -8,7 +8,7 @@ from .views_common import *
 @login_required
 def get_audio_waveform_data(request, recording_id):
     """Get waveform data for a recording in JSON format"""
-    recording = get_object_or_404(Recording, id=recording_id)
+    recording = get_object_or_404(Recording.all_objects, id=recording_id)
 
     # Check permission
     profile = request.user.profile
@@ -97,7 +97,7 @@ def stream_audio_view(request, recording_id):
     Stream an audio file with support for HTTP Range requests.
     This allows seeking in the audio player without downloading the entire file.
     """
-    recording = get_object_or_404(Recording, id=recording_id)
+    recording = get_object_or_404(Recording.all_objects, id=recording_id)
 
     # Check if the user has permission to access this recording
     profile = request.user.profile
