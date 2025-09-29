@@ -19,7 +19,7 @@ The typical workflow for classification is:
 
 1. **Upload a recording** (`POST /upload/`)
 2. **Segment the recording** (`POST /recordings/{id}/segment/`)
-3. **Run classification** (`POST /recordings/{id}/classify/`)
+3. **Run classification** (`POST /segmentations/{id}/classify/`)
 4. **Check classification status** (`GET /classification-runs/`)
 5. **Create task batch for review** (`POST /classification-runs/{id}/create-task-batch/`)
 6. **Review and annotate tasks** (`GET /task-batches/{id}/tasks/`)
@@ -91,7 +91,7 @@ Returns all ML classifiers available to the user (e.g., Carollia, Efuscus models
 ```
 POST /simple-api/upload/?api_key={api_key}
 ```
-Uploads a new audio recording.
+Uploads a new audio recording with optional pickle segmentation data.
 
 **Required Parameters:**
 - `name`: Recording name
@@ -103,14 +103,67 @@ Uploads a new audio recording.
 - `description`: Recording description
 - `location`: Recording location
 - `recorded_date`: Date recorded (YYYY-MM-DD format)
+- `pickle_file`: Pickle file containing segmentation data (onsets/offsets)
+
+**Response:**
+```json
+{
+  "success": true,
+  "recording": {
+    "id": 123,
+    "name": "my_recording.wav",
+    "duration": 45.2,
+    "species_name": "Carollia perspicillata",
+    "project_name": "Demo Project",
+    "created_at": "2025-07-06T14:20:30Z"
+  },
+  "segmentation": {
+    "id": 456,
+    "name": "API Upload Segmentation",
+    "segments_count": 23,
+    "created_at": "2025-07-06T14:20:30Z"
+  }
+}
+```
+
+Note: If `pickle_file` is provided, a segmentation will be automatically created with the segments from the pickle file.
+
+#### Upload Pickle Segmentation to Existing Recording
+```
+POST /simple-api/recordings/{recording_id}/upload-pickle/?api_key={api_key}
+```
+Uploads pickle segmentation data to an existing recording.
+
+**Required Parameters:**
+- `pickle_file`: Pickle file containing segmentation data (onsets/offsets)
+
+**Optional Parameters:**
+- `name`: Custom segmentation name (default: "API Pickle Upload")
+
+**Response:**
+```json
+{
+  "success": true,
+  "recording": {
+    "id": 123,
+    "name": "my_recording.wav"
+  },
+  "segmentation": {
+    "id": 457,
+    "name": "API Pickle Upload", 
+    "segments_count": 23,
+    "created_at": "2025-07-06T14:20:30Z"
+  }
+}
+```
 
 ### 4. Classification Workflow
 
 #### Start Classification
 ```
-POST /simple-api/recordings/{recording_id}/classify/?api_key={api_key}
+POST /simple-api/segmentations/{segmentation_id}/classify/?api_key={api_key}
 ```
-Starts classification on a recording's segments.
+Starts classification on a specific segmentation.
 
 **Required Parameters:**
 - `classifier_id`: ID of classifier to use
@@ -142,7 +195,8 @@ GET /simple-api/classification-runs/?api_key={api_key}
 Lists classification runs and their status.
 
 **Optional Parameters:**
-- `recording_id`: Filter by recording
+- `recording_id`: Filter by recording ID
+- `project_id`: Filter by project ID
 
 **Response:**
 ```json
@@ -155,16 +209,26 @@ Lists classification runs and their status.
       "status": "completed",
       "progress": 100,
       "classifier_name": "LDA Carollia",
+      "classifier_id": 1,
       "recording_name": "my_recording.wav",
+      "recording_id": 123,
+      "segmentation_id": 456,
+      "segmentation_name": "Default Segmentation",
+      "project_name": "Demo Project",
+      "project_id": 1,
       "species_name": "Carollia perspicillata",
+      "species_id": 1,
       "created_at": "2025-07-06T14:20:30Z",
+      "created_by": "username",
+      "error_message": null,
       "result_summary": {
         "echolocation calls": 45,
         "distress calls": 3,
         "noise": 12
       }
     }
-  ]
+  ],
+  "count": 1
 }
 ```
 
@@ -251,22 +315,7 @@ Lists tasks in a batch for annotation.
 }
 ```
 
-**Parameters:**
-- `file`: Audio file (WAV format recommended)
-- `project_id`: ID of the project (optional)
-- `species_id`: ID of the species (optional)
-- `filename`: Custom filename (optional)
-
-**Response:**
-```json
-{
-  "success": true,
-  "recording_id": 123,
-  "message": "Recording uploaded successfully"
-}
-```
-
-### 4. Segmentation
+### 6. Segmentation
 
 #### Start Segmentation
 ```
@@ -274,15 +323,25 @@ POST /simple-api/recordings/{recording_id}/segment/?api_key={api_key}
 ```
 Starts automatic segmentation of a recording.
 
-**Parameters:**
-- `algorithm_id`: ID of segmentation algorithm (optional)
+**Optional Parameters:**
+- `algorithm_id`: ID of segmentation algorithm (uses default if not specified)
+- `min_duration_ms`: Minimum duration in milliseconds (default: 10)
+- `smooth_window`: Smoothing window size (default: 3)
+- `threshold_factor`: Threshold factor 0-10 (default: 0.5)
 
 **Response:**
 ```json
 {
   "success": true,
-  "segmentation_id": 456,
-  "status": "in_progress"
+  "message": "Segmentation started using Default Segmentation",
+  "segmentation": {
+    "id": 456,
+    "name": "Default Segmentation",
+    "algorithm_name": "Default Segmentation",
+    "task_id": "task-uuid",
+    "status": "in_progress",
+    "created_at": "2025-07-06T14:20:30Z"
+  }
 }
 ```
 
@@ -295,13 +354,19 @@ Returns available segmentation algorithms.
 **Response:**
 ```json
 {
+  "success": true,
   "algorithms": [
     {
       "id": 1,
       "name": "Default Segmentation",
-      "description": "Standard bat call segmentation"
+      "description": "Standard bat call segmentation",
+      "algorithm_type": "threshold",
+      "default_min_duration_ms": 10,
+      "default_smooth_window": 3,
+      "default_threshold_factor": 0.5
     }
-  ]
+  ],
+  "count": 1
 }
 ```
 
@@ -311,8 +376,8 @@ All endpoints return consistent error responses:
 
 ```json
 {
-  "error": "Error message",
-  "status": "error"
+  "success": false,
+  "error": "Error message"
 }
 ```
 

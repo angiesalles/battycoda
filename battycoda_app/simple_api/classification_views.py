@@ -222,8 +222,14 @@ def simple_classification_runs_list(request):
             'classifier_id': run.classifier.id if run.classifier else None,
             'recording_name': run.segmentation.recording.name if run.segmentation else None,
             'recording_id': run.segmentation.recording.id if run.segmentation else None,
+            'segmentation_id': run.segmentation.id if run.segmentation else None,
+            'segmentation_name': run.segmentation.name if run.segmentation else None,
+            'project_name': run.segmentation.recording.project.name if run.segmentation and run.segmentation.recording.project else None,
+            'project_id': run.segmentation.recording.project.id if run.segmentation and run.segmentation.recording.project else None,
             'species_name': run.segmentation.recording.species.name if run.segmentation else None,
+            'species_id': run.segmentation.recording.species.id if run.segmentation else None,
             'created_at': run.created_at.isoformat(),
+            'created_by': run.created_by.username,
             'error_message': run.error_message,
             'result_summary': result_summary
         })
