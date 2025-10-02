@@ -215,14 +215,20 @@ CELERY_TIMEZONE = TIME_ZONE
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 # Audio processing configuration
-# Configure librosa and numba cache to avoid permission issues in containers
+# Configure cache directories with proper permissions - let permission errors surface
 os.environ['LIBROSA_CACHE_DIR'] = '/tmp/librosa_cache'
-os.environ['LIBROSA_CACHE_LEVEL'] = '0'  # Disable caching
 os.environ['NUMBA_CACHE_DIR'] = '/tmp/numba_cache'
-os.environ['NUMBA_DISABLE_JIT'] = '1'  # Disable JIT compilation entirely
-# Create cache directories
-os.makedirs('/tmp/librosa_cache', exist_ok=True)
-os.makedirs('/tmp/numba_cache', exist_ok=True)
+os.environ['MPLCONFIGDIR'] = '/tmp/matplotlib_config'
+
+# Create cache directories - any permission errors will be visible
+os.makedirs('/tmp/librosa_cache', mode=0o755, exist_ok=True)
+os.makedirs('/tmp/numba_cache', mode=0o755, exist_ok=True)
+os.makedirs('/tmp/matplotlib_config', mode=0o755, exist_ok=True)
+
+# Set proper permissions - fail if we can't
+os.chmod('/tmp/librosa_cache', 0o755)
+os.chmod('/tmp/numba_cache', 0o755)
+os.chmod('/tmp/matplotlib_config', 0o755)
 
 # Logging Configuration
 LOGGING = {

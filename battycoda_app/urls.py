@@ -9,7 +9,7 @@ from .views_segmentation.segmentation_execution import (
     auto_segment_recording_view, auto_segment_status_view, select_recording_for_segmentation_view
 )
 from .views_segmentation.segmentation_import import upload_pickle_segments_view
-from .views_segmentation.segmentation_preview import preview_segmentation_view, create_preview_recording_view
+from .views_segmentation.segmentation_preview import create_preview_recording_view
 from .views_segmentation.segmentation_settings import activate_segmentation_view
 
 # Direct imports from views_classification
@@ -259,11 +259,6 @@ urlpatterns = [
         name="auto_segment_segmentation_status",
     ),
     path(
-        "segmentations/<int:segmentation_id>/auto-segment/preview/",
-        preview_segmentation_view,
-        name="preview_segmentation_detail",
-    ),
-    path(
         "segmentations/<int:segmentation_id>/upload-pickle/",
         upload_pickle_segments_view,
         name="upload_pickle_to_segmentation",
@@ -284,11 +279,6 @@ urlpatterns = [
         "recordings/<int:recording_id>/auto-segment/status/",
         auto_segment_status_view,
         name="auto_segment_status",
-    ),
-    path(
-        "recordings/<int:recording_id>/auto-segment/preview/",
-        preview_segmentation_view,
-        name="preview_segmentation",
     ),
     path(
         "recordings/<int:recording_id>/create-preview/",

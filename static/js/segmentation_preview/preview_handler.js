@@ -40,7 +40,7 @@ export function initializePreviewHandler() {
         // Prepare form data for hidden recording creation
         const previewFormData = new FormData();
         previewFormData.append('start_time', document.getElementById('preview_start_time').value);
-        previewFormData.append('duration', '10.0');  // Fixed 10-second duration
+        // Duration is handled by server-side default
         previewFormData.append('csrfmiddlewaretoken', document.querySelector('[name=csrfmiddlewaretoken]').value);
         
         // Add segmentation parameters to the request
@@ -79,7 +79,12 @@ export function initializePreviewHandler() {
                 
                 // Open the segmentation detail view for the hidden recording
                 const previewWindow = window.open(data.preview_url, '_blank');
-                previewWindow.focus();
+                if (previewWindow) {
+                    previewWindow.focus();
+                } else {
+                    // Popup was blocked, show alternative
+                    alert('Popup blocked. Please allow popups and try again, or manually open: ' + window.location.origin + data.preview_url);
+                }
             } else {
                 alert('Preview failed: ' + data.error);
             }

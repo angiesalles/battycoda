@@ -3,36 +3,9 @@ Views for previewing segmentation results on audio recordings.
 """
 import os
 import tempfile
+import concurrent.futures
 
-# Configure librosa and numba cache before any imports
-os.environ['LIBROSA_CACHE_DIR'] = '/tmp/librosa_cache'
-os.environ['LIBROSA_CACHE_LEVEL'] = '0'  # Disable caching
-os.environ['NUMBA_CACHE_DIR'] = '/tmp/numba_cache'
-os.environ['NUMBA_DISABLE_JIT'] = '1'  # Disable JIT compilation entirely
-os.environ['NUMBA_DISABLE_PERFORMANCE_WARNINGS'] = '1'
-os.environ['NUMBA_DISABLE_INTEL_SVML'] = '1'
-# Create the cache directories if they don't exist
-os.makedirs('/tmp/librosa_cache', exist_ok=True)
-os.makedirs('/tmp/numba_cache', exist_ok=True)
-
-# Monkey patch numba to completely disable JIT before any imports
-try:
-    import numba
-    def no_jit(*args, **kwargs):
-        def decorator(func):
-            return func
-        if len(args) == 1 and callable(args[0]):
-            return args[0]
-        return decorator
-    
-    numba.jit = no_jit
-    numba.njit = no_jit
-    if hasattr(numba, 'vectorize'):
-        numba.vectorize = no_jit
-    if hasattr(numba, 'guvectorize'):
-        numba.guvectorize = no_jit
-except ImportError:
-    pass
+# Cache directories are configured in settings.py
 
 from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse
@@ -53,173 +26,6 @@ import numpy as np
 import soundfile as sf
 
 
-@login_required
-def preview_segmentation_view(request, recording_id):
-    """Preview segmentation on a 10-second stretch of audio"""
-    recording = get_object_or_404(Recording, id=recording_id)
-
-    # Check permission
-    profile = request.user.profile
-    if recording.created_by != request.user and (not profile.group or recording.group != profile.group):
-        return JsonResponse({"success": False, "error": "Permission denied"}, status=403)
-
-    if request.method != "POST":
-        return JsonResponse({"success": False, "error": "Only POST requests allowed"}, status=405)
-
-    try:
-        # Get parameters from request
-        algorithm_id = request.POST.get("algorithm")
-        min_duration_ms = int(request.POST.get("min_duration_ms", 10))
-        smooth_window = int(request.POST.get("smooth_window", 3))
-        threshold_factor = float(request.POST.get("threshold_factor", 0.5))
-        start_time = float(request.POST.get("start_time", 0))  # Default to beginning
-        
-        # Get bandpass filter parameters
-        low_freq = request.POST.get("low_freq")
-        high_freq = request.POST.get("high_freq")
-        
-        # Convert frequency parameters to integers or None
-        if low_freq and low_freq.strip():
-            low_freq = int(low_freq)
-        else:
-            low_freq = None
-            
-        if high_freq and high_freq.strip():
-            high_freq = int(high_freq)
-        else:
-            high_freq = None
-
-        # Validate parameters
-        if min_duration_ms < 1:
-            raise ValueError("Minimum duration must be at least 1ms")
-        if smooth_window < 1:
-            raise ValueError("Smooth window must be at least 1 sample")
-        if threshold_factor <= 0 or threshold_factor > 10:
-            raise ValueError("Threshold factor must be between 0 and 10")
-        if start_time < 0:
-            raise ValueError("Start time must be non-negative")
-        if low_freq is not None and low_freq <= 0:
-            raise ValueError("Low frequency must be positive")
-        if high_freq is not None and high_freq <= 0:
-            raise ValueError("High frequency must be positive")
-        if low_freq is not None and high_freq is not None and low_freq >= high_freq:
-            raise ValueError("Low frequency must be less than high frequency")
-
-        # Get algorithm
-        algorithm = get_object_or_404(SegmentationAlgorithm, id=int(algorithm_id), is_active=True)
-
-        # Check algorithm access permission
-        if algorithm.group and (not profile.group or algorithm.group != profile.group):
-            return JsonResponse({"success": False, "error": "You don't have permission to use this algorithm"}, status=403)
-
-        # Import the segmentation functions
-        from battycoda_app.audio.modules.segmentation import auto_segment_audio, energy_based_segment_audio
-
-        # Load the audio file for the preview window
-        audio_path = recording.wav_file.path
-        
-        # Load 10 seconds of audio starting from start_time
-        preview_duration = 10.0  # seconds
-        y, sr = librosa.load(audio_path, sr=None, offset=start_time, duration=preview_duration)
-        
-        # Ensure we have audio data
-        if len(y) == 0:
-            return JsonResponse({"success": False, "error": "No audio data in the selected time range"})
-
-        # Create a temporary audio file with the preview data
-        temp_audio_file = None
-        try:
-            # Create temporary file
-            with tempfile.NamedTemporaryFile(suffix='.wav', delete=False) as temp_file:
-                temp_audio_file = temp_file.name
-                
-            # Write audio data to temporary file
-            sf.write(temp_audio_file, y, sr)
-
-            # Apply the appropriate segmentation algorithm
-            if algorithm.algorithm_type == "energy":
-                segments = energy_based_segment_audio(
-                    temp_audio_file,
-                    min_duration_ms=min_duration_ms,
-                    smooth_window=smooth_window, 
-                    threshold_factor=threshold_factor,
-                    low_freq=low_freq,
-                    high_freq=high_freq
-                )
-            else:  # threshold-based (default)
-                segments = auto_segment_audio(
-                    temp_audio_file,
-                    min_duration_ms=min_duration_ms,
-                    smooth_window=smooth_window, 
-                    threshold_factor=threshold_factor,
-                    low_freq=low_freq,
-                    high_freq=high_freq
-                )
-
-            # Extract onset and offset lists from the returned tuple
-            # Functions return (onsets, offsets) or (onsets, offsets, debug_path)
-            if len(segments) == 3:
-                onsets, offsets, debug_path = segments
-            else:
-                onsets, offsets = segments
-            
-            # Adjust segment times to account for the start offset
-            adjusted_segments = []
-            for onset, offset in zip(onsets, offsets):
-                adjusted_segments.append({
-                    "onset": onset + start_time,
-                    "offset": offset + start_time,
-                    "duration": offset - onset
-                })
-
-            # Calculate some statistics
-            total_segments = len(adjusted_segments)
-            total_duration = sum(seg["duration"] for seg in adjusted_segments)
-            avg_duration = total_duration / total_segments if total_segments > 0 else 0
-
-            # Try to get existing spectrogram or trigger async generation
-            preview_spectrogram_url = get_or_generate_preview_spectrogram(recording, start_time, preview_duration)
-            
-            response_data = {
-                "success": True,
-                "recording_id": recording.id,
-                "algorithm_name": algorithm.name,
-                "algorithm_type": algorithm.get_algorithm_type_display(),
-                "preview_start": start_time,
-                "preview_end": start_time + preview_duration,
-                "preview_duration": preview_duration,
-                "segments": adjusted_segments,
-                "spectrogram_url": preview_spectrogram_url,
-                "audio_url": f"/audio/bit/?file_path={recording.wav_file.path}&onset={start_time}&offset={start_time + preview_duration}&loudness=1.0" if recording.wav_file else None,
-                "stats": {
-                    "total_segments": total_segments,
-                    "total_duration": round(total_duration, 3),
-                    "avg_duration": round(avg_duration, 3),
-                    "segment_density": round(total_segments / preview_duration, 2)  # segments per second
-                },
-                "parameters": {
-                    "min_duration_ms": min_duration_ms,
-                    "smooth_window": smooth_window,
-                    "threshold_factor": threshold_factor,
-                    "low_freq": low_freq,
-                    "high_freq": high_freq
-                }
-            }
-            
-            return JsonResponse(response_data)
-        
-        finally:
-            # Clean up temporary file
-            if temp_audio_file and os.path.exists(temp_audio_file):
-                try:
-                    os.unlink(temp_audio_file)
-                except OSError:
-                    pass  # Ignore cleanup errors
-
-    except ValueError as e:
-        return JsonResponse({"success": False, "error": f"Invalid parameter: {str(e)}"}, status=400)
-    except Exception as e:
-        return JsonResponse({"success": False, "error": f"Preview failed: {str(e)}"}, status=500)
 
 
 def get_or_generate_preview_spectrogram(recording, start_time, duration):
@@ -294,7 +100,7 @@ def create_preview_recording_view(request, recording_id):
     try:
         # Get parameters
         start_time = float(request.POST.get("start_time", 0))
-        duration = float(request.POST.get("duration", 10.0))
+        duration = float(request.POST.get("duration", 1.0))
         
         # Get segmentation parameters 
         algorithm_id = request.POST.get("algorithm")
@@ -398,67 +204,77 @@ def create_preview_recording_view(request, recording_id):
             name=f"Preview Segmentation for {preview_name}",
             recording=hidden_recording,
             algorithm=algorithm,
-            is_active=True,
             created_by=request.user,
             status='in_progress',  # Will be updated when task starts
             progress=0
         )
         
-        # First, generate spectrogram for the hidden recording
-        try:
-            from battycoda_app.audio.task_modules.spectrogram_tasks import generate_recording_spectrogram
+        # Run spectrogram generation and segmentation in parallel
+        def generate_spectrogram_for_recording():
+            """Generate spectrogram for the preview recording."""
+            try:
+                from battycoda_app.audio.task_modules.spectrogram_tasks import make_spectrogram
+                import soundfile as sf
+                import os
+                
+                # Load the preview audio data
+                audio_data, sr = sf.read(hidden_recording.wav_file.path)
+                
+                # Generate spectrogram image with frequency filtering to match segmentation
+                spectrogram_image = make_spectrogram(audio_data, sr, freq_min=low_freq, freq_max=high_freq)
+                
+                # Save spectrogram to file in the correct directory structure
+                spectrogram_filename = f"spectrogram_{uuid.uuid4().hex}.png"
+                spectrogram_path = os.path.join(settings.MEDIA_ROOT, 'spectrograms', 'recordings', spectrogram_filename)
+                
+                # Ensure directory exists
+                os.makedirs(os.path.dirname(spectrogram_path), exist_ok=True)
+                
+                # Save the image
+                spectrogram_image.save(spectrogram_path)
+                
+                # Update recording with spectrogram filename (just the filename, not the path)
+                hidden_recording.spectrogram_file = spectrogram_filename
+                hidden_recording.save()
+                
+                return True
+                
+            except Exception as e:
+                print(f"Warning: Failed to generate spectrogram for preview recording: {e}")
+                return False
+
+        def run_segmentation_task():
+            """Run segmentation task for the preview recording."""
+            try:
+                from battycoda_app.audio.task_modules.segmentation_tasks import auto_segment_recording_task
+                
+                # Run segmentation task directly
+                result = auto_segment_recording_task(
+                    hidden_recording.id, preview_segmentation.id, min_duration_ms, 
+                    smooth_window, threshold_factor, low_freq, high_freq
+                )
+                
+                # Check the result
+                if result.get("status") != "success":
+                    raise ValueError(f"Segmentation failed: {result.get('message', 'Unknown error')}")
+                
+                return result
+                
+            except Exception as e:
+                # If segmentation fails, mark as failed
+                preview_segmentation.status = 'failed'
+                preview_segmentation.save()
+                raise ValueError(f"Failed to complete segmentation task: {str(e)}")
+
+        # Run both tasks in parallel using ThreadPoolExecutor
+        with concurrent.futures.ThreadPoolExecutor(max_workers=2) as executor:
+            # Submit both tasks
+            spectrogram_future = executor.submit(generate_spectrogram_for_recording)
+            segmentation_future = executor.submit(run_segmentation_task)
             
-            # Generate spectrogram synchronously for the preview
-            spectrogram_filename = f"spectrogram_{uuid.uuid4().hex}.png"
-            hidden_recording.spectrogram_file = spectrogram_filename
-            hidden_recording.save()
-            
-            # Generate the spectrogram (this will run synchronously)
-            generate_recording_spectrogram(hidden_recording.id)
-            
-        except Exception as e:
-            # If spectrogram generation fails, continue anyway but log the error
-            print(f"Warning: Failed to generate spectrogram for preview recording: {e}")
-        
-        # Automatically trigger the segmentation task and wait for completion
-        try:
-            from celery import current_app
-            from celery.result import AsyncResult
-            import time
-            
-            # Launch Celery task with the same parameters as the normal segmentation
-            task = current_app.send_task(
-                algorithm.celery_task,
-                args=[hidden_recording.id, preview_segmentation.id, min_duration_ms, smooth_window, threshold_factor, low_freq, high_freq],
-            )
-            
-            # Update the segmentation with the actual task ID
-            preview_segmentation.task_id = task.id
-            preview_segmentation.save(update_fields=['task_id'])
-            
-            # Wait for task completion (with timeout for safety)
-            result = AsyncResult(task.id)
-            timeout = 30  # 30 seconds timeout for 10s audio segment
-            start_time = time.time()
-            
-            while not result.ready():
-                if time.time() - start_time > timeout:
-                    raise ValueError("Segmentation task timed out")
-                time.sleep(0.5)  # Check every 500ms
-            
-            # Check if task completed successfully
-            if result.successful():
-                task_result = result.get()
-                if task_result.get("status") != "success":
-                    raise ValueError(f"Segmentation failed: {task_result.get('message', 'Unknown error')}")
-            else:
-                raise ValueError(f"Segmentation task failed: {str(result.result)}")
-            
-        except Exception as e:
-            # If task launching or completion fails, mark segmentation as failed
-            preview_segmentation.status = 'failed'
-            preview_segmentation.save()
-            raise ValueError(f"Failed to complete segmentation task: {str(e)}")
+            # Wait for both to complete
+            spectrogram_success = spectrogram_future.result(timeout=60)
+            segmentation_result = segmentation_future.result(timeout=60)
         
         # Redirect to the segmentation detail view
         segmentation_url = reverse('battycoda_app:segmentation_detail', kwargs={'segmentation_id': preview_segmentation.id})

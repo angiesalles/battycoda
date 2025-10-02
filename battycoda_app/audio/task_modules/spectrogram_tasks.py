@@ -18,115 +18,64 @@ from ..utils import appropriate_file, get_audio_bit, normal_hwin, overview_hwin
 # Import soundfile in the functions where needed
 
 
-def make_spectrogram(audio_data, sample_rate, nperseg=512, noverlap=None, use_mel=True, n_mels=128):
+def make_spectrogram(audio_data, sample_rate, freq_min=None, freq_max=None):
     """
-    Core spectrogram generation function with mel scale and logarithmic color scaling.
+    Core spectrogram generation function using librosa.display.specshow with viridis colormap.
     
     Args:
         audio_data: 1D numpy array of audio samples
         sample_rate: Sample rate of the audio
-        nperseg: Window size for spectrogram
-        noverlap: Overlap size (defaults to nperseg//2 if None)
-        use_mel: Whether to use mel scale (default True)
-        n_mels: Number of mel bins if using mel scale
+        freq_min: Minimum frequency to display (Hz), None for no limit
+        freq_max: Maximum frequency to display (Hz), None for no limit
         
     Returns:
-        tuple: (frequencies, times, spectrogram_data) where spectrogram_data is log-scaled
+        PIL.Image: Generated spectrogram image
     """
+    import matplotlib
+    matplotlib.use('Agg')  # Use non-interactive backend for headless environment
+    
     import librosa
+    import librosa.display
+    import matplotlib.pyplot as plt
+    import io
+    from PIL import Image
     
-    if noverlap is None:
-        noverlap = nperseg // 2
+    # Generate STFT exactly as specified
+    stft = librosa.stft(audio_data, hop_length=512, n_fft=2048)
+    spectrogram = librosa.amplitude_to_db(np.abs(stft), ref=np.max)
     
-    if use_mel:
-        # Use mel-scale spectrogram for better frequency representation
-        hop_length = nperseg - noverlap
-        mel_spectrogram = librosa.feature.melspectrogram(
-            y=audio_data,
-            sr=sample_rate,
-            n_fft=nperseg,
-            hop_length=hop_length,
-            n_mels=n_mels,
-            fmax=sample_rate/2
-        )
-        
-        # Convert to format similar to scipy output
-        spectrogram_data = mel_spectrogram
-        times = np.linspace(0, len(audio_data)/sample_rate, mel_spectrogram.shape[1])
-        frequencies = librosa.mel_frequencies(n_mels=n_mels, fmax=sample_rate/2)
-    else:
-        # Use standard linear frequency spectrogram
-        from scipy import signal
-        frequencies, times, spectrogram_data = signal.spectrogram(
-            audio_data, 
-            fs=sample_rate,
-            nperseg=nperseg,
-            noverlap=noverlap
-        )
+    # Create the plot with configurable size (1500x600 pixels at 100 DPI)
+    plt.figure(figsize=(15, 6))
+    librosa.display.specshow(spectrogram, 
+                            sr=sample_rate, 
+                            hop_length=512, 
+                            x_axis='time', 
+                            y_axis='hz',
+                            cmap='viridis')
     
-    return frequencies, times, spectrogram_data
+    # Set frequency range if specified
+    if freq_min is not None or freq_max is not None:
+        current_ylim = plt.ylim()
+        new_ymin = freq_min if freq_min is not None else current_ylim[0]
+        new_ymax = freq_max if freq_max is not None else current_ylim[1]
+        plt.ylim(new_ymin, new_ymax)
+    
+    # Remove axes and tight layout for clean image
+    plt.axis('off')
+    plt.tight_layout()
+    
+    # Convert to PIL Image
+    buf = io.BytesIO()
+    plt.savefig(buf, format='png', bbox_inches='tight', pad_inches=0, dpi=100)
+    buf.seek(0)
+    
+    # Clean up matplotlib figure
+    plt.close()
+    
+    # Return PIL Image
+    return Image.open(buf)
 
 
-def roseus_colormap(val):
-    """Convert value [0,1] to roseus (pink-rose-purple) RGB"""
-    r = np.interp(val, [0, 0.2, 0.4, 0.6, 0.8, 1.0],
-                 [0.1, 0.3, 0.7, 0.9, 0.95, 1.0])
-    g = np.interp(val, [0, 0.2, 0.4, 0.6, 0.8, 1.0],
-                 [0.0, 0.1, 0.3, 0.6, 0.8, 0.9])
-    b = np.interp(val, [0, 0.2, 0.4, 0.6, 0.8, 1.0],
-                 [0.2, 0.4, 0.6, 0.7, 0.8, 0.9])
-    return r, g, b
-
-
-def apply_logarithmic_color_scaling_and_colormap(spectrogram_data, contrast=1.0):
-    """
-    Apply logarithmic color scaling and roseus colormap to spectrogram data.
-    
-    Args:
-        spectrogram_data: 2D numpy array of spectrogram power values
-        contrast: Contrast enhancement factor
-        
-    Returns:
-        numpy.ndarray: RGB image data (height, width, 3) with values 0-255
-    """
-    # Smart handling of zeros for single log scaling step
-    data = spectrogram_data.copy()
-    
-    # Check if the whole image is zeros
-    if np.all(data == 0):
-        # Return a black image
-        height, width = data.shape
-        return np.zeros((height, width, 3), dtype=np.uint8)
-    
-    # Find zeros and replace them smartly
-    nonzero_data = data[data > 0]
-    if len(nonzero_data) > 0:
-        min_nonzero = np.min(nonzero_data)
-        replacement_value = min_nonzero / 10.0
-        data[data == 0] = replacement_value
-    
-    # Single logarithmic scaling step
-    log_scaled = np.log10(data)
-    
-    # Normalize to 0-255 range with logarithmic scaling
-    normalized_data = (log_scaled - log_scaled.min()) / (log_scaled.max() - log_scaled.min()) * 255
-    
-    # Flip vertically (frequencies should go from low to high, bottom to top)
-    normalized_data = np.flipud(normalized_data)
-    
-    # Convert to 8-bit unsigned integer
-    img_data = normalized_data.astype(np.uint8)
-    
-    # Return as grayscale RGB (same value for R, G, B channels)
-    height, width = img_data.shape
-    rgb_data = np.zeros((height, width, 3), dtype=np.uint8)
-    
-    # Set all channels to the same grayscale value
-    rgb_data[:, :, 0] = img_data  # Red
-    rgb_data[:, :, 1] = img_data  # Green  
-    rgb_data[:, :, 2] = img_data  # Blue
-    
-    return rgb_data
 
 @shared_task(
     bind=True,
@@ -224,10 +173,6 @@ def generate_recording_spectrogram(self, recording_id):
 
     from django.conf import settings
 
-    import matplotlib
-
-    matplotlib.use("Agg")  # Use non-interactive backend
-    import matplotlib.pyplot as plt
     import numpy as np
     import soundfile as sf
     from PIL import Image
@@ -267,11 +212,12 @@ def generate_recording_spectrogram(self, recording_id):
 
         # Generate a UUID-based filename or use existing one
         if recording.spectrogram_file:
-            # Use existing filename
-            spectrogram_filename = recording.spectrogram_file
+            # Use existing filename, but ensure it has .h5 extension
+            base_name = recording.spectrogram_file.replace('.png', '').replace('.h5', '')
+            spectrogram_filename = f"{base_name}.h5"
         else:
             # Generate new UUID-based filename
-            spectrogram_filename = f"{uuid.uuid4().hex}.png"
+            spectrogram_filename = f"{uuid.uuid4().hex}.h5"
             recording.spectrogram_file = spectrogram_filename
             recording.save()
 
@@ -280,7 +226,7 @@ def generate_recording_spectrogram(self, recording_id):
         os.makedirs(output_dir, exist_ok=True)
         output_path = os.path.join(output_dir, spectrogram_filename)
 
-        # Check if file already exists
+        # Check if HDF5 file already exists
         if os.path.exists(output_path) and os.path.getsize(output_path) > 0:
             update_job_progress(100, 'completed')
             if job:
@@ -308,34 +254,31 @@ def generate_recording_spectrogram(self, recording_id):
         if len(audio_data.shape) > 1 and audio_data.shape[1] > 1:
             audio_data = np.mean(audio_data, axis=1)
 
-        # Generate spectrogram using scipy directly
+        # Generate STFT spectrogram data
         update_job_progress(70)
         
-        # Generate spectrogram using shared function
-        nperseg = 512
-        noverlap = nperseg // 2
-        frequencies, times, spectrogram_data = make_spectrogram(
-            audio_data, effective_sample_rate, nperseg, noverlap, use_mel=True, n_mels=128
-        )
-        
-        # Apply logarithmic color scaling and roseus colormap
-        rgb_image = apply_logarithmic_color_scaling_and_colormap(spectrogram_data, contrast=1.0)
+        # Generate STFT exactly as in make_spectrogram
+        import librosa
+        stft = librosa.stft(audio_data, hop_length=512, n_fft=2048)
+        spectrogram = librosa.amplitude_to_db(np.abs(stft), ref=np.max)
         
         update_job_progress(80)
         
-        # Calculate target image dimensions
-        duration_seconds = len(audio_data) / effective_sample_rate
-        target_width = max(800, int(duration_seconds * 50))  # ~50 pixels per second minimum
-        target_height = 400  # Fixed height for good frequency resolution
+        # Save spectrogram data to HDF5 for efficient seeking
+        import h5py
         
-        # Create PIL image and resize to target dimensions
-        pil_image = Image.fromarray(rgb_image)
-        pil_image = pil_image.resize((target_width, target_height), Image.Resampling.LANCZOS)
+        with h5py.File(output_path, 'w') as f:
+            # Store the spectrogram data
+            f.create_dataset('spectrogram', data=spectrogram, compression='gzip', compression_opts=9)
+            # Store metadata
+            f.attrs['sample_rate'] = effective_sample_rate
+            f.attrs['hop_length'] = 512
+            f.attrs['n_fft'] = 2048
+            f.attrs['duration'] = len(audio_data) / effective_sample_rate
+            f.attrs['n_frames'] = spectrogram.shape[1]
+            f.attrs['n_freq_bins'] = spectrogram.shape[0]
         
         update_job_progress(90)
-        
-        # Save directly as PNG
-        pil_image.save(output_path, format="PNG", optimize=True)
         
         # Update job completion
         update_job_progress(100, 'completed')
@@ -353,6 +296,51 @@ def generate_recording_spectrogram(self, recording_id):
             job.save()
         
         return {"status": "error", "message": str(e), "recording_id": recording_id}
+
+
+def load_spectrogram_segment(h5_file_path, start_time, end_time):
+    """
+    Load a time segment of spectrogram data from HDF5 file.
+    
+    Args:
+        h5_file_path: Path to the HDF5 spectrogram file
+        start_time: Start time in seconds
+        end_time: End time in seconds
+        
+    Returns:
+        tuple: (spectrogram_segment, sample_rate, hop_length) or None if error
+    """
+    try:
+        import h5py
+        
+        with h5py.File(h5_file_path, 'r') as f:
+            # Get metadata
+            sample_rate = f.attrs['sample_rate']
+            hop_length = f.attrs['hop_length']
+            duration = f.attrs['duration']
+            n_frames = f.attrs['n_frames']
+            
+            # Calculate frame indices for the time range
+            frames_per_second = sample_rate / hop_length
+            start_frame = int(start_time * frames_per_second)
+            end_frame = int(end_time * frames_per_second)
+            
+            # Clamp to valid range
+            start_frame = max(0, start_frame)
+            end_frame = min(n_frames, end_frame)
+            
+            if start_frame >= end_frame:
+                return None
+                
+            # Load only the requested time segment
+            spectrogram_segment = f['spectrogram'][:, start_frame:end_frame]
+            
+            return spectrogram_segment, sample_rate, hop_length
+            
+    except Exception as e:
+        print(f"Error loading spectrogram segment: {e}")
+        return None
+
 
 def generate_spectrogram(path, args, output_path=None):
     """
@@ -408,47 +396,8 @@ def generate_spectrogram(path, args, output_path=None):
         # Extract channel
         thr_x1 = thr_x1[:, channel]
 
-        # OPTIMIZATION: Skip hash validation to reduce overhead
-        # This is safe because we're using file paths that are already validated
-
-        # Use high-quality spectrogram parameters for better visual detail
-        # - Higher nperseg for better frequency resolution
-        # - Higher overlap for smoother time transitions
-        # - Larger nfft for better frequency bins
-        if overview:
-            # For overview, use very high detail since we're showing more
-            nperseg = 2**9  # 512
-            if low_overlap:
-                # Use 50% overlap for memory efficiency (e.g., for previews)
-                noverlap = nperseg // 2  # 50% overlap
-            else:
-                noverlap = int(nperseg * 0.99)  # 99% overlap for highest quality
-            nfft = 2**10  # 1024 for excellent frequency resolution
-        else:
-            # For call detail view, use high quality parameters
-            nperseg = 2**8  # 256
-            noverlap = 254
-            nfft = 2**8
-
-        # Generate spectrogram using shared function
-        n_mels = 128 if overview else 64  # More mel bins for overview
-        f, t, sxx = make_spectrogram(
-            thr_x1, fs, nperseg=nfft, noverlap=noverlap, use_mel=True, n_mels=n_mels
-        )
-
-        # Apply logarithmic color scaling and roseus colormap using shared function
-        rgb_data = apply_logarithmic_color_scaling_and_colormap(sxx, contrast=contrast)
-
-        # Performance logging removed
-
-        # Create and save image - measure time
-        # Time tracking removed
-
-        # Create PIL Image and save
-        img = Image.fromarray(rgb_data)
-
-        # Resize to standard dimensions (800x600)
-        img = img.resize((800, 600), Image.Resampling.LANCZOS)
+        # Generate spectrogram using librosa.display.specshow approach
+        img = make_spectrogram(thr_x1, fs)
 
         # Save with minimal compression for speed
         img.save(output_path, format="PNG", compress_level=1)

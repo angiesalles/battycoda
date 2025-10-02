@@ -241,9 +241,15 @@ class Segment(models.Model):
     def __str__(self):
         return f"{self.recording.name} ({self.onset:.2f}s - {self.offset:.2f}s)"
 
+    @property
     def duration(self):
         """Calculate segment duration"""
         return self.offset - self.onset
+
+    @property
+    def duration_ms(self):
+        """Calculate segment duration in milliseconds"""
+        return (self.offset - self.onset) * 1000
 
     def save(self, *args, **kwargs):
         """Override save to handle segmentation relationship"""

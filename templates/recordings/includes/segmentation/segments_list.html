@@ -63,7 +63,7 @@
                         <tr id="segment-row-{{ segment.id }}" data-segment-id="{{ segment.id }}">
                             <td>{{ segment.id }}</td>
                             <td>{{ segment.onset|floatformat:2 }}s - {{ segment.offset|floatformat:2 }}s</td>
-                            <td>{{ segment.duration|floatformat:2 }}s</td>
+                            <td>{{ segment.duration_ms|floatformat:1 }}ms</td>
                             <td>
                                 {% if not read_only %}
                                 <!-- Action buttons will be dynamically generated via JavaScript -->

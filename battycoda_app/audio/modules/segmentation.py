@@ -187,7 +187,7 @@ def energy_based_segment_audio(
 
     # Step 1: Calculate short-time energy
     # Set the frame size for energy calculation (adjust based on expected call frequency)
-    frame_size = int(0.01 * sample_rate)  # 10ms frames
+    frame_size = int(0.0004 * sample_rate)  # 0.4ms frames for precise onset detection
     energy = np.zeros(len(audio_data) // frame_size)
 
     for i in range(len(energy)):
