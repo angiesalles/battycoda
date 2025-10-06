@@ -6,11 +6,13 @@
 
 import { WaveformRenderer } from './renderer.js';
 import { TimelineRenderer } from './timeline.js';
-import { SpectrogramRenderer } from './spectrogram_renderer.js';
+import { SpectrogramDataRenderer } from './spectrogram_data_renderer.js';
+import { OverlayRenderer } from './overlay_renderer.js';
 import { ViewManager } from './view_manager.js';
 import { EventHandlers } from './event_handlers.js';
 import { UIState } from './ui_state.js';
 import { DataManager } from './data_manager.js';
+import { SeekHandler } from './seek_handler.js';
 
 /**
  * WaveformPlayer class - encapsulates waveform player functionality
@@ -50,15 +52,17 @@ export class WaveformPlayer {
         // Renderers
         this.waveformRenderer = new WaveformRenderer(this);
         this.timelineRenderer = new TimelineRenderer(this);
-        this.spectrogramRenderer = new SpectrogramRenderer(this);
-        
+        this.spectrogramDataRenderer = new SpectrogramDataRenderer(containerId, recordingId, this);
+        this.overlayRenderer = new OverlayRenderer(this);
+
         // View manager
         this.viewManager = new ViewManager(this);
-        
+
         // Modules
         this.eventHandlers = new EventHandlers(this);
         this.uiState = new UIState(this);
         this.dataManager = new DataManager(this);
+        this.seekHandler = new SeekHandler(this);
     }
     
     /**
@@ -148,14 +152,13 @@ export class WaveformPlayer {
                 
                 // Hide loading indicator
                 if (this.loadingEl) this.loadingEl.style.display = 'none';
-                
+
                 // Update status
                 if (this.statusEl) {
                     this.statusEl.textContent = '';
                 }
-                
-                // Ensure waveform is visible and draw
-                this.viewManager.showWaveform();
+
+                // Draw the current view (waveform will be hidden if in spectrogram mode)
                 this.redrawCurrentView();
                 this.drawTimeline();
             } else {
@@ -266,13 +269,20 @@ export class WaveformPlayer {
     }
 
     /**
-<<<<<<< HEAD
+     * Seek to a specific time and ensure it's visible in the viewport
+     * @param {number} time - Time in seconds to seek to
+     */
+    seek(time) {
+        return this.seekHandler.seek(time);
+    }
+
+    /**
      * Set up all event listeners
      */
     setupEventListeners() {
         this.setupAudioEventListeners();
         this.setupControlEventListeners();
-        this.setupZoomEventListeners();
+        // Zoom event listeners handled by EventHandlers class
         this.setupSpeedEventListeners();
         this.setupSelectionEventListeners();
         this.setupWindowEventListeners();
@@ -420,83 +430,6 @@ export class WaveformPlayer {
         }
     }
     
-    /**
-     * Set up zoom button event listeners
-     */
-    setupZoomEventListeners() {
-        if (!this.showZoom) return;
-        
-        // Zoom in button
-        if (this.zoomInBtn) {
-            this.zoomInBtn.addEventListener('click', () => {
-                // Store the current center position
-                const oldZoomLevel = this.zoomLevel;
-                const oldVisibleDuration = this.duration / oldZoomLevel;
-                const oldCenterTime = this.currentTime;
-                
-                // Calculate where the current position is as a fraction of the visible area
-                const relativePosition = (oldCenterTime - (this.zoomOffset * this.duration)) / oldVisibleDuration;
-                
-                // Update zoom level
-                this.zoomLevel = Math.min(this.zoomLevel * 1.5, 10);
-                
-                // Calculate new visible duration
-                const newVisibleDuration = this.duration / this.zoomLevel;
-                
-                // Calculate new offset to keep position centered
-                this.zoomOffset = Math.max(0, Math.min(
-                    oldCenterTime / this.duration - (newVisibleDuration / this.duration) * 0.5, 
-                    1 - newVisibleDuration / this.duration
-                ));
-                
-                // Update all displays
-                this.drawWaveform();
-                this.drawTimeline();
-                this.updateTimeDisplay();
-            });
-        }
-        
-        // Zoom out button
-        if (this.zoomOutBtn) {
-            this.zoomOutBtn.addEventListener('click', () => {
-                // Store the current center position
-                const oldCenterTime = this.currentTime;
-                
-                // Update zoom level
-                this.zoomLevel = Math.max(this.zoomLevel / 1.5, 1);
-                
-                // If we're back to zoom level 1, reset offset
-                if (this.zoomLevel === 1) {
-                    this.zoomOffset = 0;
-                } else {
-                    // Otherwise recalculate offset to keep current position visible
-                    const newVisibleDuration = this.duration / this.zoomLevel;
-                    this.zoomOffset = Math.max(0, Math.min(
-                        oldCenterTime / this.duration - (newVisibleDuration / this.duration) * 0.5,
-                        1 - newVisibleDuration / this.duration
-                    ));
-                }
-                
-                // Update all displays
-                this.drawWaveform();
-                this.drawTimeline();
-                this.updateTimeDisplay();
-            });
-        }
-        
-        // Reset zoom button
-        if (this.resetZoomBtn) {
-            this.resetZoomBtn.addEventListener('click', () => {
-                this.zoomLevel = 1;
-                this.zoomOffset = 0;
-                
-                // Update all displays
-                this.drawWaveform();
-                this.drawTimeline();
-                this.updateTimeDisplay();
-            });
-        }
-    }
 
     setupSpeedEventListeners() {
         console.log('Setting up speed event listeners', {

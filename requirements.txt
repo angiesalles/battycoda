@@ -54,3 +54,4 @@ flake8-django>=1.4.0,<2.0.0
 flake8-docstrings>=1.7.0,<2.0.0
 black>=23.12.0,<24.0.0
 isort>=5.13.0,<6.0.0
+h5py

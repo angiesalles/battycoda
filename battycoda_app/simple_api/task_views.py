@@ -10,7 +10,7 @@ from django.db import transaction
 from .auth import api_key_required
 from ..models import Task, TaskBatch
 from ..models.classification import ClassificationRun, ClassificationResult, CallProbability
-from ..models.recording import Segment
+from ..models import Segment
 
 
 @csrf_exempt

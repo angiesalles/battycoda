@@ -11,20 +11,27 @@ export class ViewManager {
      */
     constructor(player) {
         this.player = player;
-        this.viewMode = 'waveform';
-        this.spectrogramUrl = null;
+        this.viewMode = 'waveform';  // Initial mode (will be switched by view toggle)
         this.spectrogramInitialized = false;
     }
     
     /**
-     * Initialize spectrogram support
-     * @param {string} spectrogramUrl - URL of the spectrogram image
+     * Initialize spectrogram data rendering (HDF5-based)
+     * @param {number} recordingId - ID of the recording
      */
-    initializeSpectrogram(spectrogramUrl) {
-        this.spectrogramUrl = spectrogramUrl;
-        if (spectrogramUrl) {
-            this.player.spectrogramRenderer.initialize(spectrogramUrl);
-            this.spectrogramInitialized = true;
+    async initializeSpectrogramData(recordingId) {
+        try {
+            const success = await this.player.spectrogramDataRenderer.initialize();
+            if (success) {
+                this.spectrogramInitialized = true;
+                console.log('Spectrogram data initialized successfully');
+            } else {
+                console.warn('Failed to initialize spectrogram data');
+            }
+            return success;
+        } catch (error) {
+            console.error('Error initializing spectrogram data:', error);
+            return false;
         }
     }
     
@@ -39,7 +46,7 @@ export class ViewManager {
         
         // Don't switch to spectrogram if it's not available
         if (mode === 'spectrogram' && !this.spectrogramInitialized) {
-            console.warn('Spectrogram not available - initialized:', this.spectrogramInitialized, 'URL:', this.spectrogramUrl);
+            console.warn('Spectrogram not available - initialized:', this.spectrogramInitialized);
             return;
         }
         
@@ -75,7 +82,7 @@ export class ViewManager {
      * @returns {boolean} True if spectrogram is available
      */
     isSpectrogramAvailable() {
-        return this.spectrogramInitialized && this.spectrogramUrl;
+        return this.spectrogramInitialized;
     }
     
     /**
@@ -103,16 +110,16 @@ export class ViewManager {
      */
     showSpectrogram() {
         if (this.spectrogramInitialized) {
-            this.player.spectrogramRenderer.show();
+            this.player.spectrogramDataRenderer.show();
         }
     }
-    
+
     /**
      * Hide the spectrogram view
      */
     hideSpectrogram() {
         if (this.spectrogramInitialized) {
-            this.player.spectrogramRenderer.hide();
+            this.player.spectrogramDataRenderer.hide();
         }
     }
     
@@ -121,11 +128,24 @@ export class ViewManager {
      */
     redraw() {
         if (this.viewMode === 'spectrogram' && this.spectrogramInitialized) {
-            this.player.spectrogramRenderer.update();
+            // Calculate current view parameters
+            const visibleDuration = this.player.duration / this.player.zoomLevel;
+            const visibleStartTime = this.player.zoomOffset * this.player.duration;
+            const visibleEndTime = Math.min(visibleStartTime + visibleDuration, this.player.duration);
+
+            this.player.spectrogramDataRenderer.updateView(
+                visibleStartTime,
+                visibleEndTime,
+                this.player.waveformContainer?.clientWidth,
+                this.player.waveformContainer?.clientHeight
+            );
         } else {
             this.player.drawWaveform();
         }
         this.player.drawTimeline();
+
+        // Draw overlay on top of whichever view is active
+        this.player.overlayRenderer.draw();
     }
     
     /**
@@ -160,7 +180,7 @@ export class ViewManager {
      */
     handleResize() {
         if (this.spectrogramInitialized) {
-            this.player.spectrogramRenderer.resize();
+            this.player.spectrogramDataRenderer.render();
         }
         this.redraw();
     }

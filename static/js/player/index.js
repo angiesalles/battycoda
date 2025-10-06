@@ -8,8 +8,8 @@
 import { WaveformPlayer } from './player.js';
 
 // Global registry to expose player instances outside this module
-if (window.waveformPlayers === undefined) {
-    window.waveformPlayers = {};
+if (window.players === undefined) {
+    window.players = {};
 }
 
 /**
@@ -19,32 +19,32 @@ if (window.waveformPlayers === undefined) {
  * @param {boolean} allowSelection - Whether to allow selecting regions
  * @param {boolean} showZoom - Whether to show zoom controls
  * @param {Array} [segmentsData] - Optional array of segments to display in the waveform
- * @param {string} [spectrogramUrl] - Optional URL of the spectrogram image
  */
-export function initWaveformPlayer(containerId, recordingId, allowSelection, showZoom, segmentsData, spectrogramUrl) {
+export function initWaveformPlayer(containerId, recordingId, allowSelection, showZoom, segmentsData) {
     // Debug: Log what we receive
     console.log('initWaveformPlayer called with:', {
         containerId, 
         recordingId, 
         allowSelection, 
         showZoom, 
-        segmentsData: segmentsData ? segmentsData.length : 'null',
-        spectrogramUrl
+        segmentsData: segmentsData ? segmentsData.length : 'null'
     });
     
     // Create a new WaveformPlayer instance
     const player = new WaveformPlayer(containerId, recordingId, allowSelection, showZoom, segmentsData);
     
-    // Initialize spectrogram if URL provided
-    if (spectrogramUrl) {
-        console.log('Initializing spectrogram with URL:', spectrogramUrl);
-        player.viewManager.initializeSpectrogram(spectrogramUrl);
-    } else {
-        console.log('No spectrogram URL provided - spectrogramUrl is:', spectrogramUrl);
-    }
+    // Try to initialize spectrogram data from HDF5
+    console.log('Attempting to load spectrogram data from HDF5');
+    player.viewManager.initializeSpectrogramData(recordingId).then(success => {
+        if (success) {
+            console.log('Spectrogram data initialized successfully');
+        } else {
+            console.log('No spectrogram data available');
+        }
+    });
     
     // Register the player instance in the global registry
-    window.waveformPlayers[containerId] = {
+    window.players[containerId] = {
         getSelection: function() {
             return player.getSelection();
         },
@@ -64,10 +64,7 @@ export function initWaveformPlayer(containerId, recordingId, allowSelection, sho
         isSpectrogramAvailable: function() {
             return player.viewManager.isSpectrogramAvailable();
         },
-        initializeSpectrogram: function(url) {
-            player.viewManager.initializeSpectrogram(url);
-        },
-        spectrogramRenderer: player.spectrogramRenderer, // Expose spectrogram renderer for controls
+        spectrogramDataRenderer: player.spectrogramDataRenderer, // Expose spectrogram data renderer for controls
         player: player // Expose the underlying player directly
     };
     

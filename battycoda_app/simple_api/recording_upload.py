@@ -11,7 +11,7 @@ from django.db import transaction
 from .auth import api_key_required
 from ..models import Recording, Project
 from ..models.organization import Species
-from ..models.recording import Segmentation, Segment
+from ..models import Segmentation, Segment
 from ..audio.utils import process_pickle_file
 
 

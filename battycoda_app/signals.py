@@ -4,10 +4,7 @@ from django.db.models.signals import post_save
 from django.dispatch import receiver
 from django.utils import timezone
 
-from .models.recording import Recording, Segmentation
-from .models.classification import ClassificationRun, ClassifierTrainingJob
-from .models.notification import UserNotification
-from .models.user import UserProfile
+from .models import Recording, Segmentation, ClassificationRun, ClassifierTrainingJob, UserProfile, Notification
 from .tasks import calculate_audio_duration
 
 # NOTE: These signals are commented out because they duplicate functionality in models.py
@@ -56,14 +53,14 @@ def segmentation_status_changed(sender, instance, **kwargs):
     # Only create notifications for status transitions to completed or failed
     if instance.status == 'completed':
         # Create success notification
-        UserNotification.add_segmentation_notification(
+        Notification.add_segmentation_notification(
             user=instance.created_by,
             segmentation=instance,
             success=True
         )
     elif instance.status == 'failed':
         # Create failure notification
-        UserNotification.add_segmentation_notification(
+        Notification.add_segmentation_notification(
             user=instance.created_by,
             segmentation=instance,
             success=False
@@ -86,14 +83,14 @@ def classification_run_status_changed(sender, instance, **kwargs):
     # Only create notifications for status transitions to completed or failed
     if instance.status == 'completed':
         # Create success notification
-        UserNotification.add_classification_notification(
+        Notification.add_classification_notification(
             user=instance.created_by,
             classification_run=instance,
             success=True
         )
     elif instance.status == 'failed':
         # Create failure notification
-        UserNotification.add_classification_notification(
+        Notification.add_classification_notification(
             user=instance.created_by,
             classification_run=instance,
             success=False
@@ -116,14 +113,14 @@ def training_job_status_changed(sender, instance, **kwargs):
     # Only create notifications for status transitions to completed or failed
     if instance.status == 'completed':
         # Create success notification
-        UserNotification.add_training_notification(
+        Notification.add_training_notification(
             user=instance.created_by,
             training_job=instance,
             success=True
         )
     elif instance.status == 'failed':
         # Create failure notification
-        UserNotification.add_training_notification(
+        Notification.add_training_notification(
             user=instance.created_by,
             training_job=instance,
             success=False

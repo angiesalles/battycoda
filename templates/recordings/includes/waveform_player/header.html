@@ -1,57 +1,19 @@
 <!-- Waveform player card header -->
 <div class="card-header d-flex justify-content-between align-items-center">
-    <h5 class="mb-0">Audio Playback & <span id="{{ container_id }}-view-label">Waveform</span></h5>
+    <h5 class="mb-0">Audio Playback & <span id="{{ container_id }}-view-label">Spectrogram</span></h5>
     <div class="d-flex align-items-center">
-        {% if spectrogram_info %}
-            {% if spectrogram_info.status == 'available' %}
-                <!-- Spectrogram is available - show toggle -->
-                <div class="d-flex align-items-center me-2">
-                    <label class="custom-control custom-radio custom-control-inline">
-                        <input class="custom-control-input" type="radio" name="{{ container_id }}-view-options" id="{{ container_id }}-waveform-radio" checked>
-                        <span class="custom-control-label">Waveform</span>
-                    </label>
-                    <label class="custom-control custom-radio custom-control-inline">
-                        <input class="custom-control-input" type="radio" name="{{ container_id }}-view-options" id="{{ container_id }}-spectrogram-radio">
-                        <span class="custom-control-label">Spectrogram</span>
-                    </label>
-                </div>
-                
-                <!-- Spectrogram controls (only show when in spectrogram mode) -->
-                <div id="{{ container_id }}-spectrogram-controls" class="d-flex align-items-center me-2" style="display: none;">
-                    <small class="text-muted me-2">Contrast:</small>
-                    <input type="range" id="{{ container_id }}-contrast-slider" 
-                           class="form-range me-2" min="0.5" max="3" step="0.1" value="1.5" 
-                           style="width: 80px;">
-                    <small class="text-muted me-2">Brightness:</small>
-                    <input type="range" id="{{ container_id }}-brightness-slider" 
-                           class="form-range me-2" min="-0.5" max="0.5" step="0.1" value="0.2" 
-                           style="width: 80px;">
-                    <button id="{{ container_id }}-reset-image-btn" class="btn btn-sm btn-outline-secondary" 
-                            title="Reset contrast and brightness">
-                        <i class="fas fa-undo"></i>
-                    </button>
-                </div>
-            {% elif spectrogram_info.status == 'generating' %}
-                <!-- Spectrogram is being generated - show progress -->
-                <div class="d-flex align-items-center me-2">
-                    <div class="progress me-2" style="width: 100px; height: 20px;">
-                        <div class="progress-bar progress-bar-striped progress-bar-animated" 
-                             role="progressbar" 
-                             style="width: {{ spectrogram_info.progress }}%">
-                            {{ spectrogram_info.progress }}%
-                        </div>
-                    </div>
-                    <small class="text-muted">Generating spectrogram...</small>
-                </div>
-            {% else %}
-                <!-- Spectrogram not available - show generate button -->
-                <button id="{{ container_id }}-generate-spectrogram-btn" 
-                        class="btn btn-sm btn-outline-secondary me-2" 
-                        data-recording-id="{{ recording.id }}">
-                    <i class="s7-graph"></i> Generate Spectrogram
-                </button>
-            {% endif %}
-        {% endif %}
+        <!-- Always show view toggle - spectrogram data will be loaded automatically -->
+        <div class="d-flex align-items-center me-2">
+            <label class="custom-control custom-radio custom-control-inline">
+                <input class="custom-control-input" type="radio" name="{{ container_id }}-view-options" id="{{ container_id }}-waveform-radio">
+                <span class="custom-control-label">Waveform</span>
+            </label>
+            <label class="custom-control custom-radio custom-control-inline">
+                <input class="custom-control-input" type="radio" name="{{ container_id }}-view-options" id="{{ container_id }}-spectrogram-radio" checked>
+                <span class="custom-control-label">Spectrogram</span>
+            </label>
+        </div>
+        
         <span id="{{ container_id }}-status" class="badge bg-info">Loading...</span>
     </div>
 </div>

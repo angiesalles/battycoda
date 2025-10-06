@@ -9,7 +9,7 @@ from django.db import transaction
 
 from .auth import api_key_required
 from ..models import Recording
-from ..models.recording import Segmentation, Segment
+from ..models import Segmentation, Segment
 from ..audio.utils import process_pickle_file
 
 

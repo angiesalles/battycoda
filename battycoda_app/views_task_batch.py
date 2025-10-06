@@ -16,7 +16,7 @@ import numpy as np
 from .audio.utils import process_pickle_file
 from .forms import TaskBatchForm
 from .models.organization import Project
-from .models.recording import Recording, Segment
+from .models import Recording, Segment
 from .models.task import Task, TaskBatch
 from .models.user import UserProfile
 from .utils_modules.task_export_utils import generate_tasks_csv

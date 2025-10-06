@@ -8,15 +8,13 @@ import hashlib
 from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
-from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.db import transaction
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
 
 from battycoda_app.forms import SegmentForm
-from battycoda_app.models.recording import Recording, Segment, Segmentation
-from battycoda_app.models.spectrogram import SpectrogramJob
+from battycoda_app.models import Recording, Segment, Segmentation, SpectrogramJob
 
 
 def get_spectrogram_status(recording):
@@ -197,7 +195,7 @@ def segmentation_detail_view(request, segmentation_id):
     # Use this specific segmentation
     active_segmentation = segmentation
     segments_queryset = Segment.objects.filter(segmentation=active_segmentation).order_by("onset")
-    
+
     # Add segmentation info to context
     segmentation_info = {
         "id": active_segmentation.id,
@@ -207,59 +205,11 @@ def segmentation_detail_view(request, segmentation_id):
         "manually_edited": active_segmentation.manually_edited,
     }
 
-    # Apply filters if provided
-    min_duration = request.GET.get('min_duration')
-    max_duration = request.GET.get('max_duration')
-    search_id = request.GET.get('search_id')
-    
-    if min_duration:
-        try:
-            min_duration = float(min_duration)
-            # Filter by duration (offset - onset)
-            segments_queryset = segments_queryset.extra(
-                where=["(offset - onset) >= %s"],
-                params=[min_duration]
-            )
-        except ValueError:
-            pass
-    
-    if max_duration:
-        try:
-            max_duration = float(max_duration)
-            segments_queryset = segments_queryset.extra(
-                where=["(offset - onset) <= %s"],
-                params=[max_duration]
-            )
-        except ValueError:
-            pass
-    
-    if search_id:
-        try:
-            search_id = int(search_id)
-            segments_queryset = segments_queryset.filter(id=search_id)
-        except ValueError:
-            pass
-
-    # Set up pagination for segments - 50 segments per page for reasonable performance
-    paginator = Paginator(segments_queryset, 50)
-    page = request.GET.get('page')
-    
-    try:
-        segments = paginator.page(page)
-    except PageNotAnInteger:
-        segments = paginator.page(1)
-    except EmptyPage:
-        segments = paginator.page(paginator.num_pages)
-
-    # Check spectrogram status and jobs
-    spectrogram_info = get_spectrogram_status(recording)
-    spectrogram_url = spectrogram_info.get('url')
-
-    # For waveform display, only load first 200 segments to avoid performance issues
-    # Additional segments will be loaded dynamically via AJAX as needed
-    initial_segments_for_waveform = segments_queryset[:200]
+    # Load all segments for JavaScript (frontend handles filtering/pagination)
+    # For very large segmentations, we limit to first 10000 segments to avoid memory issues
+    all_segments = segments_queryset[:10000]
     segments_json = []
-    for segment in initial_segments_for_waveform:
+    for segment in all_segments:
         segments_json.append({"id": segment.id, "onset": segment.onset, "offset": segment.offset})
 
     # Get total segment count for context
@@ -270,18 +220,10 @@ def segmentation_detail_view(request, segmentation_id):
 
     context = {
         "recording": recording,
-        "segments": segments,
         "segments_json": json.dumps(segments_json),
         "total_segments_count": total_segments_count,
-        "spectrogram_url": spectrogram_url,
-        "spectrogram_info": spectrogram_info,
         "active_segmentation": segmentation_info,
         "all_segmentations": all_segmentations,
-        "filter_values": {
-            "min_duration": request.GET.get('min_duration', ''),
-            "max_duration": request.GET.get('max_duration', ''),
-            "search_id": request.GET.get('search_id', ''),
-        },
     }
 
     return render(request, "segmentations/segmentation_detail.html", context)
@@ -306,19 +248,7 @@ def add_segment_view(request, segmentation_id):
             segment.created_by = request.user
             segment.save(manual_edit=True)  # Mark as manually edited
 
-            return JsonResponse(
-                {
-                    "success": True,
-                    "segment": {
-                        "id": segment.id,
-                        "name": segment.name or f"Segment {segment.id}",
-                        "onset": segment.onset,
-                        "offset": segment.offset,
-                        "duration": segment.duration(),  # Call the method instead of using it as a property
-                        "notes": segment.notes or "",
-                    },
-                }
-            )
+            return JsonResponse({"success": True, "segment": segment.to_dict()})
         else:
             return JsonResponse({"success": False, "errors": form.errors}, status=400)
 
@@ -341,19 +271,7 @@ def edit_segment_view(request, segmentation_id, segment_id):
             segment = form.save(commit=False)
             segment.save(manual_edit=True)  # Mark as manually edited
 
-            return JsonResponse(
-                {
-                    "success": True,
-                    "segment": {
-                        "id": segment.id,
-                        "name": segment.name or f"Segment {segment.id}",
-                        "onset": segment.onset,
-                        "offset": segment.offset,
-                        "duration": segment.duration(),  # Call the method instead of using it as a property
-                        "notes": segment.notes or "",
-                    },
-                }
-            )
+            return JsonResponse({"success": True, "segment": segment.to_dict()})
         else:
             return JsonResponse({"success": False, "errors": form.errors}, status=400)
 

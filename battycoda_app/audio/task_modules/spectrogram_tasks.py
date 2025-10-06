@@ -261,15 +261,26 @@ def generate_recording_spectrogram(self, recording_id):
         import librosa
         stft = librosa.stft(audio_data, hop_length=512, n_fft=2048)
         spectrogram = librosa.amplitude_to_db(np.abs(stft), ref=np.max)
-        
+
+        # Limit to frequencies up to 128kHz to reduce data size
+        # With 384kHz sample rate and n_fft=2048, each bin is ~187.5 Hz
+        # 128kHz / 187.5 Hz = 682 bins (out of 1025 total)
+        max_freq_hz = 128000
+        freq_per_bin = (effective_sample_rate / 2) / (2048 / 2)
+        max_bin = int(max_freq_hz / freq_per_bin)
+        spectrogram = spectrogram[:max_bin, :]
+
+        # Convert to float16 to reduce file size (2 bytes instead of 8 bytes per value)
+        spectrogram = spectrogram.astype(np.float16)
+
         update_job_progress(80)
-        
+
         # Save spectrogram data to HDF5 for efficient seeking
         import h5py
-        
+
         with h5py.File(output_path, 'w') as f:
-            # Store the spectrogram data
-            f.create_dataset('spectrogram', data=spectrogram, compression='gzip', compression_opts=9)
+            # Store the spectrogram data with float16 dtype
+            f.create_dataset('spectrogram', data=spectrogram, dtype='float16', compression='gzip', compression_opts=9)
             # Store metadata
             f.attrs['sample_rate'] = effective_sample_rate
             f.attrs['hop_length'] = 512
@@ -344,41 +355,138 @@ def load_spectrogram_segment(h5_file_path, start_time, end_time):
 
 def generate_spectrogram(path, args, output_path=None):
     """
-    Pure function to generate a spectrogram.
+    Pure function to generate a spectrogram from cached HDF5 data.
+
+    This function now loads data from the pre-computed HDF5 spectrogram file
+    and generates a PNG for the requested segment/view.
 
     Args:
-        path: Path to the audio file
-        args: Dict of parameters (call, channel, etc.)
+        path: Path to the audio file (used to find the recording)
+        args: Dict of parameters (call, channel, onset, offset, overview, etc.)
         output_path: Optional output path, will be generated if not provided
 
     Returns:
         tuple: (success, output_path, error_message)
     """
-    # Time tracking removed
-
     if output_path is None:
         output_path = appropriate_file(path, args)
-
-    # Extract basic parameters for minimal task ID
-    call = args.get("call", "0")
-    channel = args.get("channel", "0")
-    task_id = f"Call {call} Ch {channel}"
 
     try:
         # Ensure directory exists
         os.makedirs(os.path.dirname(output_path), exist_ok=True)
 
         # Parse parameters
+        overview = args.get("overview") == "1" or args.get("overview") == "True"
+        channel = int(args.get("channel", 0))
+
+        # Get onset/offset for the segment
+        if "onset" in args and "offset" in args:
+            onset = float(args["onset"])
+            offset = float(args["offset"])
+        else:
+            return False, output_path, "onset and offset required"
+
+        # Find the recording from the path to get the HDF5 file
+        from battycoda_app.models.recording import Recording
+        try:
+            # Try to find recording by wav file path
+            recording = Recording.objects.filter(wav_file__icontains=os.path.basename(path)).first()
+            if not recording or not recording.spectrogram_file:
+                # Fall back to generating from raw audio if no HDF5 exists
+                return generate_spectrogram_from_audio(path, args, output_path)
+        except Exception:
+            # Fall back to generating from raw audio
+            return generate_spectrogram_from_audio(path, args, output_path)
+
+        # Load HDF5 spectrogram data
+        import h5py
+        h5_path = os.path.join(settings.MEDIA_ROOT, "spectrograms", "recordings", recording.spectrogram_file)
+
+        if not os.path.exists(h5_path):
+            # Fall back if H5 doesn't exist
+            return generate_spectrogram_from_audio(path, args, output_path)
+
+        with h5py.File(h5_path, 'r') as f:
+            sample_rate = f.attrs['sample_rate']
+            hop_length = f.attrs['hop_length']
+            duration = f.attrs['duration']
+
+            # Load full spectrogram data
+            spectrogram_data = f['spectrogram'][:]
+
+        # Calculate time window with padding
+        if overview:
+            # Overview: show wider context around the call
+            time_window = offset - onset
+            padding = time_window * 2  # 2x padding on each side
+        else:
+            # Detail: show just the call with minimal padding
+            time_window = offset - onset
+            padding = time_window * 0.3  # 30% padding on each side
+
+        start_time = max(0, onset - padding)
+        end_time = min(duration, offset + padding)
+
+        # Convert times to frame indices
+        time_per_frame = hop_length / sample_rate
+        start_frame = int(start_time / time_per_frame)
+        end_frame = int(end_time / time_per_frame)
+
+        # Extract the relevant time slice
+        spectrogram_slice = spectrogram_data[:, start_frame:end_frame]
+
+        # Generate PNG using matplotlib (same as make_spectrogram but from HDF5 data)
+        import matplotlib
+        matplotlib.use('Agg')
+        import matplotlib.pyplot as plt
+        import librosa.display
+        import io
+
+        plt.figure(figsize=(15, 6))
+        librosa.display.specshow(spectrogram_slice,
+                                sr=sample_rate,
+                                hop_length=hop_length,
+                                x_axis='time',
+                                y_axis='hz',
+                                cmap='viridis')
+
+        plt.axis('off')
+        plt.tight_layout()
+
+        # Save to PNG
+        buf = io.BytesIO()
+        plt.savefig(buf, format='png', bbox_inches='tight', pad_inches=0, dpi=100)
+        buf.seek(0)
+        plt.close()
+
+        # Save to file
+        img = Image.open(buf)
+        img.save(output_path, format="PNG", compress_level=1)
+
+        if os.path.exists(output_path) and os.path.getsize(output_path) > 0:
+            return True, output_path, None
+        else:
+            return False, output_path, "Failed to create output file"
+
+    except Exception as e:
+        return False, output_path, str(e)
+
+
+def generate_spectrogram_from_audio(path, args, output_path):
+    """
+    Fallback function to generate spectrogram directly from audio file.
+    Used when HDF5 cache doesn't exist.
+    """
+    try:
+        # Parse parameters
         call_to_do = int(args.get("call", 0))
         overview = args.get("overview") == "1" or args.get("overview") == "True"
         channel = int(args.get("channel", 0))
-        contrast = float(args.get("contrast", 4))
-        low_overlap = args.get("low_overlap") == "1" or args.get("low_overlap") == "True"
 
         # Select window size
         hwin = overview_hwin() if overview else normal_hwin()
 
-        # Get audio data with direct segment loading if possible
+        # Get audio data
         extra_params = None
         if "onset" in args and "offset" in args:
             extra_params = {"onset": args["onset"], "offset": args["offset"]}
@@ -396,23 +504,16 @@ def generate_spectrogram(path, args, output_path=None):
         # Extract channel
         thr_x1 = thr_x1[:, channel]
 
-        # Generate spectrogram using librosa.display.specshow approach
+        # Generate spectrogram
         img = make_spectrogram(thr_x1, fs)
 
-        # Save with minimal compression for speed
+        # Save
         img.save(output_path, format="PNG", compress_level=1)
 
-        # Performance logging removed
-
-        # Verify the file was created
         if os.path.exists(output_path) and os.path.getsize(output_path) > 0:
-            # Performance logging removed
             return True, output_path, None
         else:
-
             return False, output_path, "Failed to create output file"
 
     except Exception as e:
-
-        # Simply return the error, no attempt to create error image
         return False, output_path, str(e)

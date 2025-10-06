@@ -7,7 +7,7 @@ from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404
 
-from battycoda_app.models.recording import Recording, Segment, Segmentation
+from battycoda_app.models import Recording, Segment, Segmentation
 
 
 @login_required

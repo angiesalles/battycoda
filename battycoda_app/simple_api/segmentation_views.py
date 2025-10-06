@@ -8,7 +8,7 @@ from django.db.models import Q
 
 from .auth import api_key_required
 from ..models import Recording
-from ..models.recording import SegmentationAlgorithm, Segmentation
+from ..models import SegmentationAlgorithm, Segmentation
 
 
 @require_http_methods(["GET"])

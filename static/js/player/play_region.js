@@ -7,24 +7,23 @@
 
 // Wait for the DOM to be fully loaded
 document.addEventListener('DOMContentLoaded', function() {
-  // Add the playRegion method to all waveform players
+  // Add the playRegion method to all players
   setTimeout(function() {
-    if (window.waveformPlayers) {
+    if (window.players) {
       // Extend each player with the playRegion method
-      for (const id in window.waveformPlayers) {
-        if (window.waveformPlayers.hasOwnProperty(id)) {
-          const playerWrapper = window.waveformPlayers[id];
+      for (const id in window.players) {
+        if (window.players.hasOwnProperty(id)) {
+          const playerWrapper = window.players[id];
           const player = playerWrapper.player;
           
           // Add the playRegion method to the player instance
           if (player && !player.playRegion) {
             player.playRegion = function(start, end) {
               if (!this.audioPlayer) return;
-              
-              // Set the current time to the start position
-              this.audioPlayer.currentTime = start;
-              this.currentTime = start;
-              
+
+              // Seek to start position
+              this.seek(start);
+
               // Start playback
               this.audioPlayer.play();
               

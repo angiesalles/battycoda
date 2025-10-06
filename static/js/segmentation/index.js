@@ -19,7 +19,9 @@ export function initSegmentation(options) {
         if (!window.battycoda.segmentation) {
             window.battycoda.segmentation = {};
         }
-        window.battycoda.segmentation[options.containerId] = manager;
+        // Store by waveformId (the player ID) for consistency with onclick handlers
+        const playerId = options.waveformId || 'segment-waveform';
+        window.battycoda.segmentation[playerId] = manager;
     }
     
     return manager;

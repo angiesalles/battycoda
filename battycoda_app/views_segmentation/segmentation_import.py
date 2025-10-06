@@ -12,7 +12,7 @@ from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
 
 from battycoda_app.audio.utils import process_pickle_file
-from battycoda_app.models.recording import Recording, Segment, Segmentation
+from battycoda_app.models import Recording, Segment, Segmentation
 
 @login_required
 def upload_pickle_segments_view(request, recording_id):

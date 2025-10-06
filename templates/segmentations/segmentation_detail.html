@@ -70,14 +70,9 @@
         <div class="col-lg-8">
             <!-- Include the reusable waveform player with selection disabled for hidden recordings -->
             {% if recording.hidden %}
-                {% include "recordings/includes/waveform_player.html" with recording=recording container_id="segment-waveform" height=300 allow_selection=False show_zoom=True segments=segments_json spectrogram_url=spectrogram_url spectrogram_info=spectrogram_info %}
+                {% include "recordings/includes/waveform_player.html" with recording=recording container_id="segment-waveform" height=300 allow_selection=False show_zoom=True segments=segments_json %}
             {% else %}
-                {% include "recordings/includes/waveform_player.html" with recording=recording container_id="segment-waveform" height=300 allow_selection=True show_zoom=True segments=segments_json spectrogram_url=spectrogram_url spectrogram_info=spectrogram_info %}
-            {% endif %}
-            
-            <!-- Include segment form component only for non-hidden recordings -->
-            {% if not recording.hidden %}
-            {% include "recordings/includes/segmentation/segment_form.html" %}
+                {% include "recordings/includes/waveform_player.html" with recording=recording container_id="segment-waveform" height=300 allow_selection=True show_zoom=True segments=segments_json %}
             {% endif %}
         </div>
         
@@ -146,6 +141,7 @@
         if (!isReadOnly) {
             initSegmentation({
                 recordingId: {{ recording.id }},
+                segmentationId: {{ active_segmentation.id }},
                 waveformId: 'segment-waveform',
                 csrfToken: csrfToken,
                 segments: segmentsData,

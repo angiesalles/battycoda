@@ -161,49 +161,13 @@ export class CanvasInteractions {
     seekToPosition(e) {
         const rect = e.target.getBoundingClientRect();
         const x = Math.max(0, Math.min(this.canvasWidth, e.clientX - rect.left));
-        
+
         // Calculate time position considering zoom
         const visibleProportion = x / this.canvasWidth;
         const timePos = this.visibleStartTime + (visibleProportion * this.visibleDuration);
-        
-        // Store current visible window before changing position
-        const currentVisibleStart = this.visibleStartTime;
-        const currentVisibleEnd = this.visibleStartTime + this.visibleDuration;
-        
-        // Check if the new position is outside the current visible area
-        const positionOutsideView = timePos < currentVisibleStart || timePos > currentVisibleEnd;
-        
-        // Set current time
-        this.player.currentTime = Math.max(0, Math.min(this.player.duration, timePos));
-        this.player.audioPlayer.currentTime = this.player.currentTime;
-        this.player.updateTimeDisplay();
-        
-        // Only adjust the view if the position is completely outside visible area
-        if (positionOutsideView && this.player.zoomLevel > 1) {
-            this.adjustViewForSeek(timePos, currentVisibleStart, currentVisibleEnd);
-        }
-        
-        // Update the view
-        this.player.redrawCurrentView();
-        this.player.drawTimeline();
-    }
-    
-    /**
-     * Adjust view when seeking outside visible area
-     */
-    adjustViewForSeek(timePos, currentVisibleStart, currentVisibleEnd) {
-        const visibleDurationRatio = this.visibleDuration / this.player.duration;
-        
-        if (timePos < currentVisibleStart) {
-            // If clicking to the left of visible area, show position at 25% from left edge
-            this.player.zoomOffset = Math.max(0, timePos / this.player.duration - 0.25 * visibleDurationRatio);
-        } else if (timePos > currentVisibleEnd) {
-            // If clicking to the right of visible area, show position at 25% from right edge
-            this.player.zoomOffset = Math.min(
-                1 - visibleDurationRatio,
-                timePos / this.player.duration - 0.75 * visibleDurationRatio
-            );
-        }
+
+        // Use centralized seek method
+        this.player.seek(timePos);
     }
     
     /**

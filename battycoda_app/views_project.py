@@ -119,10 +119,13 @@ def delete_project_view(request, project_id):
         has_dependencies = task_count > 0 or batch_count > 0
 
         if request.method == "POST":
-            if has_dependencies:
+            # Check if force delete is requested
+            force_delete = request.POST.get("force_delete") == "true"
+
+            if has_dependencies and not force_delete:
                 messages.error(
                     request,
-                    "Cannot delete project with associated tasks or batches. Please remove these dependencies first.",
+                    "Cannot delete project with associated tasks or batches. Check the 'Force Delete' box to proceed.",
                 )
                 return redirect("battycoda_app:delete_project", project_id=project.id)
 

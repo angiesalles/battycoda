@@ -17,7 +17,7 @@ from django.utils import timezone
 
 from .audio.utils import process_pickle_file
 from .forms import RecordingForm
-from .models.recording import Recording, Segment, Segmentation
+from .models import Recording, Segment, Segmentation
 from .models.user import UserProfile
 
 # Set up logging

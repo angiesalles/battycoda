@@ -3,11 +3,11 @@
  */
 
 export class SegmentCRUD {
-    constructor(recordingId, csrfToken) {
-        this.recordingId = recordingId;
+    constructor(segmentationId, csrfToken) {
+        this.segmentationId = segmentationId;
         this.csrfToken = csrfToken;
     }
-    
+
     // Create a new segment
     async createSegment(segmentData) {
         try {
@@ -21,8 +21,8 @@ export class SegmentCRUD {
             if (segmentData.notes) {
                 formData.append('notes', segmentData.notes);
             }
-            
-            const response = await fetch(`/segments/${this.recordingId}/add/`, {
+
+            const response = await fetch(`/segmentations/${this.segmentationId}/segments/add/`, {
                 method: 'POST',
                 body: formData,
                 headers: {
@@ -60,8 +60,8 @@ export class SegmentCRUD {
             if (segmentData.notes) {
                 formData.append('notes', segmentData.notes);
             }
-            
-            const response = await fetch(`/segments/${segmentId}/edit/`, {
+
+            const response = await fetch(`/segmentations/${this.segmentationId}/segments/${segmentId}/edit/`, {
                 method: 'POST',
                 body: formData,
                 headers: {
@@ -91,8 +91,8 @@ export class SegmentCRUD {
         try {
             const formData = new FormData();
             formData.append('csrfmiddlewaretoken', this.csrfToken);
-            
-            const response = await fetch(`/segments/${segmentId}/delete/`, {
+
+            const response = await fetch(`/segmentations/${this.segmentationId}/segments/${segmentId}/delete/`, {
                 method: 'POST',
                 body: formData,
                 headers: {

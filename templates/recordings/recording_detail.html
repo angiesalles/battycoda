@@ -4,7 +4,6 @@
 {% block title %}BattyCoda - {{ recording.name }}{% endblock %}
 
 {% block extra_css %}
-<link id="waveformViewerCSS" rel="stylesheet" href="{% static 'css/waveform_viewer.css' %}">
 {% endblock %}
 
 {% block content %}
@@ -34,7 +33,7 @@
 
     <div id="recordingContentRow" class="row">
         <!-- Recording information card -->
-        <div id="recordingInfoCol" class="col-md-4 mb-4">
+        <div id="recordingInfoCol" class="col-md-6 mb-4">
             <div id="recordingInfoCard" class="card">
                 <div id="recordingInfoHeader" class="card-header">
                     <h5 id="recordingInfoTitle" class="card-title mb-0"><span class="s7-micro mr-2"></span>Recording Information</h5>
@@ -102,19 +101,10 @@
                 </div>
             </div>
             
-            <!-- Integrated audio player note -->
-            <div id="playerNoteCard" class="card mt-3 mb-4">
-                <div id="playerNoteBody" class="card-body py-2">
-                    <small id="playerNoteText" class="text-muted"><span class="s7-info mr-1"></span> Note: The audio player is integrated with the waveform visualization. Click the waveform to seek or use the playback controls.</small>
-                </div>
-            </div>
         </div>
         
-        <!-- Spectrogram and segments section -->
-        <div id="spectrogramCol" class="col-md-8 mb-4">
-            <!-- Include the reusable waveform player -->
-            {% include "recordings/includes/waveform_player.html" with recording=recording container_id="detail-waveform" spectrogram_info=spectrogram_info spectrogram_url=spectrogram_url %}
-            
+        <!-- Segmentation section -->
+        <div id="segmentationCol" class="col-md-6 mb-4">
             <!-- Segmentation links card -->
             <div id="segmentationCard" class="card mt-4">
                 <div id="segmentationHeader" class="card-header">

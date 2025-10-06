@@ -10,6 +10,7 @@ from .views_segmentation.segmentation_execution import (
 )
 from .views_segmentation.segmentation_import import upload_pickle_segments_view
 from .views_segmentation.segmentation_preview import create_preview_recording_view
+from .views_segmentation.spectrogram_data import get_spectrogram_data_view
 from .views_segmentation.segmentation_settings import activate_segmentation_view
 
 # Direct imports from views_classification
@@ -321,6 +322,9 @@ urlpatterns = [
     path("segmentations/<int:segmentation_id>/segments/<int:segment_id>/edit/", edit_segment_view, name="edit_segment"),
     path("segmentations/<int:segmentation_id>/segments/<int:segment_id>/delete/", delete_segment_view, name="delete_segment"),
     path("segmentations/<int:segmentation_id>/segments/load-ajax/", load_segments_ajax, name="load_segments_ajax"),
+    
+    # Spectrogram data API
+    path("recordings/<int:recording_id>/spectrogram-data/", get_spectrogram_data_view, name="get_spectrogram_data"),
     
     # Notification routes
     path("notifications/", notification_list_view, name="notifications"),

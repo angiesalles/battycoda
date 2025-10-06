@@ -129,7 +129,7 @@ def create_task_batch_from_detection_run(request, run_id):
                 segment.task = created_tasks[i]
             
             # Bulk update segments
-            from battycoda_app.models.recording import Segment
+            from battycoda_app.models import Segment
             Segment.objects.bulk_update(segments_to_update, ['task'], batch_size=100)
             
             # Create success message with filtering info
@@ -283,7 +283,7 @@ def create_tasks_for_species_view(request, species_id):
             with transaction.atomic():
                 # First, lock all segments we might modify to prevent concurrent access
                 # Get all segments associated with these runs
-                from battycoda_app.models.recording import Segment
+                from battycoda_app.models import Segment
                 all_segments_ids = []
                 
                 for run in runs:

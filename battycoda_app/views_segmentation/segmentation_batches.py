@@ -11,8 +11,7 @@ from django.conf import settings
 from django.urls import reverse
 from django.utils import timezone
 
-from battycoda_app.models.recording import Recording, Segmentation, Segment
-from battycoda_app.models.organization import Project
+from battycoda_app.models import Recording, Segmentation, Segment, Project
 
 @login_required
 def batch_segmentation_view(request):
@@ -127,8 +126,7 @@ def segmentation_jobs_status_view(request):
             "algorithm_type": segmentation.algorithm.get_algorithm_type_display()
             if segmentation.algorithm
             else "Manual",
-            "view_url": reverse("battycoda_app:segment_recording", kwargs={"recording_id": segmentation.recording.id}) + 
-                        f"?segmentation_id={segmentation.id}",
+            "view_url": reverse("battycoda_app:segmentation_detail", kwargs={"segmentation_id": segmentation.id}),
             "retry_url": reverse(
                 "battycoda_app:auto_segment_recording", kwargs={"recording_id": segmentation.recording.id}
             ),

@@ -46,7 +46,7 @@ def get_call_types(species):
 
 def get_segments(recording, segmentation=None):
     """Get all segments for a recording or segmentation."""
-    from ...models.recording import Segment
+    from ...models import Segment
     
     if segmentation:
         segments = Segment.objects.filter(segmentation=segmentation)

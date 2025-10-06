@@ -40,8 +40,9 @@ function initSpectrogramViewer() {
     }
     
     let currentChannel = 0;
-    let isOverview = false;
-    
+    // Determine initial state from which button is active
+    let isOverview = overviewBtn.classList.contains('active');
+
     // Function to update spectrogram based on current settings
     function updateSpectrogram() {
         const key = `channel_${currentChannel}_${isOverview ? 'overview' : 'detail'}`;

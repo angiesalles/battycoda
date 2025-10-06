@@ -26,15 +26,15 @@
     </div>
     {% endif %}
 
-    <div class="card bg-dark">
+    <div class="card">
         <div class="card-header d-flex justify-content-between align-items-center">
             <h5 class="mb-0">Delete Project: {{ project.name }}</h5>
         </div>
         <div class="card-body">
             {% if has_dependencies %}
-            <div class="alert alert-danger">
-                <h5><i class="fas fa-exclamation-triangle"></i> Cannot Delete Project</h5>
-                <p>This project has associated items that must be removed first:</p>
+            <div class="alert alert-warning">
+                <h5><i class="fas fa-exclamation-triangle"></i> Warning: Project Has Dependencies</h5>
+                <p>This project has associated items that will be permanently deleted:</p>
                 <ul>
                     {% if task_count > 0 %}
                     <li>{{ task_count }} associated task{% if task_count != 1 %}s{% endif %}</li>
@@ -43,13 +43,25 @@
                     <li>{{ batch_count }} task batch{% if batch_count != 1 %}es{% endif %}</li>
                     {% endif %}
                 </ul>
-                <p>Please remove these dependencies before deleting this project.</p>
+                <p class="mb-0"><strong>All associated tasks, batches, recordings, segmentations, and classifications will be permanently deleted. This action cannot be undone.</strong></p>
             </div>
-            <div class="mt-4">
-                <a href="{% url 'battycoda_app:project_detail' project.id %}" class="btn btn-secondary">
-                    <i class="fas fa-arrow-left"></i> Return to Project
-                </a>
-            </div>
+            <form method="post">
+                {% csrf_token %}
+                <div class="form-check mb-3">
+                    <input class="form-check-input" type="checkbox" id="forceDeleteCheck" name="force_delete" value="true">
+                    <label class="form-check-label text-danger" for="forceDeleteCheck">
+                        <strong>I understand that all associated data will be permanently deleted</strong>
+                    </label>
+                </div>
+                <div class="d-flex justify-content-end gap-2 mt-4">
+                    <a href="{% url 'battycoda_app:project_detail' project.id %}" class="btn btn-secondary">
+                        <i class="fas fa-times"></i> Cancel
+                    </a>
+                    <button type="submit" class="btn btn-danger" id="deleteBtn" disabled>
+                        <i class="fas fa-trash"></i> Force Delete Project and All Data
+                    </button>
+                </div>
+            </form>
             {% else %}
             <div class="alert alert-warning">
                 <h5><i class="fas fa-exclamation-triangle"></i> Warning</h5>
@@ -70,4 +82,24 @@
         </div>
     </div>
 </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Enable delete button only when checkbox is checked
+    const forceDeleteCheck = document.getElementById('forceDeleteCheck');
+    const deleteBtn = document.getElementById('deleteBtn');
+
+    console.log('Force delete checkbox:', forceDeleteCheck);
+    console.log('Delete button:', deleteBtn);
+
+    if (forceDeleteCheck && deleteBtn) {
+        forceDeleteCheck.addEventListener('change', function() {
+            console.log('Checkbox changed, checked:', this.checked);
+            deleteBtn.disabled = !this.checked;
+        });
+    } else {
+        console.error('Could not find elements for force delete');
+    }
+});
+</script>
 {% endblock %}

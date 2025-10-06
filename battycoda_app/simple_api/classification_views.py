@@ -62,7 +62,7 @@ def simple_start_classification(request, segmentation_id):
     try:
         # Get the segmentation
         try:
-            from ..models.recording import Segmentation
+            from ..models import Segmentation
             segmentation = Segmentation.objects.get(id=segmentation_id)
         except Segmentation.DoesNotExist:
             return JsonResponse({

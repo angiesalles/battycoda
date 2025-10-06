@@ -6,7 +6,8 @@ from hijack.contrib.admin import HijackUserAdminMixin
 
 from .models.classification import CallProbability, Classifier, ClassifierTrainingJob, ClassificationResult, ClassificationRun
 from .models.organization import Species, Call, Project
-from .models.recording import Recording, Segment, Segmentation, SegmentationAlgorithm
+from .models.recording import Recording
+from .models.segmentation import Segment, Segmentation, SegmentationAlgorithm
 from .models.task import Task, TaskBatch
 from .models.user import UserProfile, GroupMembership
 from .models.user import Group as BattycodaGroup

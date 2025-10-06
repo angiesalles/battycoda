@@ -132,10 +132,7 @@ export class EventHandlers {
         if (this.player.stopBtn) {
             this.player.stopBtn.addEventListener('click', () => {
                 this.player.audioPlayer.pause();
-                this.player.audioPlayer.currentTime = 0;
-                this.player.currentTime = 0;
-                this.player.updateTimeDisplay();
-                this.player.redrawCurrentView();
+                this.player.seek(0);
             });
         }
         
@@ -146,15 +143,8 @@ export class EventHandlers {
                 const clickX = e.clientX - rect.left;
                 const width = rect.width;
                 const clickRatio = clickX / width;
-                
-                // Update audio player time
-                this.player.audioPlayer.currentTime = clickRatio * this.player.duration;
-                this.player.currentTime = this.player.audioPlayer.currentTime;
-                
-                // Let the timeupdate handler handle this gradually during playback
-                
-                this.player.updateTimeDisplay();
-                this.player.redrawCurrentView();
+
+                this.player.seek(clickRatio * this.player.duration);
             });
         }
     }
@@ -173,7 +163,7 @@ export class EventHandlers {
                 const currentCenterTime = (this.player.zoomOffset + (visibleDuration / this.player.duration) * 0.5) * this.player.duration;
                 
                 // Double the zoom level
-                this.player.zoomLevel = Math.min(this.player.zoomLevel * 2, 32);
+                this.player.zoomLevel = Math.min(this.player.zoomLevel * 2, 1000);
                 
                 // Calculate new visible duration and adjust offset to keep the same center
                 const newVisibleDuration = this.player.duration / this.player.zoomLevel;

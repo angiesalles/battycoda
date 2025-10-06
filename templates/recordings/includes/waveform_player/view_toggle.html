@@ -3,15 +3,15 @@ function setupViewToggle() {
     const waveformRadio = document.getElementById('{{ container_id }}-waveform-radio');
     const spectrogramRadio = document.getElementById('{{ container_id }}-spectrogram-radio');
     const viewLabel = document.getElementById('{{ container_id }}-view-label');
-    const playerInstance = window.waveformPlayers["{{ container_id }}"];
-    
+    const playerInstance = window.players["{{ container_id }}"];
+
     console.log('setupViewToggle - elements found:', {
         waveformRadio: !!waveformRadio,
         spectrogramRadio: !!spectrogramRadio,
         viewLabel: !!viewLabel,
         playerInstance: !!playerInstance
     });
-    
+
     // Check if player instance is available
     if (!playerInstance || !playerInstance.setViewMode) {
         console.log('Player not ready, retrying...', { playerInstance: !!playerInstance, setViewMode: playerInstance?.setViewMode });
@@ -19,78 +19,54 @@ function setupViewToggle() {
         setTimeout(setupViewToggle, 100);
         return;
     }
-    
+
     console.log('Player instance ready:', {
         isSpectrogramAvailable: playerInstance.isSpectrogramAvailable(),
         currentViewMode: playerInstance.getViewMode()
     });
-    
+
+    // If spectrogram is the default (checked), hide waveform immediately while loading
+    if (spectrogramRadio.checked) {
+        console.log('Spectrogram is default, hiding waveform immediately');
+        const waveformCanvas = document.querySelector('#{{ container_id }} canvas.waveform-canvas');
+        if (waveformCanvas) {
+            waveformCanvas.style.display = 'none';
+        }
+    }
+
     function toggleView() {
         console.log('toggleView called - spectrogramRadio.checked:', spectrogramRadio.checked);
-        
-        const spectrogramControls = document.getElementById('{{ container_id }}-spectrogram-controls');
-        
+        console.log('Spectrogram available:', playerInstance.isSpectrogramAvailable());
+
         if (spectrogramRadio.checked) {
             // Switch to spectrogram view
             console.log('Switching to spectrogram view');
             playerInstance.setViewMode('spectrogram');
             viewLabel.textContent = 'Spectrogram';
-            
-            // Show spectrogram controls
-            if (spectrogramControls) {
-                spectrogramControls.style.display = 'flex';
-            }
         } else {
             // Switch to waveform view
             console.log('Switching to waveform view');
             playerInstance.setViewMode('waveform');
             viewLabel.textContent = 'Waveform';
-            
-            // Hide spectrogram controls
-            if (spectrogramControls) {
-                spectrogramControls.style.display = 'none';
-            }
         }
     }
-    
+
     waveformRadio.addEventListener('change', toggleView);
     spectrogramRadio.addEventListener('change', toggleView);
-    
-    // Setup spectrogram controls
-    const contrastSlider = document.getElementById('{{ container_id }}-contrast-slider');
-    const brightnessSlider = document.getElementById('{{ container_id }}-brightness-slider');
-    const resetImageBtn = document.getElementById('{{ container_id }}-reset-image-btn');
-    
-    if (contrastSlider) {
-        contrastSlider.addEventListener('input', function() {
-            const contrast = parseFloat(this.value);
-            if (playerInstance.spectrogramRenderer) {
-                playerInstance.spectrogramRenderer.setContrast(contrast);
-            }
-        });
+
+    // Wait for spectrogram to be available before setting default view
+    function trySetDefaultView() {
+        if (playerInstance.isSpectrogramAvailable()) {
+            console.log('Spectrogram available, setting default view to spectrogram');
+            toggleView();
+        } else {
+            console.log('Spectrogram not available yet, retrying in 200ms...');
+            setTimeout(trySetDefaultView, 200);
+        }
     }
-    
-    if (brightnessSlider) {
-        brightnessSlider.addEventListener('input', function() {
-            const brightness = parseFloat(this.value);
-            if (playerInstance.spectrogramRenderer) {
-                playerInstance.spectrogramRenderer.setBrightness(brightness);
-            }
-        });
-    }
-    
-    if (resetImageBtn) {
-        resetImageBtn.addEventListener('click', function() {
-            // Reset to default values
-            contrastSlider.value = 1.5;
-            brightnessSlider.value = 0.2;
-            
-            if (playerInstance.spectrogramRenderer) {
-                playerInstance.spectrogramRenderer.setContrast(1.5);
-                playerInstance.spectrogramRenderer.setBrightness(0.2);
-            }
-        });
-    }
+
+    // Initialize with spectrogram view (default) once it's available
+    trySetDefaultView();
 }
 
 // Setup view toggle with retry mechanism

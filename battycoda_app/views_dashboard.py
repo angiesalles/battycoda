@@ -7,7 +7,7 @@ from django.shortcuts import redirect, render
 
 from .models.classification import ClassificationRun
 from .models.organization import Project, Species
-from .models.recording import Recording, Segmentation
+from .models import Recording, Segmentation
 from .models.task import Task, TaskBatch
 from .models.user import GroupInvitation
 

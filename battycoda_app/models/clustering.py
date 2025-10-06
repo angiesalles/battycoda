@@ -4,7 +4,7 @@ from django.contrib.auth.models import User
 from django.db import models
 
 from .organization import Call, Species
-from .recording import Segment, Segmentation
+from .segmentation import Segment, Segmentation
 from .user import Group
 
 

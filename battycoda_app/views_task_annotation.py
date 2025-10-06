@@ -23,7 +23,7 @@ def task_annotation_view(request, task_id):
     # Check if user has permission to view this task
     if task.created_by != request.user and (not request.user.profile.group or task.group != request.user.profile.group):
         messages.error(request, "You don't have permission to view this task.")
-        return redirect("battycoda_app:task_list")
+        return redirect("battycoda_app:task_batch_list")
 
     # Handle task update if form submitted
     if request.method == "POST":

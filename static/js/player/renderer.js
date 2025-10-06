@@ -71,23 +71,17 @@ export class WaveformRenderer {
         ctx.clearRect(0, 0, width, height);
         ctx.fillStyle = '#1a1a1a';
         ctx.fillRect(0, 0, width, height);
-        
+
         // Calculate visible range based on zoom
         const visibleDataPoints = player.waveformData.length / player.zoomLevel;
         const startIdx = Math.floor(player.zoomOffset * player.waveformData.length);
         const endIdx = Math.min(startIdx + visibleDataPoints, player.waveformData.length);
-        
+
         // Draw waveform shape
         this.drawWaveformShape(ctx, width, height, startIdx, endIdx);
-        
-        // Draw selection if allowed
-        if (player.allowSelection) {
-            this.drawSelection(ctx, width, height, visibleStartTime, visibleDuration);
-        }
-        
-        // Draw cursor at current time
-        this.drawPlaybackCursor(ctx, width, height, visibleStartTime, visibleDuration);
-        
+
+        // Selection and playback cursor are now drawn on the overlay canvas
+
         // Update interaction parameters for current view (always needed)
         this.canvasInteractions.updateViewParameters(width, visibleStartTime, visibleDuration);
     }
@@ -192,129 +186,18 @@ export class WaveformRenderer {
         ctx.stroke();
     }
     
-    /**
-     * Draw the selection area on the waveform
-     */
-    drawSelection(ctx, width, height, visibleStartTime, visibleDuration) {
-        const player = this.player;
-        
-        // Handle case where both start and end are set
-        if (player.selectionStart !== null && player.selectionEnd !== null) {
-            // Convert selection times to x coordinates relative to visible window
-            const startX = ((player.selectionStart - visibleStartTime) / visibleDuration) * width;
-            const endX = ((player.selectionEnd - visibleStartTime) / visibleDuration) * width;
-            
-            // Check if any part of the selection is visible
-            if ((startX >= 0 && startX <= width) || 
-                (endX >= 0 && endX <= width) || 
-                (startX < 0 && endX > width)) {
-                
-                // Calculate visible portion of selection
-                const visibleStartX = Math.max(0, startX);
-                const visibleEndX = Math.min(width, endX);
-                
-                // Only draw if there's a visible portion
-                if (visibleEndX > visibleStartX) {
-                    // Fill selection area
-                    ctx.fillStyle = 'rgba(255, 193, 7, 0.3)';
-                    ctx.fillRect(visibleStartX, 0, visibleEndX - visibleStartX, height);
-                    
-                    // Draw selection boundaries if visible
-                    // Start boundary
-                    if (startX >= 0 && startX <= width) {
-                        ctx.beginPath();
-                        ctx.strokeStyle = '#ffc107'; // Amber color 
-                        ctx.lineWidth = 3; // Thicker line
-                        ctx.moveTo(startX, 0);
-                        ctx.lineTo(startX, height);
-                        ctx.stroke();
-                        
-                        // Add a small highlight area
-                        ctx.fillStyle = 'rgba(255, 193, 7, 0.2)'; // Semi-transparent amber
-                        ctx.fillRect(startX-2, 0, 4, height);
-                    }
-                    
-                    // End boundary
-                    if (endX >= 0 && endX <= width) {
-                        ctx.beginPath();
-                        ctx.strokeStyle = '#dc3545'; // Bootstrap danger red
-                        ctx.lineWidth = 3; // Thicker line
-                        ctx.moveTo(endX, 0);
-                        ctx.lineTo(endX, height);
-                        ctx.stroke();
-                        
-                        // Add a small highlight area
-                        ctx.fillStyle = 'rgba(220, 53, 69, 0.2)'; // Semi-transparent red
-                        ctx.fillRect(endX-2, 0, 4, height);
-                    }
-                }
-            }
-        } 
-        // Handle case where only start is set
-        else if (player.selectionStart !== null) {
-            const startX = ((player.selectionStart - visibleStartTime) / visibleDuration) * width;
-            
-            // Check if the start point is visible
-            if (startX >= 0 && startX <= width) {
-                // Draw a more prominent start boundary
-                ctx.beginPath();
-                ctx.strokeStyle = '#ffc107'; // Amber color
-                ctx.lineWidth = 3; // Thicker line
-                ctx.moveTo(startX, 0);
-                ctx.lineTo(startX, height);
-                ctx.stroke();
-                
-                // Add a small highlight area
-                ctx.fillStyle = 'rgba(255, 193, 7, 0.2)'; // Semi-transparent amber
-                ctx.fillRect(startX-2, 0, 4, height);
-            }
-        }
-        // Handle case where only end is set
-        else if (player.selectionEnd !== null) {
-            const endX = ((player.selectionEnd - visibleStartTime) / visibleDuration) * width;
-            
-            // Check if the end point is visible
-            if (endX >= 0 && endX <= width) {
-                // Draw a more prominent end boundary
-                ctx.beginPath();
-                ctx.strokeStyle = '#dc3545'; // Bootstrap danger red 
-                ctx.lineWidth = 3; // Thicker line
-                ctx.moveTo(endX, 0);
-                ctx.lineTo(endX, height);
-                ctx.stroke();
-                
-                // Add a small highlight area
-                ctx.fillStyle = 'rgba(220, 53, 69, 0.2)'; // Semi-transparent red
-                ctx.fillRect(endX-2, 0, 4, height);
-            }
-        }
-    }
-    
-    /**
-     * Draw the playback cursor on the waveform
-     */
-    drawPlaybackCursor(ctx, width, height, visibleStartTime, visibleDuration) {
-        const player = this.player;
-        
-        // Calculate cursor position relative to visible window
-        const cursorX = ((player.currentTime - visibleStartTime) / visibleDuration) * width;
-
-        // Draw cursor
-        ctx.beginPath();
-        ctx.strokeStyle = '#fd7e14';
-        ctx.lineWidth = 2;
-        ctx.moveTo(cursorX, 0);
-        ctx.lineTo(cursorX, height);
-        ctx.stroke();
-    }
-    
     
     /**
      * Show the waveform view
      */
     show() {
-        if (this.player.waveformContainer) {
-            this.player.waveformContainer.style.display = 'block';
+        const player = this.player;
+        if (player.waveformContainer) {
+            // Show waveform canvas by setting display to block
+            const waveformCanvas = player.waveformContainer.querySelector('canvas.waveform-canvas');
+            if (waveformCanvas) {
+                waveformCanvas.style.display = 'block';
+            }
         }
     }
     
@@ -322,11 +205,13 @@ export class WaveformRenderer {
      * Hide the waveform view
      */
     hide() {
-        if (this.player.waveformContainer) {
-            // Remove only waveform canvas elements, but preserve spectrogram canvas
-            const waveformCanvases = this.player.waveformContainer.querySelectorAll('canvas.waveform-canvas, canvas:not([class])');
-            waveformCanvases.forEach(canvas => canvas.remove());
-            this.player.waveformContainer.style.backgroundColor = 'transparent';
+        const player = this.player;
+        if (player.waveformContainer) {
+            // Hide waveform canvas by setting display to none
+            const waveformCanvas = player.waveformContainer.querySelector('canvas.waveform-canvas');
+            if (waveformCanvas) {
+                waveformCanvas.style.display = 'none';
+            }
         }
     }
 }

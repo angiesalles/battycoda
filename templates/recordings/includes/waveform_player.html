@@ -116,7 +116,7 @@ Parameters:
     <!-- Include waveform player scripts -->
     <script type="module">
         // Import the initialization function directly
-        import { initWaveformPlayer } from "{% static 'js/waveform_player/index.js' %}";
+        import { initWaveformPlayer } from "{% static 'js/player/index.js' %}";
         window.initWaveformPlayer = initWaveformPlayer;
     </script>
 
@@ -138,5 +138,5 @@ Parameters:
     </script>
     
     <!-- Include the play region extension -->
-    <script src="{% static 'js/waveform_player/play_region.js' %}"></script>
+    <script src="{% static 'js/player/play_region.js' %}"></script>
 {% endif %}

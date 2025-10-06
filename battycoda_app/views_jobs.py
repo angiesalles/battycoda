@@ -11,10 +11,10 @@ from django.core.paginator import Paginator
 from django.contrib import messages
 
 from .models.classification import ClassifierTrainingJob, ClassificationRun
-from .models.recording import Segmentation
+from .models import Segmentation
 from .models.clustering import ClusteringRun
 from .models.spectrogram import SpectrogramJob
-from .models.recording import Recording
+from .models import Recording
 
 
 @login_required

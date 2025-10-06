@@ -12,7 +12,7 @@ from django.urls import reverse
 from django.utils import timezone
 
 from battycoda_app.models.classification import CallProbability, Classifier, ClassificationResult, ClassificationRun
-from battycoda_app.models.recording import Segmentation, Segment
+from battycoda_app.models import Segmentation, Segment
 from battycoda_app.models.organization import Project, Species
 
 @login_required

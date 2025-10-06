@@ -8,7 +8,7 @@ from django.contrib.auth.decorators import login_required
 from django.shortcuts import get_object_or_404, redirect
 
 from battycoda_app.models.classification import CallProbability, ClassificationResult, ClassificationRun
-from battycoda_app.models.recording import Segment
+from battycoda_app.models import Segment
 
 @login_required
 def apply_detection_results_view(request, run_id, segment_id=None):

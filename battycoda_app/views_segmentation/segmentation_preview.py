@@ -11,7 +11,7 @@ from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404
 
-from battycoda_app.models.recording import Recording, SegmentationAlgorithm
+from battycoda_app.models import Recording, SegmentationAlgorithm
 import hashlib
 import os
 import uuid
@@ -145,7 +145,7 @@ def create_preview_recording_view(request, recording_id):
         if not algorithm_id:
             raise ValueError("Algorithm is required")
         
-        from battycoda_app.models.recording import SegmentationAlgorithm
+        from battycoda_app.models import SegmentationAlgorithm
         try:
             algorithm = SegmentationAlgorithm.objects.get(id=int(algorithm_id), is_active=True)
         except SegmentationAlgorithm.DoesNotExist:
@@ -199,7 +199,7 @@ def create_preview_recording_view(request, recording_id):
         hidden_recording.save()  # Save the recording after file is attached
         
         # Create a segmentation for the hidden recording
-        from battycoda_app.models.recording import Segmentation
+        from battycoda_app.models import Segmentation
         preview_segmentation = Segmentation.objects.create(
             name=f"Preview Segmentation for {preview_name}",
             recording=hidden_recording,
@@ -211,34 +211,21 @@ def create_preview_recording_view(request, recording_id):
         
         # Run spectrogram generation and segmentation in parallel
         def generate_spectrogram_for_recording():
-            """Generate spectrogram for the preview recording."""
+            """Generate HDF5 spectrogram for the preview recording."""
             try:
-                from battycoda_app.audio.task_modules.spectrogram_tasks import make_spectrogram
-                import soundfile as sf
-                import os
-                
-                # Load the preview audio data
-                audio_data, sr = sf.read(hidden_recording.wav_file.path)
-                
-                # Generate spectrogram image with frequency filtering to match segmentation
-                spectrogram_image = make_spectrogram(audio_data, sr, freq_min=low_freq, freq_max=high_freq)
-                
-                # Save spectrogram to file in the correct directory structure
-                spectrogram_filename = f"spectrogram_{uuid.uuid4().hex}.png"
-                spectrogram_path = os.path.join(settings.MEDIA_ROOT, 'spectrograms', 'recordings', spectrogram_filename)
-                
-                # Ensure directory exists
-                os.makedirs(os.path.dirname(spectrogram_path), exist_ok=True)
-                
-                # Save the image
-                spectrogram_image.save(spectrogram_path)
-                
-                # Update recording with spectrogram filename (just the filename, not the path)
-                hidden_recording.spectrogram_file = spectrogram_filename
-                hidden_recording.save()
-                
-                return True
-                
+                from battycoda_app.audio.task_modules.spectrogram_tasks import generate_recording_spectrogram
+                from celery import current_app
+
+                # Call the existing task synchronously (not via Celery delay)
+                task = current_app.tasks['battycoda_app.audio.task_modules.spectrogram_tasks.generate_recording_spectrogram']
+                result = task(hidden_recording.id)
+
+                if result.get('status') == 'success':
+                    return True
+                else:
+                    print(f"Warning: Spectrogram generation returned non-success: {result}")
+                    return False
+
             except Exception as e:
                 print(f"Warning: Failed to generate spectrogram for preview recording: {e}")
                 return False

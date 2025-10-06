@@ -11,7 +11,7 @@ from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
 from django.utils import timezone
 
-from battycoda_app.models.recording import Recording, Segment, Segmentation, SegmentationAlgorithm
+from battycoda_app.models import Recording, Segment, Segmentation, SegmentationAlgorithm
 
 @login_required
 def select_recording_for_segmentation_view(request):

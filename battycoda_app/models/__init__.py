@@ -20,7 +20,8 @@ All code that queries users by email should handle the uniqueness properly.
 # Import all models for Django model registration
 from .user import Group, UserProfile
 from .organization import Project, Species, Call
-from .recording import Recording, Segment, Segmentation, SegmentationAlgorithm
+from .recording import Recording
+from .segmentation import Segment, Segmentation, SegmentationAlgorithm
 from .task import Task, TaskBatch
 from .classification import (
     Classifier, 

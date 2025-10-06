@@ -32,7 +32,7 @@ def auto_segment_recording_task(
     from django.conf import settings
     from django.db import transaction
 
-    from ...models.recording import Recording, Segment, Segmentation
+    from ...models import Recording, Segment, Segmentation
 
     try:
         # Get the recording (use all_objects to include hidden recordings)

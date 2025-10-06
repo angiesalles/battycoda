@@ -3,15 +3,14 @@
 <!-- Include waveform player scripts -->
 <script type="module">
     // Import the initialization function directly
-    import { initWaveformPlayer } from "{% static 'js/waveform_player/index.js' %}";
+    import { initWaveformPlayer } from "{% static 'js/player/index.js' %}";
     window.initWaveformPlayer = initWaveformPlayer;
 </script>
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     // Initialize waveform player for {{ container_id }}
-    const spectrogramUrl = {% if spectrogram_info.status == 'available' and spectrogram_info.url %}"{{ spectrogram_info.url }}"{% else %}null{% endif %};
-    initWaveformPlayer("{{ container_id }}", {{ recording.id }}, {{ allow_selection|yesno:"true,false" }}, {{ show_zoom|yesno:"true,false" }}, {% if segments %}{{ segments|safe }}{% else %}null{% endif %}, spectrogramUrl);
+    initWaveformPlayer("{{ container_id }}", {{ recording.id }}, {{ allow_selection|yesno:"true,false" }}, {{ show_zoom|yesno:"true,false" }}, {% if segments %}{{ segments|safe }}{% else %}null{% endif %});
     
     {% if spectrogram_info.status == 'available' %}
     {% include "recordings/includes/waveform_player/view_toggle.html" %}
@@ -28,4 +27,4 @@ document.addEventListener('DOMContentLoaded', function() {
 </script>
 
 <!-- Include the play region extension -->
-<script src="{% static 'js/waveform_player/play_region.js' %}"></script>
+<script src="{% static 'js/player/play_region.js' %}"></script>
