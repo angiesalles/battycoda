@@ -153,6 +153,16 @@
                                 {% endif %}
                             {% endif %}
                             
+                            {% if run.status == 'failed' %}
+                            <div class="mb-3">
+                                <h5>Debug Failed Run</h5>
+                                <a href="{% url 'battycoda_app:download_segments_zip' run_id=run.id %}" class="btn btn-outline-warning">
+                                    <i class="fas fa-download me-1"></i> Download All Segments (ZIP)
+                                </a>
+                                <small class="text-muted d-block mt-1">Download segments as individual WAV files for debugging</small>
+                            </div>
+                            {% endif %}
+
                             {% if run.error_message %}
                             <div class="alert alert-danger">
                                 <h5>Error</h5>

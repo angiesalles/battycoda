@@ -110,6 +110,7 @@ services:
     volumes:
       - ./:/app:rw  # Mount project directory to access R scripts
     restart: unless-stopped
+    command: ["Rscript", "server.R", "--port=8001"]
 
 volumes:
   redis-data:

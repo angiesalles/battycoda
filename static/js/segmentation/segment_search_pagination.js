@@ -29,18 +29,18 @@ export class SegmentSearchPagination {
             filtered = filtered.filter(seg => seg.id === searchId);
         }
 
-        // Duration filters
+        // Duration filters (input is in milliseconds, convert to seconds)
         if (this.searchFilters.minDuration !== null) {
             filtered = filtered.filter(seg => {
                 const duration = seg.offset - seg.onset;
-                return duration >= this.searchFilters.minDuration;
+                return duration >= (this.searchFilters.minDuration / 1000);
             });
         }
 
         if (this.searchFilters.maxDuration !== null) {
             filtered = filtered.filter(seg => {
                 const duration = seg.offset - seg.onset;
-                return duration <= this.searchFilters.maxDuration;
+                return duration <= (this.searchFilters.maxDuration / 1000);
             });
         }
 

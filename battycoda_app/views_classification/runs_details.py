@@ -4,13 +4,18 @@ Provides views for displaying detailed information about detection runs.
 """
 
 import os
+import tempfile
+import zipfile
+from io import BytesIO
 
+import soundfile as sf
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.core.paginator import Paginator
-from django.http import FileResponse, Http404, JsonResponse
+from django.http import FileResponse, Http404, HttpResponse, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 
+from battycoda_app.audio.task_modules.base import extract_audio_segment
 from battycoda_app.models.classification import CallProbability, ClassificationResult, ClassificationRun
 from battycoda_app.models.organization import Call
 
@@ -125,3 +130,65 @@ def download_features_file_view(request, run_id):
     except Exception as e:
         messages.error(request, f"Error downloading features file: {str(e)}")
         return redirect("battycoda_app:detection_run_detail", run_id=run_id)
+
+@login_required
+def download_segments_zip_view(request, run_id):
+    """Download all segments from a classification run as a ZIP file."""
+    run = get_object_or_404(ClassificationRun, id=run_id)
+
+    # Check permissions
+    profile = request.user.profile
+    if run.created_by != request.user and (not profile.group or run.group != profile.group):
+        messages.error(request, "You don't have permission to access this classification run.")
+        return redirect("battycoda_app:classification_home")
+
+    # Get the recording and check if WAV file exists
+    recording = run.segmentation.recording
+    if not recording.wav_file or not os.path.exists(recording.wav_file.path):
+        messages.error(request, f"WAV file not found for recording.")
+        return redirect("battycoda_app:detection_run_detail", run_id=run_id)
+
+    # Get all segments
+    segments = run.segmentation.segments.all().order_by('onset')
+
+    if not segments.exists():
+        messages.error(request, "No segments found for this classification run.")
+        return redirect("battycoda_app:detection_run_detail", run_id=run_id)
+
+    # Create ZIP file in memory
+    zip_buffer = BytesIO()
+
+    with zipfile.ZipFile(zip_buffer, 'w', zipfile.ZIP_DEFLATED) as zip_file:
+        # Add each segment as a WAV file
+        for segment in segments:
+            try:
+                # Extract audio segment
+                segment_data, sample_rate = extract_audio_segment(
+                    recording.wav_file.path, segment.onset, segment.offset
+                )
+
+                # Create WAV file in memory
+                wav_buffer = BytesIO()
+                sf.write(wav_buffer, segment_data, samplerate=sample_rate, format='WAV')
+                wav_buffer.seek(0)
+
+                # Add to ZIP with descriptive filename
+                filename = f"segment_{segment.id}_{segment.onset:.4f}s-{segment.offset:.4f}s.wav"
+                zip_file.writestr(filename, wav_buffer.read())
+
+            except Exception as e:
+                # Log error but continue with other segments
+                print(f"Error extracting segment {segment.id}: {str(e)}")
+                continue
+
+    # Prepare response
+    zip_buffer.seek(0)
+
+    # Generate filename
+    zip_filename = f"segments_{run.name}_{run.id}.zip"
+    zip_filename = "".join(c for c in zip_filename if c.isalnum() or c in "._- ")
+
+    response = HttpResponse(zip_buffer.read(), content_type='application/zip')
+    response['Content-Disposition'] = f'attachment; filename="{zip_filename}"'
+
+    return response

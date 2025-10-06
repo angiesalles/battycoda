@@ -153,6 +153,7 @@ export class SegmentManager {
         try {
             const newSegment = await this.crud.createSegment(segmentData);
             this.segments.push(newSegment);
+            this.segments.sort((a, b) => a.onset - b.onset);
 
             // Clear selection
             const playerWrapper = window.players[this.playerId];

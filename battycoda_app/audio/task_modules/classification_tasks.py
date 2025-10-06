@@ -97,9 +97,22 @@ def run_call_detection(self, detection_run_id):
             
             # Get model path if we have a custom model
             model_path = None
+            model_path_for_r_server = None
             if classifier.model_file:
-                # Use the model file path directly (since it now includes the full path from project root)
-                model_path = os.path.join(settings.BASE_DIR, classifier.model_file)
+                # R server runs in Docker with project mounted at /app, so it expects /app/ paths
+                # But Celery runs on host, so we need to convert /app/ paths to local paths for validation
+                model_file_path = classifier.model_file
+
+                if model_file_path.startswith('/app/'):
+                    # Strip /app/ prefix for local validation
+                    local_model_path = model_file_path[5:]  # Remove '/app/' prefix
+                    model_path = os.path.join(settings.BASE_DIR, local_model_path)
+                    model_path_for_r_server = model_file_path  # Keep /app/ prefix for R server
+                else:
+                    # Relative path, use as-is for local and add /app/ for R server
+                    model_path = os.path.join(settings.BASE_DIR, model_file_path)
+                    model_path_for_r_server = f"/app/{model_file_path}"
+
                 if not os.path.exists(model_path):
                     raise ValueError(f"Model file not found: {model_path}")
             
@@ -183,7 +196,7 @@ def run_call_detection(self, detection_run_id):
                     
                     params = {
                         "wav_folder": r_server_path,
-                        "model_path": model_path,
+                        "model_path": model_path_for_r_server,
                         "export_features_path": features_path_r_server
                     }
                     
