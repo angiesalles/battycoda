@@ -1,200 +1,99 @@
-                
+                <div class="mb-3">
+                    <label for="id_email" class="form-label">Email:</label>
+                    <input type="email" name="email" id="id_email" value="{{ user.email }}" class="form-control">
+
+                    <div class="mt-3">
+                        <button type="button" id="update-email-btn" class="btn btn-sm btn-primary">
+                            <i class="fa fa-save me-1"></i> Update Email
+                        </button>
+                    </div>
+
+                    <div id="email-update-status" class="mt-2"></div>
+                </div>
+
+                <!-- API Key Section -->
+                <div class="mb-3">
+                    <label class="form-label">API Key for R Scripts:</label>
+                    <div class="input-group">
+                        {% if profile.api_key %}
+                            <input type="text" class="form-control" value="{{ profile.api_key }}" readonly id="api-key-display">
+                            <button type="button" class="btn btn-outline-secondary" onclick="copyApiKey()">
+                                <i class="fa fa-copy"></i> Copy
+                            </button>
+                        {% else %}
+                            <input type="text" class="form-control" value="No API key generated" readonly>
+                        {% endif %}
+                    </div>
+                    <small class="text-muted d-block mt-1">
+                        Use this key in R scripts to upload recordings and access your data programmatically.
+                        {% if not profile.api_key %}Generate one below.{% endif %}
+                    </small>
+
+                    <div class="mt-2">
+                        <form method="post" action="{% url 'battycoda_app:generate_api_key' %}" style="display: inline;">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-sm btn-primary"
+                                    onclick="return confirm('{% if profile.api_key %}This will replace your existing API key. Any scripts using the old key will stop working. Continue?{% else %}Generate a new API key?{% endif %}')">
+                                <i class="fa fa-key me-1"></i>
+                                {% if profile.api_key %}Regenerate API Key{% else %}Generate API Key{% endif %}
+                            </button>
+                        </form>
+                    </div>
+
+                    <div id="api-key-status" class="mt-2"></div>
+                </div>
+
+                <!-- Storage Usage Section -->
+                <div class="mb-3">
+                    <label class="form-label">Storage Usage:</label>
+                    <div class="mb-2">
+                        <div class="d-flex justify-content-between mb-1">
+                            <span class="text-sm">Your files: {{ profile.total_storage_display }}</span>
+                            <span class="text-sm">{{ profile.available_storage_gb }} GB free on disk</span>
+                        </div>
+                        <div class="progress" style="height: 20px;">
+                            <div class="progress-bar {% if profile.storage_usage_percentage > 90 %}bg-danger{% elif profile.storage_usage_percentage > 75 %}bg-warning{% else %}bg-success{% endif %}"
+                                 role="progressbar"
+                                 style="width: {{ profile.storage_usage_percentage }}%;"
+                                 aria-valuenow="{{ profile.storage_usage_percentage }}"
+                                 aria-valuemin="0"
+                                 aria-valuemax="100">
+                                {{ profile.storage_usage_percentage }}%
+                            </div>
+                        </div>
+                        <div class="d-flex justify-content-between mb-1">
+                            <span class="text-xs text-muted">Disk usage: {{ profile.storage_usage_percentage }}% of {{ profile.storage_limit_gb }} GB total</span>
+                        </div>
+                    </div>
+                    <small class="text-muted">
+                        Shows your uploaded files and remaining disk space on the server
+                    </small>
+                </div>
+
+                <!-- Management Features Section -->
+                <div class="mb-3">
+                    <label class="form-label">Management Features:</label>
+                    <div class="form-check">
+                        <input type="checkbox" class="form-check-input" id="id_management_features_enabled"
+                               name="management_features_enabled"
+                               {% if profile.management_features_enabled %}checked{% endif %}>
+                        <label class="form-check-label" for="id_management_features_enabled">
+                            Enable Management Features
+                        </label>
+                    </div>
+                    <small class="text-muted">
+                        Enable access to administrative features like viewing all group data,
+                        managing recordings and task batches for other users, and system-wide statistics.
+                    </small>
+
+                    <div class="mt-2">
+                        <button type="button" id="update-management-features-btn" class="btn btn-sm btn-primary">
+                            <i class="fa fa-save me-1"></i> Update Management Features
+                        </button>
+                    </div>
+
+                    <div id="management-features-status" class="mt-2"></div>
+                </div>
+
                 <!-- Hidden theme field since we're using the theme selector in the navbar -->
                 <input type="hidden" name="theme" value="{{ profile.theme }}" id="id_theme">
-            </div>
-        </div>
-        
-        <div id="form-status" class="mt-3"></div>
-    </div>
-    </div>
-</div>
-{% endblock %}
-
-{% block extra_js %}
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-    const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
-    const profileImageUpload = document.getElementById('profile_image_upload');
-    const uploadImageBtn = document.getElementById('upload-image-btn');
-    const removeImageBtn = document.getElementById('remove-image-btn');
-    const updateEmailBtn = document.getElementById('update-email-btn');
-    const emailInput = document.getElementById('id_email');
-    const updateManagementFeaturesBtn = document.getElementById('update-management-features-btn');
-    const managementFeaturesCheckbox = document.getElementById('id_management_features_enabled');
-    const imageUploadStatus = document.getElementById('image-upload-status');
-    const emailUpdateStatus = document.getElementById('email-update-status');
-    const managementFeaturesStatus = document.getElementById('management-features-status');
-    
-    // Function to show status messages
-    function showStatus(element, message, isSuccess) {
-        element.innerHTML = `<div class="alert alert-${isSuccess ? 'success' : 'danger'} py-2">${message}</div>`;
-        
-        // Clear message after 5 seconds
-        setTimeout(() => {
-            element.innerHTML = '';
-        }, 5000);
-    }
-    
-    // Handle profile image upload
-    uploadImageBtn.addEventListener('click', function() {
-        if (!profileImageUpload.files.length) {
-            showStatus(imageUploadStatus, 'Please select an image file first.', false);
-            return;
-        }
-        
-        const file = profileImageUpload.files[0];
-        
-        // Validate file type
-        if (!file.type.match('image.*')) {
-            showStatus(imageUploadStatus, 'Please select a valid image file.', false);
-            return;
-        }
-        
-        // Create FormData object and append the file
-        const formData = new FormData();
-        formData.append('profile_image', file);
-        formData.append('action', 'upload_image');
-        
-        // Show loading state
-        uploadImageBtn.disabled = true;
-        uploadImageBtn.innerHTML = '<i class="fa fa-spinner fa-spin me-1"></i> Uploading...';
-        
-        // Send AJAX request
-        fetch('{% url "battycoda_app:update_profile_ajax" %}', {
-            method: 'POST',
-            headers: {
-                'X-CSRFToken': csrfToken
-            },
-            body: formData
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                showStatus(imageUploadStatus, data.message, true);
-                
-                // Update the profile image on the page
-                const imageDisplay = document.getElementById('profile-image-display');
-                imageDisplay.innerHTML = `<img src="${data.image_url}?v=${new Date().getTime()}" alt="Profile Image" class="img-fluid rounded-circle" style="width: 150px; height: 150px; object-fit: cover;">`;
-                
-                // Add remove button if it doesn't exist
-                if (!removeImageBtn && data.has_image) {
-                    const removeBtn = document.createElement('button');
-                    removeBtn.id = 'remove-image-btn';
-                    removeBtn.className = 'btn btn-sm btn-outline-danger ml-2';
-                    removeBtn.innerHTML = '<i class="fa fa-trash me-1"></i> Remove Image';
-                    document.querySelector('.mt-2').appendChild(removeBtn);
-                    
-                    // Add event listener to newly created button
-                    removeBtn.addEventListener('click', handleRemoveImage);
-                }
-                
-                // Update navbar profile image if it exists
-                const navbarProfileImage = document.querySelector('.nav.navbar-nav a.dropdown-toggle img');
-                if (navbarProfileImage) {
-                    navbarProfileImage.src = data.image_url + '?v=' + new Date().getTime();
-                }
-                
-                // Clear the file input
-                profileImageUpload.value = '';
-            } else {
-                showStatus(imageUploadStatus, data.message || 'An error occurred.', false);
-            }
-        })
-        .catch(error => {
-            console.error('Error:', error);
-            showStatus(imageUploadStatus, 'An error occurred while uploading the image.', false);
-        })
-        .finally(() => {
-            // Reset button state
-            uploadImageBtn.disabled = false;
-            uploadImageBtn.innerHTML = '<i class="fa fa-upload me-1"></i> Upload Image';
-        });
-    });
-    
-    // Handle remove profile image
-    function handleRemoveImage() {
-        if (!confirm('Are you sure you want to remove your profile image?')) {
-            return;
-        }
-        
-        // Create FormData and append action
-        const formData = new FormData();
-        formData.append('action', 'remove_image');
-        
-        // Show loading state
-        if (removeImageBtn) {
-            removeImageBtn.disabled = true;
-            removeImageBtn.innerHTML = '<i class="fa fa-spinner fa-spin me-1"></i> Removing...';
-        }
-        
-        // Send AJAX request
-        fetch('{% url "battycoda_app:update_profile_ajax" %}', {
-            method: 'POST',
-            headers: {
-                'X-CSRFToken': csrfToken
-            },
-            body: formData
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                showStatus(imageUploadStatus, data.message, true);
-                
-                // Update the profile image display
-                const imageDisplay = document.getElementById('profile-image-display');
-                imageDisplay.innerHTML = `
-                    <div class="profile-placeholder rounded-circle d-flex align-items-center justify-content-center bg-primary" style="width: 150px; height: 150px; margin: 0 auto;">
-                        <span class="s7-user text-white" style="font-size: 4rem;"></span>
-                    </div>
-                `;
-                
-                // Remove the remove button
-                if (removeImageBtn) {
-                    removeImageBtn.remove();
-                }
-                
-                // Update navbar image
-                const navbarProfileImage = document.querySelector('.nav.navbar-nav a.dropdown-toggle img');
-                if (navbarProfileImage) {
-                    const navbarUserIcon = navbarProfileImage.parentNode;
-                    navbarUserIcon.innerHTML = '<span class="icon s7-user"></span>';
-                }
-            } else {
-                showStatus(imageUploadStatus, data.message || 'An error occurred.', false);
-            }
-        })
-        .catch(error => {
-            console.error('Error:', error);
-            showStatus(imageUploadStatus, 'An error occurred while removing the image.', false);
-        });
-    }
-    
-    // Add event listener to remove image button if it exists
-    if (removeImageBtn) {
-        removeImageBtn.addEventListener('click', handleRemoveImage);
-    }
-    
-    // Handle email update
-    updateEmailBtn.addEventListener('click', function() {
-        const email = emailInput.value.trim();
-        
-        if (!email) {
-            showStatus(emailUpdateStatus, 'Please enter a valid email address.', false);
-            return;
-        }
-        
-        // Create FormData and append email
-        const formData = new FormData();
-        formData.append('email', email);
-        formData.append('action', 'update_email');
-        
-        // Show loading state
-        updateEmailBtn.disabled = true;
-        updateEmailBtn.innerHTML = '<i class="fa fa-spinner fa-spin me-1"></i> Updating...';
-        
-        // Send AJAX request
-        fetch('{% url "battycoda_app:update_profile_ajax" %}', {
-            method: 'POST',
-            headers: {
-                'X-CSRFToken': csrfToken
-            },

@@ -8,50 +8,6 @@ from PIL import Image
 from battycoda_app.audio.utils import appropriate_file, normal_hwin, overview_hwin
 
 
-def load_spectrogram_segment(h5_file_path, start_time, end_time):
-    """
-    Load a time segment of spectrogram data from HDF5 file.
-    
-    Args:
-        h5_file_path: Path to the HDF5 spectrogram file
-        start_time: Start time in seconds
-        end_time: End time in seconds
-        
-    Returns:
-        tuple: (spectrogram_segment, sample_rate, hop_length) or None if error
-    """
-    try:
-        import h5py
-        
-        with h5py.File(h5_file_path, 'r') as f:
-            # Get metadata
-            sample_rate = f.attrs['sample_rate']
-            hop_length = f.attrs['hop_length']
-            duration = f.attrs['duration']
-            n_frames = f.attrs['n_frames']
-            
-            # Calculate frame indices for the time range
-            frames_per_second = sample_rate / hop_length
-            start_frame = int(start_time * frames_per_second)
-            end_frame = int(end_time * frames_per_second)
-            
-            # Clamp to valid range
-            start_frame = max(0, start_frame)
-            end_frame = min(n_frames, end_frame)
-            
-            if start_frame >= end_frame:
-                return None
-                
-            # Load only the requested time segment
-            spectrogram_segment = f['spectrogram'][:, start_frame:end_frame]
-            
-            return spectrogram_segment, sample_rate, hop_length
-            
-    except Exception as e:
-        print(f"Error loading spectrogram segment: {e}")
-        return None
-
-
 def generate_spectrogram(path, args, output_path=None):
     """
     Pure function to generate a spectrogram from cached HDF5 data.
@@ -102,8 +58,33 @@ def generate_spectrogram(path, args, output_path=None):
         h5_path = os.path.join(settings.MEDIA_ROOT, "spectrograms", "recordings", recording.spectrogram_file)
 
         if not os.path.exists(h5_path):
-            # Fall back if H5 doesn't exist
-            return generate_spectrogram_from_audio(path, args, output_path)
+            # Trigger HDF5 generation for this recording
+            from battycoda_app.audio.task_modules.spectrogram.generation import generate_recording_spectrogram
+            from battycoda_app.models.spectrogram import SpectrogramJob
+
+            # Check if there's already a job in progress
+            existing_job = SpectrogramJob.objects.filter(
+                recording=recording,
+                status__in=['pending', 'in_progress']
+            ).first()
+
+            if not existing_job:
+                # Create a job and trigger generation
+                job = SpectrogramJob.objects.create(
+                    recording=recording,
+                    status='pending'
+                )
+                # Run synchronously to ensure the file is available
+                result = generate_recording_spectrogram(None, recording.id)
+                if result.get('status') != 'success':
+                    return False, output_path, f"Failed to generate HDF5: {result.get('message', 'Unknown error')}"
+            else:
+                # Job in progress, fall back to raw audio for now
+                return generate_spectrogram_from_audio(path, args, output_path)
+
+            # Verify the file now exists
+            if not os.path.exists(h5_path):
+                return generate_spectrogram_from_audio(path, args, output_path)
 
         with h5py.File(h5_path, 'r') as f:
             sample_rate = f.attrs['sample_rate']

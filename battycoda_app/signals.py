@@ -4,8 +4,9 @@ from django.db.models.signals import post_save
 from django.dispatch import receiver
 from django.utils import timezone
 
-from .models import Recording, Segmentation, ClassificationRun, ClassifierTrainingJob, UserProfile, Notification
+from .models import Recording, Segmentation, ClassificationRun, ClassifierTrainingJob, UserProfile, Notification, SpectrogramJob
 from .tasks import calculate_audio_duration
+from .audio.task_modules.spectrogram.generation import generate_recording_spectrogram
 
 # NOTE: These signals are commented out because they duplicate functionality in models.py
 # @receiver(post_save, sender=User)
@@ -21,20 +22,44 @@ from .tasks import calculate_audio_duration
 def trigger_audio_info_calculation(sender, instance, **kwargs):
     """
     Signal handler to asynchronously calculate audio duration and sample rate after a recording is saved
-    
+
     Only triggers when the file_ready flag is set to True, ensuring the file is fully committed
     to disk before trying to access it.
     """
     # Skip if both duration and sample rate are already set
     if instance.duration and instance.sample_rate:
         return
-        
+
     # Only process recordings where file_ready is True
     if not instance.file_ready:
         return
-        
+
     # Trigger the Celery task
     calculate_audio_duration.delay(instance.id)
+
+@receiver(post_save, sender=Recording)
+def trigger_spectrogram_generation(sender, instance, **kwargs):
+    """
+    Signal handler to create a background job for generating HDF5 spectrogram when a recording is created
+    """
+    # Only process recordings where file_ready is True
+    if not instance.file_ready:
+        return
+
+    # Skip if spectrogram job already exists for this recording
+    if SpectrogramJob.objects.filter(recording=instance).exists():
+        return
+
+    # Create a job and trigger generation in the background
+    job = SpectrogramJob.objects.create(
+        recording=instance,
+        status='pending'
+    )
+
+    # Trigger async task
+    result = generate_recording_spectrogram.delay(instance.id)
+    job.celery_task_id = result.id
+    job.save()
 
 @receiver(post_save, sender=Segmentation)
 def segmentation_status_changed(sender, instance, **kwargs):

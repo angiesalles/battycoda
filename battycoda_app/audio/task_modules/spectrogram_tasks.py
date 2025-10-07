@@ -6,7 +6,7 @@ spectrogram package structure.
 """
 from .spectrogram import (generate_recording_spectrogram,
                           generate_spectrogram, generate_spectrogram_from_audio,
-                          generate_spectrogram_task, load_spectrogram_segment,
+                          generate_spectrogram_task,
                           make_spectrogram, prefetch_spectrograms)
 
 __all__ = [
@@ -14,7 +14,6 @@ __all__ = [
     'generate_spectrogram_task',
     'prefetch_spectrograms',
     'generate_recording_spectrogram',
-    'load_spectrogram_segment',
     'generate_spectrogram',
     'generate_spectrogram_from_audio',
 ]

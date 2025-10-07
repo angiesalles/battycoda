@@ -52,6 +52,16 @@ class Task(models.Model):
     # Link to batch
     batch = models.ForeignKey(TaskBatch, on_delete=models.CASCADE, related_name="tasks", null=True, blank=True)
 
+    # Link to source segment (if task was created from a segment)
+    source_segment = models.ForeignKey(
+        "battycoda_app.Segment",
+        on_delete=models.SET_NULL,
+        related_name="tasks",
+        null=True,
+        blank=True,
+        help_text="The segment this task was created from"
+    )
+
     # Task metadata
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)

@@ -145,16 +145,6 @@ class Segment(models.Model):
     onset = models.FloatField(help_text="Start time of the segment in seconds")
     offset = models.FloatField(help_text="End time of the segment in seconds")
 
-    # Task created from this segment (if any) - using string reference to avoid circular import
-    task = models.OneToOneField(
-        "battycoda_app.Task",
-        on_delete=models.SET_NULL,
-        related_name="source_segment",
-        null=True,
-        blank=True,
-        help_text="Task created from this segment, if any",
-    )
-
     # Creation metadata
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
