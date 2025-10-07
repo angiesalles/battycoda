@@ -89,6 +89,10 @@
 <!-- CSRF token for AJAX requests -->
 <input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}">
 
+<script>
+const ROSEUS_COLORMAP = {{ roseus_colormap|safe }};
+</script>
+
 <script type="module">
     // Import segmentation module
     import { initSegmentation } from "{% static 'js/segmentation/index.js' %}";

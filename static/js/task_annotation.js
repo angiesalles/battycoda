@@ -45,25 +45,23 @@ function initSpectrogramViewer() {
 
     // Function to update spectrogram based on current settings
     function updateSpectrogram() {
-        const key = `channel_${currentChannel}_${isOverview ? 'overview' : 'detail'}`;
-        
-        if (taskConfig.spectrogramUrls[key]) {
-            // Update the image source
-            mainSpectrogram.src = taskConfig.spectrogramUrls[key];
-            
-            // Update audio player
-            updateAudioPlayer();
-            
-            // Update x-axis ticks
-            if (isOverview) {
-                detailTicks.classList.remove('active');
-                overviewTicks.classList.add('active');
-            } else {
-                detailTicks.classList.add('active');
-                overviewTicks.classList.remove('active');
-            }
+        // Build spectrogram URL with task ID and overview parameter
+        const overviewParam = isOverview ? '1' : '0';
+        const spectrogramUrl = `${taskConfig.spectrogramBaseUrl}?overview=${overviewParam}`;
+
+        // Update the image source
+        mainSpectrogram.src = spectrogramUrl;
+
+        // Update audio player
+        updateAudioPlayer();
+
+        // Update x-axis ticks
+        if (isOverview) {
+            detailTicks.classList.remove('active');
+            overviewTicks.classList.add('active');
         } else {
-            console.error("Spectrogram URL not found for key:", key);
+            detailTicks.classList.add('active');
+            overviewTicks.classList.remove('active');
         }
     }
     
@@ -71,11 +69,10 @@ function initSpectrogramViewer() {
     function updateAudioPlayer() {
         const audioPlayer = document.getElementById('audio-player');
         if (audioPlayer) {
-            const overviewParam = isOverview ? 'True' : 'False';
             const cacheBuster = new Date().getTime();
-            
-            // Build audio URL with configuration variables
-            audioPlayer.src = `${taskConfig.audioSnippetUrl}?wav_path=${encodeURIComponent(taskConfig.wavPath)}&call=0&channel=${currentChannel}&hash=${taskConfig.fileHash}&overview=${overviewParam}&onset=${taskConfig.onset}&offset=${taskConfig.offset}&loudness=1.0&t=${cacheBuster}`;
+
+            // Build audio URL with configuration variables - always use False for overview (detail view audio)
+            audioPlayer.src = `${taskConfig.audioSnippetUrl}?wav_path=${encodeURIComponent(taskConfig.wavPath)}&call=0&channel=${currentChannel}&hash=${taskConfig.fileHash}&overview=False&onset=${taskConfig.onset}&offset=${taskConfig.offset}&loudness=1.0&t=${cacheBuster}`;
         }
     }
     

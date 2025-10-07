@@ -14,9 +14,8 @@ urlpatterns = [
     path("welcome/", views_landing.landing_page, name="landing"),
 
     # Audio/spectrogram routes
-    path("spectrogram/", views_audio.spectrogram_view, name="spectrogram"),
-    path("status/task/<str:task_id>/", views_audio.task_status, name="task_status"),
-    path("audio/snippet/", views_audio.audio_snippet_view, name="audio_snippet"),
+    path("audio/task/<int:task_id>/snippet/", views_audio.task_audio_snippet_view, name="task_audio_snippet"),
+    path("audio/task/<int:task_id>/spectrogram/", views_audio.task_spectrogram_view, name="task_spectrogram"),
     path("audio/bit/", views_audio.simple_audio_bit_view, name="simple_audio_bit"),
 
     # Debug routes

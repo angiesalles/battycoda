@@ -10,8 +10,9 @@ from .views_classification.runs_details import (
     detection_run_detail_view, detection_run_status_view, download_features_file_view,
     download_segments_zip_view
 )
-from .views_classification.runs_management import (
-    classification_home_view, create_detection_run_view, delete_detection_run_view,
+from .views_classification.dashboard import classification_home_view
+from .views_classification.run_creation import create_detection_run_view, delete_detection_run_view
+from .views_classification.batch_operations import (
     classify_unclassified_segments_view, create_classification_for_species_view
 )
 from .views_classification.task_creation import (

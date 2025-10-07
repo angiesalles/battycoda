@@ -4,26 +4,27 @@
 <script type="module">
     // Import the initialization function directly
     import { initWaveformPlayer } from "{% static 'js/player/index.js' %}";
-    window.initWaveformPlayer = initWaveformPlayer;
-</script>
 
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-    // Initialize waveform player for {{ container_id }}
-    initWaveformPlayer("{{ container_id }}", {{ recording.id }}, {{ allow_selection|yesno:"true,false" }}, {{ show_zoom|yesno:"true,false" }}, {% if segments %}{{ segments|safe }}{% else %}null{% endif %});
-    
-    {% if spectrogram_info.status == 'available' %}
-    {% include "recordings/includes/waveform_player/view_toggle.html" %}
-    {% endif %}
-    
-    {% if spectrogram_info.status == 'not_available' %}
-    {% include "recordings/includes/waveform_player/generate_button.html" %}
-    {% endif %}
-    
-    {% if spectrogram_info.status == 'generating' %}
-    {% include "recordings/includes/waveform_player/progress_monitor.html" %}
-    {% endif %}
-});
+    // Make it available globally for other scripts
+    window.initWaveformPlayer = initWaveformPlayer;
+
+    // Initialize immediately after import (module scripts are deferred by default)
+    document.addEventListener('DOMContentLoaded', function() {
+        // Initialize waveform player for {{ container_id }}
+        initWaveformPlayer("{{ container_id }}", {{ recording.id }}, {{ allow_selection|yesno:"true,false" }}, {{ show_zoom|yesno:"true,false" }}, {% if segments %}{{ segments|safe }}{% else %}null{% endif %});
+
+        {% if spectrogram_info.status == 'available' %}
+        {% include "recordings/includes/waveform_player/view_toggle.html" %}
+        {% endif %}
+
+        {% if spectrogram_info.status == 'not_available' %}
+        {% include "recordings/includes/waveform_player/generate_button.html" %}
+        {% endif %}
+
+        {% if spectrogram_info.status == 'generating' %}
+        {% include "recordings/includes/waveform_player/progress_monitor.html" %}
+        {% endif %}
+    });
 </script>
 
 <!-- Include the play region extension -->

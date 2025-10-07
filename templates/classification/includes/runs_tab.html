@@ -1,0 +1,141 @@
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <!-- Project Filter -->
+    <div class="me-3">
+        <form method="get" class="d-flex align-items-center gap-2">
+            <label for="project-filter" class="form-label mb-0 small text-muted">Filter by Project:</label>
+            <select name="project" id="project-filter" class="form-select form-select-sm" onchange="this.form.submit()">
+                <option value="">All Projects</option>
+                {% for project in available_projects %}
+                    <option value="{{ project.id }}" {% if project.id == selected_project_id %}selected{% endif %}>
+                        {{ project.name }}
+                    </option>
+                {% endfor %}
+            </select>
+            {% if request.GET.page %}
+                <input type="hidden" name="page" value="{{ request.GET.page }}">
+            {% endif %}
+        </form>
+    </div>
+
+    <!-- Action Buttons -->
+    <div class="d-flex gap-2">
+        <a href="{% url 'battycoda_app:create_detection_run' %}{% if selected_project_id %}?project={{ selected_project_id }}{% endif %}" class="btn btn-primary">
+            <i class="fas fa-plus-circle me-1"></i> New Classification Run
+        </a>
+        <a href="{% url 'battycoda_app:classify_unclassified_segments' %}{% if selected_project_id %}?project={{ selected_project_id }}{% endif %}" class="btn btn-primary">
+            <i class="fas fa-tags me-1"></i> Classify Unclassified Segmentations
+        </a>
+        <a href="{% url 'battycoda_app:create_task_batches_for_species' %}{% if selected_project_id %}?project={{ selected_project_id }}{% endif %}" class="btn btn-primary">
+            <i class="fas fa-clipboard me-1"></i> Create Task Batches
+        </a>
+    </div>
+</div>
+
+<div class="card mb-4">
+    <div class="card-header">
+        <h4 class="mb-0">Classification Runs</h4>
+    </div>
+    <div class="card-body">
+        {% if runs %}
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Segmentation</th>
+                        <th>Classifier</th>
+                        <th>Status</th>
+                        <th>Progress</th>
+                        <th>Created</th>
+                        <th>Created By</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for run in runs %}
+                    <tr data-run-id="{{ run.id }}">
+                        <td>{{ run.name }}</td>
+                        <td>
+                            <a href="{% url 'battycoda_app:recording_detail' recording_id=run.segmentation.recording.id %}">
+                                {{ run.segmentation.name }}
+                            </a>
+                        </td>
+                        <td>
+                            {% if run.classifier %}
+                                {{ run.classifier.name }}
+                            {% else %}
+                                <span class="text-muted">Default</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if run.status == 'queued' %}
+                            <span class="badge bg-secondary">Queued</span>
+                            {% elif run.status == 'pending' %}
+                            <span class="badge bg-warning text-dark">Pending</span>
+                            {% elif run.status == 'in_progress' %}
+                            <span class="badge bg-info">In Progress</span>
+                            {% elif run.status == 'completed' %}
+                            <span class="badge bg-success">Completed</span>
+                            {% elif run.status == 'failed' %}
+                            <span class="badge bg-danger">Failed</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <div class="progress" style="height: 20px;">
+                                <div class="progress-bar {% if run.status == 'failed' %}bg-danger{% endif %}"
+                                     role="progressbar"
+                                     style="width: {{ run.progress }}%;"
+                                     aria-valuenow="{{ run.progress }}"
+                                     aria-valuemin="0"
+                                     aria-valuemax="100">
+                                    {{ run.progress|floatformat:1 }}%
+                                </div>
+                            </div>
+                        </td>
+                        <td data-utc-date="{{ run.created_at|date:'c' }}" data-date-format="datetime">{{ run.created_at|date:"M d, Y H:i" }}</td>
+                        <td>{{ run.created_by.username }}</td>
+                        <td>
+                            <div class="d-flex">
+                                <a href="{% url 'battycoda_app:detection_run_detail' run_id=run.id %}" class="btn btn-sm btn-primary mr-2">
+                                    <i class="fas fa-chart-bar"></i> View Results
+                                </a>
+                                <a href="{% url 'battycoda_app:delete_detection_run' run_id=run.id %}"
+                                   class="btn btn-sm btn-danger">
+                                    <i class="fas fa-trash-alt"></i> Delete
+                                </a>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="alert alert-info">
+            <p class="mb-0">No classification runs found. <a href="{% url 'battycoda_app:create_detection_run' %}" class="alert-link">Create one</a> to get started.</p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<div class="card mb-4">
+    <div class="card-header">
+        <h4 class="mb-0">About Automated Classification</h4>
+    </div>
+    <div class="card-body">
+        <p>The automated classification system helps you:</p>
+        <ul>
+            <li>Process large amounts of bat call data efficiently</li>
+            <li>Get probability scores for different call types</li>
+            <li>Automatically label tasks based on detection results</li>
+            <li>Track classification progress and review results</li>
+        </ul>
+        <p>To use classification:</p>
+        <ol>
+            <li>Click "New Classification Run" to select a task batch</li>
+            <li>Choose a classifier and wait for processing to complete</li>
+            <li>View results with probability scores</li>
+            <li>Apply results to automatically label tasks</li>
+        </ol>
+    </div>
+</div>

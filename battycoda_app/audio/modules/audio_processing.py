@@ -87,7 +87,7 @@ def normal_hwin():
 
 def overview_hwin():
     """Returns the window padding as (pre_window, post_window) in milliseconds."""
-    return (150, 350)
+    return (500, 500)
 
 def get_audio_bit(audio_path, call_number, window_size, extra_params=None):
     """

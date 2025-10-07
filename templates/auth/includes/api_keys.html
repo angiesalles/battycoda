@@ -1,0 +1,50 @@
+            body: formData
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                showStatus(emailUpdateStatus, data.message, true);
+            } else {
+                showStatus(emailUpdateStatus, data.message || 'An error occurred.', false);
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            showStatus(emailUpdateStatus, 'An error occurred while updating email.', false);
+        })
+        .finally(() => {
+            // Reset button state
+            updateEmailBtn.disabled = false;
+            updateEmailBtn.innerHTML = '<i class="fa fa-save me-1"></i> Update Email';
+        });
+    });
+    
+    // Handle management features update
+    updateManagementFeaturesBtn.addEventListener('click', function() {
+        const isEnabled = managementFeaturesCheckbox.checked;
+        
+        // Create FormData and append management features setting
+        const formData = new FormData();
+        formData.append('management_features_enabled', isEnabled);
+        formData.append('action', 'update_management_features');
+        
+        // Show loading state
+        updateManagementFeaturesBtn.disabled = true;
+        updateManagementFeaturesBtn.innerHTML = '<i class="fa fa-spinner fa-spin me-1"></i> Updating...';
+        
+        // Send AJAX request
+        fetch('{% url "battycoda_app:update_profile_ajax" %}', {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': csrfToken
+            },
+            body: formData
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                showStatus(managementFeaturesStatus, data.message, true);
+            } else {
+                showStatus(managementFeaturesStatus, data.message || 'An error occurred.', false);
+            }
+        })

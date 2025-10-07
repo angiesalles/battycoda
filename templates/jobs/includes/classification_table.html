@@ -1,0 +1,59 @@
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="s7-display1 mr-2"></i> Classification Jobs
+                    </h5>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover mb-0">
+                            <thead class="thead-light">
+                                <tr>
+                                    <th>Name</th>
+                                    <th>Status</th>
+                                    <th>Created</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for job in detection_jobs %}
+                                <tr>
+                                    <td>
+                                        <a href="{% url 'battycoda_app:detection_run_detail' run_id=job.id %}">
+                                            {{ job.name|truncatechars:30 }}
+                                        </a>
+                                        {% if job.classifier %}
+                                        <br><small class="text-muted">{{ job.classifier.name }}</small>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <span class="badge badge-{% if job.status == 'completed' %}success{% elif job.status == 'failed' %}danger{% elif job.status == 'running' %}warning{% else %}secondary{% endif %}">
+                                            {{ job.status|title }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <small data-utc-date="{{ job.created_at|date:'c' }}" data-date-format="datetime">{{ job.created_at|date:"M d, H:i" }}</small>
+                                    </td>
+                                    <td>
+                                        <a href="{% url 'battycoda_app:detection_run_detail' run_id=job.id %}" class="btn btn-sm btn-outline-primary">
+                                            <i class="fas fa-eye"></i>
+                                        </a>
+                                        {% if job.status in 'pending,running' %}
+                                        <button class="btn btn-sm btn-outline-danger cancel-job" 
+                                                data-job-type="detection" 
+                                                data-job-id="{{ job.id }}">
+                                            <i class="fas fa-times"></i>
+                                        </button>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Training Jobs -->

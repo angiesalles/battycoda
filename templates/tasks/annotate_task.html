@@ -153,7 +153,7 @@
                 <!-- Audio section - reduced top margin -->
                 <div class="audio-section mt-3">
                     <div>
-                        <audio id="audio-player" controls src="{% url 'battycoda_app:audio_snippet' %}?wav_path={{ full_path|urlencode }}&call=0&channel=0&hash={{ file_hash }}&overview=False&onset={{ task.onset }}&offset={{ task.offset }}&loudness=1.0" preload="auto" class="w-100">
+                        <audio id="audio-player" controls src="{% url 'battycoda_app:task_audio_snippet' task.id %}?channel=0&overview=False" preload="auto" class="w-100">
                             Your browser does not support the audio element.
                         </audio>
                     </div>
@@ -246,17 +246,13 @@
 <!-- Configuration data for task annotation -->
 <script>
     var taskConfig = {
+        taskId: {{ task.id }},
         wavPath: "{{ full_path|escapejs }}",
         fileHash: "{{ file_hash }}",
         onset: {{ task.onset }},
         offset: {{ task.offset }},
-        audioSnippetUrl: "{% url 'battycoda_app:audio_snippet' %}",
-        spectrogramUrls: {
-            'channel_0_detail': '{{ spectrogram_urls.channel_0_detail|escapejs }}',
-            'channel_0_overview': '{{ spectrogram_urls.channel_0_overview|escapejs }}',
-            'channel_1_detail': '{{ spectrogram_urls.channel_1_detail|escapejs }}',
-            'channel_1_overview': '{{ spectrogram_urls.channel_1_overview|escapejs }}'
-        }
+        audioSnippetUrl: "{% url 'battycoda_app:task_audio_snippet' task.id %}",
+        spectrogramBaseUrl: "{% url 'battycoda_app:task_spectrogram' task.id %}"
     };
     
     // Batch switch notification data

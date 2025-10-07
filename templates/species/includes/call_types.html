@@ -1,0 +1,180 @@
+                const index = parseInt(this.dataset.index);
+                deleteCall(index);
+            });
+        });
+    }
+    
+    // Function to add a new call
+    function addCall(shortName, longName) {
+        // Check if a call with this short name already exists
+        const existing = callTypes.find(call => call.short_name.toLowerCase() === shortName.toLowerCase());
+        if (existing) {
+            showMessage(addCallMessages, `A call with short name '${shortName}' already exists.`, 'error');
+            return false;
+        }
+        
+        // Add to the call types array
+        callTypes.push({
+            short_name: shortName,
+            long_name: longName
+        });
+        
+        // Update the JSON field and re-render the table
+        updateCallTypesJson();
+        renderCallsTable();
+        
+        return true;
+    }
+    
+    // Function to delete a call
+    function deleteCall(index) {
+        // Remove from the array
+        callTypes.splice(index, 1);
+        
+        // Update the JSON field and re-render the table
+        updateCallTypesJson();
+        renderCallsTable();
+    }
+    
+    // Function to handle adding a new call
+    function handleAddCall() {
+        // Get the values
+        const shortName = newCallShortName.value.trim();
+        const longName = newCallLongName.value.trim();
+        
+        // Validate
+        if (!shortName) {
+            showMessage(addCallMessages, 'Short name is required', 'error');
+            newCallShortName.focus();
+            return false;
+        }
+        
+        // Add the call
+        const added = addCall(shortName, longName);
+        
+        if (added) {
+            // Show success message
+            showMessage(addCallMessages, `Call '${shortName}' added successfully.`);
+            
+            // Clear the inputs
+            newCallShortName.value = '';
+            newCallLongName.value = '';
+            newCallShortName.focus();
+            return true;
+        }
+        
+        return false;
+    }
+    
+    // Add new call when button is clicked
+    addCallButton.addEventListener('click', function(event) {
+        event.preventDefault();
+        handleAddCall();
+    });
+    
+    // Handle Enter key in call input fields
+    newCallShortName.addEventListener('keydown', function(event) {
+        if (event.key === 'Enter') {
+            event.preventDefault(); // Prevent form submission
+            handleAddCall();
+        }
+    });
+    
+    newCallLongName.addEventListener('keydown', function(event) {
+        if (event.key === 'Enter') {
+            event.preventDefault(); // Prevent form submission
+            handleAddCall();
+        }
+    });
+    
+    // Parse calls file
+    parseFileButton.addEventListener('click', function() {
+        const fileInput = document.getElementById('calls_file_input');
+        const files = fileInput.files;
+        
+        if (!files || files.length === 0) {
+            showMessage(fileLoadStatus, 'Please select a file first', 'error');
+            return;
+        }
+        
+        const file = files[0];
+        if (file.type !== 'text/plain' && !file.name.endsWith('.txt')) {
+            showMessage(fileLoadStatus, 'Please select a text file (.txt)', 'error');
+            return;
+        }
+        
+        // Show loading message
+        showMessage(fileLoadStatus, 'Reading file...', 'success');
+        
+        // Read the file
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            const content = e.target.result;
+            const lines = content.split(/\r?\n/);
+            const calls = [];
+            
+            // Process each line
+            lines.forEach(line => {
+                line = line.trim();
+                if (!line) return; // Skip empty lines
+                
+                let shortName, longName = '';
+                
+                if (line.includes(',')) {
+                    [shortName, longName] = line.split(',', 2);
+                } else if (line.includes('|')) {
+                    [shortName, longName] = line.split('|', 2);
+                } else if (line.includes('\t')) {
+                    [shortName, longName] = line.split('\t', 2);
+                } else {
+                    shortName = line;
+                }
+                
+                shortName = shortName.trim();
+                longName = longName ? longName.trim() : '';
+                
+                if (shortName) {
+                    calls.push({
+                        short_name: shortName,
+                        long_name: longName
+                    });
+                }
+            });
+            
+            if (calls.length === 0) {
+                showMessage(fileLoadStatus, 'No valid call types found in the file', 'error');
+                return;
+            }
+            
+            // Replace all existing calls with the ones from the file
+            callTypes = calls;
+            updateCallTypesJson();
+            renderCallsTable();
+            
+            showMessage(fileLoadStatus, `Successfully loaded ${calls.length} call types from file`, 'success');
+        };
+        
+        reader.onerror = function() {
+            showMessage(fileLoadStatus, 'Error reading file', 'error');
+        };
+        
+        reader.readAsText(file);
+    });
+    
+    // Initialize the table
+    renderCallsTable();
+    
+    // Create a list of existing species names for validation
+    const existingSpeciesNames = {{ existing_species_names|safe|default:"[]" }};
+    const speciesNameInput = document.getElementById('id_name');
+    const submitButton = document.getElementById('submit-button');
+    const nameErrorDiv = document.getElementById('name-error-field');
+    
+    // Function to validate species name
+    function validateSpeciesName() {
+        const speciesName = speciesNameInput.value.trim();
+        
+        // Check if empty
+        if (!speciesName) {
+            nameErrorDiv.textContent = 'Please enter a species name.';
+            nameErrorDiv.style.display = 'block';

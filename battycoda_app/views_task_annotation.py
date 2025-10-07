@@ -1,5 +1,5 @@
 import hashlib
-
+import json
 import os
 
 from django.conf import settings
@@ -11,8 +11,7 @@ from django.utils import timezone
 from .models.organization import Species
 from .models.task import Task
 from .utils_modules.path_utils import convert_path_to_os_specific
-
-# Set up logging
+from .audio.colormaps import ROSEUS_COLORMAP
 
 @login_required
 def task_annotation_view(request, task_id):
@@ -149,11 +148,8 @@ def task_annotation_view(request, task_id):
     normal_window_size = normal_hwin()
     overview_window_size = overview_hwin()
 
-    # Try to get sample rate from the source if this task has a source segment with a recording
-    sample_rate = None
-    # First, try to get from source segment if it exists
-    if hasattr(task, "source_segment") and task.source_segment and task.source_segment.recording:
-        sample_rate = task.source_segment.recording.sample_rate
+    # Get sample rate from the task
+    sample_rate = task.get_sample_rate()
 
     # Generate tick marks for the spectrogram using our utility function
     tick_data = get_spectrogram_ticks(

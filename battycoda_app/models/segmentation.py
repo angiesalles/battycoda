@@ -1,5 +1,7 @@
-from django.contrib.auth.models import User, Group
+from django.contrib.auth.models import User
 from django.db import models
+
+from .user import Group
 
 
 class SegmentationAlgorithm(models.Model):

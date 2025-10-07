@@ -52,17 +52,17 @@ process_segment <- function(file_path, min_window_length = 50) {
       } else {
         adaptive_wl <- 256   # Smaller window for very short files
       }
-      adaptive_bp <- c(1000, 95000)  # Very wide range - use almost full spectrum
+      adaptive_bp <- c(1, 95)  # Very wide range (kHz) - use almost full spectrum
       adaptive_threshold <- 10  # Lower threshold for weak bat calls
     } else if (sample_rate >= 80000) {
       # Medium-high sample rate: moderate optimization
       adaptive_wl <- 512
-      adaptive_bp <- c(1000, nyquist_freq * 0.95)  # Use most of available spectrum
+      adaptive_bp <- c(1, nyquist_freq * 0.95 / 1000)  # Use most of available spectrum (kHz)
       adaptive_threshold <- 12
     } else {
       # Lower sample rate (Carollia/Efuscus): use original parameters
       adaptive_wl <- min_window_length  # Keep original (50)
-      adaptive_bp <- c(9, 200)  # Keep original bandpass filter
+      adaptive_bp <- c(9, 200)  # Keep original bandpass filter (kHz)
       adaptive_threshold <- 15  # Keep original threshold
     }
     

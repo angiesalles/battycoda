@@ -109,6 +109,18 @@ class Task(models.Model):
         # After saving, pre-generate spectrograms
         self.generate_spectrograms()
 
+    def get_sample_rate(self):
+        """Get sample rate by walking the relationship chain to the recording.
+
+        Returns:
+            int: Sample rate in Hz, or None if not found
+        """
+        if self.batch and self.batch.detection_run:
+            detection_run = self.batch.detection_run
+            if detection_run.segmentation and detection_run.segmentation.recording:
+                return detection_run.segmentation.recording.sample_rate
+        return None
+
     def generate_spectrograms(self):
         """Pre-generate spectrograms for this task to avoid frontend requests"""
         # Skip if this is called during migration
@@ -147,13 +159,12 @@ class Task(models.Model):
                     args["onset"] = str(self.onset)
                     args["offset"] = str(self.offset)
 
-                    # Generate the spectrogram asynchronously
-                    from celery import current_app
+                    # Generate the spectrogram synchronously (blocking)
+                    from battycoda_app.audio.task_modules.spectrogram import generate_spectrogram
 
-                    task = current_app.send_task(
-                        "battycoda_app.audio.task_modules.spectrogram_tasks.generate_spectrogram_task",
-                        args=[wav_path, args, None],
-                    )
+                    success, output_path, error = generate_spectrogram(wav_path, args, None)
+                    if not success:
+                        print(f"Failed to generate spectrogram: {error}")
 
         except Exception as e:
 

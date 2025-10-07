@@ -1,0 +1,100 @@
+                </div>
+            </div>
+            
+            <div class="col-md-8">
+                <div class="mb-3">
+                    <label for="id_email" class="form-label">Email:</label>
+                    <input type="email" name="email" id="id_email" value="{{ user.email }}" class="form-control">
+                    
+                    <div class="mt-3">
+                        <button type="button" id="update-email-btn" class="btn btn-sm btn-primary">
+                            <i class="fa fa-save me-1"></i> Update Email
+                        </button>
+                    </div>
+                    
+                    <div id="email-update-status" class="mt-2"></div>
+                </div>
+                
+                <!-- API Key Section -->
+                <div class="mb-3">
+                    <label class="form-label">API Key for R Scripts:</label>
+                    <div class="input-group">
+                        {% if profile.api_key %}
+                            <input type="text" class="form-control" value="{{ profile.api_key }}" readonly id="api-key-display">
+                            <button type="button" class="btn btn-outline-secondary" onclick="copyApiKey()">
+                                <i class="fa fa-copy"></i> Copy
+                            </button>
+                        {% else %}
+                            <input type="text" class="form-control" value="No API key generated" readonly>
+                        {% endif %}
+                    </div>
+                    <small class="text-muted d-block mt-1">
+                        Use this key in R scripts to upload recordings and access your data programmatically.
+                        {% if not profile.api_key %}Generate one below.{% endif %}
+                    </small>
+                    
+                    <div class="mt-2">
+                        <form method="post" action="{% url 'battycoda_app:generate_api_key' %}" style="display: inline;">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-sm btn-primary" 
+                                    onclick="return confirm('{% if profile.api_key %}This will replace your existing API key. Any scripts using the old key will stop working. Continue?{% else %}Generate a new API key?{% endif %}')">
+                                <i class="fa fa-key me-1"></i> 
+                                {% if profile.api_key %}Regenerate API Key{% else %}Generate API Key{% endif %}
+                            </button>
+                        </form>
+                    </div>
+                    
+                    <div id="api-key-status" class="mt-2"></div>
+                </div>
+                
+                <!-- Storage Usage Section -->
+                <div class="mb-3">
+                    <label class="form-label">Storage Usage:</label>
+                    <div class="mb-2">
+                        <div class="d-flex justify-content-between mb-1">
+                            <span class="text-sm">Your files: {{ profile.total_storage_display }}</span>
+                            <span class="text-sm">{{ profile.available_storage_gb }} GB free on disk</span>
+                        </div>
+                        <div class="progress" style="height: 20px;">
+                            <div class="progress-bar {% if profile.storage_usage_percentage > 90 %}bg-danger{% elif profile.storage_usage_percentage > 75 %}bg-warning{% else %}bg-success{% endif %}" 
+                                 role="progressbar" 
+                                 style="width: {{ profile.storage_usage_percentage }}%;" 
+                                 aria-valuenow="{{ profile.storage_usage_percentage }}" 
+                                 aria-valuemin="0" 
+                                 aria-valuemax="100">
+                                {{ profile.storage_usage_percentage }}%
+                            </div>
+                        </div>
+                        <div class="d-flex justify-content-between mb-1">
+                            <span class="text-xs text-muted">Disk usage: {{ profile.storage_usage_percentage }}% of {{ profile.storage_limit_gb }} GB total</span>
+                        </div>
+                    </div>
+                    <small class="text-muted">
+                        Shows your uploaded files and remaining disk space on the server
+                    </small>
+                </div>
+                
+                <!-- Management Features Section -->
+                <div class="mb-3">
+                    <label class="form-label">Management Features:</label>
+                    <div class="form-check">
+                        <input type="checkbox" class="form-check-input" id="id_management_features_enabled" 
+                               name="management_features_enabled" 
+                               {% if profile.management_features_enabled %}checked{% endif %}>
+                        <label class="form-check-label" for="id_management_features_enabled">
+                            Enable Management Features
+                        </label>
+                    </div>
+                    <small class="text-muted">
+                        Enable access to administrative features like viewing all group data, 
+                        managing recordings and task batches for other users, and system-wide statistics.
+                    </small>
+                    
+                    <div class="mt-2">
+                        <button type="button" id="update-management-features-btn" class="btn btn-sm btn-primary">
+                            <i class="fa fa-save me-1"></i> Update Management Features
+                        </button>
+                    </div>
+                    
+                    <div id="management-features-status" class="mt-2"></div>
+                </div>

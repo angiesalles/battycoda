@@ -1,0 +1,73 @@
+<div class="card mb-4">
+    <div class="card-header">
+        <h4 class="mb-0">Available Classifiers</h4>
+    </div>
+    <div class="card-body">
+        {% if classifiers %}
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Species</th>
+                        <th>Algorithm Type</th>
+                        <th>Status</th>
+                        <th>Created By</th>
+                        <th>Created</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for classifier in classifiers %}
+                    <tr>
+                        <td>{{ classifier.name }}</td>
+                        <td>
+                            {% if classifier.species %}
+                            <a href="{% url 'battycoda_app:species_detail' species_id=classifier.species.id %}">
+                                {{ classifier.species.name }}
+                            </a>
+                            {% else %}
+                            <span class="text-muted">—</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if classifier.model_file %}
+                                {% if 'knn' in classifier.model_file %}
+                                <span class="badge bg-info">KNN</span>
+                                {% elif 'lda' in classifier.model_file %}
+                                <span class="badge bg-primary">LDA</span>
+                                {% else %}
+                                <span class="badge bg-secondary">Custom</span>
+                                {% endif %}
+                            {% else %}
+                                <span class="badge bg-secondary">R-direct</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if classifier.is_active %}
+                            <span class="badge bg-success">Active</span>
+                            {% else %}
+                            <span class="badge bg-danger">Inactive</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if classifier.created_by %}
+                            {{ classifier.created_by.username }}
+                            {% else %}
+                            <span class="text-muted">System</span>
+                            {% endif %}
+                        </td>
+                        <td data-utc-date="{{ classifier.created_at|date:'c' }}" data-date-format="datetime">
+                            {{ classifier.created_at|date:"M d, Y" }}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="alert alert-info">
+            <p class="mb-0">No classifiers are currently available. Train a new classifier to get started.</p>
+        </div>
+        {% endif %}
+    </div>
+</div>

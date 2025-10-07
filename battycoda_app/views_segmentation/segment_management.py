@@ -15,6 +15,7 @@ from django.utils import timezone
 
 from battycoda_app.forms import SegmentForm
 from battycoda_app.models import Recording, Segment, Segmentation, SpectrogramJob
+from battycoda_app.audio.colormaps import ROSEUS_COLORMAP
 
 
 def get_spectrogram_status(recording):
@@ -224,6 +225,7 @@ def segmentation_detail_view(request, segmentation_id):
         "total_segments_count": total_segments_count,
         "active_segmentation": segmentation_info,
         "all_segmentations": all_segmentations,
+        "roseus_colormap": json.dumps(ROSEUS_COLORMAP),
     }
 
     return render(request, "segmentations/segmentation_detail.html", context)
