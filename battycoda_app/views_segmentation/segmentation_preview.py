@@ -28,58 +28,6 @@ import soundfile as sf
 
 
 
-def get_or_generate_preview_spectrogram(recording, start_time, duration):
-    """
-    Get existing preview spectrogram or trigger async generation.
-    
-    Args:
-        recording: Recording model instance
-        start_time: Start time in seconds
-        duration: Duration in seconds
-        
-    Returns:
-        str: URL to the spectrogram image, or None if not available yet
-    """
-    try:
-        from battycoda_app.audio.utils import appropriate_file
-        from battycoda_app.audio.task_modules.spectrogram_tasks import generate_spectrogram_task
-        
-        # Set up parameters for the existing spectrogram system
-        args = {
-            "call": "0",  # Use 0 for preview
-            "channel": "0",  # Use first channel
-            "contrast": "4.0",  # Default contrast
-            "overview": "1",  # Use overview mode for time windows
-            "low_overlap": "1",  # Use 50% overlap for memory efficiency in previews
-            "onset": str(start_time),
-            "offset": str(start_time + duration),
-            "generated_on_fly": "1",  # Use preview colormap
-        }
-        
-        # Get the audio file path
-        audio_path = recording.wav_file.path
-        
-        # Generate spectrogram path using existing system
-        output_path = appropriate_file(audio_path, args)
-        
-        # Check if spectrogram already exists
-        if os.path.exists(output_path):
-            # Convert file path to URL
-            relative_path = os.path.relpath(output_path, settings.MEDIA_ROOT)
-            return f"/media/{relative_path.replace(os.sep, '/')}"
-        
-        # If not exists, trigger async generation
-        print(f"Triggering async spectrogram generation for preview at {start_time}s")
-        generate_spectrogram_task.delay(audio_path, args, output_path)
-        
-        # Return None for now - frontend will fall back to simulated
-        return None
-        
-    except Exception as e:
-        print(f"Failed to setup preview spectrogram generation: {e}")
-        return None
-
-
 @login_required
 def create_preview_recording_view(request, recording_id):
     """

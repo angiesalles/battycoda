@@ -1,3 +1,5 @@
+        {% if training_jobs %}
+        <div class="col-lg-6 mb-4">
             <div class="card">
                 <div class="card-header">
                     <h5 class="mb-0">
@@ -32,7 +34,7 @@
                                         </span>
                                     </td>
                                     <td>
-                                        <small data-utc-date="{{ job.created_at|date:'c' }}" data-date-format="datetime">{{ job.created_at|date:"M d, H:i" }}</small>
+                                        <small>{{ job.created_at|date:"M d, H:i" }}</small>
                                     </td>
                                     <td>
                                         <a href="{% url 'battycoda_app:classifier_training_job_detail' job_id=job.id %}" class="btn btn-sm btn-outline-primary">
@@ -55,5 +57,3 @@
             </div>
         </div>
         {% endif %}
-
-        <!-- Clustering Jobs -->

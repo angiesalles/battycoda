@@ -128,18 +128,6 @@ def calculate_audio_duration(self, recording_id, retry_count=0):
         self.retry(countdown=retry_delay, kwargs={'retry_count': retry_count + 1})
         return
 
-@shared_task
-def generate_spectrogram(file_path, output_path=None):
-    """
-    Generate a spectrogram from an audio file
-
-    This is a placeholder task that can be expanded for spectrogram generation
-    """
-
-    # TODO: Implement actual spectrogram generation
-    return True
-
-
 @shared_task(bind=True, max_retries=3)
 def backup_database_to_s3(self, bucket_name=None, prefix=None):
     """

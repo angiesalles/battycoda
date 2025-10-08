@@ -11,7 +11,7 @@ from battycoda_app.models.classification import CallProbability, ClassificationR
 from battycoda_app.models.organization import Species
 from battycoda_app.models.task import Task, TaskBatch
 
-from .batch_creation import get_pending_runs_for_species
+from .batch_creation import get_pending_runs_for_species, create_task_batch_helper
 
 
 @login_required
@@ -92,71 +92,20 @@ def create_tasks_for_species_view(request, species_id):
 
                         # Create a name for this batch
                         batch_name = f"{batch_prefix} - {recording.name}"
+                        description = f"Automatically created from classification run: {run.name}"
 
-                        # Create the task batch
-                        batch = TaskBatch.objects.create(
-                            name=batch_name,
-                            description=f"Automatically created from classification run: {run.name}",
+                        # Use the helper function to create the batch and tasks
+                        batch, run_tasks_created, run_tasks_filtered = create_task_batch_helper(
+                            run=run,
+                            batch_name=batch_name,
+                            description=description,
                             created_by=request.user,
-                            wav_file_name=recording.wav_file.name,
-                            wav_file=recording.wav_file,
-                            species=recording.species,
-                            project=recording.project,
                             group=profile.group,
-                            detection_run=run,  # Link to the detection run
+                            max_confidence=max_confidence
                         )
 
-                        # Get all detection results from this run
-                        results = ClassificationResult.objects.filter(classification_run=run)
-
-                        # Create tasks for each detection result's segment
-                        run_tasks_created = 0
-                        run_tasks_filtered = 0
-                        for result in results:
-                            # Get the fresh segment object (which we've locked)
-                            segment = Segment.objects.get(id=result.segment_id)
-
-                            # Skip segments that already have tasks
-                            if segment.task:
-                                continue
-
-                            # Get the highest probability call type
-                            top_probability = (
-                                CallProbability.objects.filter(classification_result=result).order_by("-probability").first()
-                            )
-
-                            # Skip if confidence threshold is set and this result's confidence is too high
-                            if max_confidence is not None and top_probability and top_probability.probability > max_confidence:
-                                run_tasks_filtered += 1
-                                continue
-
-                            # Create a task for this segment
-                            task = Task.objects.create(
-                                wav_file_name=recording.wav_file.name,
-                                onset=segment.onset,
-                                offset=segment.offset,
-                                species=recording.species,
-                                project=recording.project,
-                                batch=batch,
-                                created_by=request.user,
-                                group=profile.group,
-                                # Use the highest probability call type as the initial label AND the classification result
-                                label=top_probability.call.short_name if top_probability else None,
-                                classification_result=top_probability.call.short_name if top_probability else None,
-                                confidence=top_probability.probability if top_probability else None,
-                                status="pending",
-                            )
-
-                            # Link the task back to the segment
-                            segment.task = task
-                            segment.save()
-
-                            run_tasks_created += 1
-
-                        # If no tasks were created, delete the batch
-                        if run_tasks_created == 0:
-                            batch.delete()
-                        else:
+                        # If tasks were created, increment counters
+                        if batch is not None:
                             batches_created += 1
                             tasks_created += run_tasks_created
                             total_filtered += run_tasks_filtered

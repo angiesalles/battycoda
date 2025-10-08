@@ -38,17 +38,27 @@ def task_spectrogram_view(request, task_id):
     start_time = task.onset - (hwin[0] / 1000)
     end_time = task.offset + (hwin[1] / 1000)
 
+    # Will be clamped to recording duration later
+
     try:
+        from .audio.task_modules.spectrogram.utils import ensure_hdf5_exists
+
         wav_path = task.batch.wav_file.path
+        logger.info(f"Task {task_id}: Looking for recording with wav_file={task.batch.wav_file.name}")
         recording = Recording.all_objects.filter(wav_file=task.batch.wav_file.name).first()
 
-        if not recording or not recording.spectrogram_file:
-            return HttpResponse("No spectrogram data available for this recording", status=404)
+        if not recording:
+            logger.error(f"Task {task_id}: No recording found")
+            return HttpResponse("No recording found for this task", status=404)
 
+        logger.info(f"Task {task_id}: Found recording {recording.id}, calling ensure_hdf5_exists")
+        success, error_response = ensure_hdf5_exists(recording, request.user)
+        if not success:
+            logger.error(f"Task {task_id}: ensure_hdf5_exists failed: {error_response}")
+            return error_response
+
+        logger.info(f"Task {task_id}: HDF5 exists, loading from {recording.spectrogram_file}")
         h5_path = os.path.join(settings.MEDIA_ROOT, "spectrograms", "recordings", recording.spectrogram_file)
-
-        if not os.path.exists(h5_path):
-            return HttpResponse("Spectrogram file not found", status=404)
 
         with h5py.File(h5_path, 'r') as f:
             sample_rate = float(f.attrs['sample_rate'])
@@ -57,12 +67,32 @@ def task_spectrogram_view(request, task_id):
             n_frames = int(f.attrs['n_frames'])
             n_freq_bins = int(f.attrs['n_freq_bins'])
 
-            start_frame = int((start_time / duration) * n_frames)
-            end_frame = int((end_time / duration) * n_frames)
-            start_frame = max(0, start_frame)
-            end_frame = min(n_frames, end_frame)
+            # Calculate frames per second
+            time_per_frame = hop_length / sample_rate
 
-            spectrogram_data = f['spectrogram'][:, start_frame:end_frame]
+            # Calculate how many frames the full requested window needs
+            requested_duration = end_time - start_time
+            requested_frames = int(requested_duration / time_per_frame)
+
+            # Clamp times to valid recording boundaries
+            clamped_start_time = max(0, start_time)
+            clamped_end_time = min(duration, end_time)
+
+            start_frame = int((clamped_start_time / duration) * n_frames)
+            end_frame = int((clamped_end_time / duration) * n_frames)
+
+            # Extract actual data from recording
+            actual_data = f['spectrogram'][:, start_frame:end_frame]
+
+            # Pad with silence (-80 dB) if window extends beyond recording
+            pad_start = int((clamped_start_time - start_time) / time_per_frame) if start_time < 0 else 0
+            pad_end = int((end_time - clamped_end_time) / time_per_frame) if end_time > duration else 0
+
+            if pad_start > 0 or pad_end > 0:
+                spectrogram_data = np.full((n_freq_bins, requested_frames), -80, dtype=np.float16)
+                spectrogram_data[:, pad_start:pad_start + actual_data.shape[1]] = actual_data
+            else:
+                spectrogram_data = actual_data
 
         spectrogram_float = spectrogram_data.astype(np.float32)
 
@@ -90,6 +120,7 @@ def task_spectrogram_view(request, task_id):
         return HttpResponse(png_data, content_type='image/png')
 
     except Exception as e:
+        logger.exception(f"Task {task_id}: Exception in task_spectrogram_view: {e}")
         return HttpResponse(f"Error: {str(e)}", status=500)
 
 @login_required

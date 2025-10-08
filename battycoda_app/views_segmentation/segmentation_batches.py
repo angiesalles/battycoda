@@ -56,7 +56,7 @@ def batch_segmentation_view(request):
         "selected_project_id": selected_project_id,
     }
 
-    return render(request, "recordings/batch_segmentation.html", context)
+    return render(request, "segmentations/batch_segmentation.html", context)
 
 @login_required
 def segmentation_jobs_status_view(request):

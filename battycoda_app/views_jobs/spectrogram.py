@@ -52,7 +52,7 @@ def create_spectrogram_job_view(request, recording_id):
     )
     
     # Queue the actual spectrogram generation task with Celery
-    from .audio.task_modules.spectrogram_tasks import generate_recording_spectrogram
+    from battycoda_app.audio.task_modules.spectrogram_tasks import generate_recording_spectrogram
     
     try:
         # Start the task

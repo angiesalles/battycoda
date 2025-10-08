@@ -15,10 +15,8 @@ from .views_classification.run_creation import create_detection_run_view, delete
 from .views_classification.batch_operations import (
     classify_unclassified_segments_view, create_classification_for_species_view
 )
-from .views_classification.task_creation import (
-    create_task_batch_from_detection_run, create_task_batches_for_species_view,
-    create_tasks_for_species_view
-)
+from .views_classification.task_creation.batch_creation import create_task_batch_from_detection_run, create_task_batches_for_species_view
+from .views_classification.task_creation.species_tasks import create_tasks_for_species_view
 from .views_classification.classifier_training import (
     classifier_list_view, create_classifier_training_job_view,
     classifier_training_job_detail_view, classifier_training_job_status_view,

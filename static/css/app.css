@@ -11373,12 +11373,14 @@ p {
   background-image: none;
 }
 
+/* Retina display logo commented out - will be replaced with custom BattyCoda icon
 @media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
   .mai-top-header .navbar-brand {
     background-image: url("../img/logo-2x.png");
     background-size: 133px 20px;
   }
 }
+*/
 
 @media (max-width: 991.98px) {
   .mai-top-header .navbar-brand {

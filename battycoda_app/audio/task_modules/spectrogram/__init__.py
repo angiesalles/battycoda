@@ -1,14 +1,7 @@
 """Spectrogram generation package."""
-from .generation import (generate_recording_spectrogram,
-                         generate_spectrogram_task, make_spectrogram,
-                         prefetch_spectrograms)
-from .processing import generate_spectrogram, generate_spectrogram_from_audio
+from .hdf5_generation import generate_hdf5_spectrogram, generate_recording_spectrogram
 
 __all__ = [
-    'make_spectrogram',
-    'generate_spectrogram_task',
-    'prefetch_spectrograms',
     'generate_recording_spectrogram',
-    'generate_spectrogram',
-    'generate_spectrogram_from_audio',
+    'generate_hdf5_spectrogram',
 ]

@@ -15,6 +15,8 @@ from django.utils import timezone
 from battycoda_app.models.classification import CallProbability, ClassificationResult, ClassificationRun
 from battycoda_app.models.organization import Species
 from battycoda_app.models.task import Task, TaskBatch
+from .helpers import create_task_batch_helper
+
 
 @login_required
 def create_task_batch_from_detection_run(request, run_id):
@@ -52,86 +54,20 @@ def create_task_batch_from_detection_run(request, run_id):
                 return redirect("battycoda_app:detection_run_detail", run_id=run_id)
 
         try:
-            # Get the recording from the segmentation
-            recording = run.segmentation.recording
-
-            # Create the task batch first (outside the main transaction)
-            batch = TaskBatch.objects.create(
-                name=batch_name,
+            # Use helper function to create the batch
+            batch, tasks_created, tasks_filtered = create_task_batch_helper(
+                run=run,
+                batch_name=batch_name,
                 description=description,
                 created_by=request.user,
-                wav_file_name=recording.wav_file.name if recording.wav_file else '',
-                wav_file=recording.wav_file,
-                species=recording.species,
-                project=recording.project,
                 group=profile.group,
-                detection_run=run,
+                max_confidence=max_confidence
             )
 
-            # Get all classification results with related data in one query
-            results = ClassificationResult.objects.filter(
-                classification_run=run
-            ).select_related('segment').prefetch_related('probabilities__call')
-
-            # Prepare bulk data for task creation
-            tasks_to_create = []
-            segments_to_update = []
-            tasks_created = 0
-            tasks_filtered = 0
-
-            for result in results:
-                segment = result.segment
-                
-                # Skip segments that already have tasks
-                if hasattr(segment, 'task') and segment.task:
-                    continue
-
-                # Get the highest probability call type from prefetched data
-                top_probability = None
-                if result.probabilities.exists():
-                    top_probability = max(result.probabilities.all(), key=lambda p: p.probability)
-                
-                # Skip if confidence threshold is set and this result's confidence is too high
-                if max_confidence is not None and top_probability and top_probability.probability > max_confidence:
-                    tasks_filtered += 1
-                    continue
-
-                # Prepare task for bulk creation
-                task_data = Task(
-                    wav_file_name=recording.wav_file.name if recording.wav_file else '',
-                    onset=segment.onset,
-                    offset=segment.offset,
-                    species=recording.species,
-                    project=recording.project,
-                    batch=batch,
-                    created_by=request.user,
-                    group=profile.group,
-                    label=top_probability.call.short_name if top_probability else None,
-                    classification_result=top_probability.call.short_name if top_probability else None,
-                    confidence=top_probability.probability if top_probability else None,
-                    status="pending",
-                )
-                tasks_to_create.append(task_data)
-                segments_to_update.append(segment)
-                tasks_created += 1
-
-            # Bulk create tasks and update segments in smaller transactions
-            if tasks_created == 0:
-                batch.delete()
+            if batch is None:
                 messages.warning(request, "No tasks were created. All segments may already have tasks or were filtered out.")
                 return redirect("battycoda_app:detection_run_detail", run_id=run_id)
 
-            # Use bulk_create for better performance
-            created_tasks = Task.objects.bulk_create(tasks_to_create)
-            
-            # Update segments to link to tasks (this is the remaining bottleneck, but much faster)
-            for i, segment in enumerate(segments_to_update):
-                segment.task = created_tasks[i]
-            
-            # Bulk update segments
-            from battycoda_app.models import Segment
-            Segment.objects.bulk_update(segments_to_update, ['task'], batch_size=100)
-            
             # Create success message with filtering info
             success_msg = f"Created task batch '{batch.name}' with {tasks_created} tasks for review."
             if tasks_filtered > 0:
@@ -180,20 +116,32 @@ def get_pending_runs_for_species(species, user_profile):
 def create_task_batches_for_species_view(request):
     """Display species with completed classification runs that don't have task batches."""
     profile = request.user.profile
-    
+
+    project_id = request.GET.get('project')
+
     # Get all species with completed detection runs
     if profile.group and profile.is_current_group_admin:
-        # Admin sees all species in their group
-        species_list = Species.objects.filter(
+        query = Species.objects.filter(
             recordings__segmentations__classification_runs__status="completed",
             recordings__group=profile.group
-        ).distinct()
+        )
+        if project_id:
+            try:
+                query = query.filter(recordings__project_id=int(project_id))
+            except (ValueError, TypeError):
+                pass
+        species_list = query.distinct()
     else:
-        # Regular user sees only species for their own recordings
-        species_list = Species.objects.filter(
+        query = Species.objects.filter(
             recordings__segmentations__classification_runs__status="completed",
             recordings__created_by=request.user
-        ).distinct()
+        )
+        if project_id:
+            try:
+                query = query.filter(recordings__project_id=int(project_id))
+            except (ValueError, TypeError):
+                pass
+        species_list = query.distinct()
     
     items = []
     for species in species_list:

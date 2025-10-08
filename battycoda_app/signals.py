@@ -6,7 +6,7 @@ from django.utils import timezone
 
 from .models import Recording, Segmentation, ClassificationRun, ClassifierTrainingJob, UserProfile, Notification, SpectrogramJob
 from .tasks import calculate_audio_duration
-from .audio.task_modules.spectrogram.generation import generate_recording_spectrogram
+from .audio.task_modules.spectrogram.hdf5_generation import generate_recording_spectrogram
 
 # NOTE: These signals are commented out because they duplicate functionality in models.py
 # @receiver(post_save, sender=User)
@@ -53,7 +53,10 @@ def trigger_spectrogram_generation(sender, instance, **kwargs):
     # Create a job and trigger generation in the background
     job = SpectrogramJob.objects.create(
         recording=instance,
-        status='pending'
+        name=f"Spectrogram for {instance.name}",
+        status='pending',
+        created_by=instance.created_by,
+        group=instance.group
     )
 
     # Trigger async task

@@ -40,8 +40,30 @@ function initSpectrogramViewer() {
     }
     
     let currentChannel = 0;
-    // Determine initial state from which button is active
-    let isOverview = overviewBtn.classList.contains('active');
+
+    // Load user's saved view preference from localStorage
+    const savedViewPreference = localStorage.getItem('taskAnnotationViewPreference');
+    let isOverview;
+
+    if (savedViewPreference !== null) {
+        // Use saved preference
+        isOverview = savedViewPreference === 'overview';
+        // Update buttons to match saved preference
+        if (isOverview) {
+            overviewBtn.classList.add('active', 'btn-primary');
+            overviewBtn.classList.remove('btn-outline-secondary');
+            detailViewBtn.classList.remove('active', 'btn-primary');
+            detailViewBtn.classList.add('btn-outline-primary');
+        } else {
+            detailViewBtn.classList.add('active', 'btn-primary');
+            detailViewBtn.classList.remove('btn-outline-primary');
+            overviewBtn.classList.remove('active', 'btn-primary');
+            overviewBtn.classList.add('btn-outline-secondary');
+        }
+    } else {
+        // Determine initial state from which button is active (template default)
+        isOverview = overviewBtn.classList.contains('active');
+    }
 
     // Function to update spectrogram based on current settings
     function updateSpectrogram() {
@@ -79,6 +101,8 @@ function initSpectrogramViewer() {
     // Set up event listeners
     detailViewBtn.addEventListener('click', function() {
         isOverview = false;
+        // Save preference to localStorage
+        localStorage.setItem('taskAnnotationViewPreference', 'detail');
         // Update button styles
         detailViewBtn.classList.add('active');
         detailViewBtn.classList.remove('btn-outline-primary');
@@ -88,9 +112,11 @@ function initSpectrogramViewer() {
         overviewBtn.classList.add('btn-outline-secondary');
         updateSpectrogram();
     });
-    
+
     overviewBtn.addEventListener('click', function() {
         isOverview = true;
+        // Save preference to localStorage
+        localStorage.setItem('taskAnnotationViewPreference', 'overview');
         // Update button styles
         overviewBtn.classList.add('active');
         overviewBtn.classList.remove('btn-outline-secondary');

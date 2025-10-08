@@ -89,10 +89,10 @@ class Task(models.Model):
 
     # Notes and comments
     notes = models.TextField(blank=True, null=True, help_text="Additional notes or observations about this task")
-    
+
     # Annotation tracking
     annotated_by = models.ForeignKey(
-        User, on_delete=models.SET_NULL, related_name="annotated_tasks", 
+        User, on_delete=models.SET_NULL, related_name="annotated_tasks",
         null=True, blank=True, help_text="User who provided the annotation/label"
     )
     annotated_at = models.DateTimeField(
@@ -116,9 +116,6 @@ class Task(models.Model):
 
         super().save(*args, **kwargs)
 
-        # After saving, pre-generate spectrograms
-        self.generate_spectrograms()
-
     def get_sample_rate(self):
         """Get sample rate by walking the relationship chain to the recording.
 
@@ -130,53 +127,3 @@ class Task(models.Model):
             if detection_run.segmentation and detection_run.segmentation.recording:
                 return detection_run.segmentation.recording.sample_rate
         return None
-
-    def generate_spectrograms(self):
-        """Pre-generate spectrograms for this task to avoid frontend requests"""
-        # Skip if this is called during migration
-        if not os.path.exists(settings.MEDIA_ROOT):
-            return
-
-        try:
-            # Prepare the WAV file path
-            if self.batch and self.batch.wav_file:
-                # Get the path from the uploaded file in the batch
-                wav_path = self.batch.wav_file.path
-            else:
-                # Assume the path is based on the recordings structure
-                from ..utils import convert_path_to_os_specific
-
-                wav_path = os.path.join("recordings", self.wav_file_name)
-                wav_path = convert_path_to_os_specific(wav_path)
-
-            # Create hash
-            file_hash = hashlib.md5(wav_path.encode()).hexdigest()
-
-            # Generate spectrograms for all channels (0, 1) and types (normal, overview)
-            for channel in [0, 1]:  # Assuming 2 channels
-                for overview in [False, True]:
-                    # Prepare args for spectrogram generation
-                    args = {
-                        "call": "0",  # Always the first call for a task
-                        "channel": str(channel),
-                        "numcalls": "1",
-                        "hash": file_hash,
-                        "overview": "1" if overview else "0",
-                        "contrast": "4.0",  # Default contrast value
-                    }
-
-                    # Add the onset and offset to the args
-                    args["onset"] = str(self.onset)
-                    args["offset"] = str(self.offset)
-
-                    # Generate the spectrogram synchronously (blocking)
-                    from battycoda_app.audio.task_modules.spectrogram import generate_spectrogram
-
-                    success, output_path, error = generate_spectrogram(wav_path, args, None)
-                    if not success:
-                        print(f"Failed to generate spectrogram: {error}")
-
-        except Exception as e:
-
-            import traceback
-

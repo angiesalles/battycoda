@@ -265,7 +265,7 @@ def auto_segment_recording_view(request, recording_id, algorithm_id=None):
         "existing_segmentation": existing_segmentation,
     }
 
-    return render(request, "recordings/auto_segment.html", context)
+    return render(request, "segmentations/auto_segment.html", context)
 
 @login_required
 def auto_segment_status_view(request, recording_id):
