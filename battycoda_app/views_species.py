@@ -4,7 +4,9 @@ import traceback
 
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
+from django.core.paginator import Paginator
 from django.db import transaction
+from django.db.models import Count, Q
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.template.loader import render_to_string
@@ -23,12 +25,16 @@ def species_list_view(request):
     # Get the user's profile
     profile = request.user.profile
 
-    # Get system species 
-    system_species = Species.objects.filter(is_system=True)
-    
+    # Get system species with task counts filtered by user's group
+    system_species = Species.objects.filter(is_system=True).annotate(
+        group_task_count=Count('tasks', filter=Q(tasks__group=profile.group))
+    )
+
     # Get group species if the user is in a group
     if profile.group:
-        group_species = Species.objects.filter(group=profile.group)
+        group_species = Species.objects.filter(group=profile.group).annotate(
+            group_task_count=Count('tasks', filter=Q(tasks__group=profile.group))
+        )
         # Combine system and group species
         species_list = list(system_species) + list(group_species)
     else:
@@ -50,20 +56,32 @@ def species_detail_view(request, species_id):
     # Get user's profile and group
     profile = request.user.profile
     user_group = profile.group
-    
+
     # Get tasks for this species - limited to user's group
-    tasks = Task.objects.filter(species=species, group=user_group)
+    tasks_list = Task.objects.filter(species=species, group=user_group).order_by('-created_at')
+
+    # Paginate tasks
+    tasks_paginator = Paginator(tasks_list, 50)
+    tasks_page_number = request.GET.get('tasks_page', 1)
+    tasks_page = tasks_paginator.get_page(tasks_page_number)
 
     # Get batches for this species - limited to user's group
-    batches = TaskBatch.objects.filter(species=species, group=user_group)
+    batches_list = TaskBatch.objects.filter(species=species, group=user_group).order_by('-created_at')
+
+    # Paginate batches
+    batches_paginator = Paginator(batches_list, 50)
+    batches_page_number = request.GET.get('batches_page', 1)
+    batches_page = batches_paginator.get_page(batches_page_number)
 
     # Get calls for this species
     calls = Call.objects.filter(species=species)
 
     context = {
         "species": species,
-        "tasks": tasks,
-        "batches": batches,
+        "tasks_page": tasks_page,
+        "tasks_total": tasks_list.count(),
+        "batches_page": batches_page,
+        "batches_total": batches_list.count(),
         "calls": calls,
     }
 

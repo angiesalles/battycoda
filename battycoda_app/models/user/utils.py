@@ -35,11 +35,12 @@ def get_user_by_email(email):
 @receiver(post_save, sender=User)
 def create_user_profile(sender, instance, created, **kwargs):
     from django.db.models import Q
+    from .group import Group, GroupInvitation, GroupMembership
+    from .profile import UserProfile
 
     if created:
         # Check if the user was invited to a group
         # Look for a pending invitation with the user's email
-        from .user import GroupInvitation
         invitation = None
         if instance.email:
             invitation = GroupInvitation.objects.filter(
@@ -67,14 +68,16 @@ def create_user_profile(sender, instance, created, **kwargs):
             # Create a new group for this user with unique name based on username
             group_name = f"{instance.username}'s Group"
             group = Group.objects.create(
-                name=group_name, 
+                name=group_name,
                 description="Your personal workspace for projects and recordings"
             )
 
             # Create profile with the new group and make user an admin
+            # Enable management features by default for new users
             profile = UserProfile.objects.create(
                 user=instance,
-                group=group
+                group=group,
+                management_features_enabled=True
             )
             
             # Create group membership record
@@ -99,15 +102,15 @@ def create_user_profile(sender, instance, created, **kwargs):
             )
 
             # Import default species
-            from ..utils_modules.species_utils import import_default_species
+            from ...utils_modules.species_utils import import_default_species
             created_species = import_default_species(instance)
 
             # Create a demo task batch with sample bat calls
-            from ..utils_modules.demo_utils import create_demo_task_batch
+            from ...utils_modules.demo_utils import create_demo_task_batch
             batch = create_demo_task_batch(instance)
-            
+
             # Create welcome notification with demo data message
-            from .notification import UserNotification
+            from ..notification import UserNotification
             from django.urls import reverse
             
             # Generate welcome message with link to dashboard
@@ -126,11 +129,12 @@ def create_user_profile(sender, instance, created, **kwargs):
             )
         
         # For all users, ensure that system species exist
-        from ..utils_modules.species_utils import setup_system_species
+        from ...utils_modules.species_utils import setup_system_species
         setup_system_species()
 
 @receiver(post_save, sender=User)
 def save_user_profile(sender, instance, **kwargs):
-    instance.profile.save()
+    if hasattr(instance, 'profile'):
+        instance.profile.save()
 
 

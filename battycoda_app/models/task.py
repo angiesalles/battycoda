@@ -4,6 +4,8 @@ import hashlib
 
 import os
 
+from datetime import timedelta
+
 from django.conf import settings
 from django.contrib.auth.models import User
 from django.db import models
@@ -11,6 +13,9 @@ from django.utils import timezone
 
 from .organization import Project, Species
 from .user import Group
+
+# Task lock timeout in minutes
+TASK_LOCK_TIMEOUT_MINUTES = 30
 
 class TaskBatch(models.Model):
     """Task Batch for grouping tasks that were created together."""

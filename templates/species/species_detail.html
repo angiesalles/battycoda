@@ -157,10 +157,10 @@
     <div class="card mb-4">
         <div class="card-header d-flex justify-content-between align-items-center">
             <h5 class="mb-0">Task Batches</h5>
-            <span class="badge bg-info">{{ batches|length }} Total</span>
+            <span class="badge bg-info">{{ batches_total }} Total</span>
         </div>
         <div class="card-body p-0">
-            {% if batches %}
+            {% if batches_page %}
                 <div class="table-responsive">
                     <table class="table table-hover table-striped mb-0">
                         <thead>
@@ -172,7 +172,7 @@
                             </tr>
                         </thead>
                         <tbody>
-                            {% for batch in batches %}
+                            {% for batch in batches_page %}
                             <tr>
                                 <td>
                                     <a href="{% url 'battycoda_app:task_batch_detail' batch.id %}">{{ batch.name }}</a>
@@ -183,9 +183,9 @@
                                 <td>{{ batch.created_at|date:"M d, Y" }}</td>
                                 <td>
                                     <div class="btn-group btn-group-sm">
-                                        <a href="{% url 'battycoda_app:task_batch_detail' batch.id %}" 
+                                        <a href="{% url 'battycoda_app:task_batch_detail' batch.id %}"
                                            class="btn btn-outline-info"
-                                           data-bs-toggle="tooltip" data-bs-placement="top" 
+                                           data-bs-toggle="tooltip" data-bs-placement="top"
                                            title="View batch details">
                                             <i class="fas fa-eye"></i>
                                         </a>
@@ -196,6 +196,33 @@
                         </tbody>
                     </table>
                 </div>
+                {% if batches_page.paginator.num_pages > 1 %}
+                <div class="card-footer">
+                    <nav>
+                        <ul class="pagination justify-content-center mb-0">
+                            {% if batches_page.has_previous %}
+                            <li class="page-item">
+                                <a class="page-link" href="?batches_page=1{% if tasks_page %}&tasks_page={{ tasks_page.number }}{% endif %}">First</a>
+                            </li>
+                            <li class="page-item">
+                                <a class="page-link" href="?batches_page={{ batches_page.previous_page_number }}{% if tasks_page %}&tasks_page={{ tasks_page.number }}{% endif %}">Previous</a>
+                            </li>
+                            {% endif %}
+                            <li class="page-item active">
+                                <span class="page-link">Page {{ batches_page.number }} of {{ batches_page.paginator.num_pages }}</span>
+                            </li>
+                            {% if batches_page.has_next %}
+                            <li class="page-item">
+                                <a class="page-link" href="?batches_page={{ batches_page.next_page_number }}{% if tasks_page %}&tasks_page={{ tasks_page.number }}{% endif %}">Next</a>
+                            </li>
+                            <li class="page-item">
+                                <a class="page-link" href="?batches_page={{ batches_page.paginator.num_pages }}{% if tasks_page %}&tasks_page={{ tasks_page.number }}{% endif %}">Last</a>
+                            </li>
+                            {% endif %}
+                        </ul>
+                    </nav>
+                </div>
+                {% endif %}
             {% else %}
                 <div class="text-center p-4">
                     <i class="fas fa-tasks fa-4x mb-3 text-muted"></i>
@@ -208,10 +235,10 @@
     <div class="card">
         <div class="card-header d-flex justify-content-between align-items-center">
             <h5 class="mb-0">Tasks</h5>
-            <span class="badge bg-info">{{ tasks|length }} Total</span>
+            <span class="badge bg-info">{{ tasks_total }} Total</span>
         </div>
         <div class="card-body p-0">
-            {% if tasks %}
+            {% if tasks_page %}
                 <div class="table-responsive">
                     <table class="table table-hover table-striped mb-0">
                         <thead>
@@ -224,7 +251,7 @@
                             </tr>
                         </thead>
                         <tbody>
-                            {% for task in tasks %}
+                            {% for task in tasks_page %}
                             <tr>
                                 <td>{{ task.wav_file_name }}</td>
                                 <td>{{ task.onset|floatformat:2 }}s - {{ task.offset|floatformat:2 }}s</td>
@@ -244,15 +271,15 @@
                                 </td>
                                 <td>
                                     <div class="btn-group btn-group-sm">
-                                        <a href="{% url 'battycoda_app:task_detail' task.id %}" 
+                                        <a href="{% url 'battycoda_app:task_detail' task.id %}"
                                            class="btn btn-outline-info"
-                                           data-bs-toggle="tooltip" data-bs-placement="top" 
+                                           data-bs-toggle="tooltip" data-bs-placement="top"
                                            title="View task details">
                                             <i class="fas fa-eye"></i>
                                         </a>
-                                        <a href="{% url 'battycoda_app:annotate_task' task.id %}" 
+                                        <a href="{% url 'battycoda_app:annotate_task' task.id %}"
                                            class="btn btn-outline-primary"
-                                           data-bs-toggle="tooltip" data-bs-placement="top" 
+                                           data-bs-toggle="tooltip" data-bs-placement="top"
                                            title="Annotate this task">
                                             <i class="fas fa-edit"></i>
                                         </a>
@@ -263,6 +290,33 @@
                         </tbody>
                     </table>
                 </div>
+                {% if tasks_page.paginator.num_pages > 1 %}
+                <div class="card-footer">
+                    <nav>
+                        <ul class="pagination justify-content-center mb-0">
+                            {% if tasks_page.has_previous %}
+                            <li class="page-item">
+                                <a class="page-link" href="?tasks_page=1{% if batches_page %}&batches_page={{ batches_page.number }}{% endif %}">First</a>
+                            </li>
+                            <li class="page-item">
+                                <a class="page-link" href="?tasks_page={{ tasks_page.previous_page_number }}{% if batches_page %}&batches_page={{ batches_page.number }}{% endif %}">Previous</a>
+                            </li>
+                            {% endif %}
+                            <li class="page-item active">
+                                <span class="page-link">Page {{ tasks_page.number }} of {{ tasks_page.paginator.num_pages }}</span>
+                            </li>
+                            {% if tasks_page.has_next %}
+                            <li class="page-item">
+                                <a class="page-link" href="?tasks_page={{ tasks_page.next_page_number }}{% if batches_page %}&batches_page={{ batches_page.number }}{% endif %}">Next</a>
+                            </li>
+                            <li class="page-item">
+                                <a class="page-link" href="?tasks_page={{ tasks_page.paginator.num_pages }}{% if batches_page %}&batches_page={{ batches_page.number }}{% endif %}">Last</a>
+                            </li>
+                            {% endif %}
+                        </ul>
+                    </nav>
+                </div>
+                {% endif %}
             {% else %}
                 <div class="text-center p-4">
                     <i class="fas fa-clipboard-check fa-4x mb-3 text-muted"></i>

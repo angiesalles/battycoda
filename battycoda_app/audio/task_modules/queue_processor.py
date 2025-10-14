@@ -47,11 +47,11 @@ def process_classification_queue(self):
         # Choose the appropriate task based on classifier
         if queued_run.classifier and queued_run.classifier.name == "Dummy Classifier":
             # Use the dummy classifier task directly
-            from .classification_tasks import run_dummy_classifier
+            from .classification.dummy_classifier import run_dummy_classifier
             result = run_dummy_classifier.delay(queued_run.id)
         else:
             # For other classifiers, use the standard task
-            from .classification_tasks import run_call_detection
+            from .classification.run_classification import run_call_detection
             result = run_call_detection.delay(queued_run.id)
         
         return {

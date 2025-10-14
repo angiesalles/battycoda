@@ -161,11 +161,11 @@ def create_preview_recording_view(request, recording_id):
         def generate_spectrogram_for_recording():
             """Generate HDF5 spectrogram for the preview recording."""
             try:
-                from battycoda_app.audio.task_modules.spectrogram_tasks import generate_recording_spectrogram
+                from battycoda_app.audio.task_modules.spectrogram.hdf5_generation import generate_recording_spectrogram
                 from celery import current_app
 
                 # Call the existing task synchronously (not via Celery delay)
-                task = current_app.tasks['battycoda_app.audio.task_modules.spectrogram_tasks.generate_recording_spectrogram']
+                task = current_app.tasks['battycoda_app.audio.task_modules.spectrogram.hdf5_generation.generate_recording_spectrogram']
                 result = task(hidden_recording.id)
 
                 if result.get('status') == 'success':

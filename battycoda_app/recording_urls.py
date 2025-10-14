@@ -9,8 +9,7 @@ from . import (
     views_recording_core,
     views_recordings_duplicates,
     views_batch_upload,
-    views_audio_streaming,
-    views_tasks
+    views_audio_streaming
 )
 
 urlpatterns = [
@@ -31,10 +30,5 @@ urlpatterns = [
     ),
     path(
         "recordings/<int:recording_id>/stream/", views_audio_streaming.stream_audio_view, name="stream_recording_audio"
-    ),
-    path(
-        "recordings/<int:recording_id>/spectrogram-status/",
-        views_tasks.recording_spectrogram_status_view,
-        name="recording_spectrogram_status",
     ),
 ]

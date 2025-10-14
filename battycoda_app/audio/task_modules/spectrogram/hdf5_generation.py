@@ -136,7 +136,7 @@ def generate_hdf5_spectrogram(recording_id, celery_task_id=None):
         return {"status": "error", "message": str(e), "recording_id": recording_id}
 
 
-@shared_task(bind=True, name="battycoda_app.audio.task_modules.spectrogram_tasks.generate_recording_spectrogram")
+@shared_task(bind=True, name="battycoda_app.audio.task_modules.spectrogram.hdf5_generation.generate_recording_spectrogram")
 def generate_recording_spectrogram(self, recording_id):
     """
     Celery task to generate a full HDF5 spectrogram for a recording.

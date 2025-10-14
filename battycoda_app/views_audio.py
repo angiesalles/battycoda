@@ -247,18 +247,3 @@ def simple_audio_bit_view(request):
     except Exception as e:
         return HttpResponse(f"Error: {str(e)}", status=500)
 
-@login_required
-def task_status(request, task_id):
-    """
-    Check the status of a task.
-
-    Args:
-        request: Django request
-        task_id: ID of the Celery task
-
-    Returns:
-        JSON response with task status
-    """
-    from .audio.views import task_status as audio_task_status
-
-    return audio_task_status(request, task_id)

@@ -20,12 +20,13 @@ def create_demo_task_batch(user):
     Returns:
         TaskBatch or None: The created TaskBatch object, or None if creation failed
     """
-    from battycoda_app.audio.task_modules.classification_tasks import run_dummy_classifier
+    from battycoda_app.audio.task_modules.classification.dummy_classifier import run_dummy_classifier
     from battycoda_app.audio.utils import process_pickle_file
     # Import from specific model modules
     from battycoda_app.models.classification import CallProbability, Classifier, ClassificationResult, ClassificationRun
     from battycoda_app.models.organization import Project, Species
-    from battycoda_app.models.recording import Recording, Segment, Segmentation
+    from battycoda_app.models.recording import Recording
+    from battycoda_app.models.segmentation import Segment, Segmentation
     from battycoda_app.models.task import Task, TaskBatch
 
     # Get the user's group and profile
@@ -238,7 +239,7 @@ def _run_demo_classification(user, group, segmentation):
     Returns:
         ClassificationRun: The created ClassificationRun object or None if creation failed
     """
-    from battycoda_app.audio.task_modules.classification_tasks import run_dummy_classifier
+    from battycoda_app.audio.task_modules.classification.dummy_classifier import run_dummy_classifier
     from battycoda_app.models.classification import Classifier, ClassificationRun
 
     try:

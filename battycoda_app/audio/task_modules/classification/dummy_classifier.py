@@ -9,7 +9,7 @@ from django.db import transaction
 from ..detection_tasks import get_call_types, get_segments, update_detection_run_status
 
 
-@shared_task(bind=True, name="battycoda_app.audio.task_modules.classification_tasks.run_dummy_classifier")
+@shared_task(bind=True, name="battycoda_app.audio.task_modules.classification.dummy_classifier.run_dummy_classifier")
 def run_dummy_classifier(self, detection_run_id):
     """
     Dummy classifier that assigns equal probability to all call types.

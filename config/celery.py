@@ -13,12 +13,13 @@ app.config_from_object("django.conf:settings", namespace="CELERY")
 
 # Load task modules from all registered Django app configs.
 app.autodiscover_tasks([
-    "battycoda_app", 
+    "battycoda_app",
     "battycoda_app.audio",
     "battycoda_app.audio.task_modules.spectrogram_tasks",
     "battycoda_app.audio.task_modules.detection_tasks",
     "battycoda_app.audio.task_modules.segmentation_tasks",
-    "battycoda_app.audio.task_modules.classification_tasks",
+    "battycoda_app.audio.task_modules.classification.run_classification",
+    "battycoda_app.audio.task_modules.classification.dummy_classifier",
     "battycoda_app.audio.task_modules.training_tasks",
     "battycoda_app.audio.task_modules.clustering.tasks",
     "battycoda_app.audio.task_modules.queue_processor"

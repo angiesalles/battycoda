@@ -199,7 +199,7 @@ def combine_features_files(all_features_files, all_segment_metadata, detection_r
         return None
 
 
-@shared_task(bind=True, name="battycoda_app.audio.task_modules.classification_tasks.run_call_detection")
+@shared_task(bind=True, name="battycoda_app.audio.task_modules.classification.run_classification.run_call_detection")
 def run_call_detection(self, detection_run_id):
     """
     Run automated call classification on segments using the configured classifier.

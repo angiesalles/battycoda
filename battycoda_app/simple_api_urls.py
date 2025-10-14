@@ -7,7 +7,6 @@ from django.urls import path
 # Import views from modular files
 from .simple_api.user_views import simple_user_info, simple_generate_api_key
 from .simple_api.data_views import simple_species_list, simple_projects_list, simple_recordings_list
-from .simple_api.upload_views import simple_upload_recording
 from .simple_api.recording_upload import upload_recording
 from .simple_api.pickle_upload import upload_pickle_segmentation
 from .simple_api.segmentation_views import simple_segmentation_algorithms, simple_start_segmentation

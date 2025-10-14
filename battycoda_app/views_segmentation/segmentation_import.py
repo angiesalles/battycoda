@@ -34,7 +34,7 @@ def upload_pickle_segments_view(request, recording_id):
             "recording": recording,
             "has_existing_segmentation": existing_segmentations.exists(),
         }
-        return render(request, "recordings/upload_pickle.html", context)
+        return render(request, "segmentations/upload_pickle.html", context)
 
     # Handle POST requests
     if request.method == "POST" and request.FILES.get("pickle_file"):
@@ -116,4 +116,4 @@ def upload_pickle_segments_view(request, recording_id):
         "recording": recording,
     }
 
-    return render(request, "recordings/upload_pickle.html", context)
+    return render(request, "segmentations/upload_pickle.html", context)

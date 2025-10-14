@@ -123,13 +123,10 @@ def simple_start_classification(request, segmentation_id):
             status='queued',
             progress=0
         )
-        
-        # Start the classification task
-        from celery import current_app
-        task = current_app.send_task(
-            'battycoda_app.tasks.run_classification',
-            args=[classification_run.id]
-        )
+
+        # Queue the run for processing
+        from battycoda_app.audio.task_modules.queue_processor import queue_classification_run
+        task = queue_classification_run.delay(classification_run.id)
         
         # Update with task ID
         classification_run.task_id = task.id

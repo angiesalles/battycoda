@@ -1,0 +1,85 @@
+.call-box {
+    border: 1px solid #ddd;
+    padding: 10px;
+    margin-bottom: 10px;
+    border-radius: 4px;
+    background-color: #f8f9fa;
+}
+
+.cluster-box {
+    border: 1px solid #ddd;
+    padding: 10px;
+    margin-bottom: 10px;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.cluster-box:hover {
+    background-color: #e9ecef;
+}
+
+.cluster-box.selected {
+    background-color: #cfe2ff;
+    border-color: #0d6efd;
+}
+
+.mapping-container {
+    padding: 15px;
+    border: 1px dashed #ddd;
+    border-radius: 4px;
+    min-height: 200px;
+    transition: background-color 0.2s, border-color 0.2s;
+}
+
+/* Style for drop hover state */
+.mapping-container.drop-hover {
+    background-color: #e8f4fc;
+    border-color: #0d6efd;
+    border-style: solid;
+}
+
+/* Style for dragging state */
+.cluster-box.dragging {
+    opacity: 0.6;
+    border-color: #0d6efd;
+    box-shadow: 0 0 5px rgba(13, 110, 253, 0.5);
+}
+
+.mapping-instruction {
+    color: #6c757d;
+    font-style: italic;
+}
+
+.mapping-item {
+    background-color: #e9ecef;
+    padding: 8px 12px;
+    margin-bottom: 8px;
+    border-radius: 4px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.confidence-slider {
+    width: 100%;
+}
+
+.drag-handle {
+    cursor: move;
+    color: #6c757d;
+    margin-right: 10px;
+}
+
+.color-indicator {
+    width: 16px;
+    height: 16px;
+    display: inline-block;
+    margin-right: 8px;
+    border-radius: 50%;
+}
+
+.cluster-count-badge {
+    font-size: 0.7em;
+    vertical-align: top;
+}

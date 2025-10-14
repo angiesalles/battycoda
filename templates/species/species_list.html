@@ -34,7 +34,7 @@
 
 {% block item_fields %}
 <td>{{ item.calls.count }}</td>
-<td>{{ item.tasks.count }}</td>
+<td>{{ item.group_task_count }}</td>
 <td data-utc-date="{{ item.created_at|date:'c' }}" data-date-format="date">{{ item.created_at|date:"M d, Y" }}</td>
 {% endblock %}
 
@@ -48,7 +48,7 @@
     </td>
     
     <td>{{ item.calls.count }}</td>
-    <td>{{ item.tasks.count }}</td>
+    <td>{{ item.group_task_count }}</td>
     <td data-utc-date="{{ item.created_at|date:'c' }}" data-date-format="date">{{ item.created_at|date:"M d, Y" }}</td>
     
     <td>

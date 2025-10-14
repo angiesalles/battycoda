@@ -61,18 +61,13 @@ def create_detection_run_view(request, segmentation_id=None):
                 group=profile.group,
                 algorithm_type=classifier.response_format,
                 classifier=classifier,
-                status="pending",
+                status="queued",
                 progress=0.0,
             )
 
-            if classifier.name == "Dummy Classifier":
-                from battycoda_app.audio.task_modules.classification_tasks import run_dummy_classifier
-
-                run_dummy_classifier.delay(run.id)
-            else:
-                from battycoda_app.audio.task_modules.classification_tasks import run_call_detection
-
-                run_call_detection.delay(run.id)
+            # Queue the run for processing by the queue processor
+            from battycoda_app.audio.task_modules.queue_processor import queue_classification_run
+            queue_classification_run.delay(run.id)
 
             if request.headers.get("x-requested-with") == "XMLHttpRequest":
                 return JsonResponse({"success": True, "run_id": run.id})
