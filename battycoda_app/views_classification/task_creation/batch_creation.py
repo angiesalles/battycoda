@@ -93,13 +93,27 @@ def create_task_batch_from_detection_run(request, run_id):
     return render(request, "classification/create_task_batch.html", context)
 
 
-def get_pending_runs_for_species(species, user_profile):
-    """Helper function to get completed runs without task batches for a species."""
+def get_pending_runs_for_species(species, user_profile, lock_for_processing=False):
+    """
+    Helper function to get completed runs without task batches for a species.
+
+    Args:
+        species: Species to get runs for
+        user_profile: UserProfile for permission filtering
+        lock_for_processing: If True, uses select_for_update(skip_locked=True)
+                           to prevent concurrent processing of the same runs.
+                           Only use this within a transaction context.
+
+    Returns:
+        QuerySet of ClassificationRun objects
+    """
+    from django.db.models import Exists, OuterRef
+
     base_query = ClassificationRun.objects.filter(
         segmentation__recording__species=species,
-        status="completed", 
+        status="completed",
     )
-    
+
     # Filter by user permissions
     if user_profile.group and user_profile.is_current_group_admin:
         # Admin sees all runs in the group
@@ -107,9 +121,19 @@ def get_pending_runs_for_species(species, user_profile):
     else:
         # Regular user only sees own runs
         base_query = base_query.filter(segmentation__recording__created_by=user_profile.user)
-    
-    # Filter runs without task batches
-    return base_query.filter(task_batches__isnull=True)
+
+    # Filter runs without task batches using a subquery to avoid outer join
+    # (select_for_update doesn't work with outer joins)
+    has_task_batch = TaskBatch.objects.filter(detection_run=OuterRef('pk'))
+    query = base_query.annotate(has_batch=Exists(has_task_batch)).filter(has_batch=False)
+
+    # Optionally lock rows to prevent race conditions during processing
+    if lock_for_processing:
+        # skip_locked=True means if another process is already working on some runs,
+        # we'll skip those and only get the unlocked ones
+        query = query.select_for_update(skip_locked=True)
+
+    return query
 
 
 @login_required

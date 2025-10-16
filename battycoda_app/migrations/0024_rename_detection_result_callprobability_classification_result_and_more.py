@@ -12,16 +12,6 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
-        migrations.RenameField(
-            model_name="callprobability",
-            old_name="detection_result",
-            new_name="classification_result",
-        ),
-        migrations.RenameField(
-            model_name="classificationresult",
-            old_name="detection_run",
-            new_name="classification_run",
-        ),
         migrations.RemoveField(
             model_name="segment",
             name="task",

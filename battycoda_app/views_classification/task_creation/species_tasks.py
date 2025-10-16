@@ -55,36 +55,35 @@ def create_tasks_for_species_view(request, species_id):
                 messages.error(request, "Invalid confidence threshold value.")
                 return redirect('battycoda_app:create_task_batches_for_species')
 
-        try:
-            # Get all completed runs without task batches
-            runs = get_pending_runs_for_species(species, profile)
+        # Check total task count before proceeding
+        pending_runs = get_pending_runs_for_species(species, profile)
+        total_results = ClassificationResult.objects.filter(
+            classification_run__in=pending_runs
+        ).count()
 
+        MAX_TASKS = 50000
+        if total_results > MAX_TASKS:
+            messages.error(
+                request,
+                f"Cannot create task batches: {total_results:,} tasks would be created, "
+                f"which exceeds the maximum of {MAX_TASKS:,}. Please use confidence threshold "
+                f"filtering or process runs individually."
+            )
+            return redirect('battycoda_app:create_task_batches_for_species')
+
+        try:
             # Create task batches for each run
             batches_created = 0
             tasks_created = 0
             total_filtered = 0
 
-            # Use a single transaction for the entire process to prevent race conditions
+            # Use a transaction to lock runs and prevent concurrent processing
             with transaction.atomic():
-                # First, lock all segments we might modify to prevent concurrent access
-                # Get all segments associated with these runs
-                from battycoda_app.models import Segment
-                all_segments_ids = []
+                # Get all completed runs without task batches and lock them
+                # skip_locked=True ensures we only get runs not being processed by others
+                runs = get_pending_runs_for_species(species, profile, lock_for_processing=True)
 
-                for run in runs:
-                    # Get segment IDs for this run
-                    result_segments = ClassificationResult.objects.filter(
-                        classification_run=run
-                    ).values_list('segment_id', flat=True)
-                    all_segments_ids.extend(result_segments)
-
-                # Lock all these segments using SELECT FOR UPDATE to prevent concurrent modifications
-                if all_segments_ids:
-                    locked_segments = list(Segment.objects.filter(
-                        id__in=all_segments_ids
-                    ).select_for_update())  # This locks the rows
-
-                # Now process each run
+                # Process each run individually
                 for run in runs:
                     try:
                         # Get the recording from the segmentation
@@ -114,8 +113,8 @@ def create_tasks_for_species_view(request, species_id):
                         # Log the error but continue with other runs
                         print(f"Error creating task batch for run {run.id}: {str(e)}")
                         print(traceback.format_exc())
-                        # Don't continue - raise the exception to rollback the transaction
-                        raise
+                        # Continue processing other runs
+                        continue
 
             if batches_created > 0:
                 # Create success message with filtering info
@@ -133,12 +132,19 @@ def create_tasks_for_species_view(request, species_id):
             return redirect('battycoda_app:create_task_batches_for_species')
 
     # For GET request, show confirmation form
-    # Count pending runs
-    pending_runs_count = get_pending_runs_for_species(species, profile).count()
+    # Count pending runs and estimate total tasks
+    pending_runs = get_pending_runs_for_species(species, profile)
+    pending_runs_count = pending_runs.count()
+
+    estimated_tasks = ClassificationResult.objects.filter(
+        classification_run__in=pending_runs
+    ).count()
 
     context = {
         'species': species,
         'pending_runs_count': pending_runs_count,
+        'estimated_tasks': estimated_tasks,
+        'max_tasks': 50000,
         'default_name_prefix': f"Review of {species.name} classifications"
     }
 

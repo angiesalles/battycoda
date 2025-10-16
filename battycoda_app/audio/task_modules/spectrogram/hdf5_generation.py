@@ -77,46 +77,14 @@ def generate_hdf5_spectrogram(recording_id, celery_task_id=None):
                 job.save()
             return {"status": "success", "file_path": output_path, "recording_id": recording_id, "cached": True}
 
-        update_job_progress(30)
-        audio_data, sample_rate = sf.read(wav_path)
-        update_job_progress(50)
+        # Use chunked processing to avoid loading entire file into memory
+        from .hdf5_generation_chunked import generate_hdf5_spectrogram_chunked
 
-        max_duration_samples = 10 * 60 * sample_rate
-        if len(audio_data) > max_duration_samples:
-            downsample_factor = int(len(audio_data) / max_duration_samples) + 1
-            audio_data = audio_data[::downsample_factor]
-            effective_sample_rate = sample_rate / downsample_factor
-        else:
-            effective_sample_rate = sample_rate
-
-        if len(audio_data.shape) > 1 and audio_data.shape[1] > 1:
-            audio_data = np.mean(audio_data, axis=1)
-
-        update_job_progress(70)
-
-        import librosa
-        stft = librosa.stft(audio_data, hop_length=512, n_fft=2048)
-        spectrogram = librosa.amplitude_to_db(np.abs(stft), ref=np.max)
-
-        max_freq_hz = 128000
-        freq_per_bin = (effective_sample_rate / 2) / (2048 / 2)
-        max_bin = int(max_freq_hz / freq_per_bin)
-        spectrogram = spectrogram[:max_bin, :]
-
-        spectrogram = spectrogram.astype(np.float16)
-
-        update_job_progress(80)
-
-        import h5py
-
-        with h5py.File(output_path, 'w') as f:
-            f.create_dataset('spectrogram', data=spectrogram, dtype='float16', compression='gzip', compression_opts=9)
-            f.attrs['sample_rate'] = effective_sample_rate
-            f.attrs['hop_length'] = 512
-            f.attrs['n_fft'] = 2048
-            f.attrs['duration'] = len(audio_data) / effective_sample_rate
-            f.attrs['n_frames'] = spectrogram.shape[1]
-            f.attrs['n_freq_bins'] = spectrogram.shape[0]
+        result = generate_hdf5_spectrogram_chunked(
+            wav_path,
+            output_path,
+            progress_callback=update_job_progress
+        )
 
         update_job_progress(90)
 

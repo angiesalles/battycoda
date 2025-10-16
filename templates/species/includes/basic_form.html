@@ -1,140 +1,37 @@
-        <h3>Call Types</h3>
-        
-        <!-- Hidden field to store call types as JSON -->
-        <input type="hidden" id="call_types_json" name="call_types_json" value="[]">
-        
-        <div class="p-3 mb-4 bg-light rounded border">
-            <!-- Import from file section -->
-            <div class="mb-3">
-                <h4 style="margin-top: 0; margin-bottom: 10px;">Import Calls from File</h4>
-                <p style="margin-bottom: 8px; font-style: italic; color: #999;">Uploading a file will replace any calls you've already added.</p>
-                <div class="row align-items-end mb-2">
-                    <div class="col-md-9">
-                        <input type="file" id="calls_file_input" class="form-control">
-                    </div>
-                    <div class="col-md-3">
-                        <button type="button" id="parse_file_btn" class="btn btn-primary w-100">Parse File</button>
-                    </div>
-                </div>
-                <p style="font-size: 0.8em; margin-top: 5px;">Upload a text file with call types (one per line, format: short_name,long_name)</p>
-                <div id="file-load-status" style="margin-top: 5px;"></div>
-            </div>
-            
-            <h4 style="margin-top: 15px; margin-bottom: 10px;">Call Types List</h4>
-            
-            <!-- List of calls -->
-            <div id="calls-container" style="margin-bottom: 15px;">
-                <div id="calls-table-container">
-                    <p style="font-style: italic; color: #999; text-align: center;">No call types added yet.</p>
-                </div>
-            </div>
-            
-            <!-- Add new call form -->
-            <div class="p-3 bg-light rounded border">
-                <h5 style="margin-top: 0; margin-bottom: 10px;">Add a New Call Type</h5>
-                <p style="font-size: 0.8em; margin-bottom: 8px; font-style: italic; color: #999;">Press Enter in either field to quickly add a call</p>
-                <div id="add-call-messages"></div>
-                <div class="row mb-3">
-                    <div class="col-md-6">
-                        <label for="new-call-short-name" class="form-label">Short Name:</label>
-                        <input type="text" id="new-call-short-name" class="form-control">
-                    </div>
-                    <div class="col-md-6">
-                        <label for="new-call-long-name" class="form-label">Long Name:</label>
-                        <input type="text" id="new-call-long-name" class="form-control">
-                    </div>
-                </div>
-                <button type="button" id="add-call-btn" class="btn btn-primary">Add Call</button>
-            </div>
-        </div>
-        
-        <div style="margin-top: 20px;">
-            <button type="submit" id="submit-button" class="button" style="opacity: 1; transition: opacity 0.3s;">Save Species</button>
-            <a href="{% url 'battycoda_app:species_list' %}" style="margin-left: 10px;">Cancel</a>
-        </div>
-    </form>
+<div style="margin-bottom: 15px;">
+    <label for="id_name" style="display: block; margin-bottom: 5px;">Name: <span style="color: #e57373;">*</span></label>
+    {{ form.name }}
+    <p style="font-size: 0.8em; margin-top: 3px; color: #999;">Species name must be unique within your group</p>
+    <div id="name-error-field" style="color: #e57373; margin-top: 5px; display: none;"></div>
+    {% if form.name.errors %}
+    <div style="color: #e57373; margin-top: 5px;">
+        {% for error in form.name.errors %}
+        {{ error }}
+        {% endfor %}
+    </div>
+    {% endif %}
 </div>
-{% endblock content %}
 
-{% block extra_js %}
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-    // Identify our elements
-    const addCallButton = document.getElementById('add-call-btn');
-    const parseFileButton = document.getElementById('parse_file_btn');
-    const newCallShortName = document.getElementById('new-call-short-name');
-    const newCallLongName = document.getElementById('new-call-long-name');
-    const callsTableContainer = document.getElementById('calls-table-container');
-    const fileLoadStatus = document.getElementById('file-load-status');
-    const callTypesJsonInput = document.getElementById('call_types_json');
-    const addCallMessages = document.getElementById('add-call-messages');
-    
-    // Initialize call types array
-    let callTypes = [];
-    
-    // Function to update the hidden JSON field
-    function updateCallTypesJson() {
-        const jsonString = JSON.stringify(callTypes);
-        callTypesJsonInput.value = jsonString;
-        return jsonString; // Return for chaining
-    }
-    
-    // Function to show a message
-    function showMessage(element, message, type = 'success') {
-        element.innerHTML = `
-            <div style="margin-top: 8px; margin-bottom: 8px; padding: 8px 12px; border-radius: 4px; background-color: ${type === 'success' ? '#2e7d32' : '#c62828'}; color: white;">
-                ${message}
-            </div>
-        `;
-        
-        // Auto-dismiss after 5 seconds
-        setTimeout(() => {
-            if (element && element.firstChild) {
-                element.innerHTML = '';
-            }
-        }, 5000);
-    }
-    
-    // Function to render the calls table
-    function renderCallsTable() {
-        if (callTypes.length === 0) {
-            callsTableContainer.innerHTML = '<p style="font-style: italic; color: #999; text-align: center;">No call types added yet.</p>';
-            return;
-        }
-        
-        // Create table HTML
-        let tableHtml = `
-            <table style="width: 100%; border-collapse: collapse; margin-bottom: 15px;">
-                <thead>
-                    <tr>
-                        <th style="text-align: left; padding: 8px; border-bottom: 1px solid #333;">Short Name</th>
-                        <th style="text-align: left; padding: 8px; border-bottom: 1px solid #333;">Long Name</th>
-                        <th style="text-align: center; padding: 8px; border-bottom: 1px solid #333;">Actions</th>
-                    </tr>
-                </thead>
-                <tbody>
-        `;
-        
-        // Add rows for each call type
-        callTypes.forEach((call, index) => {
-            tableHtml += `
-                <tr data-index="${index}">
-                    <td style="padding: 8px; border-bottom: 1px solid #333;">${call.short_name}</td>
-                    <td style="padding: 8px; border-bottom: 1px solid #333;">${call.long_name || ''}</td>
-                    <td style="padding: 8px; border-bottom: 1px solid #333; text-align: center;">
-                        <button type="button" class="button button-small button-danger delete-call-btn" data-index="${index}">Delete</button>
-                    </td>
-                </tr>
-            `;
-        });
-        
-        tableHtml += `
-                </tbody>
-            </table>
-        `;
-        
-        callsTableContainer.innerHTML = tableHtml;
-        
-        // Add event listeners to delete buttons
-        document.querySelectorAll('.delete-call-btn').forEach(button => {
-            button.addEventListener('click', function() {
+<div style="margin-bottom: 15px;">
+    <label for="id_description" style="display: block; margin-bottom: 5px;">Description:</label>
+    {{ form.description }}
+    {% if form.description.errors %}
+    <div style="color: #e57373; margin-top: 5px;">
+        {% for error in form.description.errors %}
+        {{ error }}
+        {% endfor %}
+    </div>
+    {% endif %}
+</div>
+
+<div style="margin-bottom: 15px;">
+    <label for="id_image" style="display: block; margin-bottom: 5px;">Species Image:</label>
+    {{ form.image }}
+    {% if form.image.errors %}
+    <div style="color: #e57373; margin-top: 5px;">
+        {% for error in form.image.errors %}
+        {{ error }}
+        {% endfor %}
+    </div>
+    {% endif %}
+</div>

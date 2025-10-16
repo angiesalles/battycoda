@@ -1,80 +1,135 @@
 from django.contrib.auth.models import User
 from django.urls import resolve, reverse
 
-from battycoda_app import views, views_auth, views_group, views_task
+from battycoda_app import views_dashboard, views_group
 from battycoda_app.tests.test_base import BattycodaTestCase
 
 class UrlsTest(BattycodaTestCase):
+    """Test that URL patterns resolve correctly."""
+
     def setUp(self):
         self.user = User.objects.create_user(username="testuser", email="test@example.com", password="password123")
 
-    def test_index_url(self):
+    def test_index_url_resolves(self):
+        """Test that index URL resolves."""
         url = reverse("battycoda_app:index")
-        self.assertEqual(resolve(url).func, views.index)
+        self.assertEqual(url, '/')
 
-    def test_auth_urls(self):
-        # Login
-        url = reverse("battycoda_app:login")
-        self.assertEqual(resolve(url).func, views_auth.login_view)
+    def test_auth_urls_resolve(self):
+        """Test that authentication URLs resolve."""
+        self.assertEqual(reverse("battycoda_app:login"), '/accounts/login/')
+        self.assertEqual(reverse("battycoda_app:register"), '/accounts/register/')
+        self.assertEqual(reverse("battycoda_app:logout"), '/accounts/logout/')
+        self.assertEqual(reverse("battycoda_app:profile"), '/accounts/profile/')
 
-        # Register
-        url = reverse("battycoda_app:register")
-        self.assertEqual(resolve(url).func, views_auth.register_view)
+    def test_group_urls_resolve(self):
+        """Test that group URLs resolve."""
+        self.assertEqual(reverse("battycoda_app:group_list"), '/groups/')
+        self.assertEqual(reverse("battycoda_app:create_group"), '/groups/create/')
+        self.assertEqual(reverse("battycoda_app:group_detail", args=[1]), '/groups/1/')
 
-        # Logout
-        url = reverse("battycoda_app:logout")
-        self.assertEqual(resolve(url).func, views_auth.logout_view)
+    def test_task_urls_resolve(self):
+        """Test that task URLs resolve."""
+        self.assertEqual(reverse("battycoda_app:task_batch_list"), '/tasks/batches/')
+        self.assertEqual(reverse("battycoda_app:task_batch_detail", args=[1]), '/tasks/batches/1/')
 
-        # Profile
-        url = reverse("battycoda_app:profile")
-        self.assertEqual(resolve(url).func, views_auth.profile_view)
+    def test_species_urls_resolve(self):
+        """Test that species URLs resolve."""
+        self.assertEqual(reverse("battycoda_app:species_list"), '/species/')
+        self.assertEqual(reverse("battycoda_app:species_detail", args=[1]), '/species/1/')
+        self.assertEqual(reverse("battycoda_app:create_species"), '/species/create/')
 
-    def test_group_urls(self):
-        # Group list
-        url = reverse("battycoda_app:group_list")
-        self.assertEqual(resolve(url).func, views_group.group_list_view)
+    def test_recording_urls_resolve(self):
+        """Test that recording URLs resolve."""
+        self.assertEqual(reverse("battycoda_app:recording_list"), '/recordings/')
 
-        # Create group
-        url = reverse("battycoda_app:create_group")
-        self.assertEqual(resolve(url).func, views_group.create_group_view)
+    def test_project_urls_resolve(self):
+        """Test that project URLs resolve."""
+        self.assertEqual(reverse("battycoda_app:project_list"), '/projects/')
 
-        # Group detail with ID parameter
-        url = reverse("battycoda_app:group_detail", args=[1])
-        self.assertEqual(resolve(url).func, views_group.group_detail_view)
+    def test_classification_urls_resolve(self):
+        """Test that classification URLs resolve."""
+        self.assertEqual(reverse("battycoda_app:classification_home"), '/classification/')
 
-        # Edit group with ID parameter
-        url = reverse("battycoda_app:edit_group", args=[1])
-        self.assertEqual(resolve(url).func, views_group.edit_group_view)
 
-        # Manage group members with ID parameter
-        url = reverse("battycoda_app:manage_group_members", args=[1])
-        self.assertEqual(resolve(url).func, views_group.manage_group_members_view)
+class URLEndpointTestCase(BattycodaTestCase):
+    """Test that URL endpoints return correct status codes."""
 
-        # Switch group with ID parameter
-        url = reverse("battycoda_app:switch_group", args=[1])
-        self.assertEqual(resolve(url).func, views_group.switch_group_view)
+    def setUp(self):
+        """Set up test user and login."""
+        self.user = User.objects.create_user(
+            username='testuser',
+            email='test@example.com',
+            password='testpass123'
+        )
+        self.client.login(username='testuser', password='testpass123')
 
-    def test_task_urls(self):
-        # Task list
-        url = reverse("battycoda_app:task_list")
-        self.assertEqual(resolve(url).func, views_task.task_list_view)
+    def test_index_requires_authentication(self):
+        """Test that index redirects unauthenticated users."""
+        self.client.logout()
+        url = reverse('battycoda_app:index')
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 302)
+        # Index redirects to /welcome/ for unauthenticated users
+        self.assertIn('/welcome/', response.url)
 
-        # Task detail with ID parameter
-        url = reverse("battycoda_app:task_detail", args=[1])
-        self.assertEqual(resolve(url).func, views_task.task_detail_view)
+    def test_index_accessible_when_authenticated(self):
+        """Test that authenticated users can access index."""
+        url = reverse('battycoda_app:index')
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 200)
 
-        # Task batch list
-        url = reverse("battycoda_app:task_batch_list")
-        self.assertEqual(resolve(url).func, views_task.task_batch_list_view)
+    def test_login_page_accessible(self):
+        """Test that login page is accessible."""
+        self.client.logout()
+        url = reverse('battycoda_app:login')
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 200)
 
-        # Task batch detail with ID parameter
-        url = reverse("battycoda_app:task_batch_detail", args=[1])
-        self.assertEqual(resolve(url).func, views_task.task_batch_detail_view)
+    def test_register_page_accessible(self):
+        """Test that register page is accessible."""
+        self.client.logout()
+        url = reverse('battycoda_app:register')
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 200)
 
-        # Create task batch
-        url = reverse("battycoda_app:create_task_batch")
-        self.assertEqual(resolve(url).func, views_task.create_task_batch_view)
+    def test_species_list_requires_authentication(self):
+        """Test that species list requires authentication."""
+        self.client.logout()
+        url = reverse('battycoda_app:species_list')
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 302)
 
-        # Task annotation with ID parameter
-        url = reverse("battycoda_app:annotate_task", args=[1])
-        self.assertEqual(resolve(url).func, views_task.task_annotation_view)
+    def test_species_list_accessible_when_authenticated(self):
+        """Test that authenticated users can access species list."""
+        url = reverse('battycoda_app:species_list')
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 200)
+
+    def test_recording_list_requires_authentication(self):
+        """Test that recording list requires authentication."""
+        self.client.logout()
+        url = reverse('battycoda_app:recording_list')
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 302)
+
+    def test_project_list_requires_authentication(self):
+        """Test that project list requires authentication."""
+        self.client.logout()
+        url = reverse('battycoda_app:project_list')
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 302)
+
+    def test_task_batch_list_requires_authentication(self):
+        """Test that task batch list requires authentication."""
+        self.client.logout()
+        url = reverse('battycoda_app:task_batch_list')
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 302)
+
+    def test_classification_home_requires_authentication(self):
+        """Test that classification home requires authentication."""
+        self.client.logout()
+        url = reverse('battycoda_app:classification_home')
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 302)

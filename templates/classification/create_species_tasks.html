@@ -22,9 +22,17 @@
                 </div>
                 <div class="card-body">
                     <div class="alert alert-info mb-4">
-                        <p class="mb-0">There are <strong>{{ pending_runs_count }}</strong> completed classification runs for {{ species.name }} that don't have task batches yet. This operation will create task batches for all these runs.</p>
+                        <p class="mb-1">There are <strong>{{ pending_runs_count }}</strong> completed classification runs for {{ species.name }} that don't have task batches yet.</p>
+                        <p class="mb-0">This will create approximately <strong>{{ estimated_tasks|floatformat:0|default:"0" }}</strong> tasks ({{ estimated_tasks|floatformat:0|default:"0" }} classification results across all runs).</p>
                     </div>
-                    
+
+                    {% if estimated_tasks > max_tasks %}
+                    <div class="alert alert-danger mb-4">
+                        <h5 class="alert-heading"><i class="fas fa-exclamation-triangle"></i> Too Many Tasks</h5>
+                        <p class="mb-0">Cannot create task batches: <strong>{{ estimated_tasks|floatformat:0 }}</strong> tasks would be created, which exceeds the maximum of <strong>{{ max_tasks|floatformat:0 }}</strong>. Please use the confidence threshold filter below to reduce the number of tasks, or process classification runs individually.</p>
+                    </div>
+                    {% endif %}
+
                     <form method="post" action="{% url 'battycoda_app:create_tasks_for_species' species_id=species.id %}">
                         {% csrf_token %}
                         
@@ -57,7 +65,7 @@
                         
                         <div class="text-end">
                             <a href="{% url 'battycoda_app:create_task_batches_for_species' %}" class="btn btn-secondary mr-2">Cancel</a>
-                            <button type="submit" class="btn btn-primary">
+                            <button type="submit" class="btn btn-primary" {% if estimated_tasks > max_tasks %}disabled{% endif %}>
                                 <i class="fas fa-clipboard-check mr-1"></i> Create Task Batches
                             </button>
                         </div>

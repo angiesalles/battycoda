@@ -4,8 +4,8 @@ Test settings for the Battycoda project.
 
 from unittest.mock import MagicMock, patch
 
-# Patch generate_spectrograms to do nothing
-generate_spectrograms_patch = patch("battycoda_app.models.Task.generate_spectrograms", MagicMock(return_value=None))
+# Patch generate_spectrograms to do nothing (disabled - method no longer exists)
+# generate_spectrograms_patch = patch("battycoda_app.models.Task.generate_spectrograms", MagicMock(return_value=None))
 
 # Patch import_default_species to return empty list
 import_default_species_patch = patch(
@@ -47,7 +47,7 @@ CELERY_TASK_ALWAYS_EAGER = True
 
 # All patches to be applied
 all_patches = [
-    generate_spectrograms_patch,
+    # generate_spectrograms_patch,  # Disabled - method no longer exists
     import_default_species_patch,
     file_operations_patch,
     makedirs_patch,

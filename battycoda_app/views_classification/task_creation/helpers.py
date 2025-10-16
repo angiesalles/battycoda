@@ -1,6 +1,7 @@
 """Helper functions for task batch creation."""
 
-from battycoda_app.models.classification import ClassificationResult
+from django.db.models import Subquery, OuterRef, Max
+from battycoda_app.models.classification import ClassificationResult, CallProbability
 from battycoda_app.models.task import Task, TaskBatch
 
 
@@ -33,16 +34,24 @@ def create_task_batch_helper(run, batch_name, description, created_by, group, ma
         detection_run=run,
     )
 
-    # Fetch all results with probabilities in one efficient query
-    results = ClassificationResult.objects.filter(
-        classification_run=run
-    ).select_related('segment').prefetch_related('probabilities__call')
-
     # Get all segment IDs that already have tasks (one query)
     segments_with_tasks = set(
         Task.objects.filter(
             source_segment__classification_results__classification_run=run
         ).values_list('source_segment_id', flat=True)
+    )
+
+    # Get the top probability for each result using a subquery (much faster than prefetch_related)
+    top_prob_subquery = CallProbability.objects.filter(
+        classification_result=OuterRef('pk')
+    ).order_by('-probability').values('probability', 'call__short_name')[:1]
+
+    # Fetch results with just the max probability annotated
+    results = ClassificationResult.objects.filter(
+        classification_run=run
+    ).select_related('segment').annotate(
+        top_probability=Subquery(top_prob_subquery.values('probability')),
+        top_call=Subquery(top_prob_subquery.values('call__short_name'))
     )
 
     tasks_to_create = []
@@ -56,11 +65,8 @@ def create_task_batch_helper(run, batch_name, description, created_by, group, ma
         if segment.id in segments_with_tasks:
             continue
 
-        # Get top probability from prefetched data (no DB query)
-        probabilities = list(result.probabilities.all())
-        top_probability = max(probabilities, key=lambda p: p.probability) if probabilities else None
-
-        if max_confidence is not None and top_probability and top_probability.probability > max_confidence:
+        # Use the annotated top probability (already fetched from DB)
+        if max_confidence is not None and result.top_probability and result.top_probability > max_confidence:
             tasks_filtered += 1
             continue
 
@@ -73,9 +79,9 @@ def create_task_batch_helper(run, batch_name, description, created_by, group, ma
             batch=batch,
             created_by=created_by,
             group=group,
-            label=top_probability.call.short_name if top_probability else None,
-            classification_result=top_probability.call.short_name if top_probability else None,
-            confidence=top_probability.probability if top_probability else None,
+            label=result.top_call,
+            classification_result=result.top_call,
+            confidence=result.top_probability,
             status="pending",
             source_segment=segment,
         )

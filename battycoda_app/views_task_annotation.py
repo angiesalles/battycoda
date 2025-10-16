@@ -102,6 +102,27 @@ def task_annotation_view(request, task_id):
         call_types.append("Unknown")
         call_descriptions["Unknown"] = "Unspecified call type"
 
+    # Check if HDF5 spectrogram file exists for the recording
+    from .models.recording import Recording
+    try:
+        recording = Recording.objects.get(wav_file=task.wav_file_name)
+        if not recording.spectrogram_file:
+            messages.error(request, "Spectrogram file is missing for this recording. Please contact an administrator to generate it.")
+            return redirect("battycoda_app:task_batch_list")
+
+        # Check if HDF5 file exists on disk
+        base_name = recording.spectrogram_file.replace('.png', '').replace('.h5', '')
+        spectrogram_filename = f"{base_name}.h5"
+        output_dir = os.path.join(settings.MEDIA_ROOT, "spectrograms", "recordings")
+        h5_path = os.path.join(output_dir, spectrogram_filename)
+
+        if not os.path.exists(h5_path):
+            messages.error(request, f"Spectrogram HDF5 file does not exist on disk. Expected at: {h5_path}")
+            return redirect("battycoda_app:task_batch_list")
+    except Recording.DoesNotExist:
+        messages.error(request, f"Recording not found for task. WAV file: {task.wav_file_name}")
+        return redirect("battycoda_app:task_batch_list")
+
     # Get pre-generated spectrogram URLs
     from .audio.utils import appropriate_file
 
@@ -122,15 +143,6 @@ def task_annotation_view(request, task_id):
             # Add onset/offset to args
             spectrogram_args["onset"] = str(task.onset)
             spectrogram_args["offset"] = str(task.offset)
-
-            # Generate the file path
-            cache_path = appropriate_file(full_path, spectrogram_args)
-
-            # Check if the file exists, if not, trigger generation
-            if not os.path.exists(cache_path):
-                # Trigger spectrogram generation
-
-                task.generate_spectrograms()
 
             # Create a URL for the spectrogram (that will be handled by spectrogram_view)
             spectrogram_url = f"/spectrogram/?wav_path={full_path}&call=0&channel={channel}&numcalls=1&hash={file_hash}&overview={'1' if is_overview else '0'}&contrast=4.0&onset={task.onset}&offset={task.offset}"
