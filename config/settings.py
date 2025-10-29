@@ -34,6 +34,13 @@ SECRET_KEY = os.environ.get("SECRET_KEY")
 # Debug mode should be False in production
 DEBUG = os.environ.get("DEBUG", "False").lower() == "true"
 
+# Admin email notifications for 500 errors
+ADMINS = [
+    ("Kevin Boergens", "kevin.boergens@gmail.com"),
+    ("Kevin Boergens Alt", "amazon@boerg.e4ward.com"),  # Verified in SES
+]
+MANAGERS = ADMINS
+
 # Get domain name from environment
 DOMAIN_NAME = os.environ.get("DOMAIN_NAME", "localhost")
 
@@ -246,10 +253,22 @@ LOGGING = {
             "class": "logging.StreamHandler",
             "formatter": "verbose",
         },
+        "mail_admins": {
+            "level": "ERROR",
+            "class": "django.utils.log.AdminEmailHandler",
+            "include_html": True,
+        },
     },
     "root": {
         "handlers": ["console"],
         "level": "INFO",
+    },
+    "loggers": {
+        "django.request": {
+            "handlers": ["mail_admins"],
+            "level": "ERROR",
+            "propagate": False,
+        },
     },
 }
 
@@ -260,6 +279,7 @@ AWS_SES_ACCESS_KEY_ID = os.environ.get("AWS_SES_ACCESS_KEY_ID")
 AWS_SES_SECRET_ACCESS_KEY = os.environ.get("AWS_SES_SECRET_ACCESS_KEY")
 AWS_SES_CONFIGURATION_SET = os.environ.get("AWS_SES_CONFIGURATION_SET", "")
 DEFAULT_FROM_EMAIL = os.environ.get("DEFAULT_FROM_EMAIL", f"noreply@{DOMAIN_NAME}")
+SERVER_EMAIL = DEFAULT_FROM_EMAIL  # Email address for error notifications
 
 # Database Backup Configuration
 DATABASE_BACKUP_BUCKET = os.environ.get("DATABASE_BACKUP_BUCKET", "backup-battycoda")

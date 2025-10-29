@@ -89,7 +89,9 @@ def task_spectrogram_view(request, task_id):
             pad_end = int((end_time - clamped_end_time) / time_per_frame) if end_time > duration else 0
 
             if pad_start > 0 or pad_end > 0:
-                spectrogram_data = np.full((n_freq_bins, requested_frames), -80, dtype=np.float16)
+                # Calculate total frames based on actual data size + padding to avoid rounding errors
+                total_frames = pad_start + actual_data.shape[1] + pad_end
+                spectrogram_data = np.full((n_freq_bins, total_frames), -80, dtype=np.float16)
                 spectrogram_data[:, pad_start:pad_start + actual_data.shape[1]] = actual_data
             else:
                 spectrogram_data = actual_data

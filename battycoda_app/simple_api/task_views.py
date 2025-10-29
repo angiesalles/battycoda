@@ -98,12 +98,16 @@ def simple_create_task_batch(request, run_id):
                 # Get the highest probability call type
                 top_probability = CallProbability.objects.filter(
                     classification_result=result
-                ).order_by('-probability').first()
-                
+                ).select_related('call').order_by('-probability').first()
+
                 # Skip if confidence threshold is set and this result's confidence is too high
                 if max_confidence is not None and top_probability and top_probability.probability > max_confidence:
                     continue
-                
+
+                # Skip if call object is missing (broken foreign key)
+                if top_probability and not top_probability.call:
+                    continue
+
                 # Create a task for this segment
                 predicted_call = top_probability.call.short_name if top_probability else None
                 confidence = top_probability.probability if top_probability else 0.0
@@ -123,7 +127,7 @@ def simple_create_task_batch(request, run_id):
                 
                 # Link segment to task
                 segment.task = task
-                segment.save()
+                segment.save(manual_edit=False)
                 
                 tasks_created += 1
         

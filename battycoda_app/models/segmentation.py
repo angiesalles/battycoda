@@ -184,18 +184,18 @@ class Segment(models.Model):
         """Override save to handle segmentation relationship"""
         manual_edit = kwargs.pop("manual_edit", True)
 
-        if not hasattr(self, "segmentation") or self.segmentation is None:
+        if not self.segmentation_id:
             raise ValueError("Segment must be explicitly assigned to a segmentation")
 
         super().save(*args, **kwargs)
 
-        if manual_edit and hasattr(self, "segmentation") and self.segmentation:
+        if manual_edit and self.segmentation_id:
             self.segmentation.manually_edited = True
             self.segmentation.save()
 
     def delete(self, *args, **kwargs):
         """Override delete to mark segmentation as manually edited before deletion"""
-        if hasattr(self, "segmentation") and self.segmentation:
+        if self.segmentation_id:
             self.segmentation.manually_edited = True
             self.segmentation.save()
 

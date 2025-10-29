@@ -62,6 +62,23 @@ class Species(models.Model):
     group = models.ForeignKey(Group, on_delete=models.CASCADE, related_name="species", null=True, blank=True)
     is_system = models.BooleanField(default=False, help_text="Designates whether this is a system-wide species available to all users")
 
+    detail_padding_start_ms = models.IntegerField(
+        default=8,
+        help_text="Padding in milliseconds before the call in detail view spectrograms"
+    )
+    detail_padding_end_ms = models.IntegerField(
+        default=8,
+        help_text="Padding in milliseconds after the call in detail view spectrograms"
+    )
+    overview_padding_start_ms = models.IntegerField(
+        default=500,
+        help_text="Padding in milliseconds before the call in overview spectrograms"
+    )
+    overview_padding_end_ms = models.IntegerField(
+        default=500,
+        help_text="Padding in milliseconds after the call in overview spectrograms"
+    )
+
     class Meta:
         verbose_name_plural = "Species"
         ordering = ["name"]

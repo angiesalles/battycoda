@@ -194,20 +194,27 @@ def simple_classification_runs_list(request):
         # Get result counts if completed
         result_summary = {}
         if run.status == 'completed':
-            # Get the top predicted call types and their counts
-            results = ClassificationResult.objects.filter(classification_run=run)
+            # Get the top predicted call types and their counts using aggregation
+            from django.db.models import Max, Subquery, OuterRef
+
+            # Subquery to get the top probability for each result
+            top_prob = CallProbability.objects.filter(
+                classification_result=OuterRef('pk')
+            ).order_by('-probability').values('call__short_name')[:1]
+
+            # Get all results with their top call type
+            results_with_top = ClassificationResult.objects.filter(
+                classification_run=run
+            ).annotate(
+                top_call_name=Subquery(top_prob)
+            ).values_list('top_call_name', flat=True)
+
+            # Count occurrences
             call_counts = {}
-            
-            for result in results:
-                # Get the highest probability call type for this result
-                top_call = CallProbability.objects.filter(
-                    classification_result=result
-                ).order_by('-probability').first()
-                
-                if top_call:
-                    call_name = top_call.call.short_name
+            for call_name in results_with_top:
+                if call_name:  # Skip None values (broken foreign keys)
                     call_counts[call_name] = call_counts.get(call_name, 0) + 1
-            
+
             result_summary = call_counts
         
         runs_data.append({

@@ -9,9 +9,9 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
-        # Rename detection_run_id column to classification_run_id in ClassificationResult table
-        migrations.RunSQL(
-            "ALTER TABLE battycoda_app_classificationresult RENAME COLUMN detection_run_id TO classification_run_id;",
-            reverse_sql="ALTER TABLE battycoda_app_classificationresult RENAME COLUMN classification_run_id TO detection_run_id;"
+        migrations.RenameField(
+            model_name='classificationresult',
+            old_name='detection_run',
+            new_name='classification_run',
         ),
     ]

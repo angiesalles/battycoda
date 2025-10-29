@@ -37,202 +37,190 @@
     </div>
     {% endif %}
 
-    {% if available_batches %}
-    <!-- Get New Task - Primary Action -->
-    <div id="getNewTaskRow" class="row">
-        <div id="getNewTaskCol" class="col-12 mb-4">
-            <div id="getNewTaskCard" class="card border-primary">
-                <div id="getNewTaskHeader" class="card-header bg-primary text-white">
-                    <h4 id="getNewTaskTitle" class="card-title mb-0"><span class="s7-next mr-2"></span>Get New Task</h4>
+    <!-- Section 1: Select Project to Work On -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card border-primary">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="card-title mb-0"><span class="s7-folder mr-2"></span>Select Project to Work On</h5>
                 </div>
-                <div id="getNewTaskBody" class="card-body">
+                <div class="card-body">
+                    {% if projects_with_tasks %}
                     <div class="row">
-                        <div class="col-md-4 mb-3">
-                            <div class="text-center">
-                                <a id="smartNextTaskBtn" href="{% url 'battycoda_app:get_next_task' %}" class="btn btn-success btn-lg btn-block mb-2">
-                                    <span class="s7-rocket mr-2"></span>Smart Next Task
-                                </a>
-                                <small class="text-muted">{{ next_task_info.message|default:"Continues from your last batch" }}</small>
-                            </div>
-                        </div>
-                        <div class="col-md-8">
-                            <h6 class="mb-3">Choose from Available Batches:</h6>
-                            <div class="row">
-                                {% for batch in available_batches %}
-                                <div class="col-lg-6 mb-3">
-                                    <div class="card border-left-primary">
-                                        <div class="card-body p-3">
-                                            <div class="d-flex justify-content-between align-items-start mb-2">
-                                                <div>
-                                                    <h6 class="card-title mb-1">{{ batch.project.name }}</h6>
-                                                    <small class="text-muted">{{ batch.name }}</small>
-                                                </div>
-                                                <span class="badge badge-secondary">{{ batch.species.name }}</span>
-                                            </div>
-                                            <div class="progress mb-2" style="height: 6px;">
-                                                <div class="progress-bar bg-success" role="progressbar" style="width: {{ batch.progress_percentage }}%"></div>
-                                            </div>
-                                            <div class="d-flex justify-content-between align-items-center">
-                                                <small class="text-muted">{{ batch.pending_tasks_count }} tasks remaining</small>
-                                                <a href="{% url 'battycoda_app:annotate_batch' batch.id %}" class="btn btn-sm btn-primary">
-                                                    Start Batch
-                                                </a>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                                {% if forloop.counter0|divisibleby:2 and not forloop.last %}
-                                </div><div class="row">
-                                {% endif %}
-                                {% endfor %}
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-    {% else %}
-    <!-- No Tasks Available -->
-    <div id="noTasksRow" class="row">
-        <div id="noTasksCol" class="col-12 mb-4">
-            <div id="noTasksCard" class="card border-light">
-                <div id="noTasksBody" class="card-body text-center py-5">
-                    <span class="s7-info text-muted" style="font-size: 72px;"></span>
-                    <h4 class="text-muted mt-3 mb-3">No Tasks Available</h4>
-                    <p class="text-muted mb-4">To start annotating, you'll need to create recordings and segment them into tasks.</p>
-                    <div class="row justify-content-center">
-                        <div class="col-md-8">
-                            <div class="row">
-                                <div class="col-md-6 mb-2">
-                                    <a href="{% url 'battycoda_app:recording_list' %}" class="btn btn-primary btn-block">
-                                        <span class="s7-micro mr-2"></span>Upload Recordings
-                                    </a>
-                                </div>
-                                <div class="col-md-6 mb-2">
-                                    <a href="{% url 'battycoda_app:segmentation_list' %}" class="btn btn-outline-primary btn-block">
-                                        <span class="s7-scissors mr-2"></span>Segment Recordings
-                                    </a>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-    {% endif %}
-
-    <!-- My Work Stats -->
-    <div id="myWorkStatsRow" class="row">
-        <div id="myWorkStatsCol" class="col-lg-8 mb-4">
-            <div id="myWorkStatsCard" class="card">
-                <div id="myWorkStatsHeader" class="card-header">
-                    <h5 id="myWorkStatsTitle" class="card-title"><span class="s7-user mr-2"></span>My Work Progress</h5>
-                </div>
-                <div id="myWorkStatsBody" class="card-body">
-                    <div class="row text-center">
-                        <div class="col-md-4">
-                            <div class="p-3">
-                                <span class="s7-clock" style="font-size: 36px; color: #f39c12;"></span>
-                                <h3 class="mt-2 mb-1">{{ my_pending_tasks }}</h3>
-                                <p class="text-muted mb-0">Pending Tasks</p>
-                            </div>
-                        </div>
-                        <div class="col-md-4">
-                            <div class="p-3">
-                                <span class="s7-check" style="font-size: 36px; color: #27ae60;"></span>
-                                <h3 class="mt-2 mb-1">{{ my_completed_tasks }}</h3>
-                                <p class="text-muted mb-0">Completed Tasks</p>
-                            </div>
-                        </div>
-                        <div class="col-md-4">
-                            <div class="p-3">
-                                <span class="s7-edit" style="font-size: 36px; color: #3498db;"></span>
-                                <h3 class="mt-2 mb-1">{{ my_total_annotations }}</h3>
-                                <p class="text-muted mb-0">Total Annotations</p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-        
-        <!-- Quick Actions -->
-        <div id="quickActionsCol" class="col-lg-4 mb-4">
-            <div id="quickActionsCard" class="card">
-                <div id="quickActionsHeader" class="card-header">
-                    <h5 id="quickActionsTitle" class="card-title"><span class="s7-rocket mr-2"></span>Quick Actions</h5>
-                </div>
-                <div id="quickActionsBody" class="card-body">
-                    <a id="manageRecordingsBtn" href="{% url 'battycoda_app:recording_list' %}" class="btn btn-outline-primary btn-block mb-2">
-                        <span class="s7-micro mr-2"></span>Manage Recordings
-                    </a>
-                    <a id="segmentationBtn" href="{% url 'battycoda_app:segmentation_list' %}" class="btn btn-outline-primary btn-block mb-2">
-                        <span class="s7-scissors mr-2"></span>Segmentation
-                    </a>
-                    <a id="classificationBtn" href="{% url 'battycoda_app:classification_home' %}" class="btn btn-outline-primary btn-block">
-                        <span class="s7-display1 mr-2"></span>Run Classification
-                    </a>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Recent Activity and Task Preview -->
-    <div id="recentActivityRow" class="row">
-        <!-- Recent Activity -->
-        <div id="recentActivityCol" class="col-12 mb-4">
-            <div id="recentActivityCard" class="card">
-                <div id="recentActivityHeader" class="card-header">
-                    <h5 id="recentActivityTitle" class="card-title"><span class="s7-activity mr-2"></span>Recent Activity</h5>
-                </div>
-                <div id="recentActivityBody" class="card-body">
-                    {% if recent_completed_tasks or recent_group_activity %}
-                    <div class="row">
-                        {% for task in recent_completed_tasks %}
+                        {% for project in projects_with_tasks %}
                         <div class="col-md-6 col-lg-4 mb-3">
-                            <div class="card border-left-success">
-                                <div class="card-body p-3">
-                                    <div class="d-flex align-items-center">
-                                        <span class="s7-check text-success mr-2"></span>
-                                        <div>
-                                            <h6 class="mb-1">{{ task.batch.name }}</h6>
-                                            <small class="text-muted">{{ task.species.name }} • {{ task.label|default:"Unlabeled" }}</small>
-                                            <br><small class="text-muted">Completed {{ task.annotated_at|date:"M d, H:i" }}</small>
+                            <div class="card h-100 border-left-primary">
+                                <div class="card-body">
+                                    <h5 class="card-title mb-2">{{ project.name }}</h5>
+                                    {% if project.description %}
+                                    <p class="text-muted small mb-3">{{ project.description|truncatewords:15 }}</p>
+                                    {% endif %}
+
+                                    <div class="mb-3">
+                                        <div class="d-flex justify-content-between mb-1">
+                                            <small class="text-muted">Progress</small>
+                                            <small class="text-muted">{{ project.progress_percentage }}%</small>
+                                        </div>
+                                        <div class="progress" style="height: 8px;">
+                                            <div class="progress-bar bg-success" role="progressbar"
+                                                 style="width: {{ project.progress_percentage }}%"></div>
                                         </div>
                                     </div>
-                                </div>
-                            </div>
-                        </div>
-                        {% endfor %}
-                        {% for task in recent_group_activity %}
-                        <div class="col-md-6 col-lg-4 mb-3">
-                            <div class="card border-left-info">
-                                <div class="card-body p-3">
-                                    <div class="d-flex align-items-center">
-                                        <span class="s7-user text-info mr-2"></span>
-                                        <div>
-                                            <h6 class="mb-1">{{ task.batch.name }}</h6>
-                                            <small class="text-muted">{{ task.species.name }} • {{ task.label|default:"Unlabeled" }}</small>
-                                            <br><small class="text-muted">{{ task.annotated_by.username }} • {{ task.annotated_at|date:"M d, H:i" }}</small>
+
+                                    <div class="row text-center mb-3">
+                                        <div class="col-6">
+                                            <h4 class="mb-0 text-warning">{{ project.pending_tasks }}</h4>
+                                            <small class="text-muted">Pending</small>
+                                        </div>
+                                        <div class="col-6">
+                                            <h4 class="mb-0 text-success">{{ project.completed_tasks }}</h4>
+                                            <small class="text-muted">Done</small>
                                         </div>
                                     </div>
+
+                                    <a href="{% url 'battycoda_app:get_next_task' %}?project={{ project.id }}"
+                                       class="btn btn-primary btn-block">
+                                        <span class="s7-play mr-2"></span>Start Working
+                                    </a>
                                 </div>
                             </div>
                         </div>
                         {% endfor %}
                     </div>
                     {% else %}
-                    <div class="text-center py-4">
-                        <span class="s7-info text-muted" style="font-size: 48px;"></span>
-                        <h6 class="text-muted">No recent activity</h6>
-                        <p class="text-muted mb-0">Start annotating tasks to see your recent work here.</p>
+                    <div class="text-center py-5">
+                        <span class="s7-folder text-muted" style="font-size: 72px;"></span>
+                        <h5 class="text-muted mt-3">No Projects Available</h5>
+                        <p class="text-muted mb-3">Create a project and add tasks to get started.</p>
+                        <a href="{% url 'battycoda_app:project_list' %}" class="btn btn-primary">
+                            <span class="s7-plus mr-2"></span>Go to Projects
+                        </a>
                     </div>
                     {% endif %}
                 </div>
             </div>
         </div>
     </div>
+
+    <!-- Section 2: My Work Progress -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header bg-info text-white">
+                    <h5 class="card-title mb-0"><span class="s7-user mr-2"></span>My Work Progress</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row text-center">
+                        <div class="col-6 col-md-3 mb-3">
+                            <div class="p-3">
+                                <span class="s7-sun" style="font-size: 36px; color: #f39c12;"></span>
+                                <h3 class="mt-2 mb-1">{{ my_stats.today }}</h3>
+                                <p class="text-muted mb-0">Today</p>
+                            </div>
+                        </div>
+                        <div class="col-6 col-md-3 mb-3">
+                            <div class="p-3">
+                                <span class="s7-date" style="font-size: 36px; color: #3498db;"></span>
+                                <h3 class="mt-2 mb-1">{{ my_stats.this_week }}</h3>
+                                <p class="text-muted mb-0">This Week</p>
+                            </div>
+                        </div>
+                        <div class="col-6 col-md-3 mb-3">
+                            <div class="p-3">
+                                <span class="s7-check" style="font-size: 36px; color: #27ae60;"></span>
+                                <h3 class="mt-2 mb-1">{{ my_stats.total }}</h3>
+                                <p class="text-muted mb-0">Total</p>
+                            </div>
+                        </div>
+                        <div class="col-6 col-md-3 mb-3">
+                            <div class="p-3">
+                                <span class="s7-fire" style="font-size: 36px; color: #e74c3c;"></span>
+                                <h3 class="mt-2 mb-1">{{ my_stats.streak }}</h3>
+                                <p class="text-muted mb-0">Day Streak</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    {% if my_stats.recent_batches %}
+                    <hr>
+                    <h6 class="mb-3">Recently Worked On</h6>
+                    <div class="row">
+                        {% for batch_info in my_stats.recent_batches %}
+                        <div class="col-md-6 mb-2">
+                            <div class="d-flex align-items-center">
+                                <span class="s7-folder mr-2 text-primary"></span>
+                                <div class="flex-grow-1">
+                                    <strong>{{ batch_info.batch.name }}</strong>
+                                    <br><small class="text-muted">{{ batch_info.batch.project.name }} • {{ batch_info.count }} tasks</small>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Section 3: Leaderboard -->
+    {% if leaderboard %}
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header bg-success text-white">
+                    <h5 class="card-title mb-0"><span class="s7-medal mr-2"></span>Leaderboard</h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover mb-0">
+                            <thead>
+                                <tr>
+                                    <th width="60">Rank</th>
+                                    <th>User</th>
+                                    <th class="text-center">Today</th>
+                                    <th class="text-center">This Week</th>
+                                    <th class="text-center">Total</th>
+                                    <th class="text-center">Streak</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for entry in leaderboard %}
+                                <tr {% if entry.is_current_user %}class="table-primary"{% endif %}>
+                                    <td class="text-center">
+                                        {% if entry.rank == 1 %}
+                                            <span class="s7-medal" style="color: #FFD700; font-size: 24px;"></span>
+                                        {% elif entry.rank == 2 %}
+                                            <span class="s7-medal" style="color: #C0C0C0; font-size: 24px;"></span>
+                                        {% elif entry.rank == 3 %}
+                                            <span class="s7-medal" style="color: #CD7F32; font-size: 24px;"></span>
+                                        {% else %}
+                                            <strong>{{ entry.rank }}</strong>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <strong>{{ entry.username }}</strong>
+                                        {% if entry.is_current_user %}<span class="badge badge-primary ml-2">You</span>{% endif %}
+                                    </td>
+                                    <td class="text-center">{{ entry.today }}</td>
+                                    <td class="text-center">{{ entry.this_week }}</td>
+                                    <td class="text-center"><strong>{{ entry.total }}</strong></td>
+                                    <td class="text-center">
+                                        {% if entry.streak > 0 %}
+                                            <span class="badge badge-danger">{{ entry.streak }} 🔥</span>
+                                        {% else %}
+                                            -
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
 </div>
 {% endblock %}

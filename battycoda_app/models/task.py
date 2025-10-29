@@ -29,8 +29,8 @@ class TaskBatch(models.Model):
     project = models.ForeignKey(Project, on_delete=models.CASCADE, related_name="task_batches")
     wav_file = models.FileField(upload_to="task_batches/", null=True, blank=True)
     group = models.ForeignKey(Group, on_delete=models.CASCADE, related_name="task_batches", null=True)
-    # Reference to the source detection run if this batch was created from classification results
-    detection_run = models.ForeignKey(
+    # Reference to the source classification run if this batch was created from classification results
+    classification_run = models.ForeignKey(
         "battycoda_app.ClassificationRun", on_delete=models.SET_NULL, related_name="task_batches", null=True, blank=True
     )
 
@@ -127,8 +127,8 @@ class Task(models.Model):
         Returns:
             int: Sample rate in Hz, or None if not found
         """
-        if self.batch and self.batch.detection_run:
-            detection_run = self.batch.detection_run
-            if detection_run.segmentation and detection_run.segmentation.recording:
-                return detection_run.segmentation.recording.sample_rate
+        if self.batch and self.batch.classification_run:
+            classification_run = self.batch.classification_run
+            if classification_run.segmentation and classification_run.segmentation.recording:
+                return classification_run.segmentation.recording.sample_rate
         return None

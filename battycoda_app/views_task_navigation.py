@@ -65,6 +65,14 @@ def get_next_task_view(request):
         # Only look at user's own tasks if not in a group
         tasks_query = tasks_query.filter(created_by=request.user)
 
+    # Filter by project if specified in URL parameter
+    project_id = request.GET.get('project')
+    if project_id:
+        try:
+            tasks_query = tasks_query.filter(project_id=int(project_id))
+        except (ValueError, TypeError):
+            pass  # Invalid project ID, ignore filter
+
     # Try to find the most recently completed task to check its batch
     recent_tasks = Task.objects.filter(is_done=True)
 
@@ -98,18 +106,32 @@ def get_next_task_view(request):
                     'to_batch_id': recent_task.batch.id
                 }
             return redirect("battycoda_app:annotate_task", task_id=next_task.id)
-            
-    # Fall back to the regular selection if no suitable task found from the same batch
-    task = tasks_query.order_by("created_at").first()
+
+    # If no tasks from same batch, try to find tasks from same project
+    task = None
+    if recent_task and recent_task.batch and recent_task.batch.project:
+        same_project_tasks = tasks_query.filter(batch__project=recent_task.batch.project)
+        task = same_project_tasks.order_by("created_at").first()
+
+    # Fall back to any task if no tasks found from same project
+    if not task:
+        task = tasks_query.order_by("created_at").first()
 
     if task:
         # If coming from a completed batch AND it's a different batch, store that info for notification
         if previous_batch and task.batch and previous_batch['id'] != task.batch.id:
+            # Check if both batches are from the same project
+            same_project = False
+            if recent_task and recent_task.batch and task.batch:
+                same_project = recent_task.batch.project_id == task.batch.project_id
+
             request.session['batch_switch'] = {
                 'from_batch_name': previous_batch['name'],
                 'from_batch_id': previous_batch['id'],
                 'to_batch_name': task.batch.name,
-                'to_batch_id': task.batch.id
+                'to_batch_id': task.batch.id,
+                'same_project': same_project,
+                'project_name': task.batch.project.name if task.batch.project else None
             }
         # Redirect to the annotation interface with the task ID
         return redirect("battycoda_app:annotate_task", task_id=task.id)

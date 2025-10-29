@@ -13,8 +13,48 @@ class Migration(migrations.Migration):
             old_name='DetectionRun',
             new_name='ClassificationRun',
         ),
+        migrations.RunSQL(
+            sql="""
+            ALTER INDEX battycoda_app_detectionrun_pkey RENAME TO battycoda_app_classificationrun_pkey;
+            ALTER INDEX battycoda_app_detectionrun_classifier_id_15fdc05b RENAME TO battycoda_app_classificationrun_classifier_id_15fdc05b;
+            ALTER INDEX battycoda_app_detectionrun_created_by_id_d34ac4cb RENAME TO battycoda_app_classificationrun_created_by_id_d34ac4cb;
+            ALTER INDEX battycoda_app_detectionrun_group_id_3ae66791 RENAME TO battycoda_app_classificationrun_group_id_3ae66791;
+            ALTER INDEX battycoda_app_detectionrun_segmentation_id_bff17924 RENAME TO battycoda_app_classificationrun_segmentation_id_bff17924;
+            ALTER TABLE battycoda_app_classificationrun RENAME CONSTRAINT battycoda_app_detect_classifier_id_15fdc05b_fk_battycoda TO battycoda_app_classif_classifier_id_15fdc05b_fk_battycoda;
+            ALTER TABLE battycoda_app_classificationrun RENAME CONSTRAINT battycoda_app_detect_created_by_id_d34ac4cb_fk_auth_user TO battycoda_app_classif_created_by_id_d34ac4cb_fk_auth_user;
+            ALTER TABLE battycoda_app_classificationrun RENAME CONSTRAINT battycoda_app_detect_group_id_3ae66791_fk_battycoda TO battycoda_app_classif_group_id_3ae66791_fk_battycoda;
+            ALTER TABLE battycoda_app_classificationrun RENAME CONSTRAINT battycoda_app_detect_segmentation_id_bff17924_fk_battycoda TO battycoda_app_classif_segmentation_id_bff17924_fk_battycoda;
+            """,
+            reverse_sql="""
+            ALTER INDEX battycoda_app_classificationrun_pkey RENAME TO battycoda_app_detectionrun_pkey;
+            ALTER INDEX battycoda_app_classificationrun_classifier_id_15fdc05b RENAME TO battycoda_app_detectionrun_classifier_id_15fdc05b;
+            ALTER INDEX battycoda_app_classificationrun_created_by_id_d34ac4cb RENAME TO battycoda_app_detectionrun_created_by_id_d34ac4cb;
+            ALTER INDEX battycoda_app_classificationrun_group_id_3ae66791 RENAME TO battycoda_app_detectionrun_group_id_3ae66791;
+            ALTER INDEX battycoda_app_classificationrun_segmentation_id_bff17924 RENAME TO battycoda_app_detectionrun_segmentation_id_bff17924;
+            ALTER TABLE battycoda_app_classificationrun RENAME CONSTRAINT battycoda_app_classif_classifier_id_15fdc05b_fk_battycoda TO battycoda_app_detect_classifier_id_15fdc05b_fk_battycoda;
+            ALTER TABLE battycoda_app_classificationrun RENAME CONSTRAINT battycoda_app_classif_created_by_id_d34ac4cb_fk_auth_user TO battycoda_app_detect_created_by_id_d34ac4cb_fk_auth_user;
+            ALTER TABLE battycoda_app_classificationrun RENAME CONSTRAINT battycoda_app_classif_group_id_3ae66791_fk_battycoda TO battycoda_app_detect_group_id_3ae66791_fk_battycoda;
+            ALTER TABLE battycoda_app_classificationrun RENAME CONSTRAINT battycoda_app_classif_segmentation_id_bff17924_fk_battycoda TO battycoda_app_detect_segmentation_id_bff17924_fk_battycoda;
+            """
+        ),
         migrations.RenameModel(
             old_name='DetectionResult',
             new_name='ClassificationResult',
+        ),
+        migrations.RunSQL(
+            sql="""
+            ALTER INDEX battycoda_app_detectionresult_pkey RENAME TO battycoda_app_classificationresult_pkey;
+            ALTER INDEX battycoda_app_detectionresult_detection_run_id_9bdf4e32 RENAME TO battycoda_app_classificationresult_detection_run_id_9bdf4e32;
+            ALTER INDEX battycoda_app_detectionresult_segment_id_133b8da7 RENAME TO battycoda_app_classificationresult_segment_id_133b8da7;
+            ALTER TABLE battycoda_app_classificationresult RENAME CONSTRAINT battycoda_app_detect_detection_run_id_9bdf4e32_fk_battycoda TO battycoda_app_classif_detection_run_id_9bdf4e32_fk_battycoda;
+            ALTER TABLE battycoda_app_classificationresult RENAME CONSTRAINT battycoda_app_detect_segment_id_133b8da7_fk_battycoda TO battycoda_app_classif_segment_id_133b8da7_fk_battycoda;
+            """,
+            reverse_sql="""
+            ALTER INDEX battycoda_app_classificationresult_pkey RENAME TO battycoda_app_detectionresult_pkey;
+            ALTER INDEX battycoda_app_classificationresult_detection_run_id_9bdf4e32 RENAME TO battycoda_app_detectionresult_detection_run_id_9bdf4e32;
+            ALTER INDEX battycoda_app_classificationresult_segment_id_133b8da7 RENAME TO battycoda_app_detectionresult_segment_id_133b8da7;
+            ALTER TABLE battycoda_app_classificationresult RENAME CONSTRAINT battycoda_app_classif_detection_run_id_9bdf4e32_fk_battycoda TO battycoda_app_detect_detection_run_id_9bdf4e32_fk_battycoda;
+            ALTER TABLE battycoda_app_classificationresult RENAME CONSTRAINT battycoda_app_classif_segment_id_133b8da7_fk_battycoda TO battycoda_app_detect_segment_id_133b8da7_fk_battycoda;
+            """
         ),
     ]

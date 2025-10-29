@@ -261,7 +261,9 @@
         from_batch_name: "{{ batch_switch_data.from_batch_name|escapejs }}",
         from_batch_id: {{ batch_switch_data.from_batch_id }},
         to_batch_name: "{{ batch_switch_data.to_batch_name|escapejs }}",
-        to_batch_id: {{ batch_switch_data.to_batch_id }}
+        to_batch_id: {{ batch_switch_data.to_batch_id }},
+        same_project: {{ batch_switch_data.same_project|lower }},
+        project_name: "{{ batch_switch_data.project_name|escapejs }}"
     };
     {% else %}
     var batchSwitchData = null;

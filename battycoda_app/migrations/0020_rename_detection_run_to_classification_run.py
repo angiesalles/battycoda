@@ -8,4 +8,10 @@ class Migration(migrations.Migration):
         ("battycoda_app", "0019_auto_20250916_0117"),
     ]
 
-    operations = []
+    operations = [
+        migrations.RenameField(
+            model_name='taskbatch',
+            old_name='detection_run',
+            new_name='classification_run',
+        ),
+    ]
