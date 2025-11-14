@@ -34,7 +34,7 @@
                                         </span>
                                     </td>
                                     <td>
-                                        <small>{{ job.created_at|date:"M d, H:i" }}</small>
+                                        <small class="datetime-display" data-datetime="{{ job.created_at|date:'c' }}">{{ job.created_at|date:"M d, H:i" }}</small>
                                     </td>
                                     <td>
                                         <a href="{% url 'battycoda_app:detection_run_detail' run_id=job.id %}" class="btn btn-sm btn-outline-primary">

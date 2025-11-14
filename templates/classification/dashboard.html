@@ -52,6 +52,33 @@
 {% block extra_js %}
 <script>
 document.addEventListener('DOMContentLoaded', function() {
+    // Check URL parameter for tab selection
+    const urlParams = new URLSearchParams(window.location.search);
+    const tabParam = urlParams.get('tab');
+
+    if (tabParam) {
+        const tabButton = document.getElementById(`${tabParam}-tab`);
+        const tabContent = document.getElementById(`${tabParam}-content`);
+
+        if (tabButton && tabContent) {
+            // Deactivate all tabs
+            document.querySelectorAll('.nav-link').forEach(function(navLink) {
+                navLink.classList.remove('active');
+                navLink.setAttribute('aria-selected', 'false');
+            });
+
+            // Hide all tab panes
+            document.querySelectorAll('.tab-pane').forEach(function(pane) {
+                pane.classList.remove('show', 'active');
+            });
+
+            // Activate the requested tab
+            tabButton.classList.add('active');
+            tabButton.setAttribute('aria-selected', 'true');
+            tabContent.classList.add('show', 'active');
+        }
+    }
+
     // Initialize Bootstrap tabs
     var tabs = document.querySelectorAll('button[data-bs-toggle="tab"]')
     tabs.forEach(function(tab) {

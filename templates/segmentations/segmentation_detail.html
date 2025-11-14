@@ -47,6 +47,12 @@
                 <a href="{% url 'battycoda_app:batch_segmentation' %}" class="btn btn-secondary mr-2">
                     <i class="fas fa-tasks"></i> Segmentation Jobs
                 </a>
+                <form method="post" action="{% url 'battycoda_app:delete_segmentation' segmentation_id=segmentation.id %}" class="d-inline mr-2" onsubmit="return confirm('Are you sure you want to delete this segmentation? This will delete all {{ total_segments_count }} segments and cannot be undone.');">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-outline-danger">
+                        <i class="fas fa-trash"></i> Delete Segmentation
+                    </button>
+                </form>
                 <a href="{% url 'battycoda_app:recording_detail' recording_id=recording.id %}" class="btn btn-outline-secondary">
                     <i class="fas fa-arrow-left"></i> Back to Recording
                 </a>

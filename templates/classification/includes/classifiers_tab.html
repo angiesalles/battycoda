@@ -1,7 +1,12 @@
 <div class="d-flex justify-content-end mb-3">
-    <a href="{% url 'battycoda_app:create_classifier_training_job' %}" class="btn btn-primary">
-        <i class="fas fa-plus-circle me-1"></i> Train New Classifier
-    </a>
+    <div class="btn-group" role="group">
+        <a href="{% url 'battycoda_app:create_classifier_training_job' %}" class="btn btn-primary">
+            <i class="fas fa-plus-circle me-1"></i> Train from Task Batch
+        </a>
+        <a href="{% url 'battycoda_app:create_classifier_from_folder' %}" class="btn btn-success">
+            <i class="fas fa-folder me-1"></i> Train from Folder
+        </a>
+    </div>
 </div>
 
 <div class="alert alert-info">
@@ -34,9 +39,13 @@
                     <tr data-job-id="{{ job.id }}">
                         <td>{{ job.name }}</td>
                         <td>
+                            {% if job.task_batch %}
                             <a href="{% url 'battycoda_app:task_batch_detail' batch_id=job.task_batch.id %}">
                                 {{ job.task_batch.name }}
                             </a>
+                            {% else %}
+                            <span class="badge bg-secondary">From Folder</span>
+                            {% endif %}
                         </td>
                         <td>
                             {% if job.status == 'pending' %}

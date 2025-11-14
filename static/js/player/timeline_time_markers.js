@@ -69,7 +69,7 @@ export class TimeMarkers {
                 marker.style.backgroundColor = '#6c757d';
 
                 const label = document.createElement('div');
-                label.className = 'position-absolute text-light small';
+                label.className = 'position-absolute text-dark small';
                 label.style.left = (markerX - 12) + 'px';
                 label.style.bottom = '0';
                 label.textContent = this.formatTimeLabel(time, visibleDuration);

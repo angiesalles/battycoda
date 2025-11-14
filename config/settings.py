@@ -247,6 +247,15 @@ LOGGING = {
             "style": "{",
         },
     },
+    "filters": {
+        "require_debug_false": {
+            "()": "django.utils.log.RequireDebugFalse",
+        },
+        "skip_disallowed_host": {
+            "()": "django.utils.log.CallbackFilter",
+            "callback": lambda record: "Invalid HTTP_HOST header" not in record.getMessage(),
+        },
+    },
     "handlers": {
         "console": {
             "level": "INFO",
@@ -257,6 +266,7 @@ LOGGING = {
             "level": "ERROR",
             "class": "django.utils.log.AdminEmailHandler",
             "include_html": True,
+            "filters": ["require_debug_false", "skip_disallowed_host"],
         },
     },
     "root": {
@@ -266,6 +276,11 @@ LOGGING = {
     "loggers": {
         "django.request": {
             "handlers": ["mail_admins"],
+            "level": "ERROR",
+            "propagate": False,
+        },
+        "django.security.DisallowedHost": {
+            "handlers": ["console"],
             "level": "ERROR",
             "propagate": False,
         },

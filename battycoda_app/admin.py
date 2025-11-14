@@ -59,7 +59,20 @@ class SpeciesAdmin(admin.ModelAdmin):
     search_fields = ("name", "description")
     inlines = [CallInline]
     readonly_fields = []  # Allow all fields to be edited, including is_system
-    
+
+    fieldsets = (
+        ("Basic Information", {
+            "fields": ("name", "description", "image", "is_system", "group", "created_by")
+        }),
+        ("Spectrogram Padding (milliseconds)", {
+            "fields": (
+                ("detail_padding_start_ms", "detail_padding_end_ms"),
+                ("overview_padding_start_ms", "overview_padding_end_ms"),
+            ),
+            "description": "Configure padding around calls in spectrograms. Detail view shows the immediate call context, while overview provides broader temporal context."
+        }),
+    )
+
     def has_delete_permission(self, request, obj=None):
         # Don't allow deletion of system species
         if obj and obj.is_system:

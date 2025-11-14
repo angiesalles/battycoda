@@ -10,6 +10,10 @@ from .models.task import Task, TaskBatch
 @login_required
 def get_next_task_from_batch_view(request, batch_id):
     """Get the next undone task from a specific batch and redirect to the annotation interface."""
+    from django.db.models import Q
+    from django.utils import timezone
+    from datetime import timedelta
+
     # Get the batch
     batch = get_object_or_404(TaskBatch, id=batch_id)
 
@@ -28,8 +32,17 @@ def get_next_task_from_batch_view(request, batch_id):
         messages.error(request, "You don't have permission to annotate tasks from this batch.")
         return redirect("battycoda_app:task_batch_list")
 
-    # Find the first undone task from this batch
-    next_task = Task.objects.filter(batch=batch, is_done=False).order_by("created_at").first()
+    # Find the first undone task from this batch that's not locked by another user
+    stale_time = timezone.now() - timedelta(minutes=30)
+    next_task = Task.objects.filter(
+        batch=batch,
+        is_done=False
+    ).filter(
+        Q(status="pending") |
+        Q(in_progress_by=request.user) |
+        Q(in_progress_since__lt=stale_time) |
+        Q(in_progress_by__isnull=True)
+    ).order_by("created_at").first()
 
     if next_task:
         # Redirect to the annotation interface with the task ID
@@ -51,11 +64,22 @@ def get_next_task_from_batch_view(request, batch_id):
 def get_next_task_view(request):
     """Get the next undone task and redirect to the annotation interface,
     preferentially selecting from the same batch as the last completed task."""
+    from django.db.models import Q
+    from django.utils import timezone
+    from datetime import timedelta
+
     # Get user profile and group
     profile = request.user.profile
 
     # Initialize query for tasks that aren't done yet
-    tasks_query = Task.objects.filter(is_done=False)
+    # Exclude tasks that are in progress by other users (unless the lock is stale)
+    stale_time = timezone.now() - timedelta(minutes=30)
+    tasks_query = Task.objects.filter(is_done=False).filter(
+        Q(status="pending") |
+        Q(in_progress_by=request.user) |
+        Q(in_progress_since__lt=stale_time) |
+        Q(in_progress_by__isnull=True)
+    )
 
     # If user has a group, include group tasks
     if profile.group:
@@ -169,3 +193,49 @@ def get_last_task_view(request):
         messages.info(request, "No tasks found. Please create new tasks or task batches.")
         # Redirect to task batch list instead of non-existent task_list
         return redirect("battycoda_app:task_batch_list")
+
+@login_required
+def skip_to_next_batch_view(request, current_task_id):
+    """Skip the current batch and go to the first task of the next batch with undone tasks."""
+    current_task = get_object_or_404(Task, id=current_task_id)
+    profile = request.user.profile
+
+    # Get the current batch
+    current_batch = current_task.batch
+
+    if not current_batch:
+        messages.warning(request, "This task is not part of a batch. Redirecting to next available task.")
+        return redirect("battycoda_app:get_next_task")
+
+    # Build query for batches with undone tasks
+    batches_query = TaskBatch.objects.filter(tasks__is_done=False).distinct()
+
+    # Filter by group permissions
+    if profile.group:
+        batches_query = batches_query.filter(group=profile.group)
+    else:
+        batches_query = batches_query.filter(created_by=request.user)
+
+    # Exclude the current batch
+    batches_query = batches_query.exclude(id=current_batch.id)
+
+    # Prefer batches from the same project
+    if current_batch.project:
+        same_project_batch = batches_query.filter(project=current_batch.project).order_by("created_at").first()
+        if same_project_batch:
+            next_task = Task.objects.filter(batch=same_project_batch, is_done=False).order_by("created_at").first()
+            if next_task:
+                messages.info(request, f'Skipped to next batch: "{same_project_batch.name}"')
+                return redirect("battycoda_app:annotate_task", task_id=next_task.id)
+
+    # Fall back to any batch with undone tasks
+    next_batch = batches_query.order_by("created_at").first()
+    if next_batch:
+        next_task = Task.objects.filter(batch=next_batch, is_done=False).order_by("created_at").first()
+        if next_task:
+            messages.info(request, f'Skipped to next batch: "{next_batch.name}"')
+            return redirect("battycoda_app:annotate_task", task_id=next_task.id)
+
+    # No other batches with undone tasks
+    messages.info(request, f'No other batches with undone tasks found. Staying in current batch "{current_batch.name}".')
+    return redirect("battycoda_app:annotate_task", task_id=current_task_id)

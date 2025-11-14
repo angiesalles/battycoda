@@ -77,8 +77,7 @@ class Task(models.Model):
     STATUS_CHOICES = (
         ("pending", "Pending"),
         ("in_progress", "In Progress"),
-        ("completed", "Completed"),
-        ("done", "Done"),  # Special status for fully labeled tasks
+        ("done", "Done"),
     )
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default="pending")
     is_done = models.BooleanField(
@@ -102,6 +101,15 @@ class Task(models.Model):
     )
     annotated_at = models.DateTimeField(
         null=True, blank=True, help_text="When the annotation was completed"
+    )
+
+    # In-progress tracking (who is currently working on this task)
+    in_progress_by = models.ForeignKey(
+        User, on_delete=models.SET_NULL, related_name="tasks_in_progress",
+        null=True, blank=True, help_text="User currently working on this task"
+    )
+    in_progress_since = models.DateTimeField(
+        null=True, blank=True, help_text="When the user started working on this task"
     )
 
     class Meta:

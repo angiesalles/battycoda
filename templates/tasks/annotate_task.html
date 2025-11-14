@@ -59,7 +59,7 @@
                     <a href="{% url 'battycoda_app:task_batch_list' %}" class="btn btn-sm btn-outline-secondary">Back to Tasks</a>
                     {% endif %}
                     <a href="{% url 'battycoda_app:get_last_task' %}" class="btn btn-sm btn-outline-info">Last Task</a>
-                    <a href="{% url 'battycoda_app:get_next_task' %}" class="btn btn-sm btn-outline-primary">Skip to Next Task</a>
+                    <a href="{% url 'battycoda_app:skip_to_next_batch' current_task_id=task.id %}" class="btn btn-sm btn-outline-primary">Skip to Next Batch</a>
                 </div>
             </div>
         </div>

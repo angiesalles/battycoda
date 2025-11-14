@@ -21,9 +21,9 @@ def get_spectrogram_ticks(task, sample_rate=None, normal_window_size=None, overv
 
     # Use default window sizes if not provided
     if normal_window_size is None:
-        normal_window_size = normal_hwin()
+        normal_window_size = normal_hwin(task.species)
     if overview_window_size is None:
-        overview_window_size = overview_hwin()
+        overview_window_size = overview_hwin(task.species)
 
     # Calculate call duration in milliseconds
     call_duration_ms = (task.offset - task.onset) * 1000

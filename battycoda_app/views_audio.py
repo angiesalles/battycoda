@@ -33,7 +33,7 @@ def task_spectrogram_view(request, task_id):
         return HttpResponse("Task has no associated audio file", status=404)
 
     is_overview = request.GET.get('overview', '0') == '1'
-    hwin = overview_hwin() if is_overview else normal_hwin()
+    hwin = overview_hwin(task.species) if is_overview else normal_hwin(task.species)
 
     start_time = task.onset - (hwin[0] / 1000)
     end_time = task.offset + (hwin[1] / 1000)

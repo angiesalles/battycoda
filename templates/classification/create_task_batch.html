@@ -25,11 +25,34 @@
             <div class="alert alert-info">
                 <h5><i class="fas fa-lightbulb me-2"></i>How it works</h5>
                 <p class="mb-0">
-                    This will create a task batch from the classification results, allowing you to review and correct 
-                    the automatic classifications. Each segment will become a task with its initial label set to the 
+                    This will create a task batch from the classification results, allowing you to review and correct
+                    the automatic classifications. Each segment will become a task with its initial label set to the
                     highest-probability call type from the classification results.
                 </p>
             </div>
+
+            {% if has_existing_batches %}
+            <div class="alert alert-warning">
+                <h5><i class="fas fa-exclamation-triangle me-2"></i>Existing Task Batches Found</h5>
+                <p>This recording already has {{ existing_batches.count }} task batch{{ existing_batches.count|pluralize:"es" }} associated with it:</p>
+                <ul class="mb-0">
+                    {% for batch in existing_batches|slice:":5" %}
+                    <li>
+                        <a href="{% url 'battycoda_app:task_batch_detail' batch_id=batch.id %}" target="_blank">
+                            {{ batch.name }}
+                        </a>
+                        ({{ batch.tasks.count }} task{{ batch.tasks.count|pluralize }}, created {{ batch.created_at|date:"M d, Y" }})
+                    </li>
+                    {% endfor %}
+                    {% if existing_batches.count > 5 %}
+                    <li><em>...and {{ existing_batches.count|add:"-5" }} more</em></li>
+                    {% endif %}
+                </ul>
+                <p class="mt-2 mb-0">
+                    <strong>Are you sure you want to create another task batch for this recording?</strong>
+                </p>
+            </div>
+            {% endif %}
             
             <div class="row mb-4">
                 <div class="col-md-12">

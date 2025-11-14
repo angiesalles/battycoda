@@ -16,8 +16,8 @@ from celery import shared_task
 from django.conf import settings
 
 from .base import extract_audio_segment
-from .detection_tasks import (R_SERVER_URL, check_r_server_connection,
-                             update_detection_run_status)
+from .classification_utils import (R_SERVER_URL, check_r_server_connection,
+                                   update_detection_run_status)
 
 
 @shared_task(bind=True, name="battycoda_app.audio.task_modules.training_tasks.train_classifier")
@@ -260,7 +260,7 @@ def train_classifier(self, training_job_id):
                 name=f"{algorithm_type.upper()} Classifier: {task_batch.name}",
                 description=f"{algorithm_description} classifier trained on task batch: {task_batch.name} with {total_tasks} labeled tasks. Accuracy: {accuracy:.1f}%",
                 response_format=training_job.response_format,
-                celery_task="battycoda_app.audio.task_modules.classification_tasks.run_call_detection",
+                celery_task="battycoda_app.audio.task_modules.classification.run_classification.run_call_classification",
                 service_url=R_SERVER_URL,
                 endpoint=f"/predict/{algorithm_type.lower()}",  # Use the appropriate endpoint for this algorithm
                 source_task_batch=task_batch,
@@ -323,5 +323,218 @@ def train_classifier(self, training_job_id):
                 shutil.rmtree(temp_dir)
         except Exception:
             pass
-            
+
+        return {"status": "error", "message": error_msg}
+
+
+@shared_task(bind=True, name="battycoda_app.audio.task_modules.training_tasks.train_classifier_from_folder")
+def train_classifier_from_folder(self, training_job_id, species_id):
+    """
+    Train a new classifier from a pre-labeled training data folder.
+    Uses the R server to train either KNN or LDA classifier from labeled audio files.
+
+    Args:
+        training_job_id: ID of the ClassifierTrainingJob model
+        species_id: ID of the Species this classifier is for
+
+    Returns:
+        dict: Result of the training process
+    """
+    from ...models.classification import Classifier, ClassifierTrainingJob
+    from ...models.organization import Species
+
+    try:
+        training_job = ClassifierTrainingJob.objects.get(id=training_job_id)
+        species = Species.objects.get(id=species_id)
+
+        update_detection_run_status(training_job, "in_progress", progress=5)
+
+        if not training_job.parameters or 'training_data_folder' not in training_job.parameters:
+            error_msg = "No training data folder specified in job parameters"
+            update_detection_run_status(training_job, "failed", error_msg)
+            return {"status": "error", "message": error_msg}
+
+        folder_path = training_job.parameters['training_data_folder']
+
+        if not os.path.exists(folder_path) or not os.path.isdir(folder_path):
+            error_msg = f"Training data folder does not exist: {folder_path}"
+            update_detection_run_status(training_job, "failed", error_msg)
+            return {"status": "error", "message": error_msg}
+
+        wav_files = [f for f in os.listdir(folder_path) if f.endswith('.wav')]
+
+        if len(wav_files) == 0:
+            error_msg = f"No WAV files found in training data folder: {folder_path}"
+            update_detection_run_status(training_job, "failed", error_msg)
+            return {"status": "error", "message": error_msg}
+
+        update_detection_run_status(training_job, "in_progress", progress=10)
+
+        model_dir = os.path.join(settings.MEDIA_ROOT, "models", "classifiers")
+        os.makedirs(model_dir, exist_ok=True)
+
+        timestamp = int(time.time())
+        model_hash = hashlib.md5(f"{folder_path}_{timestamp}".encode()).hexdigest()[:10]
+        model_filename = f"classifier_{model_hash}_folder.RData"
+        model_path = os.path.join(model_dir, model_filename)
+
+        update_detection_run_status(training_job, "in_progress", progress=30)
+
+        server_ok, error_msg = check_r_server_connection(R_SERVER_URL)
+        if not server_ok:
+            update_detection_run_status(training_job, "failed", error_msg)
+            return {"status": "error", "message": error_msg}
+
+        update_detection_run_status(training_job, "in_progress", progress=40)
+
+        try:
+            algorithm_type = "knn"
+            if training_job.parameters and 'algorithm_type' in training_job.parameters:
+                algorithm_type = training_job.parameters['algorithm_type']
+
+            # Convert local path to R server Docker path
+            folder_path_for_r_server = folder_path.replace(str(settings.BASE_DIR), '/app')
+            model_path_for_r_server = model_path.replace(str(settings.BASE_DIR), '/app')
+
+            # Calculate appropriate k value for KNN based on dataset size
+            # Use smaller k for small datasets (rule of thumb: k = sqrt(n) but max k = n-1)
+            if algorithm_type.lower() == "knn":
+                import math
+                k_value = min(int(math.sqrt(len(wav_files))), len(wav_files) - 1, 20)
+                k_value = max(k_value, 3)  # Minimum k of 3
+            else:
+                k_value = None
+
+            train_params = {
+                'data_folder': folder_path_for_r_server,
+                'output_model_path': model_path_for_r_server,
+                'test_split': 0.2
+            }
+
+            if k_value is not None:
+                train_params['k'] = k_value
+
+            if training_job.parameters:
+                for key, value in training_job.parameters.items():
+                    if key not in ['algorithm_type', 'training_data_folder']:
+                        train_params[key] = value
+
+            update_detection_run_status(training_job, "in_progress", progress=50)
+
+            if algorithm_type.lower() == "lda":
+                endpoint = f"{R_SERVER_URL}/train/lda"
+                algorithm_description = "Linear Discriminant Analysis"
+            else:
+                endpoint = f"{R_SERVER_URL}/train/knn"
+                algorithm_description = "K-Nearest Neighbors"
+
+            print(f"Training classifier from folder {folder_path}")
+            print(f"Using {algorithm_type.upper()} training endpoint: {endpoint}")
+            print(f"Training parameters: {train_params}")
+
+            train_response = requests.post(
+                endpoint,
+                data=train_params,
+                timeout=3600
+            )
+
+            if train_response.status_code != 200:
+                error_msg = f"R server training failed. Status: {train_response.status_code}, Response: {train_response.text}"
+                update_detection_run_status(training_job, "failed", error_msg)
+                return {"status": "error", "message": f"R server training failed. Status: {train_response.status_code}"}
+
+            train_result = train_response.json()
+            update_detection_run_status(training_job, "in_progress", progress=80)
+
+            status_value = train_result.get('status')
+            is_success = (status_value == 'success' or
+                         (isinstance(status_value, list) and len(status_value) > 0 and status_value[0] == 'success'))
+
+            if not is_success:
+                error_msg = f"R server training error: {train_result.get('message', 'Unknown error')}"
+                update_detection_run_status(training_job, "failed", error_msg)
+                return {"status": "error", "message": error_msg}
+
+            def unwrap_list(value):
+                if isinstance(value, list) and len(value) > 0:
+                    return value[0]
+                return value
+
+            accuracy = unwrap_list(train_result.get('accuracy', 0))
+            if not isinstance(accuracy, (int, float)):
+                try:
+                    accuracy = float(accuracy)
+                except (ValueError, TypeError):
+                    accuracy = 0
+
+            classes = train_result.get('classes', [])
+            if not isinstance(classes, list):
+                classes = []
+
+            folder_name = os.path.basename(folder_path)
+
+            print(f"About to create classifier with:")
+            print(f"  Name: {algorithm_type.upper()} Classifier from {folder_name}")
+            print(f"  Species: {species.id} - {species.name}")
+            print(f"  Response format: {training_job.response_format}")
+            print(f"  Accuracy: {accuracy}")
+
+            try:
+                print("Creating classifier object...")
+                classifier = Classifier.objects.create(
+                    name=f"{algorithm_type.upper()} Classifier from {folder_name}",
+                    description=f"{algorithm_description} classifier trained from folder {folder_name} with {len(wav_files)} samples. Accuracy: {accuracy:.1f}%",
+                    response_format=training_job.response_format,
+                    celery_task="battycoda_app.audio.task_modules.classification.run_classification.run_call_classification",
+                    service_url=R_SERVER_URL,
+                    endpoint=f"/predict/{algorithm_type.lower()}",
+                    source_task_batch=None,
+                    model_file=os.path.join("media", "models", "classifiers", model_filename),
+                    is_active=True,
+                    created_by=training_job.created_by,
+                    group=training_job.group,
+                    species=species
+                )
+                print(f"Successfully created classifier {classifier.id}")
+            except Exception as e:
+                error_msg = f"Error creating classifier in database: {str(e)}"
+                print(f"ERROR: {error_msg}")
+                import traceback
+                traceback.print_exc()
+                update_detection_run_status(training_job, "failed", error_msg)
+                return {"status": "error", "message": error_msg}
+
+            try:
+                training_job.classifier = classifier
+                training_job.save()
+                update_detection_run_status(training_job, "completed", progress=100)
+            except Exception as e:
+                error_msg = f"Error updating training job with classifier: {str(e)}"
+                update_detection_run_status(training_job, "failed", error_msg)
+                return {"status": "error", "message": error_msg}
+
+            result = {
+                "status": "success",
+                "message": f"Successfully trained classifier from folder with {len(wav_files)} samples and {len(classes)} call types. Accuracy: {accuracy:.1f}%",
+                "classifier_id": classifier.id,
+                "model_path": model_path,
+                "accuracy": accuracy,
+                "classes": classes
+            }
+
+            return result
+
+        except Exception as e:
+            error_msg = f"Error in model training: {str(e)}"
+            update_detection_run_status(training_job, "failed", error_msg)
+            return {"status": "error", "message": error_msg}
+
+    except Exception as e:
+        try:
+            training_job = ClassifierTrainingJob.objects.get(id=training_job_id)
+            error_msg = f"Error in classifier training from folder: {str(e)}"
+            update_detection_run_status(training_job, "failed", error_msg)
+        except Exception:
+            error_msg = f"Critical error in classifier training from folder: {str(e)}"
+
         return {"status": "error", "message": error_msg}

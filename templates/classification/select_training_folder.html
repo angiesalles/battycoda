@@ -1,0 +1,83 @@
+{% extends 'base.html' %}
+
+{% block title %}Select Training Data Folder | BattyCoda{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <h1 class="mb-4">Train Classifier from Folder</h1>
+
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{% url 'battycoda_app:classification_home' %}">Classification</a></li>
+                    <li class="breadcrumb-item"><a href="{% url 'battycoda_app:classifier_list' %}">Custom Classifiers</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">Select Training Folder</li>
+                </ol>
+            </nav>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-12">
+            <div class="alert alert-info">
+                <h5 class="alert-heading"><i class="fas fa-info-circle me-2"></i>Training from Pre-labeled Data</h5>
+                <p>Select a folder containing pre-labeled training data. The folder should contain WAV files named in the format: <code>NUMBER_LABEL.wav</code></p>
+                <p class="mb-0">For example: <code>001_echolocation calls.wav</code>, <code>002_social calls.wav</code></p>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-header">
+                    <h4 class="mb-0">Available Training Data Folders</h4>
+                </div>
+                <div class="card-body">
+                    {% if folders %}
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Folder Name</th>
+                                    <th>WAV Files</th>
+                                    <th>Call Types</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for folder in folders %}
+                                <tr>
+                                    <td>
+                                        <strong>{{ folder.name }}</strong>
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-primary">{{ folder.file_count }} files</span>
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-info">{{ folder.label_count }} labels</span>
+                                    </td>
+                                    <td>
+                                        <a href="{% url 'battycoda_app:create_classifier_from_folder_for_folder' folder_name=folder.name %}"
+                                           class="btn btn-sm btn-primary">
+                                            <i class="fas fa-arrow-right me-1"></i> Select
+                                        </a>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <div class="alert alert-warning">
+                        <h5 class="alert-heading">No Training Data Found</h5>
+                        <p class="mb-0">No training data folders were found in <code>{{ training_data_base }}</code></p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

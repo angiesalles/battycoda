@@ -35,10 +35,10 @@
         <div class="card-body">
             <div class="row">
                 <div class="col-md-6">
-                    <p><strong>Recording:</strong> 
-                        {% if batch.detection_run and batch.detection_run.segmentation.recording %}
-                            <a href="{% url 'battycoda_app:recording_detail' recording_id=batch.detection_run.segmentation.recording.id %}">
-                                {{ batch.detection_run.segmentation.recording.name }}
+                    <p><strong>Recording:</strong>
+                        {% if batch.classification_run and batch.classification_run.segmentation.recording %}
+                            <a href="{% url 'battycoda_app:recording_detail' recording_id=batch.classification_run.segmentation.recording.id %}">
+                                {{ batch.classification_run.segmentation.recording.name }}
                             </a>
                         {% else %}
                             {{ batch.wav_file_name }}
@@ -52,12 +52,12 @@
                     <p><strong>Created By:</strong> {{ batch.created_by.username }}</p>
                     <p><strong>Total Tasks:</strong> {{ tasks.count }}</p>
                     
-                    {% if batch.detection_run %}
+                    {% if batch.classification_run %}
                     <div class="alert alert-info mt-2">
                         <p class="mb-1"><strong>Source:</strong> This batch was created from a classification run:</p>
                         <p class="mb-0">
-                            <a href="{% url 'battycoda_app:detection_run_detail' run_id=batch.detection_run.id %}" class="btn btn-sm btn-info">
-                                <i class="fas fa-robot"></i> View Classification Run #{{ batch.detection_run.id }}
+                            <a href="{% url 'battycoda_app:detection_run_detail' run_id=batch.classification_run.id %}" class="btn btn-sm btn-info">
+                                <i class="fas fa-robot"></i> View Classification Run #{{ batch.classification_run.id }}
                             </a>
                         </p>
                     </div>

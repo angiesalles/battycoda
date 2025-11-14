@@ -15,18 +15,18 @@ from django.conf import settings
 from django.db import transaction
 
 from ..base import extract_audio_segment
-from ..detection_tasks import (R_SERVER_URL, check_r_server_connection,
-                             get_call_types, get_segments,
-                             update_detection_run_status)
+from ..classification_utils import (R_SERVER_URL, check_r_server_connection,
+                                    get_call_types, get_segments,
+                                    update_classification_run_status)
 
 
-def process_classification_batch(batch_index, batch_segments, detection_run, recording, classifier,
+def process_classification_batch(batch_index, batch_segments, classification_run, recording, classifier,
                                  service_url, endpoint, model_path_for_r_server, segment_list_start_idx):
     """Process a single batch of segments for classification."""
     shared_tmp_dir = os.path.join(settings.BASE_DIR, 'tmp')
     os.makedirs(shared_tmp_dir, exist_ok=True)
 
-    batch_dir_name = f"batch_{batch_index}_{detection_run.id}"
+    batch_dir_name = f"batch_{batch_index}_{classification_run.id}"
     batch_dir = os.path.join(shared_tmp_dir, batch_dir_name)
     os.makedirs(batch_dir, exist_ok=True)
 
@@ -62,7 +62,7 @@ def process_classification_batch(batch_index, batch_segments, detection_run, rec
 
         r_server_path = os.path.join('/app', 'tmp', batch_dir_name)
 
-        features_filename = f"batch_{batch_index}_{detection_run.id}_features.csv"
+        features_filename = f"batch_{batch_index}_{classification_run.id}_features.csv"
         features_path_local = os.path.join(shared_tmp_dir, features_filename)
         features_path_r_server = os.path.join('/app', 'tmp', features_filename)
 
@@ -121,7 +121,7 @@ def process_classification_batch(batch_index, batch_segments, detection_run, rec
             print(f"Warning: Could not clean up temporary directory {batch_dir}: {str(cleanup_error)}")
 
 
-def combine_features_files(all_features_files, all_segment_metadata, detection_run):
+def combine_features_files(all_features_files, all_segment_metadata, classification_run):
     """Combine all batch features files into a single enhanced export."""
     if not all_features_files:
         return None
@@ -130,7 +130,7 @@ def combine_features_files(all_features_files, all_segment_metadata, detection_r
         import pandas as pd
 
         shared_tmp_dir = os.path.join(settings.BASE_DIR, 'tmp')
-        features_export_filename = f"detection_run_{detection_run.id}_features.csv"
+        features_export_filename = f"classification_run_{classification_run.id}_features.csv"
         combined_features_path = os.path.join(shared_tmp_dir, features_export_filename)
 
         all_features_data = []
@@ -199,8 +199,8 @@ def combine_features_files(all_features_files, all_segment_metadata, detection_r
         return None
 
 
-@shared_task(bind=True, name="battycoda_app.audio.task_modules.classification.run_classification.run_call_detection")
-def run_call_detection(self, detection_run_id):
+@shared_task(bind=True, name="battycoda_app.audio.task_modules.classification.run_classification.run_call_classification")
+def run_call_classification(self, classification_run_id):
     """
     Run automated call classification on segments using the configured classifier.
 
@@ -209,11 +209,11 @@ def run_call_detection(self, detection_run_id):
     from battycoda_app.models.classification import CallProbability, Classifier, ClassificationResult, ClassificationRun
 
     try:
-        detection_run = ClassificationRun.objects.get(id=detection_run_id)
+        classification_run = ClassificationRun.objects.get(id=classification_run_id)
 
-        update_detection_run_status(detection_run, "in_progress", progress=0)
+        update_classification_run_status(classification_run, "in_progress", progress=0)
 
-        classifier = detection_run.classifier
+        classifier = classification_run.classifier
 
         if not classifier:
             try:
@@ -222,35 +222,35 @@ def run_call_detection(self, detection_run_id):
                 try:
                     classifier = Classifier.objects.get(name="R-direct Classifier")
                 except Classifier.DoesNotExist:
-                    update_detection_run_status(detection_run, "failed", "No classifier specified and default classifier not found")
+                    update_classification_run_status(classification_run, "failed", "No classifier specified and default classifier not found")
                     return {"status": "error", "message": "No classifier specified and default classifier not found"}
 
         # Check if this is the Dummy Classifier - route to dummy classifier logic
         if classifier.name == "Dummy Classifier" or not classifier.service_url:
             # Run dummy classifier inline (not as a separate task)
-            return run_dummy_classification_inline(self, detection_run_id, CallProbability, ClassificationResult)
+            return run_dummy_classification_inline(self, classification_run_id, CallProbability, ClassificationResult)
 
         service_url = classifier.service_url
         endpoint = f"{service_url}{classifier.endpoint}"
 
-        recording = detection_run.segmentation.recording
+        recording = classification_run.segmentation.recording
         if not recording.wav_file or not os.path.exists(recording.wav_file.path):
-            update_detection_run_status(detection_run, "failed", f"WAV file not found for recording {recording.id}")
+            update_classification_run_status(classification_run, "failed", f"WAV file not found for recording {recording.id}")
             return {"status": "error", "message": f"WAV file not found"}
 
         server_ok, error_msg = check_r_server_connection(service_url)
         if not server_ok:
-            update_detection_run_status(detection_run, "failed", error_msg)
+            update_classification_run_status(classification_run, "failed", error_msg)
             return {"status": "error", "message": error_msg}
 
-        segments, seg_error = get_segments(recording, detection_run.segmentation)
+        segments, seg_error = get_segments(recording, classification_run.segmentation)
         if not segments:
-            update_detection_run_status(detection_run, "failed", seg_error)
+            update_classification_run_status(classification_run, "failed", seg_error)
             return {"status": "error", "message": seg_error}
 
         calls, call_error = get_call_types(recording.species)
         if not calls:
-            update_detection_run_status(detection_run, "failed", call_error)
+            update_classification_run_status(classification_run, "failed", call_error)
             return {"status": "error", "message": call_error}
 
         try:
@@ -289,7 +289,7 @@ def run_call_detection(self, detection_run_id):
                 batch_segments = segment_list[start_idx:end_idx]
 
                 batch_results, segment_map, features_file = process_classification_batch(
-                    batch_index, batch_segments, detection_run, recording, classifier,
+                    batch_index, batch_segments, classification_run, recording, classifier,
                     service_url, endpoint, model_path_for_r_server, start_idx
                 )
 
@@ -300,9 +300,9 @@ def run_call_detection(self, detection_run_id):
                     all_features_files.append(features_file)
 
                 batch_progress = 90 * ((batch_index + 1) / num_batches)
-                update_detection_run_status(detection_run, status="in_progress", progress=batch_progress)
+                update_classification_run_status(classification_run, status="in_progress", progress=batch_progress)
 
-            combined_features_path = combine_features_files(all_features_files, all_segment_metadata, detection_run)
+            combined_features_path = combine_features_files(all_features_files, all_segment_metadata, classification_run)
 
             print(f"Processing {len(all_classification_results)} total classification results...")
 
@@ -310,7 +310,7 @@ def run_call_detection(self, detection_run_id):
                 for i, (segment_id, result_data, _) in enumerate(all_classification_results):
                     segment = segments.get(id=segment_id)
 
-                    result = ClassificationResult.objects.create(classification_run=detection_run, segment=segment)
+                    result = ClassificationResult.objects.create(classification_run=classification_run, segment=segment)
 
                     predicted_class = result_data.get('predicted_class')
                     class_probabilities = result_data.get('class_probabilities', {})
@@ -337,18 +337,18 @@ def run_call_detection(self, detection_run_id):
 
                     if i % 20 == 0 or i == len(all_classification_results) - 1:
                         save_progress = 90 + 10 * (i / len(all_classification_results))
-                        update_detection_run_status(detection_run, status="in_progress", progress=save_progress)
+                        update_classification_run_status(classification_run, status="in_progress", progress=save_progress)
 
             if combined_features_path and os.path.exists(combined_features_path):
-                detection_run.features_file = combined_features_path
-                detection_run.save()
+                classification_run.features_file = combined_features_path
+                classification_run.save()
 
-            update_detection_run_status(detection_run, "completed", progress=100)
+            update_classification_run_status(classification_run, "completed", progress=100)
 
             result = {
                 "status": "success",
                 "message": f"Successfully processed {total_segments} segments using classifier: {classifier.name}",
-                "detection_run_id": detection_run_id,
+                "classification_run_id": classification_run_id,
             }
 
             if combined_features_path and os.path.exists(combined_features_path):
@@ -358,10 +358,10 @@ def run_call_detection(self, detection_run_id):
             return result
 
         except Exception as error:
-            update_detection_run_status(detection_run, "failed", str(error))
+            update_classification_run_status(classification_run, "failed", str(error))
             raise error
 
     except Exception as e:
-        detection_run = ClassificationRun.objects.get(id=detection_run_id)
-        update_detection_run_status(detection_run, "failed", str(e))
+        classification_run = ClassificationRun.objects.get(id=classification_run_id)
+        update_classification_run_status(classification_run, "failed", str(e))
         return {"status": "error", "message": str(e)}

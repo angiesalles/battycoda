@@ -1,5 +1,7 @@
 """
-Call detection utility functions for BattyCoda.
+Classification utility functions for BattyCoda.
+
+Shared utilities for classification and training tasks including R server communication.
 """
 import os
 
@@ -7,23 +9,27 @@ import requests
 from django.conf import settings
 
 # Centralized configuration
-R_SERVER_URL = "http://localhost:8000"
+R_SERVER_URL = "http://localhost:8001"
 
 # ---------------------------------------------------------------
 # Common Utility Functions 
 # ---------------------------------------------------------------
 
-def update_detection_run_status(detection_run, status, message=None, progress=None):
-    """Update a detection run's status and related fields."""
+def update_classification_run_status(classification_run, status, message=None, progress=None):
+    """Update a classification run's status and related fields."""
     if status:
-        detection_run.status = status
+        classification_run.status = status
     if message:
-        detection_run.error_message = message
+        classification_run.error_message = message
     if progress is not None:
-        detection_run.progress = progress
-    detection_run.save(update_fields=[f for f in ["status", "error_message", "progress"] if locals().get(f)])
-    
-    return detection_run
+        classification_run.progress = progress
+    classification_run.save(update_fields=[f for f in ["status", "error_message", "progress"] if locals().get(f)])
+
+    return classification_run
+
+
+# Backward compatibility alias - to be removed
+update_detection_run_status = update_classification_run_status
 
 def check_r_server_connection(service_url=R_SERVER_URL):
     """Check if the R server is available."""

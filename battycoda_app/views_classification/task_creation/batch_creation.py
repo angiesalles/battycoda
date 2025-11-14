@@ -83,11 +83,22 @@ def create_task_batch_from_detection_run(request, run_id):
             return redirect("battycoda_app:detection_run_detail", run_id=run_id)
 
     # For GET requests, show the form
+    recording = run.segmentation.recording
+
+    # Check for existing task batches linked to this recording
+    existing_batches = TaskBatch.objects.filter(
+        classification_run__segmentation__recording=recording
+    ).exclude(
+        classification_run=run
+    )
+
     context = {
         "run": run,
-        "recording": run.segmentation.recording,
+        "recording": recording,
         "default_name": f"Review of {run.name}",
         "default_description": f"Manual review of classification run: {run.name}",
+        "existing_batches": existing_batches,
+        "has_existing_batches": existing_batches.exists(),
     }
 
     return render(request, "classification/create_task_batch.html", context)
@@ -124,7 +135,7 @@ def get_pending_runs_for_species(species, user_profile, lock_for_processing=Fals
 
     # Filter runs without task batches using a subquery to avoid outer join
     # (select_for_update doesn't work with outer joins)
-    has_task_batch = TaskBatch.objects.filter(detection_run=OuterRef('pk'))
+    has_task_batch = TaskBatch.objects.filter(classification_run=OuterRef('pk'))
     query = base_query.annotate(has_batch=Exists(has_task_batch)).filter(has_batch=False)
 
     # Optionally lock rows to prevent race conditions during processing

@@ -6,7 +6,7 @@ Assigns equal probability to all call types without actual classification.
 from celery import shared_task
 from django.db import transaction
 
-from ..detection_tasks import get_call_types, get_segments, update_detection_run_status
+from ..classification_utils import get_call_types, get_segments, update_detection_run_status
 
 
 @shared_task(bind=True, name="battycoda_app.audio.task_modules.classification.dummy_classifier.run_dummy_classifier")

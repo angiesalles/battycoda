@@ -1,0 +1,234 @@
+{% extends 'base.html' %}
+
+{% block title %}Train Classifier from {{ folder_name }} | BattyCoda{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <h1 class="mb-4">Train Classifier from Folder</h1>
+
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{% url 'battycoda_app:classification_home' %}">Classification</a></li>
+                    <li class="breadcrumb-item"><a href="{% url 'battycoda_app:classifier_list' %}">Custom Classifiers</a></li>
+                    <li class="breadcrumb-item"><a href="{% url 'battycoda_app:create_classifier_from_folder' %}">Select Folder</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">{{ folder_name }}</li>
+                </ol>
+            </nav>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-header">
+                    <h4 class="mb-0">Configure Classifier Training</h4>
+                </div>
+                <div class="card-body">
+                    <form method="post" action="{% url 'battycoda_app:create_classifier_from_folder_for_folder' folder_name=folder_name %}">
+                        {% csrf_token %}
+
+                        <input type="hidden" name="folder_name" value="{{ folder_name }}">
+
+                        <div class="mb-4">
+                            <h5>Training Data Information</h5>
+                            <table class="table">
+                                <tr>
+                                    <th>Folder</th>
+                                    <td><code>{{ folder_name }}</code></td>
+                                </tr>
+                                <tr>
+                                    <th>WAV Files</th>
+                                    <td><span class="badge bg-primary">{{ file_count }} files</span></td>
+                                </tr>
+                                <tr>
+                                    <th>Call Types</th>
+                                    <td>
+                                        <span class="badge bg-info">{{ label_count }} types</span>
+                                        <div class="mt-2">
+                                            {% for label in labels %}
+                                            <span class="badge bg-secondary me-1">{{ label }}</span>
+                                            {% endfor %}
+                                        </div>
+                                    </td>
+                                </tr>
+                            </table>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="name" class="form-label">Classifier Name</label>
+                            <input type="text" class="form-control"
+                                   id="name" name="name"
+                                   placeholder="Classifier from {{ folder_name }}"
+                                   value="Classifier from {{ folder_name }}">
+                            <div class="form-text text-muted">Give your classifier a descriptive name</div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="description" class="form-label">Description</label>
+                            <textarea class="form-control" id="description" name="description" rows="3"
+                                     placeholder="Classifier trained from {{ folder_name }} with {{ file_count }} training samples">Classifier trained from {{ folder_name }} with {{ file_count }} training samples and {{ label_count }} call types.</textarea>
+                            <div class="form-text text-muted">Provide details about this classifier for future reference</div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="species_id" class="form-label">Species <span class="text-danger">*</span></label>
+                            <select class="form-select" id="species_id" name="species_id" required onchange="validateFolder()">
+                                <option value="">Select a species...</option>
+                                {% for species in available_species %}
+                                <option value="{{ species.id }}" {% if selected_species_id == species.id|stringformat:"s" %}selected{% endif %}>{{ species.name }}</option>
+                                {% endfor %}
+                            </select>
+                            <div class="form-text text-muted">Select the species this classifier will be trained for. Validation will run automatically.</div>
+                        </div>
+
+                        {% if validation_results %}
+                        <div class="mb-4">
+                            <h5>Validation Results for {{ validation_results.species.name }}</h5>
+
+                            {% if validation_results.is_valid %}
+                            <div class="alert alert-success">
+                                <h6 class="alert-heading"><i class="fas fa-check-circle me-2"></i>Training Data is Valid</h6>
+                                <p class="mb-0">Found {{ validation_results.stats.valid_files }} valid training files with {{ validation_results.stats.files_by_label|length }} call types.</p>
+                            </div>
+                            {% else %}
+                            <div class="alert alert-danger">
+                                <h6 class="alert-heading"><i class="fas fa-exclamation-triangle me-2"></i>Validation Failed</h6>
+                                <p class="mb-2">Please fix the following issues before training:</p>
+                                <ul class="mb-0">
+                                    {% for error in validation_results.errors %}
+                                    <li>{{ error }}</li>
+                                    {% endfor %}
+                                </ul>
+                            </div>
+                            {% endif %}
+
+                            {% if validation_results.warnings %}
+                            <div class="alert alert-warning">
+                                <h6 class="alert-heading"><i class="fas fa-exclamation-circle me-2"></i>Warnings</h6>
+                                <ul class="mb-0">
+                                    {% for warning in validation_results.warnings %}
+                                    <li>{{ warning }}</li>
+                                    {% endfor %}
+                                </ul>
+                            </div>
+                            {% endif %}
+
+                            {% if validation_results.stats.files_by_label %}
+                            <div class="card">
+                                <div class="card-header">
+                                    <h6 class="mb-0">Training Data Distribution</h6>
+                                </div>
+                                <div class="card-body">
+                                    <table class="table table-sm">
+                                        <thead>
+                                            <tr>
+                                                <th>Call Type</th>
+                                                <th>Sample Count</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {% for label, count in validation_results.stats.files_by_label.items %}
+                                            <tr>
+                                                <td><code>{{ label }}</code></td>
+                                                <td>
+                                                    <span class="badge {% if count < 2 %}bg-danger{% elif count < 5 %}bg-warning text-dark{% else %}bg-success{% endif %}">
+                                                        {{ count }} samples
+                                                    </span>
+                                                </td>
+                                            </tr>
+                                            {% endfor %}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                            {% endif %}
+
+                            {% if validation_results.stats.unlabeled_files %}
+                            <div class="mt-3">
+                                <button class="btn btn-sm btn-outline-danger" type="button" data-bs-toggle="collapse" data-bs-target="#unlabeledFiles">
+                                    View Unlabeled Files ({{ validation_results.stats.unlabeled_files|length }})
+                                </button>
+                                <div class="collapse mt-2" id="unlabeledFiles">
+                                    <div class="card card-body">
+                                        <ul class="mb-0">
+                                            {% for file in validation_results.stats.unlabeled_files %}
+                                            <li><code>{{ file }}</code></li>
+                                            {% endfor %}
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                            {% endif %}
+
+                            {% if validation_results.stats.unreadable_files %}
+                            <div class="mt-3">
+                                <button class="btn btn-sm btn-outline-danger" type="button" data-bs-toggle="collapse" data-bs-target="#unreadableFiles">
+                                    View Unreadable Files ({{ validation_results.stats.unreadable_files|length }})
+                                </button>
+                                <div class="collapse mt-2" id="unreadableFiles">
+                                    <div class="card card-body">
+                                        <ul class="mb-0">
+                                            {% for file in validation_results.stats.unreadable_files %}
+                                            <li><code>{{ file }}</code></li>
+                                            {% endfor %}
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                            {% endif %}
+                        </div>
+                        {% endif %}
+
+                        <div class="mb-3">
+                            <label for="algorithm_type" class="form-label">Algorithm Type</label>
+                            <select class="form-select" id="algorithm_type" name="algorithm_type">
+                                <option value="knn">K-Nearest Neighbors (KNN)</option>
+                                <option value="lda">Linear Discriminant Analysis (LDA)</option>
+                            </select>
+                            <div class="form-text text-muted">
+                                <ul class="mb-0">
+                                    <li><strong>K-Nearest Neighbors (KNN):</strong> Works well with small to medium datasets, fast predictions</li>
+                                    <li><strong>Linear Discriminant Analysis (LDA):</strong> Better for larger datasets, handles class imbalance well</li>
+                                </ul>
+                            </div>
+                        </div>
+
+                        <div class="alert alert-info">
+                            <h5 class="alert-heading">Training Process</h5>
+                            <p>When you start a classifier training job:</p>
+                            <ol class="mb-0">
+                                <li>The system reads pre-labeled WAV files from the training data folder</li>
+                                <li>A machine learning model is trained on these audio samples</li>
+                                <li>The model is saved and made available for future classification runs</li>
+                                <li>You can use this classifier for any recordings of the selected species</li>
+                            </ol>
+                        </div>
+
+                        <div class="text-end">
+                            <a href="{% url 'battycoda_app:create_classifier_from_folder' %}" class="btn btn-secondary me-2">
+                                Back
+                            </a>
+                            <button type="submit" class="btn btn-primary" id="submitBtn" {% if validation_results and not validation_results.is_valid %}disabled{% endif %}>
+                                <i class="fas fa-graduation-cap me-1"></i> Start Training
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function validateFolder() {
+    const speciesId = document.getElementById('species_id').value;
+    if (speciesId) {
+        const currentUrl = new URL(window.location.href);
+        currentUrl.searchParams.set('species_id', speciesId);
+        window.location.href = currentUrl.toString();
+    }
+}
+</script>
+{% endblock %}

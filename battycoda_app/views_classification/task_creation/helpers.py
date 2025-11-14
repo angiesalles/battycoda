@@ -31,7 +31,7 @@ def create_task_batch_helper(run, batch_name, description, created_by, group, ma
         species=recording.species,
         project=recording.project,
         group=group,
-        detection_run=run,
+        classification_run=run,
     )
 
     # Get all segment IDs that already have tasks (one query)

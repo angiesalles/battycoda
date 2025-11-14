@@ -1,6 +1,7 @@
 
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
+from django.core.paginator import Paginator
 from django.shortcuts import get_object_or_404, redirect, render
 
 from .forms import ProjectForm
@@ -39,15 +40,27 @@ def project_detail_view(request, project_id):
     project = get_object_or_404(Project, id=project_id)
 
     # Get tasks for this project
-    tasks = Task.objects.filter(project=project)
+    tasks_list = Task.objects.filter(project=project).order_by('-created_at')
+
+    # Paginate tasks
+    tasks_paginator = Paginator(tasks_list, 50)
+    tasks_page_number = request.GET.get('tasks_page', 1)
+    tasks_page = tasks_paginator.get_page(tasks_page_number)
 
     # Get batches for this project
-    batches = TaskBatch.objects.filter(project=project)
+    batches_list = TaskBatch.objects.filter(project=project).order_by('-created_at')
+
+    # Paginate batches
+    batches_paginator = Paginator(batches_list, 50)
+    batches_page_number = request.GET.get('batches_page', 1)
+    batches_page = batches_paginator.get_page(batches_page_number)
 
     context = {
         "project": project,
-        "tasks": tasks,
-        "batches": batches,
+        "tasks_page": tasks_page,
+        "tasks_total": tasks_list.count(),
+        "batches_page": batches_page,
+        "batches_total": batches_list.count(),
     }
 
     return render(request, "projects/project_detail.html", context)
@@ -84,14 +97,14 @@ def edit_project_view(request, project_id):
     # Only allow editing if the user is admin or in the same group
     if request.user.profile.is_current_group_admin or (request.user.profile.group and request.user.profile.group == project.group):
         if request.method == "POST":
-            form = ProjectForm(request.POST, instance=project, user=request.user)
+            form = ProjectForm(request.POST, instance=project)
             if form.is_valid():
                 form.save()
 
                 messages.success(request, "Project updated successfully.")
                 return redirect("battycoda_app:project_detail", project_id=project.id)
         else:
-            form = ProjectForm(instance=project, user=request.user)
+            form = ProjectForm(instance=project)
 
         context = {
             "form": form,

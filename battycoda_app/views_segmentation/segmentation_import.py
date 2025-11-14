@@ -41,8 +41,19 @@ def upload_pickle_segments_view(request, recording_id):
         pickle_file = request.FILES["pickle_file"]
 
         try:
-            # Process the pickle file
-            onsets, offsets = process_pickle_file(pickle_file)
+            # Get recording duration for validation
+            recording_duration = None
+            if recording.spectrogram_file:
+                import h5py
+                import os
+                from django.conf import settings
+                h5_path = os.path.join(settings.MEDIA_ROOT, 'spectrograms', 'recordings', recording.spectrogram_file)
+                if os.path.exists(h5_path):
+                    with h5py.File(h5_path, 'r') as f:
+                        recording_duration = float(f.attrs['duration'])
+
+            # Process the pickle file with duration validation
+            onsets, offsets = process_pickle_file(pickle_file, max_duration=recording_duration)
 
             # Create segments from the onset/offset pairs
             segments_created = 0

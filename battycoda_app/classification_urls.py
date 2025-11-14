@@ -22,6 +22,7 @@ from .views_classification.classifier_training import (
     classifier_training_job_detail_view, classifier_training_job_status_view,
     delete_classifier_training_job_view
 )
+from .views_classification.folder_training import create_classifier_from_folder_view
 
 urlpatterns = [
     path("classification/", classification_home_view, name="classification_home"),
@@ -108,5 +109,15 @@ urlpatterns = [
         "classification/classifiers/<int:job_id>/delete/",
         delete_classifier_training_job_view,
         name="delete_classifier_training_job"
+    ),
+    path(
+        "classification/classifiers/from-folder/",
+        create_classifier_from_folder_view,
+        name="create_classifier_from_folder"
+    ),
+    path(
+        "classification/classifiers/from-folder/<str:folder_name>/",
+        create_classifier_from_folder_view,
+        name="create_classifier_from_folder_for_folder"
     ),
 ]

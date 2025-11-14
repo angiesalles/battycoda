@@ -179,11 +179,29 @@ class TaskUpdateForm(forms.ModelForm):
 class SpeciesForm(forms.ModelForm):
     class Meta:
         model = Species
-        fields = ["name", "description", "image"]
+        fields = [
+            "name",
+            "description",
+            "image",
+            "detail_padding_start_ms",
+            "detail_padding_end_ms",
+            "overview_padding_start_ms",
+            "overview_padding_end_ms",
+        ]
         widgets = {
             "name": forms.TextInput(attrs={"class": "form-control"}),
             "description": forms.Textarea(attrs={"rows": 3, "class": "form-control"}),
             "image": forms.FileInput(attrs={"class": "form-control"}),
+            "detail_padding_start_ms": forms.NumberInput(attrs={"class": "form-control", "min": "0"}),
+            "detail_padding_end_ms": forms.NumberInput(attrs={"class": "form-control", "min": "0"}),
+            "overview_padding_start_ms": forms.NumberInput(attrs={"class": "form-control", "min": "0"}),
+            "overview_padding_end_ms": forms.NumberInput(attrs={"class": "form-control", "min": "0"}),
+        }
+        help_texts = {
+            "detail_padding_start_ms": "Padding in milliseconds before the call in detail view (default: 8ms)",
+            "detail_padding_end_ms": "Padding in milliseconds after the call in detail view (default: 8ms)",
+            "overview_padding_start_ms": "Padding in milliseconds before the call in overview (default: 500ms)",
+            "overview_padding_end_ms": "Padding in milliseconds after the call in overview (default: 500ms)",
         }
 
 class SpeciesEditForm(forms.ModelForm):
@@ -191,11 +209,29 @@ class SpeciesEditForm(forms.ModelForm):
 
     class Meta:
         model = Species
-        fields = ["name", "description", "image"]
+        fields = [
+            "name",
+            "description",
+            "image",
+            "detail_padding_start_ms",
+            "detail_padding_end_ms",
+            "overview_padding_start_ms",
+            "overview_padding_end_ms",
+        ]
         widgets = {
             "name": forms.TextInput(attrs={"class": "form-control"}),
             "description": forms.Textarea(attrs={"rows": 3, "class": "form-control"}),
             "image": forms.FileInput(attrs={"class": "form-control"}),
+            "detail_padding_start_ms": forms.NumberInput(attrs={"class": "form-control", "min": "0"}),
+            "detail_padding_end_ms": forms.NumberInput(attrs={"class": "form-control", "min": "0"}),
+            "overview_padding_start_ms": forms.NumberInput(attrs={"class": "form-control", "min": "0"}),
+            "overview_padding_end_ms": forms.NumberInput(attrs={"class": "form-control", "min": "0"}),
+        }
+        help_texts = {
+            "detail_padding_start_ms": "Padding in milliseconds before the call in detail view (default: 8ms)",
+            "detail_padding_end_ms": "Padding in milliseconds after the call in detail view (default: 8ms)",
+            "overview_padding_start_ms": "Padding in milliseconds before the call in overview (default: 500ms)",
+            "overview_padding_end_ms": "Padding in milliseconds after the call in overview (default: 500ms)",
         }
 
 class CallForm(forms.ModelForm):

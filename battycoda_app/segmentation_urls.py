@@ -6,7 +6,7 @@ batch segmentation, and spectrogram data.
 """
 from django.urls import path
 from .views_segmentation.segment_management import (
-    add_segment_view, delete_segment_view, edit_segment_view, segment_recording_view
+    add_segment_view, delete_segment_view, delete_segmentation_view, edit_segment_view, segment_recording_view
 )
 from .views_segmentation.segmentation_batches import batch_segmentation_view, segmentation_jobs_status_view
 from .views_segmentation.segmentation_execution import (
@@ -79,5 +79,6 @@ urlpatterns = [
     path("segmentations/<int:segmentation_id>/segments/add/", add_segment_view, name="add_segment"),
     path("segmentations/<int:segmentation_id>/segments/<int:segment_id>/edit/", edit_segment_view, name="edit_segment"),
     path("segmentations/<int:segmentation_id>/segments/<int:segment_id>/delete/", delete_segment_view, name="delete_segment"),
+    path("segmentations/<int:segmentation_id>/delete/", delete_segmentation_view, name="delete_segmentation"),
     path("recordings/<int:recording_id>/spectrogram-data/", get_spectrogram_data_view, name="get_spectrogram_data"),
 ]

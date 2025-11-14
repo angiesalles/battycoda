@@ -57,12 +57,12 @@ def create_demo_task_batch(user):
             return None
 
         # Step 3: Run classification
-        detection_run = _run_demo_classification(user, group, segmentation)
-        if not detection_run:
+        classification_run = _run_demo_classification(user, group, segmentation)
+        if not classification_run:
             return None
 
-        # Step 4: Create a task batch from the detection run
-        batch = _create_task_batch_from_detection(user, group, project, species, recording, detection_run)
+        # Step 4: Create a task batch from the classification run
+        batch = _create_task_batch_from_classification(user, group, project, species, recording, classification_run)
 
         if batch:
 
@@ -246,8 +246,8 @@ def _run_demo_classification(user, group, segmentation):
         # Find the dummy classifier
         dummy_classifier = Classifier.objects.get(name="Dummy Classifier")
 
-        # Create a detection run
-        detection_run = ClassificationRun.objects.create(
+        # Create a classification run
+        classification_run = ClassificationRun.objects.create(
             name="Demo Classification Run",
             segmentation=segmentation,
             created_by=user,
@@ -259,16 +259,16 @@ def _run_demo_classification(user, group, segmentation):
         )
 
         # Run the dummy classifier directly (not through Celery)
-        run_dummy_classifier(detection_run.id)
+        run_dummy_classifier(classification_run.id)
 
         # Make sure the run is marked as completed
-        detection_run.refresh_from_db()
-        if detection_run.status != "completed":
-            detection_run.status = "completed"
-            detection_run.progress = 100
-            detection_run.save()
+        classification_run.refresh_from_db()
+        if classification_run.status != "completed":
+            classification_run.status = "completed"
+            classification_run.progress = 100
+            classification_run.save()
 
-        return detection_run
+        return classification_run
     except Classifier.DoesNotExist:
 
         return None
@@ -276,8 +276,8 @@ def _run_demo_classification(user, group, segmentation):
 
         return None
 
-def _create_task_batch_from_detection(user, group, project, species, recording, detection_run):
-    """Create a task batch from a detection run
+def _create_task_batch_from_classification(user, group, project, species, recording, classification_run):
+    """Create a task batch from a classification run
 
     Args:
         user: The User object
@@ -285,7 +285,7 @@ def _create_task_batch_from_detection(user, group, project, species, recording, 
         project: The Project object
         species: The Species object
         recording: The Recording object
-        detection_run: The ClassificationRun object
+        classification_run: The ClassificationRun object
 
     Returns:
         TaskBatch: The created TaskBatch object or None if creation failed
@@ -307,14 +307,14 @@ def _create_task_batch_from_detection(user, group, project, species, recording, 
             species=species,
             project=project,
             group=group,
-            detection_run=detection_run,  # Link to the detection run
+            classification_run=classification_run,  # Link to the classification run
         )
 
-        # Create tasks for each detection result's segment
+        # Create tasks for each classification result's segment
         tasks_created = 0
         with transaction.atomic():
-            # Get all detection results from this run
-            results = ClassificationResult.objects.filter(classification_run=detection_run)
+            # Get all classification results from this run
+            results = ClassificationResult.objects.filter(classification_run=classification_run)
 
             for result in results:
                 segment = result.segment

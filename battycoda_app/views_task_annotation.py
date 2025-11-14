@@ -24,6 +24,24 @@ def task_annotation_view(request, task_id):
         messages.error(request, "You don't have permission to view this task.")
         return redirect("battycoda_app:task_batch_list")
 
+    # Check if someone else is working on this task
+    if task.in_progress_by and task.in_progress_by != request.user and task.status == "in_progress":
+        # Check if the task has been in progress for more than 30 minutes (stale lock)
+        from datetime import timedelta
+        if task.in_progress_since and timezone.now() - task.in_progress_since > timedelta(minutes=30):
+            # Lock is stale, allow taking over
+            messages.warning(
+                request,
+                f"User {task.in_progress_by.username} was working on this task but their session appears to be stale. "
+                f"You can now work on it."
+            )
+        else:
+            messages.warning(
+                request,
+                f"User {task.in_progress_by.username} is currently working on this task (started {task.in_progress_since.strftime('%H:%M')}). "
+                f"Your changes may conflict with theirs."
+            )
+
     # Handle task update if form submitted
     if request.method == "POST":
         # Check if the "mark as done" button was clicked
@@ -37,6 +55,9 @@ def task_annotation_view(request, task_id):
             task.status = "done"
             task.annotated_by = request.user
             task.annotated_at = timezone.now()
+            # Clear in-progress tracking
+            task.in_progress_by = None
+            task.in_progress_since = None
             task.save()
 
             # We don't need to show a success message for every task completion
@@ -44,6 +65,13 @@ def task_annotation_view(request, task_id):
 
             # Redirect to the next task
             return redirect("battycoda_app:get_next_task")
+
+    # Mark task as in progress when user opens it (for GET requests)
+    if task.status == "pending" or (task.in_progress_by != request.user and task.status == "in_progress"):
+        task.status = "in_progress"
+        task.in_progress_by = request.user
+        task.in_progress_since = timezone.now()
+        task.save()
 
     # Get hash of the wav file for validation
     # Extract the wav file information from the task
@@ -157,8 +185,8 @@ def task_annotation_view(request, task_id):
     # Get window sizes for the spectrogram
     from .audio.utils import get_spectrogram_ticks, normal_hwin, overview_hwin
 
-    normal_window_size = normal_hwin()
-    overview_window_size = overview_hwin()
+    normal_window_size = normal_hwin(task.species)
+    overview_window_size = overview_hwin(task.species)
 
     # Get sample rate from the task
     sample_rate = task.get_sample_rate()

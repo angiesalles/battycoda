@@ -2,7 +2,9 @@
 
 This module provides views for creating, listing, and managing classifier training jobs.
 """
+import os
 
+from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.db import models
@@ -10,44 +12,14 @@ from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 
 from battycoda_app.models.classification import Classifier, ClassifierTrainingJob
+from battycoda_app.models.organization import Species
 from battycoda_app.models.task import TaskBatch
 
 
 @login_required
 def classifier_list_view(request):
-    """Display a list of classifiers and training jobs."""
-    try:
-        profile = request.user.profile
-
-        # Get all training jobs for user's groups
-        if profile.group:
-            if profile.is_current_group_admin:
-                training_jobs = ClassifierTrainingJob.objects.filter(group=profile.group).order_by("-created_at")
-                classifiers = Classifier.objects.filter(
-                    models.Q(group=profile.group) | models.Q(group__isnull=True)
-                ).order_by("-created_at")
-            else:
-                training_jobs = ClassifierTrainingJob.objects.filter(
-                    group=profile.group, created_by=request.user
-                ).order_by("-created_at")
-                classifiers = Classifier.objects.filter(
-                    models.Q(group=profile.group, created_by=request.user) | models.Q(group__isnull=True)
-                ).order_by("-created_at")
-        else:
-            training_jobs = ClassifierTrainingJob.objects.filter(created_by=request.user).order_by("-created_at")
-            classifiers = Classifier.objects.filter(
-                models.Q(created_by=request.user) | models.Q(group__isnull=True)
-            ).order_by("-created_at")
-
-        context = {
-            "training_jobs": training_jobs,
-            "classifiers": classifiers,
-        }
-
-        return render(request, "classification/classifier_list.html", context)
-    except Exception as e:
-        messages.error(request, f"An error occurred: {str(e)}")
-        return render(request, "automation/classifier_list.html", {"training_jobs": [], "classifiers": []})
+    """Redirect to classification dashboard with classifiers tab active."""
+    return redirect("battycoda_app:classification_home" + "?tab=classifiers")
 
 
 @login_required
@@ -202,19 +174,23 @@ def classifier_training_job_detail_view(request, job_id):
         messages.error(request, "You don't have permission to view this classifier training job.")
         return redirect("battycoda_app:classifier_list")
     
-    # Get labeled tasks from the batch
-    labeled_tasks = job.task_batch.tasks.filter(is_done=True, label__isnull=False)
-    
-    # Get labels distribution
-    label_counts = {}
-    for task in labeled_tasks:
-        if task.label not in label_counts:
-            label_counts[task.label] = 0
-        label_counts[task.label] += 1
-    
-    # Sort by count descending
-    label_distribution = sorted(label_counts.items(), key=lambda x: x[1], reverse=True)
-    
+    # Get labeled tasks from the batch (if training from batch)
+    labeled_tasks = None
+    label_distribution = []
+
+    if job.task_batch:
+        labeled_tasks = job.task_batch.tasks.filter(is_done=True, label__isnull=False)
+
+        # Get labels distribution
+        label_counts = {}
+        for task in labeled_tasks:
+            if task.label not in label_counts:
+                label_counts[task.label] = 0
+            label_counts[task.label] += 1
+
+        # Sort by count descending
+        label_distribution = sorted(label_counts.items(), key=lambda x: x[1], reverse=True)
+
     context = {
         "job": job,
         "task_batch": job.task_batch,

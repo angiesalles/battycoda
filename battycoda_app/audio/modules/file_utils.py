@@ -63,22 +63,25 @@ def appropriate_file(path, args, folder_only=False):
 
     return os.path.join(cache_dir, filename)
 
-def process_pickle_file(pickle_file):
+def process_pickle_file(pickle_file, max_duration=None):
     """Process a pickle file that contains onset and offset data.
 
     Args:
         pickle_file: A file-like object containing pickle-serialized data
+        max_duration: Optional maximum duration in seconds. If provided, validates that
+                     all segments are within recording bounds.
 
     Returns:
         tuple: (onsets, offsets) as lists of floats
 
     Raises:
-        ValueError: If the pickle file format is not recognized or contains invalid data
+        ValueError: If the pickle file format is not recognized, contains invalid data,
+                   or has segments exceeding the recording duration
         Exception: For any other errors during processing
     """
     # Get the filename for error reporting
     filename = getattr(pickle_file, 'name', 'unknown')
-    
+
     try:
         import numpy as np
 
@@ -125,6 +128,32 @@ def process_pickle_file(pickle_file):
         # Convert numpy types to Python native types if needed
         onsets = [float(onset) for onset in onsets]
         offsets = [float(offset) for offset in offsets]
+
+        # Validate segments against recording duration if provided
+        if max_duration is not None:
+            for i, (onset, offset) in enumerate(zip(onsets, offsets)):
+                # Check if onset is valid
+                if onset < 0:
+                    raise ValueError(
+                        f"Pickle file '{os.path.basename(filename)}': Segment {i+1} has negative onset ({onset:.3f}s)"
+                    )
+
+                # Check if segment exceeds recording duration
+                if onset >= max_duration:
+                    raise ValueError(
+                        f"Pickle file '{os.path.basename(filename)}': Segment {i+1} onset ({onset:.3f}s) exceeds recording duration ({max_duration:.3f}s)"
+                    )
+
+                if offset > max_duration:
+                    raise ValueError(
+                        f"Pickle file '{os.path.basename(filename)}': Segment {i+1} offset ({offset:.3f}s) exceeds recording duration ({max_duration:.3f}s)"
+                    )
+
+                # Check if onset < offset
+                if onset >= offset:
+                    raise ValueError(
+                        f"Pickle file '{os.path.basename(filename)}': Segment {i+1} has invalid onset >= offset ({onset:.3f}s >= {offset:.3f}s)"
+                    )
 
         return onsets, offsets
 

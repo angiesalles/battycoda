@@ -224,11 +224,38 @@ def segmentation_detail_view(request, segmentation_id):
         "segments_json": json.dumps(segments_json),
         "total_segments_count": total_segments_count,
         "active_segmentation": segmentation_info,
+        "segmentation": segmentation,
         "all_segmentations": all_segmentations,
         "roseus_colormap": json.dumps(ROSEUS_COLORMAP),
     }
 
     return render(request, "segmentations/segmentation_detail.html", context)
+
+
+@login_required
+def delete_segmentation_view(request, segmentation_id):
+    """Delete a segmentation and all its segments"""
+    segmentation = get_object_or_404(Segmentation, id=segmentation_id)
+    recording = segmentation.recording
+
+    # Check if the user has permission to delete this segmentation
+    profile = request.user.profile
+    if recording.created_by != request.user and (not profile.group or recording.group != profile.group):
+        messages.error(request, "You don't have permission to delete this segmentation.")
+        return redirect("battycoda_app:segmentation_list")
+
+    if request.method == "POST":
+        segmentation_name = segmentation.name
+        recording_id = recording.id
+
+        # Delete the segmentation (segments will be deleted via CASCADE)
+        segmentation.delete()
+
+        messages.success(request, f'Segmentation "{segmentation_name}" has been deleted.')
+        return redirect("battycoda_app:recording_detail", recording_id=recording_id)
+
+    # If GET request, show confirmation page (though we'll use JS confirmation instead)
+    return redirect("battycoda_app:segmentation_detail", segmentation_id=segmentation_id)
 
 @login_required
 def add_segment_view(request, segmentation_id):

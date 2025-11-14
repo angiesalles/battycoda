@@ -35,3 +35,80 @@
     </div>
     {% endif %}
 </div>
+
+<div style="margin-bottom: 20px; padding: 15px; border: 1px solid #333; border-radius: 4px;">
+    <h3 style="margin-top: 0; margin-bottom: 15px; font-size: 1.1em;">Spectrogram Padding Settings</h3>
+    <p style="font-size: 0.9em; color: #999; margin-bottom: 15px;">
+        Configure the padding around calls in spectrograms. Padding provides temporal context before and after each call.
+    </p>
+
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+        <div>
+            <h4 style="margin-top: 0; margin-bottom: 10px; font-size: 1em;">Detail View</h4>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                <div style="margin-bottom: 10px;">
+                    <label for="id_detail_padding_start_ms" style="display: block; margin-bottom: 5px; font-size: 0.9em;">Before (ms):</label>
+                    {{ form.detail_padding_start_ms }}
+                    {% if form.detail_padding_start_ms.help_text %}
+                    <p style="font-size: 0.75em; margin-top: 3px; color: #999;">{{ form.detail_padding_start_ms.help_text }}</p>
+                    {% endif %}
+                    {% if form.detail_padding_start_ms.errors %}
+                    <div style="color: #e57373; margin-top: 5px; font-size: 0.85em;">
+                        {% for error in form.detail_padding_start_ms.errors %}
+                        {{ error }}
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+                </div>
+                <div style="margin-bottom: 10px;">
+                    <label for="id_detail_padding_end_ms" style="display: block; margin-bottom: 5px; font-size: 0.9em;">After (ms):</label>
+                    {{ form.detail_padding_end_ms }}
+                    {% if form.detail_padding_end_ms.help_text %}
+                    <p style="font-size: 0.75em; margin-top: 3px; color: #999;">{{ form.detail_padding_end_ms.help_text }}</p>
+                    {% endif %}
+                    {% if form.detail_padding_end_ms.errors %}
+                    <div style="color: #e57373; margin-top: 5px; font-size: 0.85em;">
+                        {% for error in form.detail_padding_end_ms.errors %}
+                        {{ error }}
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <div>
+            <h4 style="margin-top: 0; margin-bottom: 10px; font-size: 1em;">Overview</h4>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                <div style="margin-bottom: 10px;">
+                    <label for="id_overview_padding_start_ms" style="display: block; margin-bottom: 5px; font-size: 0.9em;">Before (ms):</label>
+                    {{ form.overview_padding_start_ms }}
+                    {% if form.overview_padding_start_ms.help_text %}
+                    <p style="font-size: 0.75em; margin-top: 3px; color: #999;">{{ form.overview_padding_start_ms.help_text }}</p>
+                    {% endif %}
+                    {% if form.overview_padding_start_ms.errors %}
+                    <div style="color: #e57373; margin-top: 5px; font-size: 0.85em;">
+                        {% for error in form.overview_padding_start_ms.errors %}
+                        {{ error }}
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+                </div>
+                <div style="margin-bottom: 10px;">
+                    <label for="id_overview_padding_end_ms" style="display: block; margin-bottom: 5px; font-size: 0.9em;">After (ms):</label>
+                    {{ form.overview_padding_end_ms }}
+                    {% if form.overview_padding_end_ms.help_text %}
+                    <p style="font-size: 0.75em; margin-top: 3px; color: #999;">{{ form.overview_padding_end_ms.help_text }}</p>
+                    {% endif %}
+                    {% if form.overview_padding_end_ms.errors %}
+                    <div style="color: #e57373; margin-top: 5px; font-size: 0.85em;">
+                        {% for error in form.overview_padding_end_ms.errors %}
+                        {{ error }}
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

@@ -196,10 +196,12 @@ class ClassifierTrainingJob(models.Model):
     name = models.CharField(max_length=255, help_text="Name for this training job")
     description = models.TextField(blank=True, null=True, help_text="Description of the training job")
     task_batch = models.ForeignKey(
-        "battycoda_app.TaskBatch", 
-        on_delete=models.CASCADE, 
+        "battycoda_app.TaskBatch",
+        on_delete=models.CASCADE,
         related_name="training_jobs",
-        help_text="The task batch used for training this classifier"
+        null=True,
+        blank=True,
+        help_text="The task batch used for training this classifier (null if trained from folder)"
     )
     created_at = models.DateTimeField(auto_now_add=True)
     created_by = models.ForeignKey(User, on_delete=models.CASCADE, related_name="training_jobs")
@@ -245,4 +247,6 @@ class ClassifierTrainingJob(models.Model):
         ordering = ["-created_at"]
         
     def __str__(self):
-        return f"{self.name} - {self.task_batch.name}"
+        if self.task_batch:
+            return f"{self.name} - {self.task_batch.name}"
+        return self.name

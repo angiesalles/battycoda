@@ -312,7 +312,7 @@ evaluate_and_save_model <- function(model, test_data, output_model_path, trainin
 }
 
 # Train KNN model
-train_knn_model <- function(data_folder, output_model_path, test_split = 0.2) {
+train_knn_model <- function(data_folder, output_model_path, test_split = 0.2, k = NULL) {
   # Prepare training data
   data <- prepare_training_data(data_folder, test_split)
   train_data <- data$train_data
@@ -372,32 +372,73 @@ train_knn_model <- function(data_folder, output_model_path, test_split = 0.2) {
   # Create classification task with cleaned data
   debug_log("Creating classification task...")
   task <- as_task_classif(train_data, target = 'selec')
-  
-  # Create KNN learner with tunable parameters
-  debug_log("Setting up KNN learner with hyperparameter tuning...")
-  learner <- lrn("classif.kknn",
-                k = to_tune(1, 50, logscale = TRUE),
-                distance = to_tune(1, 50, logscale = TRUE), 
-                kernel = "rectangular",
-                predict_type = "prob"
-  )
-  
-  # Create auto tuner
-  at <- auto_tuner(
-    tuner = tnr("grid_search", resolution = 5, batch_size = 5),
-    learner = learner,
-    resampling = rsmp("cv", folds = 3),
-    measure = msr("classif.ce")
-  )
-  
-  # Train the model
-  debug_log("Training the KNN model (this may take a while)...")
-  kknn_model <- at$train(task)
-  
-  # Get best hyperparameters
-  best_k <- kknn_model$learner$param_set$values$k
-  best_distance <- kknn_model$learner$param_set$values$distance
-  debug_log(sprintf("Best hyperparameters: k = %.2f, distance = %.2f", best_k, best_distance))
+
+  # Determine training approach based on whether k is provided
+  if (!is.null(k)) {
+    # Convert k to numeric if it's a character string (from HTTP request)
+    k <- as.numeric(k)
+
+    # Use fixed k value provided by user
+    debug_log(sprintf("Setting up KNN learner with fixed k = %d...", k))
+
+    # Validate k is reasonable for the dataset size
+    n_train <- nrow(train_data)
+    if (k >= n_train) {
+      stop(sprintf("Parameter k = %d must be smaller than the number of observations (n = %d)", k, n_train))
+    }
+
+    learner <- lrn("classif.kknn",
+                  k = k,
+                  distance = 2,
+                  kernel = "rectangular",
+                  predict_type = "prob"
+    )
+
+    # Train the model directly without tuning
+    debug_log("Training the KNN model with fixed parameters...")
+    kknn_model <- learner$train(task)
+
+    best_k <- k
+    best_distance <- 2
+
+  } else {
+    # Auto-tune k and distance parameters
+    debug_log("Setting up KNN learner with hyperparameter tuning...")
+
+    # Calculate maximum k value based on training set size
+    n_train <- nrow(train_data)
+    max_k <- min(50, n_train - 1)
+
+    if (max_k < 1) {
+      stop(sprintf("Not enough training samples (n = %d) for KNN training", n_train))
+    }
+
+    debug_log(sprintf("Auto-tuning k between 1 and %d (based on %d training samples)", max_k, n_train))
+
+    learner <- lrn("classif.kknn",
+                  k = to_tune(1, max_k, logscale = TRUE),
+                  distance = to_tune(1, 50, logscale = TRUE),
+                  kernel = "rectangular",
+                  predict_type = "prob"
+    )
+
+    # Create auto tuner
+    at <- auto_tuner(
+      tuner = tnr("grid_search", resolution = 5, batch_size = 5),
+      learner = learner,
+      resampling = rsmp("cv", folds = 3),
+      measure = msr("classif.ce")
+    )
+
+    # Train the model
+    debug_log("Training the KNN model with auto-tuning (this may take a while)...")
+    kknn_model <- at$train(task)
+
+    # Get best hyperparameters
+    best_k <- kknn_model$learner$param_set$values$k
+    best_distance <- kknn_model$learner$param_set$values$distance
+    debug_log(sprintf("Best hyperparameters found: k = %.2f, distance = %.2f", best_k, best_distance))
+  }
   
   # Prepare training info
   training_info <- list(
@@ -589,10 +630,10 @@ train_lda_model <- function(data_folder, output_model_path, test_split = 0.2) {
 }
 
 # Unified model training interface
-train_model <- function(data_folder, output_model_path, test_split = 0.2, model_type = "knn") {
+train_model <- function(data_folder, output_model_path, test_split = 0.2, model_type = "knn", k = NULL) {
   # Call appropriate model trainer
   if (model_type == "knn") {
-    return(train_knn_model(data_folder, output_model_path, test_split))
+    return(train_knn_model(data_folder, output_model_path, test_split, k))
   } else if (model_type == "lda") {
     return(train_lda_model(data_folder, output_model_path, test_split))
   } else {

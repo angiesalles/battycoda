@@ -50,7 +50,7 @@ def generate_hdf5_spectrogram_chunked(wav_path, output_path, progress_callback=N
 
     # Spectrogram parameters
     hop_length = 512
-    n_fft = 2048
+    n_fft = 512
     chunk_duration = 60  # Process 60 seconds at a time
     chunk_size = int(chunk_duration * sample_rate)
 

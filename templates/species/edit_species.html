@@ -89,7 +89,89 @@
                         </div>
                     </div>
                 </div>
-                
+
+                <!-- Spectrogram Padding Settings -->
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h5 class="mb-0">Spectrogram Padding Settings</h5>
+                    </div>
+                    <div class="card-body">
+                        <p class="text-muted mb-4">
+                            Configure the padding around calls in spectrograms. Padding provides temporal context before and after each call.
+                        </p>
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <h6>Detail View</h6>
+                                <div class="row mb-3">
+                                    <div class="col-6">
+                                        <label for="id_detail_padding_start_ms" class="form-label">Before (ms):</label>
+                                        {{ form.detail_padding_start_ms }}
+                                        {% if form.detail_padding_start_ms.help_text %}
+                                        <small class="text-muted d-block mt-1">{{ form.detail_padding_start_ms.help_text }}</small>
+                                        {% endif %}
+                                        {% if form.detail_padding_start_ms.errors %}
+                                        <div class="text-danger mt-1">
+                                            {% for error in form.detail_padding_start_ms.errors %}
+                                            {{ error }}
+                                            {% endfor %}
+                                        </div>
+                                        {% endif %}
+                                    </div>
+                                    <div class="col-6">
+                                        <label for="id_detail_padding_end_ms" class="form-label">After (ms):</label>
+                                        {{ form.detail_padding_end_ms }}
+                                        {% if form.detail_padding_end_ms.help_text %}
+                                        <small class="text-muted d-block mt-1">{{ form.detail_padding_end_ms.help_text }}</small>
+                                        {% endif %}
+                                        {% if form.detail_padding_end_ms.errors %}
+                                        <div class="text-danger mt-1">
+                                            {% for error in form.detail_padding_end_ms.errors %}
+                                            {{ error }}
+                                            {% endfor %}
+                                        </div>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="col-md-6">
+                                <h6>Overview</h6>
+                                <div class="row mb-3">
+                                    <div class="col-6">
+                                        <label for="id_overview_padding_start_ms" class="form-label">Before (ms):</label>
+                                        {{ form.overview_padding_start_ms }}
+                                        {% if form.overview_padding_start_ms.help_text %}
+                                        <small class="text-muted d-block mt-1">{{ form.overview_padding_start_ms.help_text }}</small>
+                                        {% endif %}
+                                        {% if form.overview_padding_start_ms.errors %}
+                                        <div class="text-danger mt-1">
+                                            {% for error in form.overview_padding_start_ms.errors %}
+                                            {{ error }}
+                                            {% endfor %}
+                                        </div>
+                                        {% endif %}
+                                    </div>
+                                    <div class="col-6">
+                                        <label for="id_overview_padding_end_ms" class="form-label">After (ms):</label>
+                                        {{ form.overview_padding_end_ms }}
+                                        {% if form.overview_padding_end_ms.help_text %}
+                                        <small class="text-muted d-block mt-1">{{ form.overview_padding_end_ms.help_text }}</small>
+                                        {% endif %}
+                                        {% if form.overview_padding_end_ms.errors %}
+                                        <div class="text-danger mt-1">
+                                            {% for error in form.overview_padding_end_ms.errors %}
+                                            {{ error }}
+                                            {% endfor %}
+                                        </div>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
                 <!-- Call Types Section -->
                 <div class="card mb-4">
                     <div class="card-header">

@@ -82,15 +82,17 @@ function(wav_folder, model_path, export_features_path = NULL) {
 #* @param data_folder:character Path to training data directory
 #* @param output_model_path:character Full path where the model should be saved
 #* @param test_split:numeric Fraction of data to use for testing (0.0-1.0)
-function(data_folder, output_model_path, test_split = 0.2) {
+#* @param k:numeric Optional k value for KNN (default: auto-tuned)
+function(data_folder, output_model_path, test_split = 0.2, k = NULL) {
   debug_log("KNN training request received")
-  debug_log("Parameters: data_folder=", data_folder, 
-            "output_model_path=", output_model_path, 
-            "test_split=", test_split)
-  
+  debug_log("Parameters: data_folder=", data_folder,
+            "output_model_path=", output_model_path,
+            "test_split=", test_split,
+            "k=", ifelse(is.null(k), "auto-tune", k))
+
   # Call KNN training function from module
   tryCatch({
-    result <- train_model(data_folder, output_model_path, as.numeric(test_split), "knn")
+    result <- train_model(data_folder, output_model_path, as.numeric(test_split), "knn", k)
     debug_log("KNN training successful")
     return(result)
   }, error = function(e) {

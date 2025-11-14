@@ -81,12 +81,32 @@ def deliverAudioBit(file_path, onset, offset, loudness=1.0, pitch_shift=1.0):
         from django.http import HttpResponse
         return HttpResponse(f"Error extracting audio: {str(e)}", status=500)
 
-def normal_hwin():
-    """Returns the window padding as (pre_window, post_window) in milliseconds."""
+def normal_hwin(species=None):
+    """Returns the window padding as (pre_window, post_window) in milliseconds.
+
+    Args:
+        species: Optional Species model instance. If provided, uses species-specific padding.
+                If None, uses default padding values.
+
+    Returns:
+        tuple: (pre_window, post_window) in milliseconds
+    """
+    if species is not None:
+        return (species.detail_padding_start_ms, species.detail_padding_end_ms)
     return (8, 8)
 
-def overview_hwin():
-    """Returns the window padding as (pre_window, post_window) in milliseconds."""
+def overview_hwin(species=None):
+    """Returns the window padding as (pre_window, post_window) in milliseconds.
+
+    Args:
+        species: Optional Species model instance. If provided, uses species-specific padding.
+                If None, uses default padding values.
+
+    Returns:
+        tuple: (pre_window, post_window) in milliseconds
+    """
+    if species is not None:
+        return (species.overview_padding_start_ms, species.overview_padding_end_ms)
     return (500, 500)
 
 def get_audio_bit(audio_path, call_number, window_size, extra_params=None):

@@ -43,23 +43,31 @@ def process_classification_queue(self):
             
         # Now process this run outside the transaction
         print(f"Processing queued classification run: {queued_run.id} - {queued_run.name}")
-        
-        # Choose the appropriate task based on classifier
-        if queued_run.classifier and queued_run.classifier.name == "Dummy Classifier":
-            # Use the dummy classifier task directly
-            from .classification.dummy_classifier import run_dummy_classifier
-            result = run_dummy_classifier.delay(queued_run.id)
-        else:
-            # For other classifiers, use the standard task
-            from .classification.run_classification import run_call_detection
-            result = run_call_detection.delay(queued_run.id)
-        
-        return {
-            "status": "success", 
-            "message": f"Started processing run {queued_run.id}",
-            "task_id": result.id
-        }
-        
+
+        try:
+            # Choose the appropriate task based on classifier
+            if queued_run.classifier and queued_run.classifier.name == "Dummy Classifier":
+                # Use the dummy classifier task directly
+                from .classification.dummy_classifier import run_dummy_classifier
+                result = run_dummy_classifier.delay(queued_run.id)
+            else:
+                # For other classifiers, use the standard task
+                from .classification.run_classification import run_call_classification
+                result = run_call_classification.delay(queued_run.id)
+
+            return {
+                "status": "success",
+                "message": f"Started processing run {queued_run.id}",
+                "task_id": result.id
+            }
+        except Exception as task_error:
+            # Failed to start the task - mark the run as failed
+            queued_run.status = "failed"
+            queued_run.error_message = f"Failed to start classification task: {str(task_error)}"
+            queued_run.save(update_fields=["status", "error_message"])
+            print(f"Error starting task for run {queued_run.id}: {str(task_error)}")
+            raise
+
     except Exception as e:
         print(f"Error in queue processor: {str(e)}")
         return {"status": "error", "message": str(e)}
