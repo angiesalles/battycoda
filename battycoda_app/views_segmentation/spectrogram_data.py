@@ -43,8 +43,8 @@ def get_spectrogram_data_view(request, recording_id):
         with h5py.File(h5_file_path, 'r') as f:
             # Get metadata
             sample_rate = float(f.attrs['sample_rate'])
-            hop_length = int(f.attrs['hop_length'])
             n_fft = int(f.attrs['n_fft'])
+            hop_length = int(f.attrs.get('hop_length', n_fft // 4))
             duration = float(f.attrs['duration'])
             n_frames = int(f.attrs['n_frames'])
             n_freq_bins = int(f.attrs['n_freq_bins'])

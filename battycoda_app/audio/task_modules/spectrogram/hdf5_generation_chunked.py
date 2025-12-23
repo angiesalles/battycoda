@@ -49,30 +49,23 @@ def generate_hdf5_spectrogram_chunked(wav_path, output_path, progress_callback=N
         progress_callback(40)
 
     # Spectrogram parameters
-    hop_length = 512
     n_fft = 512
+    hop_length = n_fft // 4  # Default hop length used by librosa
     chunk_duration = 60  # Process 60 seconds at a time
     chunk_size = int(chunk_duration * sample_rate)
-
-    # Calculate frequency bins to keep (up to 128kHz)
-    max_freq_hz = 128000
-    freq_per_bin = (effective_sample_rate / 2) / (n_fft / 2)
-    max_bin = int(max_freq_hz / freq_per_bin)
-    # STFT produces n_fft // 2 + 1 bins, so limit max_bin to actual available bins
-    actual_bins = n_fft // 2 + 1
-    max_bin = min(max_bin, actual_bins)
+    n_freq_bins = n_fft // 2 + 1
 
     # Create HDF5 file with resizable dataset for streaming writes
     with h5py.File(output_path, 'w') as f:
         # Create resizable dataset (we don't know final size yet)
         dataset = f.create_dataset(
             'spectrogram',
-            shape=(max_bin, 0),  # Start with 0 columns
-            maxshape=(max_bin, None),  # Unlimited columns
+            shape=(n_freq_bins, 0),  # Start with 0 columns
+            maxshape=(n_freq_bins, None),  # Unlimited columns
             dtype='float16',
             compression='gzip',
             compression_opts=9,
-            chunks=(max_bin, 100)  # Chunk size for HDF5 storage
+            chunks=(n_freq_bins, 100)  # Chunk size for HDF5 storage
         )
 
         total_written_frames = 0
@@ -94,16 +87,13 @@ def generate_hdf5_spectrogram_chunked(wav_path, output_path, progress_callback=N
                     audio_chunk = audio_chunk[::downsample_factor]
 
                 # Compute STFT for this chunk
-                stft_chunk = librosa.stft(audio_chunk, hop_length=hop_length, n_fft=n_fft)
+                stft_chunk = librosa.stft(audio_chunk, n_fft=n_fft)
                 spec_chunk = librosa.amplitude_to_db(np.abs(stft_chunk), ref=np.max)
-
-                # Limit frequency range
-                spec_chunk = spec_chunk[:max_bin, :]
                 spec_chunk = spec_chunk.astype(np.float16)
 
                 # Resize dataset and append chunk
                 new_size = total_written_frames + spec_chunk.shape[1]
-                dataset.resize((max_bin, new_size))
+                dataset.resize((n_freq_bins, new_size))
                 dataset[:, total_written_frames:new_size] = spec_chunk
 
                 total_written_frames = new_size
@@ -116,11 +106,11 @@ def generate_hdf5_spectrogram_chunked(wav_path, output_path, progress_callback=N
 
         # Store metadata
         f.attrs['sample_rate'] = effective_sample_rate
-        f.attrs['hop_length'] = hop_length
         f.attrs['n_fft'] = n_fft
+        f.attrs['hop_length'] = hop_length
         f.attrs['duration'] = total_frames / sample_rate
         f.attrs['n_frames'] = total_written_frames
-        f.attrs['n_freq_bins'] = max_bin
+        f.attrs['n_freq_bins'] = n_freq_bins
 
     if progress_callback:
         progress_callback(80)
@@ -128,7 +118,7 @@ def generate_hdf5_spectrogram_chunked(wav_path, output_path, progress_callback=N
     return {
         'status': 'success',
         'file_path': output_path,
-        'shape': (max_bin, total_written_frames),
+        'shape': (n_freq_bins, total_written_frames),
         'duration': total_frames / sample_rate,
         'sample_rate': effective_sample_rate
     }

@@ -45,8 +45,19 @@ def upload_pickle_segmentation(request, recording_id):
         # Process the pickle file and create segmentation
         with transaction.atomic():
             try:
-                # Process the pickle file to extract onsets and offsets
-                onsets, offsets = process_pickle_file(pickle_file)
+                # Get recording duration for validation
+                recording_duration = None
+                if recording.spectrogram_file:
+                    import h5py
+                    import os
+                    from django.conf import settings
+                    h5_path = os.path.join(settings.MEDIA_ROOT, 'spectrograms', 'recordings', recording.spectrogram_file)
+                    if os.path.exists(h5_path):
+                        with h5py.File(h5_path, 'r') as f:
+                            recording_duration = float(f.attrs['duration'])
+
+                # Process the pickle file to extract onsets and offsets with validation
+                onsets, offsets = process_pickle_file(pickle_file, max_duration=recording_duration)
                 
                 # Create a new segmentation
                 segmentation = Segmentation.objects.create(

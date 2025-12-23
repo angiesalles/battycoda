@@ -27,7 +27,13 @@ class UserRegisterForm(UserCreationForm):
         if '@' in username:
             raise forms.ValidationError("Username cannot contain the @ symbol. Please choose a different username.")
         return username
-    
+
+    def clean_email(self):
+        email = self.cleaned_data.get('email')
+        if User.objects.filter(email=email).exists():
+            raise forms.ValidationError("This email address is already registered.")
+        return email
+
     def clean_captcha_answer(self):
         answer = self.cleaned_data.get('captcha_answer')
         
@@ -331,7 +337,12 @@ class RecordingForm(forms.ModelForm):
                 self.fields["species"].queryset = Species.objects.filter(
                     models.Q(is_system=True) | models.Q(group=self.profile.group)
                 ).order_by('name')
-                self.fields["project"].queryset = self.fields["project"].queryset.filter(group=self.profile.group)
+                project_queryset = self.fields["project"].queryset.filter(group=self.profile.group)
+                self.fields["project"].queryset = project_queryset
+
+                # Pre-select the Demo Project if it's the only project
+                if project_queryset.count() == 1 and not self.instance.pk:
+                    self.fields["project"].initial = project_queryset.first()
 
     def clean_name(self):
         """Name validation"""

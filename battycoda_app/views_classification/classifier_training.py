@@ -19,7 +19,9 @@ from battycoda_app.models.task import TaskBatch
 @login_required
 def classifier_list_view(request):
     """Redirect to classification dashboard with classifiers tab active."""
-    return redirect("battycoda_app:classification_home" + "?tab=classifiers")
+    from django.urls import reverse
+    url = reverse("battycoda_app:classification_home")
+    return redirect(f"{url}?tab=classifiers")
 
 
 @login_required
@@ -139,7 +141,7 @@ def create_classifier_training_job_view(request, batch_id=None):
             "labeled_count": labeled_count,  # Custom field for labeled tasks
             "created_at": batch.created_at,
             "detail_url": f"/tasks/batches/{batch.id}/",
-            "action_url": f"/automation/classifiers/create/{batch.id}/",
+            "action_url": f"/classification/classifiers/create/{batch.id}/",
             "disabled": labeled_count < 5,  # Disable if not enough labeled tasks
         })
     

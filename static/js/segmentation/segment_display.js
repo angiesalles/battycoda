@@ -3,8 +3,9 @@
  */
 
 export class SegmentDisplay {
-    constructor(playerId) {
+    constructor(playerId, readOnly = false) {
         this.playerId = playerId;
+        this.readOnly = readOnly;
         this.paginationInfo = null;
     }
     
@@ -127,16 +128,26 @@ export class SegmentDisplay {
         const onset = parseFloat(container.dataset.onset);
         const offset = parseFloat(container.dataset.offset);
 
-        container.innerHTML = `
-            <div class="btn-group btn-group-sm">
-                <button class="btn btn-success btn-sm" onclick="window.battycoda?.segmentation?.['${this.playerId}']?.playSegment(${onset}, ${offset})">
-                    <i class="fas fa-play"></i>
-                </button>
-                <button class="btn btn-danger btn-sm" onclick="window.battycoda?.segmentation?.['${this.playerId}']?.deleteSegment(${segmentId})">
-                    <i class="fas fa-trash"></i>
-                </button>
-            </div>
-        `;
+        if (this.readOnly) {
+            container.innerHTML = `
+                <div class="btn-group btn-group-sm">
+                    <button class="btn btn-success btn-sm" onclick="window.battycoda?.segmentation?.['${this.playerId}']?.playSegment(${onset}, ${offset})">
+                        <i class="fas fa-play"></i>
+                    </button>
+                </div>
+            `;
+        } else {
+            container.innerHTML = `
+                <div class="btn-group btn-group-sm">
+                    <button class="btn btn-success btn-sm" onclick="window.battycoda?.segmentation?.['${this.playerId}']?.playSegment(${onset}, ${offset})">
+                        <i class="fas fa-play"></i>
+                    </button>
+                    <button class="btn btn-danger btn-sm" onclick="window.battycoda?.segmentation?.['${this.playerId}']?.deleteSegment(${segmentId})">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                </div>
+            `;
+        }
     }
 
     // Render pagination controls

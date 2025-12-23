@@ -15,19 +15,21 @@ export class SegmentManager {
         this.segmentationId = options.segmentationId;
         this.playerId = options.waveformId || 'segment-waveform';
         this.csrfToken = options.csrfToken;
+        this.readOnly = options.readOnly || false;
 
         // Initialize modules
         this.crud = new SegmentCRUD(this.segmentationId, this.csrfToken);
-        this.display = new SegmentDisplay(this.playerId);
+        this.display = new SegmentDisplay(this.playerId, this.readOnly);
         this.searchPagination = new SegmentSearchPagination();
 
         // State
         this.segments = options.segments || [];
         this.currentSelection = null;
-        
+
         // Debug logging
         console.log('SegmentManager initialized with', this.segments.length, 'segments');
         console.log('Initial segments:', this.segments);
+        console.log('Read-only mode:', this.readOnly);
 
         // Initialize
         this.initializeEventHandlers();
@@ -60,8 +62,10 @@ export class SegmentManager {
     
     // Initialize event handlers
     initializeEventHandlers() {
-        // Selection monitoring for waveform
-        this.startSelectionMonitoring();
+        // Selection monitoring for waveform (only in edit mode)
+        if (!this.readOnly) {
+            this.startSelectionMonitoring();
+        }
     }
 
     // Initialize search and pagination

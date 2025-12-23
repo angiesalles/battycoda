@@ -146,18 +146,17 @@ const ROSEUS_COLORMAP = {{ roseus_colormap|safe }};
             }
         }
         
-        // Initialize segmentation (only for non-hidden recordings)
+        // Initialize segmentation
         const isReadOnly = {{ recording.hidden|yesno:"true,false" }};
-        if (!isReadOnly) {
-            initSegmentation({
-                recordingId: {{ recording.id }},
-                segmentationId: {{ active_segmentation.id }},
-                waveformId: 'segment-waveform',
-                csrfToken: csrfToken,
-                segments: segmentsData,
-                containerId: 'segment-waveform-container'
-            });
-        }
+        initSegmentation({
+            recordingId: {{ recording.id }},
+            segmentationId: {{ active_segmentation.id }},
+            waveformId: 'segment-waveform',
+            csrfToken: csrfToken,
+            segments: segmentsData,
+            containerId: 'segment-waveform-container',
+            readOnly: isReadOnly
+        });
     });
 </script>
 {% endblock %}

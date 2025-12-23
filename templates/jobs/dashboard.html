@@ -82,10 +82,10 @@
 
     <!-- Jobs Tables -->
     <div class="row">
-        {% include "jobs/includes/segmentation_table.html" %}
-        {% include "jobs/includes/classification_table.html" %}
-        {% include "jobs/includes/training_table.html" %}
-        {% include "jobs/includes/clustering_table.html" %}
+        {% include "jobs/includes/job_table.html" with jobs=segmentation_jobs title="Segmentation Jobs" icon="s7-scissors" detail_url_name="battycoda_app:recording_detail" job_id_param="recording_id" job_type="segmentation" cancel_statuses="pending,in_progress" show_recording=True %}
+        {% include "jobs/includes/job_table.html" with jobs=detection_jobs title="Classification Jobs" icon="s7-display1" detail_url_name="battycoda_app:detection_run_detail" job_id_param="run_id" job_type="detection" cancel_statuses="pending,running" show_classifier=True %}
+        {% include "jobs/includes/job_table.html" with jobs=training_jobs title="Training Jobs" icon="s7-tools" detail_url_name="battycoda_app:classifier_training_job_detail" job_id_param="job_id" job_type="training" cancel_statuses="pending,running" %}
+        {% include "jobs/includes/job_table.html" with jobs=clustering_jobs title="Clustering Jobs" icon="fa fa-cluster" detail_url_name="battycoda_app:clustering_run_detail" job_id_param="run_id" job_type="clustering" cancel_statuses="pending,running" %}
         {% include "jobs/includes/spectrogram_table.html" %}
     </div>
     {% if not segmentation_jobs and not detection_jobs and not training_jobs and not clustering_jobs and not spectrogram_jobs %}
