@@ -189,6 +189,85 @@ def send_welcome_email(user):
         html_message=html_message
     )
 
+def send_worker_failure_email(service_name, failure_reason=None, hostname=None):
+    """
+    Send an email notification when a Celery worker fails (e.g., OOM kill).
+
+    Args:
+        service_name (str): Name of the failed service (e.g., 'battycoda-celery')
+        failure_reason (str, optional): Reason for failure (e.g., 'oom-kill')
+        hostname (str, optional): Hostname of the server
+
+    Returns:
+        bool: True if email was sent successfully, False otherwise
+    """
+    from django.conf import settings
+    import datetime
+
+    subject = f"[BattyCoda ALERT] Worker {service_name} failed"
+
+    if hostname is None:
+        import socket
+        hostname = socket.gethostname()
+
+    timestamp = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+
+    reason_text = failure_reason if failure_reason else "Unknown"
+
+    message = (
+        f"BattyCoda Worker Failure Alert\n"
+        f"==============================\n\n"
+        f"Service: {service_name}\n"
+        f"Server: {hostname}\n"
+        f"Time: {timestamp}\n"
+        f"Failure Reason: {reason_text}\n\n"
+        f"The service has been configured to auto-restart.\n"
+        f"Please check server logs for more details:\n"
+        f"  sudo journalctl -u {service_name} -n 100\n"
+    )
+
+    html_message = f"""
+    <html>
+    <body>
+        <h2 style="color: #dc3545;">BattyCoda Worker Failure Alert</h2>
+        <table style="border-collapse: collapse; margin: 20px 0;">
+            <tr>
+                <td style="padding: 8px; border: 1px solid #ddd; font-weight: bold;">Service</td>
+                <td style="padding: 8px; border: 1px solid #ddd;">{service_name}</td>
+            </tr>
+            <tr>
+                <td style="padding: 8px; border: 1px solid #ddd; font-weight: bold;">Server</td>
+                <td style="padding: 8px; border: 1px solid #ddd;">{hostname}</td>
+            </tr>
+            <tr>
+                <td style="padding: 8px; border: 1px solid #ddd; font-weight: bold;">Time</td>
+                <td style="padding: 8px; border: 1px solid #ddd;">{timestamp}</td>
+            </tr>
+            <tr>
+                <td style="padding: 8px; border: 1px solid #ddd; font-weight: bold;">Failure Reason</td>
+                <td style="padding: 8px; border: 1px solid #ddd; color: #dc3545;">{reason_text}</td>
+            </tr>
+        </table>
+        <p>The service has been configured to auto-restart.</p>
+        <p>Please check server logs for more details:</p>
+        <pre style="background: #f5f5f5; padding: 10px; border-radius: 4px;">sudo journalctl -u {service_name} -n 100</pre>
+    </body>
+    </html>
+    """
+
+    admin_emails = [email for name, email in getattr(settings, 'ADMINS', [])]
+
+    if not admin_emails:
+        return False
+
+    return send_mail(
+        subject=subject,
+        message=message,
+        recipient_list=admin_emails,
+        html_message=html_message
+    )
+
+
 def send_password_reset_email(user, token, expires_at):
     """
     Send a password reset email to a user.

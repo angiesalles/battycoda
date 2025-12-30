@@ -1,0 +1,10 @@
+[Unit]
+Description=Send failure notification for %i
+
+[Service]
+Type=oneshot
+User=ubuntu
+Group=ubuntu
+WorkingDirectory=/home/ubuntu/battycoda
+Environment=PATH=/home/ubuntu/battycoda/venv/bin:/usr/bin:/bin
+ExecStart=/home/ubuntu/battycoda/venv/bin/python /home/ubuntu/battycoda/scripts/notify_worker_failure.py %i
