@@ -1,0 +1,20 @@
+[Unit]
+Description=BattyCoda Celery Worker
+After=network.target redis-server.service
+Requires=redis-server.service
+OnFailure=battycoda-failure-notify@%n.service
+
+[Service]
+Type=exec
+User=ubuntu
+Group=ubuntu
+WorkingDirectory=/home/ubuntu/battycoda
+Environment=PATH=/home/ubuntu/battycoda/venv/bin
+ExecStart=/home/ubuntu/battycoda/venv/bin/celery -A config worker --loglevel=info
+Restart=always
+RestartSec=3
+StandardOutput=append:/var/log/battycoda/celery.log
+StandardError=append:/var/log/battycoda/celery-error.log
+
+[Install]
+WantedBy=multi-user.target
