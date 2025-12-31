@@ -140,7 +140,19 @@
                         {% endif %}
                     </div>
                 </div>
-                
+
+                <!-- Split Long Files Option -->
+                <div class="mb-4">
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" name="split_long_files" id="split_long_files" checked>
+                        <label class="form-check-label" for="split_long_files">
+                            <strong>Automatically split files longer than 1 minute</strong>
+                            <br>
+                            <small class="text-muted">Recommended for better performance when viewing spectrograms. Files will be split into 1-minute chunks stored as separate recordings.</small>
+                        </label>
+                    </div>
+                </div>
+
                 <div class="d-grid gap-2 d-md-flex justify-content-md-end">
                     <button type="submit" class="btn btn-primary">
                         <i class="fas fa-save"></i> Save Recording

@@ -1,10 +1,15 @@
 """
 Core views for handling recording CRUD operations.
 """
+import os
+import tempfile
+
 from .views_common import *
 from .tasks import calculate_audio_duration
 from .forms_edit import RecordingEditForm
 from .models.organization import Project
+from .audio.utils import get_audio_duration, split_audio_file
+from django.core.files.uploadedfile import SimpleUploadedFile
 
 # Set up logging
 
@@ -103,24 +108,116 @@ def create_recording_view(request):
     if request.method == "POST":
         form = RecordingForm(request.POST, request.FILES, user=request.user)
         if form.is_valid():
-            # Create the recording but don't save yet
-            recording = form.save(commit=False)
-            recording.created_by = request.user
-
             # Get user profile
             profile, created = UserProfile.objects.get_or_create(user=request.user)
 
-            # Set group to user's current active group
-            if profile.group:
-                recording.group = profile.group
-            else:
-                # This is a critical issue - user must have a group
+            # Check group
+            if not profile.group:
                 messages.error(request, "You must be assigned to a group to create a recording")
                 return redirect("battycoda_app:create_recording")
 
+            # Check if user wants to split long files
+            split_long_files = request.POST.get('split_long_files') == 'on'
+
+            # Get the uploaded WAV file
+            wav_file = request.FILES.get('wav_file')
+
+            # Check duration and split if needed
+            if split_long_files and wav_file:
+                # Save uploaded file to temporary location to check duration
+                with tempfile.NamedTemporaryFile(delete=False, suffix='.wav') as temp_file:
+                    for chunk in wav_file.chunks():
+                        temp_file.write(chunk)
+                    temp_file_path = temp_file.name
+
+                try:
+                    # Check duration
+                    duration = get_audio_duration(temp_file_path)
+
+                    if duration > 60:
+                        # Split the file
+                        chunk_paths = split_audio_file(temp_file_path, chunk_duration_seconds=60)
+
+                        recordings_created = []
+
+                        # Get form data for creating chunks
+                        original_name = form.cleaned_data['name']
+                        description = form.cleaned_data.get('description', '')
+                        recorded_date = form.cleaned_data.get('recorded_date')
+                        location = form.cleaned_data.get('location', '')
+                        equipment = form.cleaned_data.get('equipment', '')
+                        environmental_conditions = form.cleaned_data.get('environmental_conditions', '')
+                        species = form.cleaned_data['species']
+                        project = form.cleaned_data['project']
+
+                        # Create a recording for each chunk
+                        for i, chunk_path in enumerate(chunk_paths):
+                            with open(chunk_path, 'rb') as chunk_file:
+                                chunk_file_name = os.path.basename(chunk_path)
+                                chunk_django_file = SimpleUploadedFile(
+                                    chunk_file_name,
+                                    chunk_file.read(),
+                                    content_type='audio/wav'
+                                )
+
+                                # Create fresh recording for each chunk
+                                recording = Recording(
+                                    name=f"{original_name} (Part {i+1}/{len(chunk_paths)})",
+                                    wav_file=chunk_django_file,
+                                    description=description,
+                                    recorded_date=recorded_date,
+                                    location=location,
+                                    equipment=equipment,
+                                    environmental_conditions=environmental_conditions,
+                                    species=species,
+                                    project=project,
+                                    created_by=request.user,
+                                    group=profile.group,
+                                )
+                                recording.save()
+                                recording.file_ready = True
+                                recording.save(update_fields=["file_ready"])
+
+                                recordings_created.append(recording)
+
+                        # Clean up chunk files
+                        for chunk_path in chunk_paths:
+                            try:
+                                os.remove(chunk_path)
+                            except:
+                                pass
+
+                        # Clean up temp file
+                        try:
+                            os.remove(temp_file_path)
+                        except:
+                            pass
+
+                        # Return success message
+                        messages.success(
+                            request,
+                            f"Successfully created {len(recordings_created)} recordings from split file (original duration: {duration:.1f}s)"
+                        )
+                        return redirect("battycoda_app:recording_list")
+
+                except Exception as e:
+                    # If we can't check duration or split, fall back to normal processing
+                    pass
+                finally:
+                    # Clean up temp file
+                    try:
+                        os.remove(temp_file_path)
+                    except:
+                        pass
+
+            # Normal processing (file ≤ 60s or splitting disabled or splitting failed)
+            recording = form.save(commit=False)
+            recording.created_by = request.user
+            recording.group = profile.group
+
             # Save the recording first without marking as ready
             recording.save()
-            
+
             # Now mark as ready for processing and save again
             recording.file_ready = True
             recording.save(update_fields=["file_ready"])

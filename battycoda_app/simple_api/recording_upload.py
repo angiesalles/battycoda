@@ -2,6 +2,8 @@
 Recording upload API views.
 Handles WAV file uploads with optional pickle segmentation data.
 """
+import os
+
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_http_methods
@@ -101,21 +103,94 @@ def upload_recording(request):
                     'error': 'Invalid date format. Use YYYY-MM-DD'
                 }, status=400)
         
-        # Use transaction to ensure atomicity of recording + segmentation creation
-        with transaction.atomic():
-            # Create the recording
-            recording = Recording.objects.create(
-                name=name,
-                description=description,
-                wav_file=wav_file,
-                location=location,
-                recorded_date=parsed_date,
-                species=species,
-                project=project,
-                group=user.profile.group,
-                created_by=user,
-                file_ready=True
-            )
+        # Check if file should be split
+        import tempfile
+        import shutil
+        from ..audio.utils import get_audio_duration, split_audio_file
+        from django.core.files.uploadedfile import SimpleUploadedFile
+
+        # Save uploaded file to temporary location to check duration
+        with tempfile.NamedTemporaryFile(delete=False, suffix='.wav') as temp_file:
+            for chunk in wav_file.chunks():
+                temp_file.write(chunk)
+            temp_file_path = temp_file.name
+
+        try:
+            # Check duration
+            duration = get_audio_duration(temp_file_path)
+            print(f"DEBUG: Audio duration: {duration:.2f}s")
+
+            recordings_created = []
+
+            # If duration > 60 seconds, split into 1-minute chunks
+            if duration > 60:
+                print(f"DEBUG: File duration ({duration:.2f}s) > 60s, splitting into chunks")
+                chunk_paths = split_audio_file(temp_file_path, chunk_duration_seconds=60)
+
+                # Create a recording for each chunk
+                for i, chunk_path in enumerate(chunk_paths):
+                    with open(chunk_path, 'rb') as chunk_file:
+                        chunk_name = f"{name} (Part {i+1}/{len(chunk_paths)})"
+                        chunk_django_file = SimpleUploadedFile(
+                            os.path.basename(chunk_path),
+                            chunk_file.read(),
+                            content_type='audio/wav'
+                        )
+
+                        with transaction.atomic():
+                            recording = Recording.objects.create(
+                                name=chunk_name,
+                                description=description,
+                                wav_file=chunk_django_file,
+                                location=location,
+                                recorded_date=parsed_date,
+                                species=species,
+                                project=project,
+                                group=user.profile.group,
+                                created_by=user,
+                                file_ready=True
+                            )
+                            recordings_created.append(recording)
+
+                # Clean up chunk files
+                for chunk_path in chunk_paths:
+                    try:
+                        os.remove(chunk_path)
+                        os.rmdir(os.path.dirname(chunk_path))
+                    except:
+                        pass
+
+                # Return response for split recordings
+                return JsonResponse({
+                    'success': True,
+                    'split': True,
+                    'original_duration': duration,
+                    'chunks_created': len(recordings_created),
+                    'recordings': [{
+                        'id': rec.id,
+                        'name': rec.name,
+                        'created_at': rec.created_at.isoformat()
+                    } for rec in recordings_created]
+                })
+
+            else:
+                # File is ≤ 60 seconds, create single recording
+                # Reset file pointer
+                wav_file.seek(0)
+
+                with transaction.atomic():
+                    recording = Recording.objects.create(
+                        name=name,
+                        description=description,
+                        wav_file=wav_file,
+                        location=location,
+                        recorded_date=parsed_date,
+                        species=species,
+                        project=project,
+                        group=user.profile.group,
+                        created_by=user,
+                        file_ready=True
+                    )
             
             # Process pickle file if provided
             segmentation_info = None
@@ -177,25 +252,33 @@ def upload_recording(request):
                     }
             else:
                 print("DEBUG: No pickle file provided in request")
-        
-        # Prepare response
-        response_data = {
-            'success': True,
-            'recording': {
-                'id': recording.id,
-                'name': recording.name,
-                'duration': recording.duration,
-                'species_name': recording.species.name,
-                'project_name': recording.project.name if recording.project else None,
-                'created_at': recording.created_at.isoformat()
+
+            # Prepare response (only for non-split files)
+            response_data = {
+                'success': True,
+                'split': False,
+                'recording': {
+                    'id': recording.id,
+                    'name': recording.name,
+                    'duration': recording.duration,
+                    'species_name': recording.species.name,
+                    'project_name': recording.project.name if recording.project else None,
+                    'created_at': recording.created_at.isoformat()
+                }
             }
-        }
-        
-        # Add segmentation info if pickle file was processed
-        if segmentation_info:
-            response_data['segmentation'] = segmentation_info
-            
-        return JsonResponse(response_data)
+
+            # Add segmentation info if pickle file was processed
+            if segmentation_info:
+                response_data['segmentation'] = segmentation_info
+
+            return JsonResponse(response_data)
+
+        finally:
+            # Clean up temporary file
+            try:
+                os.remove(temp_file_path)
+            except:
+                pass
         
     except Exception as e:
         return JsonResponse({

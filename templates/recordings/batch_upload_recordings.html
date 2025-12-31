@@ -71,6 +71,18 @@
                         <li>Files will be processed after upload completes</li>
                     </ul>
                 </div>
+
+                <!-- Split Long Files Option -->
+                <div class="mb-4">
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" name="split_long_files" id="split_long_files" checked>
+                        <label class="form-check-label" for="split_long_files">
+                            <strong>Automatically split files longer than 1 minute</strong>
+                            <br>
+                            <small class="text-muted">Recommended for better performance when viewing spectrograms. Files will be split into 1-minute chunks stored as separate recordings.</small>
+                        </label>
+                    </div>
+                </div>
                 
                 <div class="alert alert-info">
                     <i class="fas fa-info-circle"></i> The following metadata will be applied to all uploaded recordings.

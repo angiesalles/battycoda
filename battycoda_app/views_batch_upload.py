@@ -15,7 +15,7 @@ from django.db import transaction
 from django.shortcuts import redirect, render
 from django.utils import timezone
 
-from .audio.utils import process_pickle_file
+from .audio.utils import process_pickle_file, get_audio_duration, split_audio_file
 from .forms import RecordingForm
 from .models import Recording, Segment, Segmentation
 from .models.user import UserProfile
@@ -67,6 +67,10 @@ def batch_upload_recordings_view(request):
             success_count = 0
             error_count = 0
             segmented_count = 0
+            split_count = 0
+
+            # Check if user wants to split long files
+            split_long_files = request.POST.get('split_long_files') == 'on'
 
             # Processing uploads
 
@@ -134,103 +138,161 @@ def batch_upload_recordings_view(request):
 
                 # Process each WAV file
                 for wav_path in wav_files:
-                    # Open the file for Django to save
-                    with open(wav_path, "rb") as wav_file_obj:
-                        # Create a Django file object
+                    try:
                         wav_file_name = os.path.basename(wav_path)
-                        wav_file = SimpleUploadedFile(wav_file_name, wav_file_obj.read(), content_type="audio/wav")
+                        file_name = Path(wav_file_name).stem  # Get file name without extension
 
-                        with transaction.atomic():
-                            # Create a Recording object for this file
-                            file_name = Path(wav_file_name).stem  # Get file name without extension
+                        # Check duration and split if needed
+                        if split_long_files:
+                            try:
+                                duration = get_audio_duration(wav_path)
 
-                            # Use the file name directly as the recording name
-                            recording_name = file_name
+                                if duration > 60:
+                                    # Split the file
+                                    chunk_paths = split_audio_file(wav_path, chunk_duration_seconds=60)
 
-                            # Create the recording model instance
-                            recording = Recording(
-                                name=recording_name,  # Use file name as recording name
-                                wav_file=wav_file,
-                                recorded_date=recorded_date,
-                                location=location,
-                                equipment=equipment,
-                                environmental_conditions=environmental_conditions,
-                                species=species,
-                                project=project,
-                                group=profile.group,
-                                created_by=request.user,
-                            )
+                                    # Process each chunk
+                                    for i, chunk_path in enumerate(chunk_paths):
+                                        with open(chunk_path, "rb") as chunk_file_obj:
+                                            chunk_file_name = os.path.basename(chunk_path)
+                                            chunk_file = SimpleUploadedFile(
+                                                chunk_file_name,
+                                                chunk_file_obj.read(),
+                                                content_type="audio/wav"
+                                            )
 
-                            # Save the recording first without marking as ready
-                            recording.save()
-                            
-                            # Now mark as ready for processing and save again
-                            recording.file_ready = True
-                            recording.save(update_fields=["file_ready"])
+                                            with transaction.atomic():
+                                                # Create recording for chunk
+                                                chunk_recording_name = f"{file_name} (Part {i+1}/{len(chunk_paths)})"
 
-                            # Check if there's a matching pickle file
-                            pickle_filename = f"{wav_file_name}.pickle"
-                            pickle_path = pickle_files_dict.get(pickle_filename)
+                                                recording = Recording(
+                                                    name=chunk_recording_name,
+                                                    wav_file=chunk_file,
+                                                    recorded_date=recorded_date,
+                                                    location=location,
+                                                    equipment=equipment,
+                                                    environmental_conditions=environmental_conditions,
+                                                    species=species,
+                                                    project=project,
+                                                    group=profile.group,
+                                                    created_by=request.user,
+                                                )
+                                                recording.save()
+                                                recording.file_ready = True
+                                                recording.save(update_fields=["file_ready"])
 
-                            # Process pickle file if found
-                            if pickle_path:
-                                # Open and process the pickle file
-                                with open(pickle_path, "rb") as pickle_file_obj:
-                                    # Create a Django file object
-                                    pickle_file = SimpleUploadedFile(
-                                        pickle_filename,
-                                        pickle_file_obj.read(),
-                                        content_type="application/octet-stream",
-                                    )
+                                                success_count += 1
 
-                                    # Process the pickle file
-                                    onsets, offsets = process_pickle_file(pickle_file)
+                                    split_count += 1
 
-                                    # Create a new segmentation for this batch of segments
-                                    segmentation = Segmentation.objects.create(
-                                        recording=recording,
-                                        name="Batch Upload",
-                                        algorithm=None,  # No algorithm for uploaded pickles
-                                        status="completed",
-                                        progress=100,
-                                        manually_edited=False,
-                                        created_by=request.user,
-                                    )
+                                    # Clean up chunk files
+                                    for chunk_path in chunk_paths:
+                                        try:
+                                            os.remove(chunk_path)
+                                        except:
+                                            pass
 
-                                    # Create segments from the onset/offset pairs
-                                    segments_created = 0
-                                    for i in range(len(onsets)):
-                                        # Create segment name
-                                        segment_name = f"Segment {i+1}"
+                                    # Skip normal processing
+                                    continue
 
-                                        # Create and save the segment - linked to the new segmentation
-                                        segment = Segment(
+                            except Exception as duration_error:
+                                # If we can't check duration, fall back to normal processing
+                                pass
+
+                        # Normal processing (file ≤ 60s or splitting disabled)
+                        with open(wav_path, "rb") as wav_file_obj:
+                            wav_file = SimpleUploadedFile(wav_file_name, wav_file_obj.read(), content_type="audio/wav")
+
+                            with transaction.atomic():
+                                recording_name = file_name
+
+                                recording = Recording(
+                                    name=recording_name,
+                                    wav_file=wav_file,
+                                    recorded_date=recorded_date,
+                                    location=location,
+                                    equipment=equipment,
+                                    environmental_conditions=environmental_conditions,
+                                    species=species,
+                                    project=project,
+                                    group=profile.group,
+                                    created_by=request.user,
+                                )
+
+                                recording.save()
+                                recording.file_ready = True
+                                recording.save(update_fields=["file_ready"])
+
+                                # Check if there's a matching pickle file
+                                pickle_filename = f"{wav_file_name}.pickle"
+                                pickle_path = pickle_files_dict.get(pickle_filename)
+
+                                # Process pickle file if found
+                                if pickle_path:
+                                    # Open and process the pickle file
+                                    with open(pickle_path, "rb") as pickle_file_obj:
+                                        # Create a Django file object
+                                        pickle_file = SimpleUploadedFile(
+                                            pickle_filename,
+                                            pickle_file_obj.read(),
+                                            content_type="application/octet-stream",
+                                        )
+
+                                        # Process the pickle file
+                                        onsets, offsets = process_pickle_file(pickle_file)
+
+                                        # Create a new segmentation for this batch of segments
+                                        segmentation = Segmentation.objects.create(
                                             recording=recording,
-                                            segmentation=segmentation,
-                                            name=segment_name,
-                                            onset=onsets[i],
-                                            offset=offsets[i],
+                                            name="Batch Upload",
+                                            algorithm=None,  # No algorithm for uploaded pickles
+                                            status="completed",
+                                            progress=100,
+                                            manually_edited=False,
                                             created_by=request.user,
                                         )
-                                        segment.save(
-                                            manual_edit=False
-                                        )  # Don't mark as manually edited for automated uploads
-                                        segments_created += 1
 
-                                    # Update segment count on the segmentation
-                                    segmentation.segments_created = segments_created
-                                    segmentation.save()
+                                        # Create segments from the onset/offset pairs
+                                        segments_created = 0
+                                        for i in range(len(onsets)):
+                                            # Create segment name
+                                            segment_name = f"Segment {i+1}"
 
-                                    if segments_created > 0:
-                                        segmented_count += 1
-                            
-                            success_count += 1
+                                            # Create and save the segment - linked to the new segmentation
+                                            segment = Segment(
+                                                recording=recording,
+                                                segmentation=segmentation,
+                                                name=segment_name,
+                                                onset=onsets[i],
+                                                offset=offsets[i],
+                                                created_by=request.user,
+                                            )
+                                            segment.save(
+                                                manual_edit=False
+                                            )  # Don't mark as manually edited for automated uploads
+                                            segments_created += 1
+
+                                        # Update segment count on the segmentation
+                                        segmentation.segments_created = segments_created
+                                        segmentation.save()
+
+                                        if segments_created > 0:
+                                            segmented_count += 1
+
+                                success_count += 1
+
+                    except Exception as e:
+                        error_count += 1
+                        import traceback
+                        traceback.print_exc()
 
             # Upload complete
 
             # Success message
             if success_count > 0:
                 success_msg = f"Successfully uploaded {success_count} recordings"
+                if split_count > 0:
+                    success_msg += f" ({split_count} files split into 1-minute chunks)"
                 if segmented_count > 0:
                     success_msg += f" with {segmented_count} segmented automatically from pickle files"
                 messages.success(request, success_msg)

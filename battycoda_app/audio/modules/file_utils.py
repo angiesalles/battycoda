@@ -5,6 +5,7 @@ Utility functions for file handling and caching in BattyCoda audio processing.
 import os
 import pickle
 import logging
+import tempfile
 
 from django.conf import settings
 
@@ -167,3 +168,90 @@ def process_pickle_file(pickle_file, max_duration=None):
             import traceback
             logging.error(f"Error processing pickle file '{os.path.basename(filename)}': {str(e)}\n{traceback.format_exc()}")
             raise Exception(f"Error processing pickle file '{os.path.basename(filename)}': {str(e)}") from e
+
+
+def get_audio_duration(audio_file_path):
+    """
+    Get the duration of an audio file in seconds.
+
+    Args:
+        audio_file_path: Path to the audio file
+
+    Returns:
+        float: Duration in seconds
+
+    Raises:
+        Exception: If the file cannot be read
+    """
+    import soundfile as sf
+
+    try:
+        info = sf.info(audio_file_path)
+        return info.duration
+    except Exception as e:
+        raise Exception(f"Error getting audio duration: {str(e)}") from e
+
+
+def split_audio_file(audio_file_path, chunk_duration_seconds=60):
+    """
+    Split an audio file into chunks of specified duration.
+
+    Args:
+        audio_file_path: Path to the audio file to split
+        chunk_duration_seconds: Duration of each chunk in seconds (default: 60)
+
+    Returns:
+        list: List of paths to the chunk files (temporary files that should be cleaned up by caller)
+
+    Raises:
+        Exception: If the file cannot be split
+    """
+    import soundfile as sf
+    import numpy as np
+
+    try:
+        # Read the audio file
+        data, samplerate = sf.read(audio_file_path)
+
+        # Calculate total duration and number of chunks needed
+        total_duration = len(data) / samplerate
+        num_chunks = int(np.ceil(total_duration / chunk_duration_seconds))
+
+        # Calculate samples per chunk
+        samples_per_chunk = int(chunk_duration_seconds * samplerate)
+
+        # Create temporary directory for chunks
+        temp_dir = tempfile.mkdtemp()
+        chunk_paths = []
+
+        # Get the original filename for naming chunks
+        original_name = os.path.splitext(os.path.basename(audio_file_path))[0]
+
+        # Split into chunks
+        for i in range(num_chunks):
+            start_sample = i * samples_per_chunk
+            end_sample = min((i + 1) * samples_per_chunk, len(data))
+
+            # Extract chunk data
+            if len(data.shape) > 1:
+                # Multi-channel audio
+                chunk_data = data[start_sample:end_sample, :]
+            else:
+                # Mono audio
+                chunk_data = data[start_sample:end_sample]
+
+            # Create chunk filename
+            chunk_filename = f"{original_name}_chunk_{i+1:03d}.wav"
+            chunk_path = os.path.join(temp_dir, chunk_filename)
+
+            # Write chunk to file
+            sf.write(chunk_path, chunk_data, samplerate)
+            chunk_paths.append(chunk_path)
+
+            logging.info(f"Created chunk {i+1}/{num_chunks}: {chunk_filename} ({len(chunk_data)/samplerate:.2f}s)")
+
+        return chunk_paths
+
+    except Exception as e:
+        logging.error(f"Error splitting audio file: {str(e)}")
+        raise Exception(f"Error splitting audio file: {str(e)}") from e
