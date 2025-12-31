@@ -50,6 +50,10 @@ app.conf.beat_schedule = {
         'task': 'battycoda_app.tasks.backup_database_to_s3',
         'schedule': 604800.0,  # Run every week (7 days * 24 hours * 60 minutes * 60 seconds)
     },
+    'check-disk-usage': {
+        'task': 'battycoda_app.tasks.check_disk_usage',
+        'schedule': 3600.0,  # Run every hour
+    },
 }
 app.conf.timezone = 'UTC'
 

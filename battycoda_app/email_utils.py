@@ -268,6 +268,108 @@ def send_worker_failure_email(service_name, failure_reason=None, hostname=None):
     )
 
 
+def send_disk_usage_warning_email(disk_info, threshold=90, hostname=None):
+    """
+    Send an email notification when disk usage exceeds threshold.
+
+    Args:
+        disk_info (list): List of dicts with 'mount', 'total', 'used', 'free', 'percent' keys
+        threshold (int): Percentage threshold that triggered the warning
+        hostname (str, optional): Hostname of the server
+
+    Returns:
+        bool: True if email was sent successfully, False otherwise
+    """
+    from django.conf import settings
+    import datetime
+
+    subject = f"[BattyCoda ALERT] Disk usage exceeds {threshold}%"
+
+    if hostname is None:
+        import socket
+        hostname = socket.gethostname()
+
+    timestamp = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+
+    # Build plain text message
+    disk_lines = []
+    for disk in disk_info:
+        disk_lines.append(
+            f"  {disk['mount']}: {disk['percent']}% used "
+            f"({disk['used']} / {disk['total']}, {disk['free']} free)"
+        )
+    disk_text = "\n".join(disk_lines)
+
+    message = (
+        f"BattyCoda Disk Usage Warning\n"
+        f"=============================\n\n"
+        f"Server: {hostname}\n"
+        f"Time: {timestamp}\n"
+        f"Threshold: {threshold}%\n\n"
+        f"Disks exceeding threshold:\n"
+        f"{disk_text}\n\n"
+        f"Please free up disk space to avoid service disruption.\n"
+    )
+
+    # Build HTML message
+    disk_rows = ""
+    for disk in disk_info:
+        color = "#dc3545" if disk['percent'] >= 95 else "#ffc107"
+        disk_rows += f"""
+            <tr>
+                <td style="padding: 8px; border: 1px solid #ddd;">{disk['mount']}</td>
+                <td style="padding: 8px; border: 1px solid #ddd; color: {color}; font-weight: bold;">{disk['percent']}%</td>
+                <td style="padding: 8px; border: 1px solid #ddd;">{disk['used']} / {disk['total']}</td>
+                <td style="padding: 8px; border: 1px solid #ddd;">{disk['free']}</td>
+            </tr>
+        """
+
+    html_message = f"""
+    <html>
+    <body>
+        <h2 style="color: #ffc107;">BattyCoda Disk Usage Warning</h2>
+        <table style="border-collapse: collapse; margin: 20px 0;">
+            <tr>
+                <td style="padding: 8px; border: 1px solid #ddd; font-weight: bold;">Server</td>
+                <td style="padding: 8px; border: 1px solid #ddd;">{hostname}</td>
+            </tr>
+            <tr>
+                <td style="padding: 8px; border: 1px solid #ddd; font-weight: bold;">Time</td>
+                <td style="padding: 8px; border: 1px solid #ddd;">{timestamp}</td>
+            </tr>
+            <tr>
+                <td style="padding: 8px; border: 1px solid #ddd; font-weight: bold;">Threshold</td>
+                <td style="padding: 8px; border: 1px solid #ddd;">{threshold}%</td>
+            </tr>
+        </table>
+        <h3>Disks Exceeding Threshold</h3>
+        <table style="border-collapse: collapse; margin: 20px 0;">
+            <tr style="background: #f5f5f5;">
+                <th style="padding: 8px; border: 1px solid #ddd;">Mount Point</th>
+                <th style="padding: 8px; border: 1px solid #ddd;">Usage</th>
+                <th style="padding: 8px; border: 1px solid #ddd;">Used / Total</th>
+                <th style="padding: 8px; border: 1px solid #ddd;">Free</th>
+            </tr>
+            {disk_rows}
+        </table>
+        <p style="color: #dc3545; font-weight: bold;">Please free up disk space to avoid service disruption.</p>
+    </body>
+    </html>
+    """
+
+    admin_emails = [email for name, email in getattr(settings, 'ADMINS', [])]
+
+    if not admin_emails:
+        return False
+
+    return send_mail(
+        subject=subject,
+        message=message,
+        recipient_list=admin_emails,
+        html_message=html_message
+    )
+
+
 def send_password_reset_email(user, token, expires_at):
     """
     Send a password reset email to a user.

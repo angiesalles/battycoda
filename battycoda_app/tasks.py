@@ -152,3 +152,107 @@ def backup_database_to_s3(self, bucket_name=None, prefix=None):
         # Retry the task with exponential backoff
         retry_delay = 60 * (2 ** self.request.retries)  # 60s, 120s, 240s
         raise self.retry(exc=exc, countdown=retry_delay)
+
+
+# Cache for tracking last alert time to avoid spamming
+_last_disk_alert_time = None
+
+
+@shared_task
+def check_disk_usage(threshold=90, cooldown_hours=4):
+    """
+    Check disk usage and send email alert if any disk exceeds threshold.
+
+    Args:
+        threshold (int): Percentage threshold to trigger alert (default: 90)
+        cooldown_hours (int): Hours to wait between alerts (default: 4)
+
+    Returns:
+        dict: Status information about the check
+    """
+    import shutil
+    import datetime
+
+    global _last_disk_alert_time
+
+    from .email_utils import send_disk_usage_warning_email
+
+    def format_bytes(bytes_val):
+        """Format bytes to human readable string."""
+        for unit in ['B', 'KB', 'MB', 'GB', 'TB']:
+            if bytes_val < 1024:
+                return f"{bytes_val:.1f} {unit}"
+            bytes_val /= 1024
+        return f"{bytes_val:.1f} PB"
+
+    # Define mount points to check
+    mount_points = ['/', '/home']
+
+    disks_over_threshold = []
+    all_disk_info = []
+
+    for mount in mount_points:
+        try:
+            usage = shutil.disk_usage(mount)
+            percent = (usage.used / usage.total) * 100
+
+            disk_info = {
+                'mount': mount,
+                'total': format_bytes(usage.total),
+                'used': format_bytes(usage.used),
+                'free': format_bytes(usage.free),
+                'percent': round(percent, 1)
+            }
+            all_disk_info.append(disk_info)
+
+            if percent >= threshold:
+                disks_over_threshold.append(disk_info)
+                logger.warning(f"Disk {mount} usage is {percent:.1f}% (threshold: {threshold}%)")
+            else:
+                logger.info(f"Disk {mount} usage is {percent:.1f}% (OK)")
+
+        except (OSError, FileNotFoundError) as e:
+            logger.error(f"Could not check disk usage for {mount}: {e}")
+
+    # Send alert if any disk exceeds threshold
+    if disks_over_threshold:
+        now = datetime.datetime.now()
+
+        # Check cooldown to avoid spamming
+        should_send = True
+        if _last_disk_alert_time:
+            time_since_last = now - _last_disk_alert_time
+            if time_since_last.total_seconds() < cooldown_hours * 3600:
+                should_send = False
+                logger.info(
+                    f"Disk alert suppressed (cooldown: {cooldown_hours}h, "
+                    f"last alert: {_last_disk_alert_time.isoformat()})"
+                )
+
+        if should_send:
+            success = send_disk_usage_warning_email(
+                disk_info=disks_over_threshold,
+                threshold=threshold
+            )
+            if success:
+                _last_disk_alert_time = now
+                logger.info(f"Disk usage alert sent for {len(disks_over_threshold)} disk(s)")
+            else:
+                logger.error("Failed to send disk usage alert email")
+
+            return {
+                'status': 'alert_sent' if success else 'alert_failed',
+                'disks_over_threshold': disks_over_threshold,
+                'all_disks': all_disk_info
+            }
+        else:
+            return {
+                'status': 'alert_suppressed',
+                'disks_over_threshold': disks_over_threshold,
+                'all_disks': all_disk_info
+            }
+
+    return {
+        'status': 'ok',
+        'all_disks': all_disk_info
+    }
