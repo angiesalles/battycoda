@@ -1,11 +1,26 @@
 import os
 
 from celery import Celery
+from celery.signals import worker_ready, worker_shutdown
 
 # Set the default Django settings module for the 'celery' program.
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "config.settings")
 
 app = Celery("battycoda")
+
+
+@worker_ready.connect
+def start_memory_monitor_on_worker_ready(**kwargs):
+    """Start memory monitor when Celery worker is ready."""
+    from battycoda_app.celery_memory_monitor import start_memory_monitor
+    start_memory_monitor()
+
+
+@worker_shutdown.connect
+def stop_memory_monitor_on_shutdown(**kwargs):
+    """Stop memory monitor when Celery worker shuts down."""
+    from battycoda_app.celery_memory_monitor import stop_memory_monitor
+    stop_memory_monitor()
 
 # Using a string here means the worker doesn't have to serialize
 # the configuration object to child processes.

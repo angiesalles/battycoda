@@ -257,9 +257,9 @@ def run_call_classification(self, classification_run_id):
             total_segments = segments.count()
             segment_list = list(segments)
 
-            all_classification_results = []
             all_features_files = []
             all_segment_metadata = {}
+            total_saved = 0
 
             model_path = None
             model_path_for_r_server = None
@@ -293,51 +293,50 @@ def run_call_classification(self, classification_run_id):
                     service_url, endpoint, model_path_for_r_server, start_idx
                 )
 
-                all_classification_results.extend(batch_results)
                 all_segment_metadata.update(segment_map)
 
                 if features_file:
                     all_features_files.append(features_file)
 
-                batch_progress = 90 * ((batch_index + 1) / num_batches)
-                update_classification_run_status(classification_run, status="in_progress", progress=batch_progress)
+                # Save batch results immediately to avoid memory buildup
+                with transaction.atomic():
+                    for segment_id, result_data, _ in batch_results:
+                        segment = segments.get(id=segment_id)
 
-            combined_features_path = combine_features_files(all_features_files, all_segment_metadata, classification_run)
-
-            print(f"Processing {len(all_classification_results)} total classification results...")
-
-            with transaction.atomic():
-                for i, (segment_id, result_data, _) in enumerate(all_classification_results):
-                    segment = segments.get(id=segment_id)
-
-                    result = ClassificationResult.objects.create(classification_run=classification_run, segment=segment)
-
-                    predicted_class = result_data.get('predicted_class')
-                    class_probabilities = result_data.get('class_probabilities', {})
-
-                    for call in calls:
-                        if call.short_name not in class_probabilities:
-                            probability = 0.0
-                        else:
-                            probability = class_probabilities[call.short_name]
-                            if not isinstance(probability, (int, float)):
-                                if isinstance(probability, list) and len(probability) == 1 and isinstance(probability[0], (int, float)):
-                                    probability = probability[0]
-                                else:
-                                    probability = 0.0
-
-                        prob_value = probability / 100.0
-                        prob_value = max(0.0, min(1.0, float(prob_value)))
-
-                        CallProbability.objects.create(
-                            classification_result=result,
-                            call=call,
-                            probability=prob_value
+                        result = ClassificationResult.objects.create(
+                            classification_run=classification_run, segment=segment
                         )
 
-                    if i % 20 == 0 or i == len(all_classification_results) - 1:
-                        save_progress = 90 + 10 * (i / len(all_classification_results))
-                        update_classification_run_status(classification_run, status="in_progress", progress=save_progress)
+                        class_probabilities = result_data.get('class_probabilities', {})
+
+                        for call in calls:
+                            if call.short_name not in class_probabilities:
+                                probability = 0.0
+                            else:
+                                probability = class_probabilities[call.short_name]
+                                if not isinstance(probability, (int, float)):
+                                    if isinstance(probability, list) and len(probability) == 1 and isinstance(probability[0], (int, float)):
+                                        probability = probability[0]
+                                    else:
+                                        probability = 0.0
+
+                            prob_value = probability / 100.0
+                            prob_value = max(0.0, min(1.0, float(prob_value)))
+
+                            CallProbability.objects.create(
+                                classification_result=result,
+                                call=call,
+                                probability=prob_value
+                            )
+
+                        total_saved += 1
+
+                # Update progress after each batch is saved
+                batch_progress = 100 * ((batch_index + 1) / num_batches)
+                update_classification_run_status(classification_run, status="in_progress", progress=batch_progress)
+                print(f"Batch {batch_index + 1}/{num_batches} complete: {total_saved}/{total_segments} results saved")
+
+            combined_features_path = combine_features_files(all_features_files, all_segment_metadata, classification_run)
 
             if combined_features_path and os.path.exists(combined_features_path):
                 classification_run.features_file = combined_features_path
