@@ -58,7 +58,15 @@
                             {% for run in clustering_runs %}
                             <tr>
                                 <td><a href="{% url 'battycoda_app:clustering_run_detail' run_id=run.id %}">{{ run.name }}</a></td>
-                                <td>{{ run.recording.name }}</td>
+                                <td>
+                                    {% if run.scope == 'project' %}
+                                        <i class="fa fa-folder-open text-muted"></i>
+                                        {{ run.project.name }}
+                                        <small class="text-muted">(Project)</small>
+                                    {% else %}
+                                        {{ run.recording.name }}
+                                    {% endif %}
+                                </td>
                                 <td>{{ run.algorithm.name }}</td>
                                 <td>
                                     <span class="badge 

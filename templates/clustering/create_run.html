@@ -51,12 +51,34 @@
                         <h5 class="text-primary border-bottom pb-2 mb-3">
                             <i class="fas fa-database me-2"></i>Data Selection
                         </h5>
-                        
+
+                        <!-- Scope Selection -->
                         <div class="form-group mb-3">
+                            <label class="form-label fw-bold">Clustering Scope <span class="text-danger">*</span></label>
+                            <div class="btn-group w-100" role="group">
+                                <input type="radio" class="btn-check" name="scope" id="scope_segmentation"
+                                       value="segmentation" checked autocomplete="off">
+                                <label class="btn btn-outline-primary" for="scope_segmentation">
+                                    <i class="fas fa-file-audio me-2"></i>Single Recording
+                                </label>
+
+                                <input type="radio" class="btn-check" name="scope" id="scope_project"
+                                       value="project" autocomplete="off">
+                                <label class="btn btn-outline-primary" for="scope_project">
+                                    <i class="fas fa-folder-open me-2"></i>Entire Project
+                                </label>
+                            </div>
+                            <small class="form-text text-muted">
+                                Choose whether to cluster segments from a single recording or all recordings in a project.
+                            </small>
+                        </div>
+
+                        <!-- Single Segmentation Selection (shown when scope=segmentation) -->
+                        <div class="form-group mb-3" id="segmentation_group">
                             <label for="segmentation" class="form-label fw-bold">
                                 Segmentation <span class="text-danger">*</span>
                             </label>
-                            <select class="form-control form-control-lg" id="segmentation" name="segmentation" required>
+                            <select class="form-control form-control-lg" id="segmentation" name="segmentation">
                                 <option value="">Select a segmentation...</option>
                                 {% for seg in segmentations %}
                                 <option value="{{ seg.id }}">
@@ -68,6 +90,67 @@
                             <small class="form-text text-muted">
                                 Select the segmentation containing the segments you want to cluster.
                             </small>
+                        </div>
+
+                        <!-- Project Selection (shown when scope=project) -->
+                        <div id="project_group" style="display: none;">
+                            <div class="form-group mb-3">
+                                <label for="project" class="form-label fw-bold">
+                                    Project <span class="text-danger">*</span>
+                                </label>
+                                <select class="form-control form-control-lg" id="project" name="project">
+                                    <option value="">Select a project...</option>
+                                    {% for proj in projects %}
+                                    <option value="{{ proj.id }}">
+                                        {{ proj.name }} ({{ proj.recordings.count }} recordings)
+                                    </option>
+                                    {% endfor %}
+                                </select>
+                                <small class="form-text text-muted">
+                                    Select the project containing recordings you want to cluster.
+                                </small>
+                            </div>
+
+                            <!-- Species Selector (shown when project has multiple species) -->
+                            <div id="species_group" class="form-group mb-3" style="display: none;">
+                                <label for="species" class="form-label fw-bold text-warning">
+                                    <i class="fas fa-exclamation-triangle me-1"></i>
+                                    Species Selection Required <span class="text-danger">*</span>
+                                </label>
+                                <p class="text-muted small mb-2">
+                                    This project contains multiple species. Clustering different species
+                                    together produces meaningless results. Please select one species:
+                                </p>
+                                <select class="form-control form-control-lg" id="species" name="species">
+                                    <option value="">Select a species...</option>
+                                </select>
+                            </div>
+
+                            <!-- Project Info Box -->
+                            <div id="project_info" class="alert alert-info" style="display: none;">
+                                <strong><i class="fas fa-info-circle me-1"></i>Selected:</strong>
+                                <span id="project_species_name"></span> -
+                                <span id="project_recording_count">0</span> recordings with
+                                <span id="project_segment_count">0</span> total segments
+                            </div>
+
+                            <!-- Large Project Warning -->
+                            <div id="project_warning" class="alert alert-warning" style="display: none;">
+                                <i class="fas fa-clock me-1"></i>
+                                <strong>Large dataset!</strong> Processing may take 10-30 minutes.
+                            </div>
+
+                            <!-- Batch Size (for project-level) -->
+                            <div class="form-group mb-3" id="batch_size_group">
+                                <label for="batch_size" class="form-label fw-bold">
+                                    Batch Size
+                                </label>
+                                <input type="number" class="form-control" id="batch_size" name="batch_size"
+                                       value="500" min="100" max="2000">
+                                <small class="form-text text-muted">
+                                    Number of segments to process at once. Lower values use less memory but may take longer.
+                                </small>
+                            </div>
                         </div>
                     </div>
                     
@@ -162,26 +245,117 @@
 // Wait for jQuery to be available
 $(document).ready(function() {
     console.log('jQuery is ready, clustering script loaded');
-    console.log('Algorithm select element:', $('#algorithm').length);
-    console.log('Clusters group element:', $('#n_clusters_group').length);
-    
+
+    // Toggle scope sections
+    $('input[name="scope"]').change(function() {
+        const scope = $(this).val();
+        console.log('Scope changed to:', scope);
+
+        if (scope === 'segmentation') {
+            $('#segmentation_group').slideDown(300);
+            $('#project_group').slideUp(300);
+            $('#segmentation').attr('required', true);
+            $('#project').attr('required', false);
+            $('#species').attr('required', false);
+        } else {
+            $('#segmentation_group').slideUp(300);
+            $('#project_group').slideDown(300);
+            $('#segmentation').attr('required', false);
+            $('#project').attr('required', true);
+            // Species required only if multiple species
+        }
+    });
+
+    // Fetch project segment count when project is selected
+    $('#project').change(function() {
+        const projectId = $(this).val();
+        console.log('Project selected:', projectId);
+
+        // Reset displays
+        $('#species_group').hide();
+        $('#project_info').hide();
+        $('#project_warning').hide();
+        $('#species').empty().append('<option value="">Select a species...</option>');
+
+        if (!projectId) return;
+
+        $.get(`{% url 'battycoda_app:get_project_segment_count' project_id=0 %}`.replace('/0/', '/' + projectId + '/'), function(data) {
+            console.log('Project data:', data);
+
+            // Show species selector if multiple species
+            if (data.species && data.species.length > 1) {
+                $('#species_group').slideDown(300);
+                $('#species').attr('required', true);
+                data.species.forEach(function(s) {
+                    $('#species').append(
+                        `<option value="${s.id}">${s.name} (${s.recording_count} recordings, ${s.segment_count} segments)</option>`
+                    );
+                });
+                // Don't show info yet - wait for species selection
+            } else if (data.species && data.species.length === 1) {
+                // Single species - auto-select and show info
+                $('#species_group').hide();
+                $('#species').attr('required', false);
+                $('#project_species_name').text(data.species[0].name);
+                $('#project_recording_count').text(data.species[0].recording_count);
+                $('#project_segment_count').text(data.species[0].segment_count);
+                $('#project_info').slideDown(300);
+
+                if (data.species[0].segment_count > 5000) {
+                    $('#project_warning').slideDown(300);
+                }
+            }
+        }).fail(function(xhr) {
+            console.error('Failed to fetch project data:', xhr);
+            if (xhr.status === 403) {
+                alert('You do not have permission to access this project.');
+            }
+        });
+    });
+
+    // Update counts when species is selected
+    $('#species').change(function() {
+        const projectId = $('#project').val();
+        const speciesId = $(this).val();
+        console.log('Species selected:', speciesId);
+
+        if (!projectId || !speciesId) {
+            $('#project_info').hide();
+            $('#project_warning').hide();
+            return;
+        }
+
+        $.get(`{% url 'battycoda_app:get_project_segment_count' project_id=0 %}`.replace('/0/', '/' + projectId + '/') + '?species=' + speciesId, function(data) {
+            console.log('Species data:', data);
+            $('#project_species_name').text(data.species_name);
+            $('#project_recording_count').text(data.recording_count);
+            $('#project_segment_count').text(data.segment_count);
+            $('#project_info').slideDown(300);
+
+            if (data.warning) {
+                $('#project_warning').slideDown(300);
+            } else {
+                $('#project_warning').hide();
+            }
+        });
+    });
+
     // Show/hide number of clusters field based on algorithm type with smooth animation
     $('#algorithm').change(function() {
         const selectedOption = $(this).find(':selected');
         const isManual = selectedOption.data('manual');
-        
+
         console.log('Algorithm changed:', {
             value: selectedOption.val(),
             name: selectedOption.data('name'),
             type: selectedOption.data('type'),
             isManual: isManual
         });
-        
+
         if (isManual === true || isManual === 'true') {
             console.log('Showing clusters field');
             $('#n_clusters_group').slideDown(300);
             $('#n_clusters').attr('required', true);
-            // Add visual emphasis
             $('#n_clusters_group').addClass('border-start border-primary border-3 ps-3');
         } else {
             console.log('Hiding clusters field');
@@ -190,7 +364,7 @@ $(document).ready(function() {
             $('#n_clusters_group').removeClass('border-start border-primary border-3 ps-3');
         }
     });
-    
+
     // Form validation feedback
     $('form').on('submit', function() {
         $(this).find('button[type="submit"]').html('<i class="fas fa-spinner fa-spin me-2"></i>Creating Run...');

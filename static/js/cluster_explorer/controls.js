@@ -1,33 +1,4 @@
 // UI controls
-                if (cluster) {
-                    cluster.label = label;
-                    cluster.description = description;
-                    cluster.is_labeled = !!label;
-                }
-                
-                // Update the visualization
-                initializeVisualization();
-                
-                // Show a success message
-                toastr.success('Cluster label updated successfully');
-                
-                // Select the cluster again to refresh the view
-                selectCluster(selectedClusterId);
-            } else {
-                toastr.error(`Failed to update label: ${data.message}`);
-            }
-        },
-        error: function() {
-            toastr.error('Failed to update cluster label. Please try again.');
-        },
-        complete: function() {
-            // Restore the button
-            saveBtn.html(originalText);
-            saveBtn.attr('disabled', false);
-        }
-    });
-}
-
 /**
  * Load segment details
  */
@@ -40,7 +11,7 @@ function loadSegmentDetails(segmentId) {
     $('.segment-onset').text('Loading...');
     $('.segment-offset').text('Loading...');
     $('.segment-duration').text('Loading...');
-    
+
     // Load the segment details from the API
     $.getJSON(`/clustering/get-segment-data/?segment_id=${segmentId}`, function(data) {
         if (data.status === 'success') {
@@ -50,12 +21,12 @@ function loadSegmentDetails(segmentId) {
             $('.segment-onset').text(data.onset.toFixed(4));
             $('.segment-offset').text(data.offset.toFixed(4));
             $('.segment-duration').text(data.duration.toFixed(4));
-            
+
             // Update spectrogram
             $('.segment-spectrogram').html(`
                 <img src="${data.spectrogram_url}" class="img-fluid" alt="Segment Spectrogram">
             `);
-            
+
             // Update audio player
             $('.segment-audio-player').attr('src', data.audio_url);
         } else {
@@ -66,3 +37,33 @@ function loadSegmentDetails(segmentId) {
         $('.segment-spectrogram').html('<div class="alert alert-danger">Failed to load segment. Please try again.</div>');
     });
 }
+
+/**
+ * Initialize event handlers
+ */
+$(document).ready(function() {
+    // Handle save button click
+    $('#save-cluster-label').click(function() {
+        saveClusterLabel();
+    });
+
+    // Handle segment view button click
+    $(document).on('click', '.view-segment-btn', function() {
+        const segmentId = $(this).data('segment-id');
+        loadSegmentDetails(segmentId);
+    });
+
+    // Handle point size changes
+    $('#point-size').on('input', function() {
+        const size = parseInt($(this).val());
+        d3.selectAll('.cluster-point')
+            .attr('r', d => d.id === selectedClusterId ? size * 1.5 : size);
+    });
+
+    // Handle opacity changes
+    $('#cluster-opacity').on('input', function() {
+        const opacity = parseFloat($(this).val());
+        d3.selectAll('.cluster-point')
+            .attr('opacity', opacity);
+    });
+});

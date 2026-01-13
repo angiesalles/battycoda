@@ -30,16 +30,32 @@ def export_clusters(request, run_id):
 
     clusters = Cluster.objects.filter(clustering_run=clustering_run).order_by('cluster_id')
 
+    # Include segment__segmentation__recording for project-level runs
     segment_clusters = SegmentCluster.objects.filter(
         cluster__clustering_run=clustering_run
-    ).select_related('segment', 'cluster')
+    ).select_related('segment', 'segment__segmentation__recording', 'cluster')
 
-    csv_data = "segment_id,segment_onset,segment_offset,cluster_id,cluster_label,confidence\n"
+    # Include recording columns for project-level runs
+    is_project_scope = clustering_run.scope == 'project'
+
+    if is_project_scope:
+        csv_data = "segment_id,recording_id,recording_name,segment_onset,segment_offset,cluster_id,cluster_label,confidence\n"
+    else:
+        csv_data = "segment_id,segment_onset,segment_offset,cluster_id,cluster_label,confidence\n"
+
     for sc in segment_clusters:
         segment = sc.segment
         cluster = sc.cluster
-        csv_data += f"{segment.id},{segment.onset},{segment.offset},{cluster.cluster_id},"
-        csv_data += f"\"{cluster.label or ''}\",{sc.confidence}\n"
+        if is_project_scope:
+            recording = segment.segmentation.recording if segment.segmentation else None
+            recording_id = recording.id if recording else ''
+            recording_name = recording.name if recording else ''
+            csv_data += f"{segment.id},{recording_id},\"{recording_name}\","
+            csv_data += f"{segment.onset},{segment.offset},{cluster.cluster_id},"
+            csv_data += f"\"{cluster.label or ''}\",{sc.confidence}\n"
+        else:
+            csv_data += f"{segment.id},{segment.onset},{segment.offset},{cluster.cluster_id},"
+            csv_data += f"\"{cluster.label or ''}\",{sc.confidence}\n"
 
     response = HttpResponse(csv_data, content_type='text/csv')
     response['Content-Disposition'] = f'attachment; filename="clusters_{run_id}.csv"'

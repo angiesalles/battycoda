@@ -38,6 +38,7 @@ try:
     from .clustering import (
         ClusteringAlgorithm,
         ClusteringRun,
+        ClusteringRunSegmentation,
         Cluster,
         SegmentCluster,
         ClusterCallMapping

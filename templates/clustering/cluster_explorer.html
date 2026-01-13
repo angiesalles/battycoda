@@ -159,6 +159,7 @@
                                                 <thead>
                                                     <tr>
                                                         <th>Segment ID</th>
+                                                        {% if is_project_scope %}<th>Recording</th>{% endif %}
                                                         <th>Onset</th>
                                                         <th>Offset</th>
                                                         <th>Duration</th>
@@ -241,6 +242,7 @@
 <script>
 // Store clustering run ID for API calls
 const clusteringRunId = {{ clustering_run.id }};
+const isProjectScope = {% if is_project_scope %}true{% else %}false{% endif %};
 let clusters = [];
 
 // Retrieve clusters from the backend

@@ -17,9 +17,11 @@ urlpatterns = [
     path("clustering/export/<int:run_id>/", views_clustering.export_clusters, name="export_clusters"),
     path("clustering/export-mappings/<int:run_id>/", views_clustering.export_mappings, name="export_mappings"),
     path("clustering/get-cluster-data/", views_clustering.get_cluster_data, name="get_cluster_data"),
+    path("clustering/get-cluster-members/", views_clustering.get_cluster_members, name="get_cluster_members"),
     path("clustering/update-cluster-label/", views_clustering.update_cluster_label, name="update_cluster_label"),
     path("clustering/create-mapping/", views_clustering.create_cluster_mapping, name="create_cluster_mapping"),
     path("clustering/delete-mapping/", views_clustering.delete_cluster_mapping, name="delete_cluster_mapping"),
     path("clustering/update-mapping-confidence/", views_clustering.update_mapping_confidence, name="update_mapping_confidence"),
     path("clustering/get-segment-data/", views_clustering.get_segment_data, name="get_segment_data"),
+    path("clustering/project-segments/<int:project_id>/", views_clustering.get_project_segment_count, name="get_project_segment_count"),
 ]

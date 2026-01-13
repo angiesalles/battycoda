@@ -50,8 +50,32 @@
                                 <td>{{ clustering_run.description|default:"No description provided" }}</td>
                             </tr>
                             <tr>
-                                <th>Recording</th>
-                                <td>{{ clustering_run.recording.name }}</td>
+                                <th>Scope</th>
+                                <td>
+                                    {% if clustering_run.scope == 'project' %}
+                                        <span class="badge badge-info">Project-wide</span>
+                                    {% else %}
+                                        <span class="badge badge-secondary">Single Recording</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            <tr>
+                                <th>Source</th>
+                                <td>
+                                    {% if clustering_run.scope == 'project' %}
+                                        <i class="fa fa-folder-open text-primary"></i>
+                                        {{ clustering_run.project.name }}
+                                        <br>
+                                        <small class="text-muted">
+                                            Species: {{ clustering_run.species.name }}<br>
+                                            {% if clustering_run.included_segmentations.count %}
+                                            Recordings: {{ clustering_run.included_segmentations.count }}
+                                            {% endif %}
+                                        </small>
+                                    {% else %}
+                                        {{ clustering_run.recording.name }}
+                                    {% endif %}
+                                </td>
                             </tr>
                             <tr>
                                 <th>Status</th>
@@ -117,13 +141,19 @@
                     <div class="col-12">
                         <h4>Progress</h4>
                         <div class="progress" style="height: 25px;">
-                            <div class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar" 
-                                style="width: {{ clustering_run.progress }}%;" 
+                            <div class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar"
+                                style="width: {{ clustering_run.progress }}%;"
                                 aria-valuenow="{{ clustering_run.progress }}" aria-valuemin="0" aria-valuemax="100">
                                 {{ clustering_run.progress|floatformat:1 }}%
                             </div>
                         </div>
-                        <p class="text-muted mt-2">Processed {{ clustering_run.num_segments_processed }} segments so far.</p>
+                        <p class="text-muted mt-2" id="progress-message">
+                            {% if clustering_run.progress_message %}
+                                {{ clustering_run.progress_message }}
+                            {% else %}
+                                Processed {{ clustering_run.num_segments_processed }} segments so far.
+                            {% endif %}
+                        </p>
                     </div>
                 </div>
                 {% endif %}
@@ -210,28 +240,27 @@
 $(document).ready(function() {
     // Refresh progress for in-progress runs
     const updateProgress = function() {
-        $.get("{% url 'battycoda_app:clustering_run_detail' run_id=clustering_run.id %}", function(data) {
-            // Extract the progress value from the HTML
-            const progressHtml = $(data).find('.progress-bar');
-            if (progressHtml.length > 0) {
-                const progress = progressHtml.attr('aria-valuenow');
-                const progressText = progressHtml.text();
-                
+        $.get("{% url 'battycoda_app:clustering_run_status' run_id=clustering_run.id %}", function(data) {
+            if (data.progress !== undefined) {
                 // Update the progress bar
+                const progress = data.progress;
                 $('.progress-bar').css('width', `${progress}%`);
                 $('.progress-bar').attr('aria-valuenow', progress);
-                $('.progress-bar').text(progressText);
-                
+                $('.progress-bar').text(`${progress.toFixed(1)}%`);
+
+                // Update progress message
+                if (data.progress_message) {
+                    $('#progress-message').text(data.progress_message);
+                }
+
                 // If status has changed, reload the page
-                const currentStatus = $('.badge').text().trim();
-                const newStatus = $(data).find('.badge').text().trim();
-                if (currentStatus !== newStatus) {
+                if (data.status !== 'in_progress' && data.status !== 'pending') {
                     location.reload();
                 }
             }
         });
     };
-    
+
     // Update progress every 3 seconds
     setInterval(updateProgress, 3000);
 });

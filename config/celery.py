@@ -1,12 +1,20 @@
 import os
 
 from celery import Celery
-from celery.signals import worker_ready, worker_shutdown
+from celery.signals import beat_init, worker_ready, worker_shutdown
 
 # Set the default Django settings module for the 'celery' program.
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "config.settings")
 
 app = Celery("battycoda")
+
+
+@beat_init.connect
+def run_backup_on_beat_start(**kwargs):
+    """Run database backup immediately when celery-beat starts."""
+    from battycoda_app.tasks import backup_database_to_s3
+    # Delay by 60 seconds to allow worker to fully start
+    backup_database_to_s3.apply_async(countdown=60)
 
 
 @worker_ready.connect

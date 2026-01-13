@@ -2,8 +2,16 @@
 Utility functions for clustering visualization and analysis.
 """
 
+import logging
+
 import numpy as np
+from sklearn.decomposition import PCA
 from sklearn.manifold import TSNE
+
+logger = logging.getLogger(__name__)
+
+# Threshold for switching from t-SNE to PCA (t-SNE is O(n²) memory)
+TSNE_MAX_SAMPLES = 2000
 
 
 def calculate_cluster_coherence(features, labels):
@@ -40,11 +48,28 @@ def calculate_cluster_coherence(features, labels):
 
 
 def generate_tsne_visualization(features, labels):
-    """Generate t-SNE visualization coordinates for the clusters."""
-    # Apply t-SNE dimensionality reduction
-    tsne = TSNE(n_components=2, random_state=42)
-    vis_coords = tsne.fit_transform(features)
-    
+    """
+    Generate 2D visualization coordinates for the clusters.
+
+    Uses t-SNE for small datasets (<=2000 samples) for better visualization quality.
+    Uses PCA for large datasets to avoid t-SNE's O(n²) memory complexity.
+    """
+    n_samples = len(features)
+
+    if n_samples > TSNE_MAX_SAMPLES:
+        # Use PCA for large datasets (O(n) memory, much faster)
+        logger.info(
+            f"Using PCA for visualization ({n_samples} samples > {TSNE_MAX_SAMPLES} threshold)"
+        )
+        pca = PCA(n_components=2, random_state=42)
+        vis_coords = pca.fit_transform(features)
+    else:
+        # Use t-SNE for small datasets (better visualization quality)
+        logger.info(f"Using t-SNE for visualization ({n_samples} samples)")
+        perplexity = min(30, n_samples - 1)  # perplexity must be less than n_samples
+        tsne = TSNE(n_components=2, random_state=42, perplexity=perplexity)
+        vis_coords = tsne.fit_transform(features)
+
     return vis_coords
 
 

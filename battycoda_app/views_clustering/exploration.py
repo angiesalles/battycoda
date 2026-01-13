@@ -7,7 +7,7 @@ from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
 
 from ..models import Segment
-from ..models.clustering import Cluster, ClusterCallMapping, ClusteringRun
+from ..models.clustering import Cluster, ClusterCallMapping, ClusteringRun, SegmentCluster
 from ..models.organization import Species
 
 
@@ -34,6 +34,7 @@ def cluster_explorer(request, run_id):
     context = {
         'clustering_run': clustering_run,
         'clusters': clusters,
+        'is_project_scope': clustering_run.scope == 'project',
     }
     return render(request, 'clustering/cluster_explorer.html', context)
 
@@ -150,6 +151,7 @@ def get_segment_data(request):
     response_data = {
         'status': 'success',
         'segment_id': segment.id,
+        'recording_id': segment.recording.id,
         'recording_name': segment.recording.name,
         'onset': segment.onset,
         'offset': segment.offset,
@@ -159,3 +161,57 @@ def get_segment_data(request):
     }
 
     return JsonResponse(response_data)
+
+
+@login_required
+def get_cluster_members(request):
+    """API endpoint to get members of a cluster."""
+    cluster_id = request.GET.get('cluster_id')
+    limit = int(request.GET.get('limit', 50))
+    offset = int(request.GET.get('offset', 0))
+
+    if not cluster_id:
+        return JsonResponse({'status': 'error', 'message': 'No cluster ID provided'})
+
+    cluster = get_object_or_404(Cluster, id=cluster_id)
+
+    if not request.user.is_staff:
+        if cluster.clustering_run.group and cluster.clustering_run.group != request.user.profile.group:
+            return JsonResponse({'status': 'error', 'message': 'You don\'t have permission to view this cluster'})
+
+        if not cluster.clustering_run.group and cluster.clustering_run.created_by != request.user:
+            return JsonResponse({'status': 'error', 'message': 'You don\'t have permission to view this cluster'})
+
+    # Get the segment clusters with related data
+    segment_clusters = SegmentCluster.objects.filter(
+        cluster=cluster
+    ).select_related(
+        'segment', 'segment__segmentation__recording'
+    ).order_by('segment__onset')[offset:offset + limit]
+
+    is_project_scope = cluster.clustering_run.scope == 'project'
+
+    members = []
+    for sc in segment_clusters:
+        segment = sc.segment
+        member_data = {
+            'segment_id': segment.id,
+            'onset': float(segment.onset),
+            'offset': float(segment.offset),
+            'duration': float(segment.offset - segment.onset),
+            'confidence': float(sc.confidence) if sc.confidence else None,
+        }
+        if is_project_scope and segment.segmentation:
+            recording = segment.segmentation.recording
+            member_data['recording_id'] = recording.id
+            member_data['recording_name'] = recording.name
+        members.append(member_data)
+
+    return JsonResponse({
+        'status': 'success',
+        'cluster_id': cluster.cluster_id,
+        'total_size': cluster.size,
+        'is_project_scope': is_project_scope,
+        'members': members,
+        'has_more': (offset + limit) < cluster.size
+    })
