@@ -41,9 +41,9 @@ class Command(BaseCommand):
             tmp_path = tmp_file.name
         
         try:
-            # Create pg_dump command
+            # Create pg_dump command (use full path for celery worker compatibility)
             pg_dump_cmd = [
-                'pg_dump',
+                '/usr/bin/pg_dump',
                 '--no-password',
                 '--verbose',
                 '--clean',

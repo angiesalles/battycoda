@@ -9,12 +9,26 @@ os.environ.setdefault("DJANGO_SETTINGS_MODULE", "config.settings")
 app = Celery("battycoda")
 
 
+_backup_scheduled = False
+
 @beat_init.connect
 def run_backup_on_beat_start(**kwargs):
     """Run database backup immediately when celery-beat starts."""
-    from battycoda_app.tasks import backup_database_to_s3
-    # Delay by 60 seconds to allow worker to fully start
-    backup_database_to_s3.apply_async(countdown=60)
+    global _backup_scheduled
+    if _backup_scheduled:
+        return  # Prevent duplicate scheduling
+    _backup_scheduled = True
+
+    import logging
+    logger = logging.getLogger(__name__)
+    logger.info("Scheduling startup database backup (60s delay)")
+    try:
+        from battycoda_app.tasks import backup_database_to_s3
+        # Delay by 60 seconds to allow worker to fully start
+        result = backup_database_to_s3.apply_async(countdown=60)
+        logger.info(f"Startup backup task queued: {result.id}")
+    except Exception as e:
+        logger.error(f"Failed to queue startup backup: {e}")
 
 
 @worker_ready.connect
