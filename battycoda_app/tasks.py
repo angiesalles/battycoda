@@ -131,24 +131,36 @@ def calculate_audio_duration(self, recording_id, retry_count=0):
 @shared_task(bind=True, max_retries=3)
 def backup_database_to_s3(self, bucket_name=None, prefix=None):
     """
-    Celery task to backup the database to S3
+    Celery task to backup the database to S3.
+    Sends email notification to admins if all retries are exhausted.
     """
+    from .email_utils import send_backup_failure_email
+
+    # Use settings defaults if not provided
+    bucket_name = bucket_name or getattr(settings, 'DATABASE_BACKUP_BUCKET', 'backup-battycoda')
+    prefix = prefix or getattr(settings, 'DATABASE_BACKUP_PREFIX', 'database-backups/')
+
     try:
-        # Use settings defaults if not provided
-        bucket_name = bucket_name or settings.DATABASE_BACKUP_BUCKET
-        prefix = prefix or settings.DATABASE_BACKUP_PREFIX
-        
         logger.info(f"Starting database backup to S3 bucket: {bucket_name}")
-        
+
         # Call the Django management command
         call_command('backup_database', bucket=bucket_name, prefix=prefix)
-        
+
         logger.info("Database backup completed successfully")
         return "Database backup completed successfully"
-        
+
     except Exception as exc:
-        logger.error(f"Database backup failed: {str(exc)}")
-        
+        logger.error(f"Database backup failed (attempt {self.request.retries + 1}/{self.max_retries + 1}): {str(exc)}")
+
+        # Check if we've exhausted all retries
+        if self.request.retries >= self.max_retries:
+            logger.error("Database backup failed after all retries, sending alert email")
+            send_backup_failure_email(
+                error_message=str(exc),
+                bucket_name=bucket_name
+            )
+            raise  # Re-raise to mark task as failed
+
         # Retry the task with exponential backoff
         retry_delay = 60 * (2 ** self.request.retries)  # 60s, 120s, 240s
         raise self.retry(exc=exc, countdown=retry_delay)

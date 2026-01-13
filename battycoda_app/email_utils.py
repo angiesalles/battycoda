@@ -370,6 +370,82 @@ def send_disk_usage_warning_email(disk_info, threshold=90, hostname=None):
     )
 
 
+def send_backup_failure_email(error_message, bucket_name=None, hostname=None):
+    """
+    Send an email notification when database backup to S3 fails.
+
+    Args:
+        error_message (str): The error message describing the failure
+        bucket_name (str, optional): S3 bucket name that was targeted
+        hostname (str, optional): Hostname of the server
+
+    Returns:
+        bool: True if email was sent successfully, False otherwise
+    """
+    from django.conf import settings
+    import datetime
+
+    subject = "[BattyCoda ALERT] Database backup failed"
+
+    if hostname is None:
+        import socket
+        hostname = socket.gethostname()
+
+    timestamp = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+    bucket_text = bucket_name if bucket_name else "unknown"
+
+    message = (
+        f"BattyCoda Database Backup Failure\n"
+        f"==================================\n\n"
+        f"Server: {hostname}\n"
+        f"Time: {timestamp}\n"
+        f"Target Bucket: {bucket_text}\n\n"
+        f"Error:\n{error_message}\n\n"
+        f"The backup task has exhausted all retries.\n"
+        f"Please investigate and run a manual backup if needed:\n"
+        f"  python manage.py backup_database\n"
+    )
+
+    html_message = f"""
+    <html>
+    <body>
+        <h2 style="color: #dc3545;">BattyCoda Database Backup Failure</h2>
+        <table style="border-collapse: collapse; margin: 20px 0;">
+            <tr>
+                <td style="padding: 8px; border: 1px solid #ddd; font-weight: bold;">Server</td>
+                <td style="padding: 8px; border: 1px solid #ddd;">{hostname}</td>
+            </tr>
+            <tr>
+                <td style="padding: 8px; border: 1px solid #ddd; font-weight: bold;">Time</td>
+                <td style="padding: 8px; border: 1px solid #ddd;">{timestamp}</td>
+            </tr>
+            <tr>
+                <td style="padding: 8px; border: 1px solid #ddd; font-weight: bold;">Target Bucket</td>
+                <td style="padding: 8px; border: 1px solid #ddd;">{bucket_text}</td>
+            </tr>
+        </table>
+        <h3>Error Details</h3>
+        <pre style="background: #f5f5f5; padding: 10px; border-radius: 4px; color: #dc3545;">{error_message}</pre>
+        <p>The backup task has exhausted all retries.</p>
+        <p>Please investigate and run a manual backup if needed:</p>
+        <pre style="background: #f5f5f5; padding: 10px; border-radius: 4px;">python manage.py backup_database</pre>
+    </body>
+    </html>
+    """
+
+    admin_emails = [email for name, email in getattr(settings, 'ADMINS', [])]
+
+    if not admin_emails:
+        return False
+
+    return send_mail(
+        subject=subject,
+        message=message,
+        recipient_list=admin_emails,
+        html_message=html_message
+    )
+
+
 def send_password_reset_email(user, token, expires_at):
     """
     Send a password reset email to a user.
