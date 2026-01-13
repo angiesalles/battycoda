@@ -84,9 +84,10 @@ python manage.py test battycoda_app.tests.TestClassName.test_method_name
 
 ### Clustering
 - **ClusteringAlgorithm** - Algorithm config (kmeans, dbscan, hierarchical, etc.)
-- **ClusteringRun** - A clustering job on a segmentation
+- **ClusteringRun** - A clustering job (single segmentation or project-level)
+- **ClusteringRunSegmentation** - Junction table for project-level runs (tracks included recordings)
 - **Cluster** - A cluster of similar segments
-- **SegmentCluster** - Links segments to clusters
+- **SegmentCluster** - Links segments to clusters with confidence scores
 - **ClusterCallMapping** - Maps clusters to call types
 
 ### Tasks & Jobs
@@ -109,13 +110,42 @@ Key files:
 
 ## Clustering System
 
-Clustering groups similar segments together:
-- Supports algorithms: kmeans, dbscan, hierarchical, gaussian_mixture, spectral
-- Uses acoustic features extracted via the feature extraction module
-- Can map clusters to call types for labeling
+Clustering groups similar segments together using unsupervised ML algorithms.
+
+### Scope Options
+- **Single Recording** - Cluster segments from one segmentation
+- **Project-Level** - Cluster all segments across all recordings in a project
+  - Requires species selection (clustering different species together is meaningless)
+  - Uses PCA instead of t-SNE for visualization when >2000 segments (memory optimization)
+  - Batched database writes for large datasets
+  - 1-hour task timeout with progress tracking
+
+### Supported Algorithms
+- **Manual** (specify cluster count): kmeans, gaussian_mixture, spectral, dbscan
+- **Automatic** (auto-determine clusters): HDBSCAN, Mean Shift, OPTICS, Affinity Propagation, DBSCAN Enhanced
+
+### Feature Extraction
+- Audio normalized to 22050 Hz sample rate for consistency
+- Methods: MFCC (default), Mel Spectrogram, Chroma Features
+
+### Key Models
+- `ClusteringRun` - A clustering job (scope: segmentation or project)
+- `ClusteringRunSegmentation` - Junction table tracking included recordings for project-level runs
+- `Cluster` - A discovered cluster with size, coherence score, optional label
+- `SegmentCluster` - Links segments to clusters with confidence scores
+- `ClusterCallMapping` - Maps clusters to known call types
+
+### API Endpoints
+- `GET /clustering/project-segments/<project_id>/` - Get segment counts by species for a project
+- `GET /clustering/get-cluster-members/?cluster_id=<id>` - Get segment members of a cluster (with recording info for project-level)
+- `GET /clustering/get-cluster-data/?cluster_id=<id>` - Get cluster details
+- `POST /clustering/update-cluster-label/` - Update cluster label
+- `GET /clustering/export/<run_id>/` - Export clusters as CSV (includes recording columns for project-level)
 
 Key files:
 - `battycoda_app/audio/task_modules/clustering/` - Main clustering module
+- `battycoda_app/views_clustering/` - Views for dashboard, explorer, mappings
+- `templates/clustering/` - UI templates
 
 ## R Server
 
