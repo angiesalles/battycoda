@@ -18,12 +18,12 @@
         <div class="card-header d-flex justify-content-between align-items-center">
             <h4 class="mb-0">Create Task Batch from Classification</h4>
             <span class="badge bg-primary p-2">
-                <i class="fas fa-users me-1"></i> Group: {{ request.user.profile.group.name }}
+                <i class="fas fa-users mr-1"></i> Group: {{ request.user.profile.group.name }}
             </span>
         </div>
         <div class="card-body">
             <div class="alert alert-info">
-                <h5><i class="fas fa-lightbulb me-2"></i>How it works</h5>
+                <h5><i class="fas fa-lightbulb mr-2"></i>How it works</h5>
                 <p class="mb-0">
                     This will create a task batch from the classification results, allowing you to review and correct
                     the automatic classifications. Each segment will become a task with its initial label set to the
@@ -33,7 +33,7 @@
 
             {% if has_existing_batches %}
             <div class="alert alert-warning">
-                <h5><i class="fas fa-exclamation-triangle me-2"></i>Existing Task Batches Found</h5>
+                <h5><i class="fas fa-exclamation-triangle mr-2"></i>Existing Task Batches Found</h5>
                 <p>This recording already has {{ existing_batches.count }} task batch{{ existing_batches.count|pluralize:"es" }} associated with it:</p>
                 <ul class="mb-0">
                     {% for batch in existing_batches|slice:":5" %}
@@ -58,7 +58,7 @@
                 <div class="col-md-12">
                     <div class="card">
                         <div class="card-header">
-                            <h5 class="mb-0"><i class="fas fa-info-circle me-2"></i>Classification Run Details</h5>
+                            <h5 class="mb-0"><i class="fas fa-info-circle mr-2"></i>Classification Run Details</h5>
                         </div>
                         <div class="card-body">
                             <div class="row">
@@ -91,7 +91,7 @@
                     <div class="col-md-12">
                         <div class="card">
                             <div class="card-header">
-                                <h5 class="mb-0"><i class="fas fa-tasks me-2"></i>Task Batch Information</h5>
+                                <h5 class="mb-0"><i class="fas fa-tasks mr-2"></i>Task Batch Information</h5>
                             </div>
                             <div class="card-body">
                                 <div class="mb-3">
@@ -132,10 +132,10 @@
                 
                 <div class="d-grid gap-2 d-md-flex justify-content-md-end mt-4">
                     <a href="{% url 'battycoda_app:detection_run_detail' run_id=run.id %}" class="btn btn-secondary me-md-2">
-                        <i class="fas fa-arrow-left me-1"></i> Back
+                        <i class="fas fa-arrow-left mr-1"></i> Back
                     </a>
                     <button type="submit" class="btn btn-primary">
-                        <i class="fas fa-tasks me-1"></i> Create Task Batch
+                        <i class="fas fa-tasks mr-1"></i> Create Task Batch
                     </button>
                 </div>
             </form>

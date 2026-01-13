@@ -1,6 +1,6 @@
 <div class="d-flex justify-content-between align-items-center mb-3">
     <!-- Project Filter -->
-    <div class="me-3">
+    <div class="mr-3">
         <form method="get" class="d-flex align-items-center gap-2">
             <label for="project-filter" class="form-label mb-0 small text-muted">Filter by Project:</label>
             <select name="project" id="project-filter" class="form-select form-select-sm" onchange="this.form.submit()">
@@ -20,13 +20,13 @@
     <!-- Action Buttons -->
     <div class="d-flex gap-2">
         <a href="{% url 'battycoda_app:create_detection_run' %}{% if selected_project_id %}?project={{ selected_project_id }}{% endif %}" class="btn btn-primary">
-            <i class="fas fa-plus-circle me-1"></i> New Classification Run
+            <i class="fas fa-plus-circle mr-1"></i> New Classification Run
         </a>
         <a href="{% url 'battycoda_app:classify_unclassified_segments' %}{% if selected_project_id %}?project={{ selected_project_id }}{% endif %}" class="btn btn-primary">
-            <i class="fas fa-tags me-1"></i> Classify Unclassified Segmentations
+            <i class="fas fa-tags mr-1"></i> Classify Unclassified Segmentations
         </a>
         <a href="{% url 'battycoda_app:create_task_batches_for_species' %}{% if selected_project_id %}?project={{ selected_project_id }}{% endif %}" class="btn btn-primary">
-            <i class="fas fa-clipboard me-1"></i> Create Task Batches
+            <i class="fas fa-clipboard mr-1"></i> Create Task Batches
         </a>
     </div>
 </div>

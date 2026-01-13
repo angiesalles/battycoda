@@ -18,12 +18,12 @@
             const maxDisplayFiles = 10;
             
             if (filenames.length <= maxDisplayFiles) {
-                fileListHtml = filenames.map(name => `<span class="badge bg-info me-2 mb-1">${name}</span>`).join('');
+                fileListHtml = filenames.map(name => `<span class="badge bg-info mr-2 mb-1">${name}</span>`).join('');
             } else {
                 // Show the first few files with a count of remaining
                 const displayedFiles = filenames.slice(0, maxDisplayFiles);
                 const remainingCount = filenames.length - maxDisplayFiles;
-                fileListHtml = displayedFiles.map(name => `<span class="badge bg-info me-2 mb-1">${name}</span>`).join('') +
+                fileListHtml = displayedFiles.map(name => `<span class="badge bg-info mr-2 mb-1">${name}</span>`).join('') +
                     `<span class="badge bg-secondary">+${remainingCount} more file${remainingCount > 1 ? 's' : ''}</span>`;
             }
             

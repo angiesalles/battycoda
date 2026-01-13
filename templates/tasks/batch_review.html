@@ -21,17 +21,17 @@
                     <div class="row align-items-center">
                         <div class="col-md-6">
                             <h4 class="mb-0">
-                                <i class="fas fa-clipboard-check me-2"></i>
+                                <i class="fas fa-clipboard-check mr-2"></i>
                                 Batch Review: {{ batch.name }}
                             </h4>
                         </div>
                         <div class="col-md-6">
                             <div class="d-flex justify-content-end gap-2">
                                 <a href="{% url 'battycoda_app:task_batch_detail' batch.id %}" class="btn btn-outline-secondary">
-                                    <i class="fas fa-list me-1"></i> View Details
+                                    <i class="fas fa-list mr-1"></i> View Details
                                 </a>
                                 <a href="{% url 'battycoda_app:annotate_batch' batch.id %}" class="btn btn-primary">
-                                    <i class="fas fa-play me-1"></i> Start Annotation
+                                    <i class="fas fa-play mr-1"></i> Start Annotation
                                 </a>
                             </div>
                         </div>
@@ -91,7 +91,7 @@
                                 <div class="col-8">
                                     <small class="text-muted">Task #{{ task_data.task.id }}</small>
                                 </div>
-                                <div class="col-4 text-end">
+                                <div class="col-4 text-right">
                                     {% if task_data.confidence %}
                                         <span class="badge bg-info">{{ task_data.confidence|floatformat:2 }}</span>
                                     {% endif %}
@@ -121,9 +121,9 @@
                                         <small class="text-muted">Current Label:</small>
                                         <span class="badge bg-primary">{{ task_data.display_label|default:"Unlabeled" }}</span>
                                         {% if task_data.task.annotated_by %}
-                                            <i class="fas fa-user-check text-success ms-1" title="Annotated by {{ task_data.task.annotated_by.username }}"></i>
+                                            <i class="fas fa-user-check text-success ml-1" title="Annotated by {{ task_data.task.annotated_by.username }}"></i>
                                         {% else %}
-                                            <i class="fas fa-robot text-warning ms-1" title="Classification result"></i>
+                                            <i class="fas fa-robot text-warning ml-1" title="Classification result"></i>
                                         {% endif %}
                                     </div>
                                 </div>
@@ -149,7 +149,7 @@
                                         <div class="d-grid">
                                             <a href="{{ task_data.annotation_url }}" 
                                                class="btn btn-outline-primary btn-sm">
-                                                <i class="fas fa-edit me-1"></i> Full Annotation
+                                                <i class="fas fa-edit mr-1"></i> Full Annotation
                                             </a>
                                         </div>
                                     </div>
@@ -164,7 +164,7 @@
         <div class="row">
             <div class="col-12">
                 <div class="alert alert-info text-center">
-                    <i class="fas fa-info-circle me-2"></i>
+                    <i class="fas fa-info-circle mr-2"></i>
                     No tasks found for the selected call type filter.
                 </div>
             </div>
@@ -175,7 +175,7 @@
 <!-- Loading overlay -->
 <div id="loading-overlay" class="loading-overlay" style="display: none;">
     <div class="spinner-border text-primary" role="status">
-        <span class="visually-hidden">Loading...</span>
+        <span class="sr-only">Loading...</span>
     </div>
 </div>
 {% endblock %}

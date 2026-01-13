@@ -21,7 +21,7 @@
     <div class="row">
         <div class="col-md-12">
             <div class="alert alert-info">
-                <h5 class="alert-heading"><i class="fas fa-info-circle me-2"></i> About Classifier Training</h5>
+                <h5 class="alert-heading"><i class="fas fa-info-circle mr-2"></i> About Classifier Training</h5>
                 <p>{{ info_message }}</p>
                 <hr>
                 <p class="mb-0">Task batches with less than 5 labeled tasks cannot be used for training. For best results, aim for 100+ labeled tasks with a diverse range of call types.</p>
@@ -55,15 +55,15 @@
                                     <td>{{ item.type_name }}</td>
                                     <td>
                                         {% if item.labeled_count %}
-                                        <span class="badge bg-success me-1">{{ item.labeled_count }}</span> / {{ item.count }}
+                                        <span class="badge bg-success mr-1">{{ item.labeled_count }}</span> / {{ item.count }}
                                         {% if item.labeled_count < 5 %}
-                                        <span class="badge bg-danger ms-1">Too Few</span>
+                                        <span class="badge bg-danger ml-1">Too Few</span>
                                         {% elif item.labeled_count < 20 %}
-                                        <span class="badge bg-warning text-dark ms-1">Low</span>
+                                        <span class="badge bg-warning text-dark ml-1">Low</span>
                                         {% elif item.labeled_count < 50 %}
-                                        <span class="badge bg-info ms-1">Medium</span>
+                                        <span class="badge bg-info ml-1">Medium</span>
                                         {% else %}
-                                        <span class="badge bg-success ms-1">Good</span>
+                                        <span class="badge bg-success ml-1">Good</span>
                                         {% endif %}
                                         {% else %}
                                         {{ item.count }}

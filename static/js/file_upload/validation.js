@@ -1,6 +1,6 @@
 // File validation
                 } else {
-                    statusText.innerHTML = '<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span> Processing files and creating tasks...';
+                    statusText.innerHTML = '<span class="spinner-border spinner-border-sm mr-2" role="status" aria-hidden="true"></span> Processing files and creating tasks...';
                     progressBar.classList.remove('progress-bar-animated');
                 }
             }
@@ -23,7 +23,7 @@
                         console.log("Success response detected");
                         statusText.innerHTML = `
                             <div class="alert alert-success">
-                                <i class="fas fa-check-circle me-2"></i>
+                                <i class="fas fa-check-circle mr-2"></i>
                                 Upload complete! Successfully created batch with ${response.recordings_created || 'multiple'} recordings.
                             </div>
                         `;

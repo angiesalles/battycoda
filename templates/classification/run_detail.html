@@ -21,14 +21,14 @@
                 
                 <div class="btn-group" role="group">
                     <a href="{% url 'battycoda_app:delete_detection_run' run_id=run.id %}" class="btn btn-danger">
-                        <i class="fas fa-trash-alt me-1"></i> Delete Run
+                        <i class="fas fa-trash-alt mr-1"></i> Delete Run
                     </a>
                     {% if run.status == 'completed' %}
                     <a href="{% url 'battycoda_app:create_task_batch_from_detection_run' run_id=run.id %}" class="btn btn-success">
-                        <i class="fas fa-tasks me-1"></i> Create Tasks for Review
+                        <i class="fas fa-tasks mr-1"></i> Create Tasks for Review
                     </a>
                     <a href="{% url 'battycoda_app:recording_detail' recording_id=run.segmentation.recording.id %}" class="btn btn-info">
-                        <i class="fas fa-volume-up me-1"></i> View Recording
+                        <i class="fas fa-volume-up mr-1"></i> View Recording
                     </a>
                     {% endif %}
                 </div>
@@ -137,7 +137,7 @@
                                 <div class="mb-3">
                                     <h5>Export Files</h5>
                                     <a href="{% url 'battycoda_app:download_features_file' run_id=run.id %}" class="btn btn-outline-primary">
-                                        <i class="fas fa-download me-1"></i> Download Features CSV
+                                        <i class="fas fa-download mr-1"></i> Download Features CSV
                                     </a>
                                     <small class="text-muted d-block mt-1">Acoustic features extracted during classification</small>
                                 </div>
@@ -145,7 +145,7 @@
                                 <div class="mb-3">
                                     <h5>Export Files</h5>
                                     <div class="text-muted">
-                                        <i class="fas fa-info-circle me-1"></i>
+                                        <i class="fas fa-info-circle mr-1"></i>
                                         Features export not available for this run.
                                         <small class="d-block">Features are automatically exported for new classification runs.</small>
                                     </div>
@@ -157,7 +157,7 @@
                             <div class="mb-3">
                                 <h5>Debug Failed Run</h5>
                                 <a href="{% url 'battycoda_app:download_segments_zip' run_id=run.id %}" class="btn btn-outline-warning">
-                                    <i class="fas fa-download me-1"></i> Download All Segments (ZIP)
+                                    <i class="fas fa-download mr-1"></i> Download All Segments (ZIP)
                                 </a>
                                 <small class="text-muted d-block mt-1">Download segments as individual WAV files for debugging</small>
                             </div>
@@ -221,7 +221,7 @@
                                     {% for prob in result_item.probabilities %}
                                     <td class="probability-cell" data-value="{{ prob.probability }}">
                                         <div class="d-flex align-items-center">
-                                            <div class="progress flex-grow-1 me-2" style="height: 15px;">
+                                            <div class="progress flex-grow-1 mr-2" style="height: 15px;">
                                                 <div class="progress-bar bg-info" 
                                                      role="progressbar" 
                                                      style="width: {{ prob.probability|floatformat:2|multiply:100 }}%;" 
