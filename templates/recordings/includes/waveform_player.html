@@ -26,7 +26,7 @@ Parameters:
             <div id="{{ container_id }}" style="height: {{ height|default:"200" }}px; background-color: var(--input-bg); position: relative;">
                 <div id="{{ container_id }}-loading" class="d-flex justify-content-center align-items-center h-100">
                     <div class="spinner-border text-primary" role="status">
-                        <span class="sr-only">Loading...</span>
+                        <span class="visually-hidden">Loading...</span>
                     </div>
                 </div>
             </div>
@@ -51,7 +51,7 @@ Parameters:
                 </div>
 
             <!-- --- Playback-speed toggle --- -->
-            <div class="btn-group ml-2" id="{{ container_id }}-speed-toggle">
+            <div class="btn-group ms-2" id="{{ container_id }}-speed-toggle">
                 <button  class="btn btn-outline-secondary active"
                          id="{{ container_id }}-speed-1x"
                          data-rate="1">
@@ -65,11 +65,11 @@ Parameters:
             </div>
                 
                 <div class="d-flex align-items-center mx-2 flex-grow-1">
-                    <span id="{{ container_id }}-current-time" class="badge mr-2" style="background-color: var(--input-bg);">0.00s</span>
+                    <span id="{{ container_id }}-current-time" class="badge me-2" style="background-color: var(--input-bg);">0.00s</span>
                     <div id="{{ container_id }}-progress-container" class="progress flex-grow-1" style="height: 10px; cursor: pointer;">
                         <div id="{{ container_id }}-progress-bar" class="progress-bar bg-primary" role="progressbar" style="width: 0%"></div>
                     </div>
-                    <span id="{{ container_id }}-total-time" class="badge ml-2" style="background-color: var(--input-bg);">{{ recording.duration|default:"0"|floatformat:2 }}s</span>
+                    <span id="{{ container_id }}-total-time" class="badge ms-2" style="background-color: var(--input-bg);">{{ recording.duration|default:"0"|floatformat:2 }}s</span>
                 </div>
                 
                 {% if show_zoom %}

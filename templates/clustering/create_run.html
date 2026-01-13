@@ -10,11 +10,11 @@
             <div class="card shadow-sm">
                 <div class="card-header bg-primary text-white">
                     <h3 class="card-title mb-0">
-                        <i class="fas fa-project-diagram mr-2"></i>Create New Clustering Run
+                        <i class="fas fa-project-diagram me-2"></i>Create New Clustering Run
                     </h3>
-                    <div class="btn-group float-right">
+                    <div class="btn-group float-end">
                         <a href="{% url 'battycoda_app:clustering_dashboard' %}" class="btn btn-light btn-sm">
-                            <i class="fas fa-arrow-left mr-1"></i> Back to Dashboard
+                            <i class="fas fa-arrow-left me-1"></i> Back to Dashboard
                         </a>
                     </div>
                 </div>
@@ -25,7 +25,7 @@
                     <!-- Basic Information Section -->
                     <div class="mb-4">
                         <h5 class="text-primary border-bottom pb-2 mb-3">
-                            <i class="fas fa-info-circle mr-2"></i>Basic Information
+                            <i class="fas fa-info-circle me-2"></i>Basic Information
                         </h5>
                         
                         <div class="form-group mb-3">
@@ -49,7 +49,7 @@
                     <!-- Data Selection Section -->
                     <div class="mb-4">
                         <h5 class="text-primary border-bottom pb-2 mb-3">
-                            <i class="fas fa-database mr-2"></i>Data Selection
+                            <i class="fas fa-database me-2"></i>Data Selection
                         </h5>
 
                         <!-- Scope Selection -->
@@ -59,13 +59,13 @@
                                 <input type="radio" class="btn-check" name="scope" id="scope_segmentation"
                                        value="segmentation" checked autocomplete="off">
                                 <label class="btn btn-outline-primary" for="scope_segmentation">
-                                    <i class="fas fa-file-audio mr-2"></i>Single Recording
+                                    <i class="fas fa-file-audio me-2"></i>Single Recording
                                 </label>
 
                                 <input type="radio" class="btn-check" name="scope" id="scope_project"
                                        value="project" autocomplete="off">
                                 <label class="btn btn-outline-primary" for="scope_project">
-                                    <i class="fas fa-folder-open mr-2"></i>Entire Project
+                                    <i class="fas fa-folder-open me-2"></i>Entire Project
                                 </label>
                             </div>
                             <small class="form-text text-muted">
@@ -114,7 +114,7 @@
                             <!-- Species Selector (shown when project has multiple species) -->
                             <div id="species_group" class="form-group mb-3" style="display: none;">
                                 <label for="species" class="form-label fw-bold text-warning">
-                                    <i class="fas fa-exclamation-triangle mr-1"></i>
+                                    <i class="fas fa-exclamation-triangle me-1"></i>
                                     Species Selection Required <span class="text-danger">*</span>
                                 </label>
                                 <p class="text-muted small mb-2">
@@ -128,7 +128,7 @@
 
                             <!-- Project Info Box -->
                             <div id="project_info" class="alert alert-info" style="display: none;">
-                                <strong><i class="fas fa-info-circle mr-1"></i>Selected:</strong>
+                                <strong><i class="fas fa-info-circle me-1"></i>Selected:</strong>
                                 <span id="project_species_name"></span> -
                                 <span id="project_recording_count">0</span> recordings with
                                 <span id="project_segment_count">0</span> total segments
@@ -136,7 +136,7 @@
 
                             <!-- Large Project Warning -->
                             <div id="project_warning" class="alert alert-warning" style="display: none;">
-                                <i class="fas fa-clock mr-1"></i>
+                                <i class="fas fa-clock me-1"></i>
                                 <strong>Large dataset!</strong> Processing may take 10-30 minutes.
                             </div>
 
@@ -157,7 +157,7 @@
                     <!-- Algorithm Configuration Section -->
                     <div class="mb-4">
                         <h5 class="text-primary border-bottom pb-2 mb-3">
-                            <i class="fas fa-cogs mr-2"></i>Algorithm Configuration
+                            <i class="fas fa-cogs me-2"></i>Algorithm Configuration
                         </h5>
                         
                         <div class="form-group mb-3">
@@ -192,14 +192,14 @@
                         
                         <div class="form-group mb-3" id="n_clusters_group" style="display: none;">
                             <label for="n_clusters" class="form-label fw-bold">
-                                <i class="fas fa-hashtag mr-1"></i>Number of Clusters
+                                <i class="fas fa-hashtag me-1"></i>Number of Clusters
                             </label>
                             <div class="input-group">
                                 <input type="number" class="form-control form-control-lg" id="n_clusters" name="n_clusters" min="2" max="50" value="5">
                                 <span class="input-group-text">clusters</span>
                             </div>
                             <small class="form-text text-muted">
-                                <i class="fas fa-info-circle mr-1"></i>
+                                <i class="fas fa-info-circle me-1"></i>
                                 The target number of clusters to find. Only required for manual algorithms.
                             </small>
                         </div>
@@ -208,7 +208,7 @@
                     <!-- Feature Extraction Section -->
                     <div class="mb-4">
                         <h5 class="text-primary border-bottom pb-2 mb-3">
-                            <i class="fas fa-wave-square mr-2"></i>Feature Extraction
+                            <i class="fas fa-wave-square me-2"></i>Feature Extraction
                         </h5>
                         
                         <div class="form-group mb-3">
@@ -227,10 +227,10 @@
                     <!-- Submit Section -->
                     <div class="d-grid gap-2 d-md-flex justify-content-md-center pt-3 border-top">
                         <button type="submit" class="btn btn-primary btn-lg px-5">
-                            <i class="fas fa-play mr-2"></i> Create Clustering Run
+                            <i class="fas fa-play me-2"></i> Create Clustering Run
                         </button>
                         <a href="{% url 'battycoda_app:clustering_dashboard' %}" class="btn btn-outline-secondary btn-lg px-4">
-                            <i class="fas fa-times mr-2"></i>Cancel
+                            <i class="fas fa-times me-2"></i>Cancel
                         </a>
                     </div>
                 </form>
@@ -356,18 +356,18 @@ $(document).ready(function() {
             console.log('Showing clusters field');
             $('#n_clusters_group').slideDown(300);
             $('#n_clusters').attr('required', true);
-            $('#n_clusters_group').addClass('border-left border-primary border-3 pl-3');
+            $('#n_clusters_group').addClass('border-start border-primary border-3 ps-3');
         } else {
             console.log('Hiding clusters field');
             $('#n_clusters_group').slideUp(300);
             $('#n_clusters').attr('required', false);
-            $('#n_clusters_group').removeClass('border-left border-primary border-3 pl-3');
+            $('#n_clusters_group').removeClass('border-start border-primary border-3 ps-3');
         }
     });
 
     // Form validation feedback
     $('form').on('submit', function() {
-        $(this).find('button[type="submit"]').html('<i class="fas fa-spinner fa-spin mr-2"></i>Creating Run...');
+        $(this).find('button[type="submit"]').html('<i class="fas fa-spinner fa-spin me-2"></i>Creating Run...');
         $(this).find('button[type="submit"]').prop('disabled', true);
     });
 });

@@ -48,7 +48,7 @@
                                         <span class="badge bg-info">{{ label_count }} types</span>
                                         <div class="mt-2">
                                             {% for label in labels %}
-                                            <span class="badge bg-secondary mr-1">{{ label }}</span>
+                                            <span class="badge bg-secondary me-1">{{ label }}</span>
                                             {% endfor %}
                                         </div>
                                     </td>
@@ -89,12 +89,12 @@
 
                             {% if validation_results.is_valid %}
                             <div class="alert alert-success">
-                                <h6 class="alert-heading"><i class="fas fa-check-circle mr-2"></i>Training Data is Valid</h6>
+                                <h6 class="alert-heading"><i class="fas fa-check-circle me-2"></i>Training Data is Valid</h6>
                                 <p class="mb-0">Found {{ validation_results.stats.valid_files }} valid training files with {{ validation_results.stats.files_by_label|length }} call types.</p>
                             </div>
                             {% else %}
                             <div class="alert alert-danger">
-                                <h6 class="alert-heading"><i class="fas fa-exclamation-triangle mr-2"></i>Validation Failed</h6>
+                                <h6 class="alert-heading"><i class="fas fa-exclamation-triangle me-2"></i>Validation Failed</h6>
                                 <p class="mb-2">Please fix the following issues before training:</p>
                                 <ul class="mb-0">
                                     {% for error in validation_results.errors %}
@@ -106,7 +106,7 @@
 
                             {% if validation_results.warnings %}
                             <div class="alert alert-warning">
-                                <h6 class="alert-heading"><i class="fas fa-exclamation-circle mr-2"></i>Warnings</h6>
+                                <h6 class="alert-heading"><i class="fas fa-exclamation-circle me-2"></i>Warnings</h6>
                                 <ul class="mb-0">
                                     {% for warning in validation_results.warnings %}
                                     <li>{{ warning }}</li>
@@ -206,12 +206,12 @@
                             </ol>
                         </div>
 
-                        <div class="text-right">
-                            <a href="{% url 'battycoda_app:create_classifier_from_folder' %}" class="btn btn-secondary mr-2">
+                        <div class="text-end">
+                            <a href="{% url 'battycoda_app:create_classifier_from_folder' %}" class="btn btn-secondary me-2">
                                 Back
                             </a>
                             <button type="submit" class="btn btn-primary" id="submitBtn" {% if validation_results and not validation_results.is_valid %}disabled{% endif %}>
-                                <i class="fas fa-graduation-cap mr-1"></i> Start Training
+                                <i class="fas fa-graduation-cap me-1"></i> Start Training
                             </button>
                         </div>
                     </form>

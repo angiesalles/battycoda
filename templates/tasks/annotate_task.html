@@ -19,7 +19,7 @@
                 <div class="d-flex align-items-center mb-2">
                     <h4 class="mb-0">Task #{{ task.id }}</h4>
                     {% if task.created_by != request.user %}
-                        <span class="badge bg-info ml-2">Group</span>
+                        <span class="badge bg-info ms-2">Group</span>
                     {% endif %}
                 </div>
                 
@@ -135,7 +135,7 @@
                     <div class="row align-items-center">
                         <div class="col-md-6">
                             <div class="d-flex">
-                                <button id="detail-view-btn" class="btn btn-sm btn-outline-secondary mr-2">Detail View</button>
+                                <button id="detail-view-btn" class="btn btn-sm btn-outline-secondary me-2">Detail View</button>
                                 <button id="overview-btn" class="btn btn-sm btn-primary active">Overview</button>
                             </div>
                         </div>
@@ -192,7 +192,7 @@
                                 {% if task.label == call_type %}checked{% endif %}>
                             <label class="form-check-label" for="{{ call_type|slugify }}">
                                 {{ call_type }}
-                                {% if task.label == call_type %}<span class="badge bg-info ml-1">Auto</span>{% endif %}
+                                {% if task.label == call_type %}<span class="badge bg-info ms-1">Auto</span>{% endif %}
                             </label>
                         </div>
                         {% endfor %}

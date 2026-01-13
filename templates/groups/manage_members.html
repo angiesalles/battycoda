@@ -57,7 +57,7 @@
                                                             {% endif %}
                                                         </button>
                                                     </form>
-                                                    <form method="post" class="ml-2">
+                                                    <form method="post" class="ms-2">
                                                         {% csrf_token %}
                                                         <input type="hidden" name="user_id" value="{{ membership.user.id }}">
                                                         <button type="submit" name="remove_user" class="btn btn-sm btn-outline-danger">
@@ -124,7 +124,7 @@
                 
                 <div class="card-footer bg-light">
                     <p class="mb-0">
-                        <i class="fas fa-info-circle text-info mr-1"></i>
+                        <i class="fas fa-info-circle text-info me-1"></i>
                         You can also <a href="{% url 'battycoda_app:invite_user' %}">invite new users</a> to join your group.
                     </p>
                 </div>
