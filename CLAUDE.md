@@ -3,6 +3,58 @@
 ## Important: Documentation Maintenance
 **ALWAYS suggest updating this CLAUDE.md file when implementing significant new features, major changes, or new capabilities.**
 
+## Task Tracking with Beads
+
+This repository uses [Beads](https://github.com/steveyegge/beads) for task tracking. Beads is a persistent memory system for AI coding agents. Run `bd onboard` to get started.
+
+### Common Commands
+```bash
+bd ready              # Show tasks without blocking dependencies (find available work)
+bd list               # List all open issues
+bd show <id>          # View issue details
+bd create "Title" -p 1 -t task   # Create a task with priority 1
+bd create "Title" -t epic --parent <id>  # Create sub-task under epic
+bd update <id> --status in_progress      # Claim work
+bd close <id>         # Complete work
+bd sync               # Sync with git
+bd dep tree <id>      # View dependency tree
+```
+
+### Workflow
+1. Before starting work: `bd ready` to see available tasks
+2. Pick a task: `bd update <id> --status in_progress`
+3. When done: `bd close <id> --reason "Description of what was done"`
+4. Create new tasks as you discover them
+
+### Landing the Plane (Session Completion)
+
+**When ending a work session**, you MUST complete ALL steps below. Work is NOT complete until `git push` succeeds.
+
+**MANDATORY WORKFLOW:**
+
+1. **File issues for remaining work** - Create issues for anything that needs follow-up
+2. **Run quality gates** (if code changed) - Tests, linters, builds
+3. **Update issue status** - Close finished work, update in-progress items
+4. **PUSH TO REMOTE** - This is MANDATORY:
+   ```bash
+   git pull --rebase
+   bd sync
+   git push
+   git status  # MUST show "up to date with origin"
+   ```
+5. **Clean up** - Clear stashes, prune remote branches
+6. **Verify** - All changes committed AND pushed
+7. **Hand off** - Provide context for next session
+
+**CRITICAL RULES:**
+- Work is NOT complete until `git push` succeeds
+- NEVER stop before pushing - that leaves work stranded locally
+- NEVER say "ready to push when you are" - YOU must push
+- If push fails, resolve and retry until it succeeds
+
+### Current Epics
+- `battycoda-yf0`: Clustering Visualization Overhaul (see CLUSTERING_VISUALIZATION_OVERHAUL.md)
+
 ## Architecture Overview
 
 BattyCoda is a Django application for annotating and classifying bat call recordings. Key components:
@@ -52,6 +104,11 @@ python manage.py [command]
 source venv/bin/activate
 python manage.py test
 python manage.py test battycoda_app.tests.TestClassName.test_method_name
+
+# Run specific test modules
+python manage.py test battycoda_app.tests.test_clustering  # Project-level clustering tests
+python manage.py test battycoda_app.tests.test_models      # Model tests
+python manage.py test battycoda_app.tests.test_views_auth  # Auth view tests
 ```
 
 ## Key Models
