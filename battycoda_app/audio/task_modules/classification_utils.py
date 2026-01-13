@@ -17,13 +17,17 @@ R_SERVER_URL = "http://localhost:8001"
 
 def update_classification_run_status(classification_run, status, message=None, progress=None):
     """Update a classification run's status and related fields."""
+    update_fields = []
     if status:
         classification_run.status = status
+        update_fields.append("status")
     if message:
         classification_run.error_message = message
+        update_fields.append("error_message")
     if progress is not None:
         classification_run.progress = progress
-    classification_run.save(update_fields=[f for f in ["status", "error_message", "progress"] if locals().get(f)])
+        update_fields.append("progress")
+    classification_run.save(update_fields=update_fields)
 
     return classification_run
 
