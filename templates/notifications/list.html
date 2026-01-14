@@ -9,7 +9,7 @@
             <h4 class="mb-0">Notifications</h4>
             {% if notifications %}
                 <a href="{% url 'battycoda_app:mark_all_read' %}{% if request.GET.page %}?page={{ request.GET.page }}{% endif %}" class="btn btn-primary btn-sm">
-                    <i class="s7-check mr-1"></i> Mark All As Read
+                    <i class="s7-check me-1"></i> Mark All As Read
                 </a>
             {% endif %}
         </div>
@@ -30,7 +30,7 @@
                     <div class="list-group-item {% if not notification.is_read %}list-group-item-primary{% endif %}">
                         <div class="d-flex justify-content-between align-items-center mb-1">
                             <h5 class="mb-0">
-                                <span class="icon {{ notification.icon }} mr-2"></span>
+                                <span class="icon {{ notification.icon }} me-2"></span>
                                 {{ notification.title }}
                             </h5>
                             <small data-utc-date="{{ notification.created_at|date:'c' }}" data-date-format="datetime">{{ notification.created_at|date:"M d, Y g:i A" }}</small>
@@ -40,7 +40,7 @@
                             <div>
                                 <span class="badge badge-secondary">{{ notification.get_notification_type_display }}</span>
                                 {% if not notification.is_read %}
-                                    <span class="badge badge-primary ml-1">New</span>
+                                    <span class="badge badge-primary ms-1">New</span>
                                 {% endif %}
                             </div>
                             <div>
@@ -50,7 +50,7 @@
                                     </a>
                                 {% endif %}
                                 {% if not notification.is_read %}
-                                    <a href="{% url 'battycoda_app:mark_notification_read' notification_id=notification.id %}" class="btn btn-sm btn-outline-primary ml-2">
+                                    <a href="{% url 'battycoda_app:mark_notification_read' notification_id=notification.id %}" class="btn btn-sm btn-outline-primary ms-2">
                                         <i class="s7-check"></i> Mark as Read
                                     </a>
                                 {% endif %}

@@ -9,7 +9,7 @@
         <div class="card">
             <div class="card-header">
                 <h3 class="card-title">Clustering Run: {{ clustering_run.name }}</h3>
-                <div class="btn-group float-right">
+                <div class="btn-group float-end">
                     <a href="{% url 'battycoda_app:clustering_dashboard' %}" class="btn btn-secondary">
                         <i class="fa fa-arrow-left"></i> Back to Dashboard
                     </a>
@@ -21,10 +21,10 @@
                         <i class="fa fa-exchange-alt"></i> Map to Call Types
                     </a>
                     <div class="btn-group">
-                        <button type="button" class="btn btn-outline-secondary dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                        <button type="button" class="btn btn-outline-secondary dropdown-toggle" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                             <i class="fa fa-download"></i> Export
                         </button>
-                        <div class="dropdown-menu dropdown-menu-right">
+                        <div class="dropdown-menu dropdown-menu-end">
                             <a class="dropdown-item" href="{% url 'battycoda_app:export_clusters' run_id=clustering_run.id %}">
                                 <i class="fa fa-file-csv"></i> Export Clusters as CSV
                             </a>

@@ -96,7 +96,7 @@
                         <td>{{ run.created_by.username }}</td>
                         <td>
                             <div class="d-flex">
-                                <a href="{% url 'battycoda_app:detection_run_detail' run_id=run.id %}" class="btn btn-sm btn-primary mr-2">
+                                <a href="{% url 'battycoda_app:detection_run_detail' run_id=run.id %}" class="btn btn-sm btn-primary me-2">
                                     <i class="fas fa-chart-bar"></i> View Results
                                 </a>
                                 <a href="{% url 'battycoda_app:delete_detection_run' run_id=run.id %}"

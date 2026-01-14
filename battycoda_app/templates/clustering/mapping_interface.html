@@ -31,7 +31,7 @@
         Clusters: {{ clusters|length }}
       </p>
     </div>
-    <div class="col-md-4 text-md-right">
+    <div class="col-md-4 text-md-end">
       <div class="btn-group" role="group">
         <a href="{% url 'cluster_explorer' clustering_run.id %}" class="btn btn-outline-primary">
           <i class="fas fa-arrow-left"></i> Back to Explorer
@@ -59,7 +59,7 @@
             {% for cluster in clusters %}
             <div class="list-group-item list-group-item-action cluster-item d-flex align-items-center mb-2" 
                  data-cluster-id="{{ cluster.id }}" draggable="true">
-              <div class="mr-3">
+              <div class="me-3">
                 <div class="cluster-color-dot" style="background-color: hsl({{ cluster.cluster_id|add:30 }}, 70%, 50%);"></div>
               </div>
               <div class="flex-grow-1">
@@ -78,7 +78,7 @@
                 <small>{{ cluster.description|truncatechars:80 }}</small>
                 {% endif %}
               </div>
-              <div class="ml-2">
+              <div class="ms-2">
                 <button type="button" class="btn btn-sm btn-outline-primary view-cluster-btn" data-cluster-id="{{ cluster.id }}">
                   <i class="fas fa-eye"></i>
                 </button>
@@ -96,10 +96,10 @@
         <div class="card-header d-flex justify-content-between align-items-center">
           <h5 class="card-title mb-0">Call Types</h5>
           <div class="dropdown">
-            <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" id="speciesFilterDropdown" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+            <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" id="speciesFilterDropdown" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
               Filter by Species
             </button>
-            <div class="dropdown-menu dropdown-menu-right" aria-labelledby="speciesFilterDropdown">
+            <div class="dropdown-menu dropdown-menu-end" aria-labelledby="speciesFilterDropdown">
               <a class="dropdown-item" href="#" data-species-id="all">All Species</a>
               <div class="dropdown-divider"></div>
               {% for species in available_species %}
@@ -195,7 +195,7 @@
     <div class="modal-content">
       <div class="modal-header">
         <h5 class="modal-title" id="clusterDetailsModalLabel">Cluster Details</h5>
-        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+        <button type="button" class="close" data-bs-dismiss="modal" aria-label="Close">
           <span aria-hidden="true">&times;</span>
         </button>
       </div>
@@ -259,7 +259,7 @@
         </div>
       </div>
       <div class="modal-footer">
-        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
       </div>
     </div>
   </div>
@@ -276,7 +276,7 @@
         
         <div class="modal-header">
           <h5 class="modal-title" id="createMappingModalLabel">Create Cluster-Call Mapping</h5>
-          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <button type="button" class="close" data-bs-dismiss="modal" aria-label="Close">
             <span aria-hidden="true">&times;</span>
           </button>
         </div>
@@ -306,7 +306,7 @@
           </div>
         </div>
         <div class="modal-footer">
-          <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
           <button type="submit" class="btn btn-primary">Create Mapping</button>
         </div>
       </form>

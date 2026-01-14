@@ -13,7 +13,7 @@
         <div class="card">
             <div class="card-header">
                 <h3 class="card-title">Cluster Explorer: {{ clustering_run.name }}</h3>
-                <div class="btn-group float-right">
+                <div class="btn-group float-end">
                     <a href="{% url 'battycoda_app:clustering_run_detail' run_id=clustering_run.id %}" class="btn btn-secondary">
                         <i class="fa fa-arrow-left"></i> Back to Run Details
                     </a>
@@ -21,10 +21,10 @@
                         <i class="fa fa-exchange-alt"></i> Map to Call Types
                     </a>
                     <div class="btn-group">
-                        <button type="button" class="btn btn-outline-secondary dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                        <button type="button" class="btn btn-outline-secondary dropdown-toggle" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                             <i class="fa fa-download"></i> Export
                         </button>
-                        <div class="dropdown-menu dropdown-menu-right">
+                        <div class="dropdown-menu dropdown-menu-end">
                             <a class="dropdown-item" href="{% url 'battycoda_app:export_clusters' run_id=clustering_run.id %}">
                                 <i class="fa fa-file-csv"></i> Export Clusters as CSV
                             </a>
@@ -47,7 +47,7 @@
                                     <!-- D3.js visualization will be rendered here -->
                                     <div class="text-center py-5">
                                         <div class="spinner-border text-primary" role="status">
-                                            <span class="sr-only">Loading...</span>
+                                            <span class="visually-hidden">Loading...</span>
                                         </div>
                                         <p>Loading cluster visualization...</p>
                                     </div>
@@ -189,7 +189,7 @@
         <div class="modal-content">
             <div class="modal-header">
                 <h5 class="modal-title" id="segmentDetailsModalLabel">Segment Details</h5>
-                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                <button type="button" class="close" data-bs-dismiss="modal" aria-label="Close">
                     <span aria-hidden="true">&times;</span>
                 </button>
             </div>
@@ -229,7 +229,7 @@
                 </div>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
             </div>
         </div>
     </div>

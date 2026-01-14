@@ -46,11 +46,11 @@
                     errorElement.style.display = 'block';
                     errorElement.innerHTML = `
                         <div class="alert alert-danger">
-                            <span class="s7-attention mr-1"></span> Error loading segmentations: ${error.message}
+                            <span class="s7-attention me-1"></span> Error loading segmentations: ${error.message}
                         </div>
                         <div class="text-center mt-3">
                             <button id="retry-btn" class="btn btn-primary">
-                                <span class="s7-refresh mr-1"></span> Retry
+                                <span class="s7-refresh me-1"></span> Retry
                             </button>
                         </div>
                     `;
@@ -203,13 +203,13 @@
                         
                         // Add active badge if this is the active segmentation
                         if (job.is_active) {
-                            statusBadge += `<br><span class="badge badge-info mt-1" data-toggle="tooltip" title="Current active segmentation">Active</span>`;
+                            statusBadge += `<br><span class="badge badge-info mt-1" data-bs-toggle="tooltip" title="Current active segmentation">Active</span>`;
                         }
                         
                         // Add algorithm badge if available and it's not "Manual Import"
                         if (job.algorithm_name && job.algorithm_name !== "Manual Import") {
                             statusBadge += `
-                                <br><span class="badge badge-secondary mt-1" data-toggle="tooltip" 
+                                <br><span class="badge badge-secondary mt-1" data-bs-toggle="tooltip" 
                                 title="${job.algorithm_type}">
                                     <span class="s7-settings"></span> ${job.algorithm_name}
                                 </span>
@@ -219,7 +219,7 @@
                         // Add manually edited badge if applicable
                         if (job.manually_edited) {
                             statusBadge += `
-                                <br><span class="badge badge-warning mt-1" data-toggle="tooltip" 
+                                <br><span class="badge badge-warning mt-1" data-bs-toggle="tooltip" 
                                 title="This segmentation has been manually edited">
                                     <span class="s7-pen"></span> Manually Edited
                                 </span>
@@ -229,7 +229,7 @@
                         // Add debug visualization badge if available
                         if (job.debug_visualization && job.debug_visualization.url) {
                             statusBadge += `
-                                <br><span class="badge badge-info mt-1 viz-badge" data-toggle="tooltip" 
+                                <br><span class="badge badge-info mt-1 viz-badge" data-bs-toggle="tooltip" 
                                 title="Debug visualization available" 
                                 data-viz-url="${job.debug_visualization.url}">
                                     <span class="s7-graph1"></span> Debug Viz
@@ -241,19 +241,19 @@
                         let actionsHtml = '';
                         if (job.status === 'completed') {
                             actionsHtml = `
-                                <a href="${job.view_url}" class="btn btn-sm btn-primary" data-toggle="tooltip" data-placement="top" title="View Segments">
+                                <a href="${job.view_url}" class="btn btn-sm btn-primary" data-bs-toggle="tooltip" data-placement="top" title="View Segments">
                                     <span class="s7-look"></span>
                                 </a>
                             `;
                         } else if (job.status === 'in_progress') {
                             actionsHtml = `
-                                <a href="${job.view_url}" class="btn btn-sm btn-info" data-toggle="tooltip" data-placement="top" title="View Details">
+                                <a href="${job.view_url}" class="btn btn-sm btn-info" data-bs-toggle="tooltip" data-placement="top" title="View Details">
                                     <span class="s7-info"></span>
                                 </a>
                             `;
                         } else if (job.status === 'failed') {
                             actionsHtml = `
-                                <a href="${job.retry_url}" class="btn btn-sm btn-warning" data-toggle="tooltip" data-placement="top" title="Retry">
+                                <a href="${job.retry_url}" class="btn btn-sm btn-warning" data-bs-toggle="tooltip" data-placement="top" title="Retry">
                                     <span class="s7-refresh"></span>
                                 </a>
                             `;
@@ -277,8 +277,11 @@
                         jobsList.appendChild(row);
                     });
                     
-                    // Initialize tooltips
-                    $('[data-toggle="tooltip"]').tooltip();
+                    // Initialize Bootstrap 5 tooltips
+                    var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+                    tooltipTriggerList.map(function (tooltipTriggerEl) {
+                        return new bootstrap.Tooltip(tooltipTriggerEl);
+                    });
                     
                     // Add click handlers for visualization badges
                     document.querySelectorAll('.viz-badge').forEach(function(badge) {
@@ -294,8 +297,9 @@
                             // Set the download link
                             document.getElementById('vizDownloadLink').href = vizUrl;
                             
-                            // Show the modal
-                            $('#vizModal').modal('show');
+                            // Show the modal using Bootstrap 5 API
+                            var vizModal = new bootstrap.Modal(document.getElementById('vizModal'));
+                            vizModal.show();
                         });
                     });
                 }

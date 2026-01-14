@@ -4,7 +4,7 @@
         <div class="modal-content">
             <div class="modal-header">
                 <h5 class="modal-title" id="vizModalLabel">Segmentation Debug Visualization</h5>
-                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                <button type="button" class="close" data-bs-dismiss="modal" aria-label="Close">
                     <span aria-hidden="true">&times;</span>
                 </button>
             </div>
@@ -17,9 +17,9 @@
                 </p>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
                 <a id="vizDownloadLink" href="" download class="btn btn-primary">
-                    <span class="s7-download mr-1"></span> Download Image
+                    <span class="s7-download me-1"></span> Download Image
                 </a>
             </div>
         </div>
@@ -29,7 +29,7 @@
 <div id="segmentation-jobs-container">
     <div class="text-center py-4" id="loading-jobs">
         <div class="spinner-grow text-primary" role="status">
-            <span class="sr-only">Loading...</span>
+            <span class="visually-hidden">Loading...</span>
         </div>
         <p class="mt-2">Loading segmentations...</p>
     </div>
@@ -60,7 +60,7 @@
                 <h4>No Segmentations</h4>
                 <p class="text-muted">You haven't created any segmentations yet.</p>
                 <a href="{% url 'battycoda_app:select_recording_for_segmentation' %}" class="btn btn-primary mt-2">
-                    <span class="s7-plus mr-1"></span> New Segmentation Run
+                    <span class="s7-plus me-1"></span> New Segmentation Run
                 </a>
             </div>
         </div>

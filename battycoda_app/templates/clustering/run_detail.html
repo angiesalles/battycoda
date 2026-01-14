@@ -33,7 +33,7 @@
         {% endif %}
       </p>
     </div>
-    <div class="col-md-4 text-md-right">
+    <div class="col-md-4 text-md-end">
       <div class="btn-group" role="group">
         {% if clustering_run.status == 'completed' %}
         <a href="{% url 'cluster_explorer' clustering_run.id %}" class="btn btn-primary">

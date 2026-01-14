@@ -8,8 +8,8 @@
 
 {% block action_buttons %}
 <a href="{% url 'battycoda_app:create_species' %}" class="btn btn-primary" 
-   data-toggle="tooltip" data-placement="bottom" title="Add a new species">
-    <span class="s7-plus mr-1"></span> New Species
+   data-bs-toggle="tooltip" data-bs-placement="bottom" title="Add a new species">
+    <span class="s7-plus me-1"></span> New Species
 </a>
 {% endblock %}
 
@@ -55,8 +55,8 @@
         <div class="btn-group">
             <!-- View button -->
             <a href="{% url 'battycoda_app:species_detail' item.id %}" 
-               class="btn btn-sm btn-primary mr-1"
-               data-toggle="tooltip" data-placement="top" 
+               class="btn btn-sm btn-primary me-1"
+               data-bs-toggle="tooltip" data-bs-placement="top" 
                title="View details">
                 <span class="s7-look"></span>
             </a>
@@ -64,8 +64,8 @@
             {% if item.is_system %}
             <!-- Disabled edit button for system species -->
             <a href="javascript:void(0)" 
-               class="btn btn-sm btn-secondary mr-1 disabled"
-               data-toggle="tooltip" data-placement="top" 
+               class="btn btn-sm btn-secondary me-1 disabled"
+               data-bs-toggle="tooltip" data-bs-placement="top" 
                title="System species cannot be edited">
                 <span class="s7-pen"></span>
             </a>
@@ -73,15 +73,15 @@
             <!-- Disabled delete button for system species -->
             <a href="javascript:void(0)" 
                class="btn btn-sm btn-secondary disabled"
-               data-toggle="tooltip" data-placement="top" 
+               data-bs-toggle="tooltip" data-bs-placement="top" 
                title="System species cannot be deleted">
                 <span class="s7-trash"></span>
             </a>
             {% else %}
             <!-- Edit button for regular species -->
             <a href="{% url 'battycoda_app:edit_species' item.id %}" 
-               class="btn btn-sm btn-info mr-1"
-               data-toggle="tooltip" data-placement="top" 
+               class="btn btn-sm btn-info me-1"
+               data-bs-toggle="tooltip" data-bs-placement="top" 
                title="Edit">
                 <span class="s7-pen"></span>
             </a>
@@ -89,7 +89,7 @@
             <!-- Delete button for regular species -->
             <a href="{% url 'battycoda_app:delete_species' item.id %}" 
                class="btn btn-sm btn-danger"
-               data-toggle="tooltip" data-placement="top" 
+               data-bs-toggle="tooltip" data-bs-placement="top" 
                title="Delete">
                 <span class="s7-trash"></span>
             </a>

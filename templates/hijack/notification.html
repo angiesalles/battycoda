@@ -4,7 +4,7 @@
     <b>{% trans "You are currently working on behalf of" %} {{ request.user }}</b>
     <form method="post" action="{% url 'hijack:release' %}{% if next %}?next={{ next }}{% endif %}" style="display: inline;">
       {% csrf_token %}
-      <button type="submit" class="btn btn-sm btn-warning ml-2">
+      <button type="submit" class="btn btn-sm btn-warning ms-2">
         {% trans "Release" %}
       </button>
     </form>

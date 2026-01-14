@@ -19,16 +19,16 @@
         <div id="invitationsBannerCol" class="col-12">
             {% for invitation in pending_invitations %}
             <div class="alert alert-info alert-dismissible fade show" role="alert">
-                <i class="fas fa-envelope mr-2"></i>
+                <i class="fas fa-envelope me-2"></i>
                 <strong>Group Invitation</strong>
                 You've been invited to join the group <strong>{{ invitation.group.name }}</strong> by {{ invitation.invited_by.username }}.
                 <div class="mt-2">
-                    <a href="{% url 'battycoda_app:accept_invitation' token=invitation.token %}" class="btn btn-sm btn-success mr-2">
+                    <a href="{% url 'battycoda_app:accept_invitation' token=invitation.token %}" class="btn btn-sm btn-success me-2">
                         <i class="fas fa-check"></i> Accept Invitation
                     </a>
                     <small class="text-muted">Expires: {{ invitation.expires_at|date:"M d, Y H:i" }}</small>
                 </div>
-                <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                <button type="button" class="close" data-bs-dismiss="alert" aria-label="Close">
                     <span aria-hidden="true">&times;</span>
                 </button>
             </div>
@@ -42,7 +42,7 @@
         <div class="col-12">
             <div class="card border-primary">
                 <div class="card-header bg-primary text-white">
-                    <h5 class="card-title mb-0"><span class="s7-folder mr-2"></span>Select Project to Work On</h5>
+                    <h5 class="card-title mb-0"><span class="s7-folder me-2"></span>Select Project to Work On</h5>
                 </div>
                 <div class="card-body">
                     {% if projects_with_tasks %}
@@ -80,7 +80,7 @@
 
                                     <a href="{% url 'battycoda_app:get_next_task' %}?project={{ project.id }}"
                                        class="btn btn-primary btn-block">
-                                        <span class="s7-play mr-2"></span>Start Working
+                                        <span class="s7-play me-2"></span>Start Working
                                     </a>
                                 </div>
                             </div>
@@ -93,7 +93,7 @@
                         <h5 class="text-muted mt-3">No Projects Available</h5>
                         <p class="text-muted mb-3">Create a project and add tasks to get started.</p>
                         <a href="{% url 'battycoda_app:project_list' %}" class="btn btn-primary">
-                            <span class="s7-plus mr-2"></span>Go to Projects
+                            <span class="s7-plus me-2"></span>Go to Projects
                         </a>
                     </div>
                     {% endif %}
@@ -107,7 +107,7 @@
         <div class="col-12">
             <div class="card">
                 <div class="card-header bg-info text-white">
-                    <h5 class="card-title mb-0"><span class="s7-user mr-2"></span>My Work Progress</h5>
+                    <h5 class="card-title mb-0"><span class="s7-user me-2"></span>My Work Progress</h5>
                 </div>
                 <div class="card-body">
                     <div class="row text-center">
@@ -148,7 +148,7 @@
                         {% for batch_info in my_stats.recent_batches %}
                         <div class="col-md-6 mb-2">
                             <div class="d-flex align-items-center">
-                                <span class="s7-folder mr-2 text-primary"></span>
+                                <span class="s7-folder me-2 text-primary"></span>
                                 <div class="flex-grow-1">
                                     <strong>{{ batch_info.batch.name }}</strong>
                                     <br><small class="text-muted">{{ batch_info.batch.project.name }} • {{ batch_info.count }} tasks</small>
@@ -169,7 +169,7 @@
         <div class="col-12">
             <div class="card">
                 <div class="card-header bg-success text-white">
-                    <h5 class="card-title mb-0"><span class="s7-medal mr-2"></span>Leaderboard</h5>
+                    <h5 class="card-title mb-0"><span class="s7-medal me-2"></span>Leaderboard</h5>
                 </div>
                 <div class="card-body">
                     <div class="table-responsive">
@@ -200,7 +200,7 @@
                                     </td>
                                     <td>
                                         <strong>{{ entry.username }}</strong>
-                                        {% if entry.is_current_user %}<span class="badge badge-primary ml-2">You</span>{% endif %}
+                                        {% if entry.is_current_user %}<span class="badge badge-primary ms-2">You</span>{% endif %}
                                     </td>
                                     <td class="text-center">{{ entry.today }}</td>
                                     <td class="text-center">{{ entry.this_week }}</td>

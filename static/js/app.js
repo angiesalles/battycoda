@@ -278,11 +278,17 @@ var App = (function () {
         }
       });
 
-      // Tooltips
-      $('[data-toggle="tooltip"]').tooltip();
+      // Bootstrap 5 Tooltips
+      var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+      tooltipTriggerList.map(function (tooltipTriggerEl) {
+        return new bootstrap.Tooltip(tooltipTriggerEl);
+      });
 
-      // Popover
-      $('[data-toggle="popover"]').popover();
+      // Bootstrap 5 Popover
+      var popoverTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="popover"]'));
+      popoverTriggerList.map(function (popoverTriggerEl) {
+        return new bootstrap.Popover(popoverTriggerEl);
+      });
     }
   };
 

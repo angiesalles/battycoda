@@ -45,9 +45,9 @@ function initializeVisualization() {
     const width = $('#cluster-visualization').width();
     const height = 500;
     const margin = { top: 20, right: 20, bottom: 20, left: 20 };
-    
-    // Remove any existing SVG
-    d3.select('#cluster-visualization svg').remove();
+
+    // Clear any existing content (including loading spinner)
+    $('#cluster-visualization').empty();
     
     // Create the SVG container
     const svg = d3.select('#cluster-visualization')

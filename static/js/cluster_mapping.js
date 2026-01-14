@@ -2,58 +2,73 @@
  * Cluster Mapping interface for BattyCoda
  *
  * Implements drag-and-drop mapping between unsupervised clusters and call types
+ * Uses the ClusterMapping namespace from the module files
  */
+(function(ClusterMapping) {
+    'use strict';
 
-import { selectedClusterId, setSelectedClusterId, initializeExistingMappings, addMappingToContainer as addMappingToContainerBase, updateCallBadgeCount } from './cluster_mapping/initialization.js';
-import { initializeDragAndDrop, createMapping as createMappingBase, updateMappingConfidence, deleteMapping as deleteMappingBase } from './cluster_mapping/drag_drop.js';
-import { initializeClusterPreviewModal, loadClusterDetails } from './cluster_mapping/modal_handlers.js';
-import { filterClusters, sortClusters, filterSpecies } from './cluster_mapping/filtering.js';
+    // Main initialization function - called after all module scripts are loaded
+    function initClusterMapping() {
+        console.log("initClusterMapping called");
 
-// Main initialization function - called after script is loaded
-function initClusterMapping() {
-    console.log("initClusterMapping called");
+        setTimeout(function() {
+            console.log("Initializing mapping interface after delay");
 
-    setTimeout(function() {
-        console.log("Initializing mapping interface after delay");
+            // Initialize drag and drop
+            ClusterMapping.initializeDragAndDrop(
+                ClusterMapping.loadClusterDetails,
+                createMapping,
+                ClusterMapping.setSelectedClusterId
+            );
 
-        // Initialize drag and drop
-        initializeDragAndDrop(loadClusterDetails, createMapping, setSelectedClusterId);
+            // Initialize existing mappings
+            ClusterMapping.initializeExistingMappings(
+                existingMappings,
+                addMappingToContainer,
+                ClusterMapping.updateCallBadgeCount
+            );
 
-        // Initialize existing mappings
-        initializeExistingMappings(existingMappings, addMappingToContainer, updateCallBadgeCount);
+            // Set up cluster search
+            $('#cluster-search').on('input', function() {
+                ClusterMapping.filterClusters($(this).val());
+            });
 
-        // Set up cluster search
-        $('#cluster-search').on('input', function() {
-            filterClusters($(this).val());
-        });
+            // Set up cluster sorting
+            $('#cluster-sort').on('change', function() {
+                ClusterMapping.sortClusters($(this).val());
+            });
 
-        // Set up cluster sorting
-        $('#cluster-sort').on('change', function() {
-            sortClusters($(this).val());
-        });
+            // Set up species filtering
+            $('#species-filter').on('change', function() {
+                ClusterMapping.filterSpecies($(this).val());
+            });
 
-        // Set up species filtering
-        $('#species-filter').on('change', function() {
-            filterSpecies($(this).val());
-        });
+            // Initialize cluster preview modal
+            ClusterMapping.initializeClusterPreviewModal(createMapping, function() {
+                return ClusterMapping.selectedClusterId;
+            });
+        }, 300);
+    }
 
-        // Initialize cluster preview modal
-        initializeClusterPreviewModal(createMapping, selectedClusterId);
-    }, 300);
-}
+    // Wrapper functions to pass correct dependencies
+    function createMapping(clusterId, callId) {
+        ClusterMapping.createMapping(clusterId, callId, addMappingToContainer, ClusterMapping.updateCallBadgeCount);
+    }
 
-// Wrapper functions to pass correct dependencies
-function createMapping(clusterId, callId) {
-    createMappingBase(clusterId, callId, addMappingToContainer, updateCallBadgeCount);
-}
+    function addMappingToContainer(clusterId, clusterNum, clusterLabel, clusterColor, callId, confidence, mappingId) {
+        ClusterMapping.addMappingToContainer(
+            clusterId, clusterNum, clusterLabel, clusterColor, callId, confidence, mappingId,
+            ClusterMapping.updateMappingConfidence,
+            deleteMapping,
+            ClusterMapping.updateCallBadgeCount
+        );
+    }
 
-function addMappingToContainer(clusterId, clusterNum, clusterLabel, clusterColor, callId, confidence, mappingId) {
-    addMappingToContainerBase(clusterId, clusterNum, clusterLabel, clusterColor, callId, confidence, mappingId, updateMappingConfidence, deleteMapping, updateCallBadgeCount);
-}
+    function deleteMapping(mappingId) {
+        ClusterMapping.deleteMapping(mappingId, ClusterMapping.updateCallBadgeCount);
+    }
 
-function deleteMapping(mappingId) {
-    deleteMappingBase(mappingId, updateCallBadgeCount);
-}
+    // Initialize when loaded
+    initClusterMapping();
 
-// Initialize when loaded
-initClusterMapping();
+})(window.ClusterMapping = window.ClusterMapping || {});

@@ -22,7 +22,7 @@
                 </div>
                 <div id="recordingActionButtons" class="d-flex">
                     <a id="editRecordingBtn" href="{% url 'battycoda_app:edit_recording' recording_id=recording.id %}" class="btn btn-info">
-                        <span id="editRecordingIcon" class="s7-pen mr-1"></span> Edit Recording
+                        <span id="editRecordingIcon" class="s7-pen me-1"></span> Edit Recording
                     </a>
                 </div>
             </div>
@@ -36,7 +36,7 @@
         <div id="recordingInfoCol" class="col-md-6 mb-4">
             <div id="recordingInfoCard" class="card">
                 <div id="recordingInfoHeader" class="card-header">
-                    <h5 id="recordingInfoTitle" class="card-title mb-0"><span class="s7-micro mr-2"></span>Recording Information</h5>
+                    <h5 id="recordingInfoTitle" class="card-title mb-0"><span class="s7-micro me-2"></span>Recording Information</h5>
                 </div>
                 <div id="recordingInfoBody" class="card-body">
                     <h2 id="recordingNameHeader" class="h4 card-title mb-3">{{ recording.name }}</h2>
@@ -50,7 +50,7 @@
                         <p id="durationInfo" class="mb-1"><strong>Duration:</strong> {{ recording.duration|default:"Unknown"|floatformat:2 }} seconds</p>
                         <p id="sampleRateInfo" class="mb-2"><strong>Sample Rate:</strong> {{ recording.sample_rate|default:"Unknown" }} Hz</p>
                         <a id="recalculateAudioBtn" href="{% url 'battycoda_app:recalculate_audio_info' recording_id=recording.id %}" class="btn btn-sm btn-secondary mt-1">
-                            <span id="recalculateIcon" class="s7-refresh mr-1"></span> Recalculate Audio Info
+                            <span id="recalculateIcon" class="s7-refresh me-1"></span> Recalculate Audio Info
                         </a>
                     </div>
                     
@@ -82,20 +82,20 @@
                     </div>
                 </div>
                 <div id="recordingInfoFooter" class="card-footer text-center">
-                    <a id="downloadRecordingBtn" href="{{ recording.wav_file.url }}" class="btn btn-outline-primary mr-2" target="_blank">
-                        <span id="downloadIcon" class="s7-download mr-1"></span> Download Recording
+                    <a id="downloadRecordingBtn" href="{{ recording.wav_file.url }}" class="btn btn-outline-primary me-2" target="_blank">
+                        <span id="downloadIcon" class="s7-download me-1"></span> Download Recording
                     </a>
                     {% if spectrogram_info.status == 'not_available' %}
                     <button id="createSpectrogramJobBtn" class="btn btn-outline-secondary" data-recording-id="{{ recording.id }}">
-                        <span id="spectrogramJobIcon" class="s7-graph mr-1"></span> Generate Spectrogram
+                        <span id="spectrogramJobIcon" class="s7-graph me-1"></span> Generate Spectrogram
                     </button>
                     {% elif spectrogram_info.status == 'generating' %}
                     <span class="text-muted">
-                        <i class="fas fa-spinner fa-spin mr-1"></i> Generating spectrogram... {{ spectrogram_info.progress }}%
+                        <i class="fas fa-spinner fa-spin me-1"></i> Generating spectrogram... {{ spectrogram_info.progress }}%
                     </span>
                     {% elif spectrogram_info.status == 'available' %}
                     <span class="text-success">
-                        <i class="fas fa-check mr-1"></i> Spectrogram available
+                        <i class="fas fa-check me-1"></i> Spectrogram available
                     </span>
                     {% endif %}
                 </div>
@@ -108,7 +108,7 @@
             <!-- Segmentation links card -->
             <div id="segmentationCard" class="card mt-4">
                 <div id="segmentationHeader" class="card-header">
-                    <h5 id="segmentationTitle" class="card-title mb-0"><span class="s7-scissors mr-2"></span>Segmentation Options</h5>
+                    <h5 id="segmentationTitle" class="card-title mb-0"><span class="s7-scissors me-2"></span>Segmentation Options</h5>
                 </div>
                 <div id="segmentationBody" class="card-body">
                     <p id="segmentationDescription" class="text-muted mb-3">
@@ -116,21 +116,21 @@
                     </p>
                     <div id="segmentationButtons" class="d-flex flex-wrap">
                         {% if recording.segmentation %}
-                            <a id="segmentRecordingBtn" href="{% url 'battycoda_app:segmentation_detail' segmentation_id=recording.segmentation.id %}" class="btn btn-primary mr-2 mb-2">
+                            <a id="segmentRecordingBtn" href="{% url 'battycoda_app:segmentation_detail' segmentation_id=recording.segmentation.id %}" class="btn btn-primary me-2 mb-2">
                         {% else %}
-                            <a id="segmentRecordingBtn" href="{% url 'battycoda_app:create_segmentation' %}?recording={{ recording.id }}" class="btn btn-primary mr-2 mb-2">
+                            <a id="segmentRecordingBtn" href="{% url 'battycoda_app:create_segmentation' %}?recording={{ recording.id }}" class="btn btn-primary me-2 mb-2">
                         {% endif %}
-                            <span id="segmentIcon" class="s7-scissors mr-1"></span> Segment Recording
+                            <span id="segmentIcon" class="s7-scissors me-1"></span> Segment Recording
                         </a>
-                        <a id="uploadPickleBtn" href="{% url 'battycoda_app:upload_pickle_segments' recording_id=recording.id %}" class="btn btn-primary mr-2 mb-2">
-                            <span id="uploadIcon" class="s7-upload mr-1"></span> Upload Pickle File
+                        <a id="uploadPickleBtn" href="{% url 'battycoda_app:upload_pickle_segments' recording_id=recording.id %}" class="btn btn-primary me-2 mb-2">
+                            <span id="uploadIcon" class="s7-upload me-1"></span> Upload Pickle File
                         </a>
-                        <a id="autoSegmentBtn" href="{% url 'battycoda_app:auto_segment_recording' recording_id=recording.id %}" class="btn btn-primary mr-2 mb-2">
-                            <span id="magicIcon" class="s7-wand mr-1"></span> Auto-Segment
+                        <a id="autoSegmentBtn" href="{% url 'battycoda_app:auto_segment_recording' recording_id=recording.id %}" class="btn btn-primary me-2 mb-2">
+                            <span id="magicIcon" class="s7-wand me-1"></span> Auto-Segment
                         </a>
                         {% if recording.segmentation %}
                         <a id="runClassificationBtn" href="{% url 'battycoda_app:create_detection_run_for_segmentation' segmentation_id=recording.segmentation.id %}" class="btn btn-primary mb-2">
-                            <span id="classifyIcon" class="s7-display1 mr-1"></span> Run Classification
+                            <span id="classifyIcon" class="s7-display1 me-1"></span> Run Classification
                         </a>
                         {% endif %}
                     </div>
@@ -154,8 +154,8 @@ document.addEventListener('DOMContentLoaded', function() {
             
             // Disable button and show loading state
             btnText.disabled = true;
-            btnIcon.className = 'fas fa-spinner fa-spin mr-1';
-            btnText.innerHTML = '<span class="fas fa-spinner fa-spin mr-1"></span> Creating Job...';
+            btnIcon.className = 'fas fa-spinner fa-spin me-1';
+            btnText.innerHTML = '<span class="fas fa-spinner fa-spin me-1"></span> Creating Job...';
             
             // Create the spectrogram job
             fetch(`{% url 'battycoda_app:create_spectrogram_job' recording_id=0 %}`.replace('0', recordingId), {
@@ -172,12 +172,12 @@ document.addEventListener('DOMContentLoaded', function() {
                     toastr.success(data.message);
                     
                     // Update button to show success state temporarily
-                    btnText.innerHTML = '<span class="s7-check mr-1"></span> Job Created!';
+                    btnText.innerHTML = '<span class="s7-check me-1"></span> Job Created!';
                     
                     // Reset button after 3 seconds
                     setTimeout(() => {
                         btnText.disabled = false;
-                        btnText.innerHTML = '<span class="s7-graph mr-1"></span> Generate Spectrogram';
+                        btnText.innerHTML = '<span class="s7-graph me-1"></span> Generate Spectrogram';
                     }, 3000);
                 } else {
                     // Show error message
@@ -185,7 +185,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     
                     // Reset button
                     btnText.disabled = false;
-                    btnText.innerHTML = '<span class="s7-graph mr-1"></span> Generate Spectrogram';
+                    btnText.innerHTML = '<span class="s7-graph me-1"></span> Generate Spectrogram';
                 }
             })
             .catch(error => {
@@ -194,7 +194,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 
                 // Reset button
                 btnText.disabled = false;
-                btnText.innerHTML = '<span class="s7-graph mr-1"></span> Generate Spectrogram';
+                btnText.innerHTML = '<span class="s7-graph me-1"></span> Generate Spectrogram';
             });
         });
     }

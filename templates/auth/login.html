@@ -56,19 +56,19 @@
                         
                         {% if login_error %}
                         <div class="alert alert-danger mb-3" role="alert">
-                            <strong><i class="s7-attention mr-2"></i>Login Failed:</strong> {{ login_error }}
+                            <strong><i class="s7-attention me-2"></i>Login Failed:</strong> {{ login_error }}
                         </div>
                         {% endif %}
                         
                         <div class="row mt-4">
                             <div class="col-md-6 mb-2">
                                 <button type="submit" class="btn btn-primary btn-lg btn-block font-weight-bold" style="padding: 12px 0; font-size: 1.2rem;">
-                                    <span class="s7-lock mr-2" style="font-size: 1.3rem; vertical-align: middle;"></span>Login with Password
+                                    <span class="s7-lock me-2" style="font-size: 1.3rem; vertical-align: middle;"></span>Login with Password
                                 </button>
                             </div>
                             <div class="col-md-6">
                                 <a href="{% url 'battycoda_app:request_login_code' %}" id="codeLoginBtn" class="btn btn-outline-secondary btn-lg btn-block font-weight-bold" style="padding: 12px 0; font-size: 1.2rem;">
-                                    <span class="s7-mail mr-2" style="font-size: 1.3rem; vertical-align: middle;"></span>Login with Code
+                                    <span class="s7-mail me-2" style="font-size: 1.3rem; vertical-align: middle;"></span>Login with Code
                                 </a>
                             </div>
                         </div>
@@ -95,12 +95,12 @@
                         <div class="row">
                             <div class="col-md-6">
                                 <a href="{% url 'battycoda_app:register' %}" id="registerLink" class="btn btn-link text-primary" style="font-size: 1.15rem;">
-                                    <span class="s7-add-user mr-1" style="font-size: 1.3rem; vertical-align: middle;"></span> Create Account
+                                    <span class="s7-add-user me-1" style="font-size: 1.3rem; vertical-align: middle;"></span> Create Account
                                 </a>
                             </div>
                             <div class="col-md-6">
                                 <a href="{% url 'battycoda_app:password_reset_request' %}" id="resetPasswordLink" class="btn btn-link text-primary" style="font-size: 1.15rem;">
-                                    <span class="s7-key mr-1" style="font-size: 1.3rem; vertical-align: middle;"></span> Forgot Password?
+                                    <span class="s7-key me-1" style="font-size: 1.3rem; vertical-align: middle;"></span> Forgot Password?
                                 </a>
                             </div>
                         </div>

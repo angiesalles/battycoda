@@ -15,7 +15,7 @@
         <div class="card">
             <div class="card-header">
                 <h3 class="card-title">Map Clusters to Call Types: {{ clustering_run.name }}</h3>
-                <div class="btn-group float-right">
+                <div class="btn-group float-end">
                     <a href="{% url 'battycoda_app:clustering_run_detail' run_id=clustering_run.id %}" class="btn btn-secondary">
                         <i class="fa fa-arrow-left"></i> Back to Run Details
                     </a>
@@ -75,7 +75,7 @@
                                             <div class="mt-2">
                                                 <small class="text-muted">Size: {{ cluster.size }} segments</small>
                                                 {% if cluster.coherence %}
-                                                <small class="text-muted ml-2">Coherence: {{ cluster.coherence|floatformat:3 }}</small>
+                                                <small class="text-muted ms-2">Coherence: {{ cluster.coherence|floatformat:3 }}</small>
                                                 {% endif %}
                                             </div>
                                             {% if cluster.description %}
@@ -156,7 +156,7 @@
         <div class="modal-content">
             <div class="modal-header">
                 <h5 class="modal-title" id="clusterPreviewModalLabel">Cluster Preview</h5>
-                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                <button type="button" class="close" data-bs-dismiss="modal" aria-label="Close">
                     <span aria-hidden="true">&times;</span>
                 </button>
             </div>
@@ -197,9 +197,9 @@
                         <div class="col-md-6">
                             <select id="mapping-call-select" class="form-control"></select>
                         </div>
-                        <div class="col-md-6 text-right">
+                        <div class="col-md-6 text-end">
                             <button type="button" id="create-mapping-btn" class="btn btn-primary">Create Mapping</button>
-                            <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
                         </div>
                     </div>
                 </div>
@@ -213,10 +213,10 @@
 <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.14.0/Sortable.min.js"></script>
 <script>
 // Store clustering run ID for API calls
-const clusteringRunId = {{ clustering_run.id }};
+var clusteringRunId = {{ clustering_run.id }};
 
 // Store existing mappings
-const existingMappings = [
+var existingMappings = [
     {% for mapping in existing_mappings %}
     {
         id: {{ mapping.id }},
@@ -229,7 +229,22 @@ const existingMappings = [
     {% endfor %}
 ];
 
-const clusterMappingJsUrl = "{% static 'js/cluster_mapping.js' %}";
+// Set up CSRF token for AJAX requests
+$(function() {
+    var csrftoken = $('[name=csrfmiddlewaretoken]').val();
+    $.ajaxSetup({
+        beforeSend: function(xhr, settings) {
+            if (!this.crossDomain) {
+                xhr.setRequestHeader("X-CSRFToken", csrftoken);
+            }
+        }
+    });
+});
 </script>
-<script src="{% static 'js/mapping_interface.js' %}"></script>
+<!-- Load cluster mapping modules in dependency order -->
+<script src="{% static 'js/cluster_mapping/initialization.js' %}"></script>
+<script src="{% static 'js/cluster_mapping/filtering.js' %}"></script>
+<script src="{% static 'js/cluster_mapping/drag_drop.js' %}"></script>
+<script src="{% static 'js/cluster_mapping/modal_handlers.js' %}"></script>
+<script src="{% static 'js/cluster_mapping.js' %}"></script>
 {% endblock %}

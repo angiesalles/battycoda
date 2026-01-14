@@ -42,16 +42,8 @@ function loadSegmentDetails(segmentId) {
  * Initialize event handlers
  */
 $(document).ready(function() {
-    // Handle save button click
-    $('#save-cluster-label').click(function() {
-        saveClusterLabel();
-    });
-
-    // Handle segment view button click
-    $(document).on('click', '.view-segment-btn', function() {
-        const segmentId = $(this).data('segment-id');
-        loadSegmentDetails(segmentId);
-    });
+    // Note: #save-cluster-label and .view-segment-btn handlers are in visualization.js
+    // to avoid duplicate registrations
 
     // Handle point size changes
     $('#point-size').on('input', function() {

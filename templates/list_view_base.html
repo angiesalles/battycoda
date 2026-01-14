@@ -22,7 +22,7 @@
                     <h5 class="card-title mb-0">{% block card_title %}All Items{% endblock %}</h5>
                     <div>
                         <span class="badge badge-primary">{% block item_count %}0{% endblock %} Total</span>
-                        <div class="btn-group ml-2">
+                        <div class="btn-group ms-2">
                             {% block action_buttons %}
                             <!-- Action buttons go here -->
                             {% endblock %}
@@ -66,16 +66,16 @@
                                             {% block item_actions %}
                                             <!-- View button -->
                                             <a href="{% block view_url %}#{% endblock %}" 
-                                               class="btn btn-sm btn-primary mr-1"
-                                               data-toggle="tooltip" data-placement="top" 
+                                               class="btn btn-sm btn-primary me-1"
+                                               data-bs-toggle="tooltip" data-bs-placement="top" 
                                                title="View details">
                                                 <span class="s7-look"></span>
                                             </a>
                                             
                                             <!-- Edit button -->
                                             <a href="{% block edit_url %}#{% endblock %}" 
-                                               class="btn btn-sm btn-info mr-1"
-                                               data-toggle="tooltip" data-placement="top" 
+                                               class="btn btn-sm btn-info me-1"
+                                               data-bs-toggle="tooltip" data-bs-placement="top" 
                                                title="Edit">
                                                 <span class="s7-pen"></span>
                                             </a>
@@ -83,7 +83,7 @@
                                             <!-- Delete button -->
                                             <a href="{% block delete_url %}#{% endblock %}" 
                                                class="btn btn-sm btn-danger"
-                                               data-toggle="tooltip" data-placement="top" 
+                                               data-bs-toggle="tooltip" data-bs-placement="top" 
                                                title="Delete">
                                                 <span class="s7-trash"></span>
                                             </a>
@@ -105,7 +105,7 @@
                         <h4>{% block empty_title %}No Items Found{% endblock %}</h4>
                         <p class="text-muted">{% block empty_text %}Create your first item to get started.{% endblock %}</p>
                         <a href="{% block create_url %}#{% endblock %}" class="btn btn-primary mt-2">
-                            <span class="s7-plus mr-1"></span> {% block create_text %}Add New Item{% endblock %}
+                            <span class="s7-plus me-1"></span> {% block create_text %}Add New Item{% endblock %}
                         </a>
                     </div>
                     {% endblock %}
@@ -115,7 +115,7 @@
                 
                 {% block card_footer %}
                 {% if items and items|length > 0 %}
-                <div class="card-footer text-right">
+                <div class="card-footer text-end">
                     <a href="{% block all_items_url %}#{% endblock %}" class="btn btn-sm btn-primary">
                         View All <span class="s7-angle-right"></span>
                     </a>
@@ -131,9 +131,12 @@
 {% block extra_js %}
 <script>
     document.addEventListener('DOMContentLoaded', function() {
-        // Initialize tooltips
-        $('[data-toggle="tooltip"]').tooltip();
-        
+        // Initialize Bootstrap 5 tooltips
+        var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+        tooltipTriggerList.map(function (tooltipTriggerEl) {
+            return new bootstrap.Tooltip(tooltipTriggerEl);
+        });
+
         // Check for datetime elements
         if (typeof formatDateElements === 'function') {
             formatDateElements();
