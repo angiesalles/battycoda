@@ -128,6 +128,48 @@ npm --version   # Should be v10.x.x
 
 **Note:** The `.npmrc` file enforces strict engine checking. `npm install` will fail if your Node version doesn't match the requirements in `package.json`.
 
+## Development Workflow
+
+For development, you need to run multiple services: Django, Vite (for frontend assets), Celery worker, and Celery beat. Use the convenience scripts to manage these easily.
+
+### Quick Start (Recommended)
+```bash
+# Start all services with honcho (Django, Vite, Celery worker, Celery beat)
+./scripts/dev.sh
+```
+
+### Minimal Mode (Frontend Work)
+```bash
+# Start only Django + Vite (no Celery - async tasks won't process)
+./scripts/dev-minimal.sh
+```
+
+### Selective Services
+```bash
+# Start specific services only using honcho
+./scripts/dev.sh django vite           # Just Django and Vite
+./scripts/dev.sh django vite celery    # Django, Vite, and Celery worker
+```
+
+### Manual Individual Services
+```bash
+# Terminal 1: Django
+source venv/bin/activate && python manage.py runserver
+
+# Terminal 2: Vite (for frontend HMR)
+npm run dev
+
+# Terminal 3: Celery worker (for async tasks)
+source venv/bin/activate && celery -A config worker --loglevel=info
+
+# Terminal 4: Celery beat (for scheduled tasks)
+source venv/bin/activate && celery -A config beat --loglevel=info
+```
+
+### Development URLs
+- **Django**: http://localhost:8000
+- **Vite HMR**: http://localhost:5173 (proxied through Django in dev mode)
+
 ## Running Tests
 ```bash
 source venv/bin/activate
@@ -298,6 +340,8 @@ python manage.py populate_memberships
 ## Scripts
 
 Located in `scripts/`:
+- `dev.sh` - Start full development environment (Django, Vite, Celery, Beat)
+- `dev-minimal.sh` - Start minimal dev environment (Django + Vite only)
 - `notify_worker_failure.py` - Sends email alerts when workers fail (called by systemd)
 - `create_clustering_algorithms.py` - Creates default clustering algorithm entries
 - `create_automatic_clustering_algorithms.py` - Creates automatic clustering algorithms
@@ -521,6 +565,8 @@ python manage.py collectstatic --noinput
 - R server code: `R_code/`
 - Management commands: `battycoda_app/management/commands/`
 - Simple API: `battycoda_app/simple_api/`
+- Dev scripts: `scripts/dev.sh`, `scripts/dev-minimal.sh`
+- Procfile (dev): `Procfile.dev`
 
 ## Database
 

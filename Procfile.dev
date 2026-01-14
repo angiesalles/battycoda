@@ -1,0 +1,15 @@
+# Procfile.dev - Development processes for BattyCoda
+# Run with: honcho start -f Procfile.dev
+# Or run specific processes: honcho start django vite -f Procfile.dev
+
+# Django development server
+django: source venv/bin/activate && python manage.py runserver 0.0.0.0:8000
+
+# Vite development server with HMR
+vite: npm run dev
+
+# Celery worker for async tasks
+celery: source venv/bin/activate && celery -A config worker --loglevel=info
+
+# Celery beat for scheduled tasks
+beat: source venv/bin/activate && celery -A config beat --loglevel=info
