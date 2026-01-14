@@ -2,10 +2,12 @@
  * Notifications Module
  *
  * Handles navbar notification loading, display, and polling.
- * Requires jQuery and template-provided URLs:
- * - navbarNotificationsUrl: URL to fetch notifications
- * - markNotificationReadUrl: URL pattern to mark notification as read
+ * Requires jQuery and page data from templates:
+ * - data-navbar-notifications-url: URL to fetch notifications
+ * - data-mark-notification-read-url: URL pattern to mark notification as read
  */
+
+import { getPageData } from './utils/page-data.js';
 
 /**
  * Format time as "X minutes ago", "X hours ago", etc.
@@ -32,8 +34,13 @@ export function formatTimeAgo(date) {
  * Load notifications from server and update the navbar dropdown
  */
 export function loadNavbarNotifications() {
-  // Check if required globals are available
-  if (typeof navbarNotificationsUrl === 'undefined') {
+  // Get URLs from page data
+  const pageData = getPageData();
+  const navbarNotificationsUrl = pageData.navbarNotificationsUrl;
+  const markNotificationReadUrl = pageData.markNotificationReadUrl;
+
+  // Check if required data is available
+  if (!navbarNotificationsUrl) {
     return;
   }
 

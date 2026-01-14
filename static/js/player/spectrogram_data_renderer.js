@@ -5,6 +5,7 @@
  */
 
 import { CanvasInteractions } from './canvas_interactions.js';
+import { ROSEUS_COLORMAP } from '../utils/colormaps.js';
 
 export class SpectrogramDataRenderer {
   constructor(containerId, recordingId, player) {

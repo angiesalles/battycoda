@@ -185,9 +185,11 @@
 {% endblock %}
 
 {% block extra_js %}
-<script>
-    const relabelTaskUrl = "{% url 'battycoda_app:relabel_task_ajax' %}";
-</script>
-<script src="{% static 'js/batch_review.js' %}"></script>
-{% csrf_token %}
+<!-- Page data for batch review -->
+<div id="page-data"
+     data-relabel-task-url="{% url 'battycoda_app:relabel_task_ajax' %}"
+     hidden>
+</div>
+{% include 'includes/csrf_data.html' %}
+<script src="{% static 'js/batch_review.js' %}" type="module"></script>
 {% endblock %}

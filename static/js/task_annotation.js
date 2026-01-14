@@ -5,6 +5,12 @@
  * including spectrogram switching, channel toggling, form handling, and notifications.
  */
 
+import { getJsonData } from './utils/page-data.js';
+
+// Get configuration from JSON script tags
+const taskConfig = getJsonData('task-config-data');
+const batchSwitchData = getJsonData('batch-switch-data');
+
 document.addEventListener('DOMContentLoaded', function () {
   // Initialize spectrogram viewer functionality
   initSpectrogramViewer();
@@ -36,6 +42,12 @@ function initSpectrogramViewer() {
   // Check for critical elements
   if (!mainSpectrogram || !detailViewBtn || !overviewBtn || !detailTicks || !overviewTicks) {
     console.error('Critical elements for spectrogram viewing are missing.');
+    return;
+  }
+
+  // Check that taskConfig was loaded
+  if (!taskConfig) {
+    console.error('Task configuration data not found.');
     return;
   }
 
@@ -185,13 +197,13 @@ function checkBatchSwitchNotification() {
       extendedTimeOut: '2000',
     };
 
-    // Check if there's batch switch data in sessionStorage
-    if (typeof batchSwitchData !== 'undefined' && batchSwitchData) {
-      const fromBatchName = batchSwitchData.from_batch_name;
-      const toBatchName = batchSwitchData.to_batch_name;
-      const toBatchId = batchSwitchData.to_batch_id;
-      const sameProject = batchSwitchData.same_project;
-      const projectName = batchSwitchData.project_name;
+    // Check if there's batch switch data
+    if (batchSwitchData) {
+      const fromBatchName = batchSwitchData.fromBatchName;
+      const toBatchName = batchSwitchData.toBatchName;
+      const toBatchId = batchSwitchData.toBatchId;
+      const sameProject = batchSwitchData.sameProject;
+      const projectName = batchSwitchData.projectName;
 
       // Create message with link to batch
       const batchLink = `<a href="/tasks/batches/${toBatchId}/" class="text-white text-decoration-underline">view batch</a>`;

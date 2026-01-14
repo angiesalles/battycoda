@@ -242,12 +242,13 @@
 
 <script id="appScript" src="{% static 'js/app.js' %}" type="text/javascript"></script>
 
-<!-- Notification URLs for JavaScript -->
+<!-- Page data for JavaScript modules (notification URLs, etc.) -->
 {% if user.is_authenticated %}
-<script type="text/javascript">
-    var navbarNotificationsUrl = "{% url 'battycoda_app:get_navbar_notifications' %}";
-    var markNotificationReadUrl = "{% url 'battycoda_app:mark_notification_read' notification_id=0 %}";
-</script>
+<div id="page-data"
+     data-navbar-notifications-url="{% url 'battycoda_app:get_navbar_notifications' %}"
+     data-mark-notification-read-url="{% url 'battycoda_app:mark_notification_read' notification_id=0 %}"
+     hidden>
+</div>
 {% endif %}
 
 <!-- Theme URLs for dynamic theme loading (used by theme-switcher.js) -->

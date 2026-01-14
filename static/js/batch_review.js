@@ -1,3 +1,13 @@
+/**
+ * Batch Review Module
+ * Handles filtering and relabeling tasks in the batch review interface
+ */
+import { getPageData, getCsrfToken } from './utils/page-data.js';
+
+// Get page data
+const pageData = getPageData();
+const relabelTaskUrl = pageData.relabelTaskUrl;
+
 function filterByCallType() {
   const select = document.getElementById('call-type-filter');
   const selectedCallType = select.value;
@@ -23,10 +33,7 @@ function relabelTask(selectElement) {
   const formData = new FormData();
   formData.append('task_id', taskId);
   formData.append('new_label', newLabel);
-  formData.append(
-    'csrfmiddlewaretoken',
-    document.querySelector('[name=csrfmiddlewaretoken]').value
-  );
+  formData.append('csrfmiddlewaretoken', getCsrfToken());
 
   fetch(relabelTaskUrl, {
     method: 'POST',
@@ -75,3 +82,8 @@ function showToast(message, type) {
     }
   }, 5000);
 }
+
+// Export functions globally for inline onclick handlers
+window.filterByCallType = filterByCallType;
+window.relabelTask = relabelTask;
+window.showToast = showToast;

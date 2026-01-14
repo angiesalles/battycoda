@@ -1,0 +1,14 @@
+{#
+  CSRF Data Include
+
+  Include this template to provide CSRF token in a standard location for JavaScript.
+  The page-data.js utility's getCsrfToken() function will automatically find it.
+
+  Usage:
+  {% include 'includes/csrf_data.html' %}
+
+  Then in JavaScript:
+  import { getCsrfToken } from './utils/page-data.js';
+  const token = getCsrfToken();
+#}
+<input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}">

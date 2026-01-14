@@ -244,32 +244,32 @@
 </div>
 
 <!-- Configuration data for task annotation -->
-<script>
-    var taskConfig = {
-        taskId: {{ task.id }},
-        wavPath: "{{ full_path|escapejs }}",
-        fileHash: "{{ file_hash }}",
-        onset: {{ task.onset }},
-        offset: {{ task.offset }},
-        audioSnippetUrl: "{% url 'battycoda_app:task_audio_snippet' task.id %}",
-        spectrogramBaseUrl: "{% url 'battycoda_app:task_spectrogram' task.id %}"
-    };
-    
-    // Batch switch notification data
-    {% if batch_switch_data %}
-    var batchSwitchData = {
-        from_batch_name: "{{ batch_switch_data.from_batch_name|escapejs }}",
-        from_batch_id: {{ batch_switch_data.from_batch_id }},
-        to_batch_name: "{{ batch_switch_data.to_batch_name|escapejs }}",
-        to_batch_id: {{ batch_switch_data.to_batch_id }},
-        same_project: {{ batch_switch_data.same_project|lower }},
-        project_name: "{{ batch_switch_data.project_name|escapejs }}"
-    };
-    {% else %}
-    var batchSwitchData = null;
-    {% endif %}
+<script id="task-config-data" type="application/json">
+{
+    "taskId": {{ task.id }},
+    "wavPath": "{{ full_path|escapejs }}",
+    "fileHash": "{{ file_hash }}",
+    "onset": {{ task.onset }},
+    "offset": {{ task.offset }},
+    "audioSnippetUrl": "{% url 'battycoda_app:task_audio_snippet' task.id %}",
+    "spectrogramBaseUrl": "{% url 'battycoda_app:task_spectrogram' task.id %}"
+}
 </script>
 
+<!-- Batch switch notification data -->
+{% if batch_switch_data %}
+<script id="batch-switch-data" type="application/json">
+{
+    "fromBatchName": "{{ batch_switch_data.from_batch_name|escapejs }}",
+    "fromBatchId": {{ batch_switch_data.from_batch_id }},
+    "toBatchName": "{{ batch_switch_data.to_batch_name|escapejs }}",
+    "toBatchId": {{ batch_switch_data.to_batch_id }},
+    "sameProject": {{ batch_switch_data.same_project|lower }},
+    "projectName": "{{ batch_switch_data.project_name|escapejs }}"
+}
+</script>
+{% endif %}
+
 <!-- Include task annotation JavaScript -->
-<script src="{% static 'js/task_annotation.js' %}"></script>
+<script src="{% static 'js/task_annotation.js' %}" type="module"></script>
 {% endblock %}

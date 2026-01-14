@@ -94,11 +94,7 @@
 
 {% block extra_js %}
 <!-- CSRF token for AJAX requests -->
-<input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}">
-
-<script>
-const ROSEUS_COLORMAP = {{ roseus_colormap|safe }};
-</script>
+{% include 'includes/csrf_data.html' %}
 
 {% vite_asset 'static/js/segmentation/index.js' %}
 

@@ -212,35 +212,55 @@
 
 {% block extra_js %}
 <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.14.0/Sortable.min.js"></script>
-<script>
-// Store clustering run ID for API calls
-var clusteringRunId = {{ clustering_run.id }};
 
-// Store existing mappings
-var existingMappings = [
+<!-- Page data for cluster mapping -->
+<div id="page-data"
+     data-clustering-run-id="{{ clustering_run.id }}"
+     hidden>
+</div>
+
+<!-- Existing mappings data as JSON -->
+<script id="existing-mappings-data" type="application/json">
+[
     {% for mapping in existing_mappings %}
     {
-        id: {{ mapping.id }},
-        cluster_id: {{ mapping.cluster.id }},
-        call_id: {{ mapping.call.id }},
-        confidence: {{ mapping.confidence }},
-        species_name: "{{ mapping.call.species.name }}",
-        call_name: "{{ mapping.call.short_name }}"
-    },
+        "id": {{ mapping.id }},
+        "clusterId": {{ mapping.cluster.id }},
+        "callId": {{ mapping.call.id }},
+        "confidence": {{ mapping.confidence }},
+        "speciesName": "{{ mapping.call.species.name }}",
+        "callName": "{{ mapping.call.short_name }}"
+    }{% if not forloop.last %},{% endif %}
     {% endfor %}
-];
+]
+</script>
 
-// Set up CSRF token for AJAX requests
+{% include 'includes/csrf_data.html' %}
+
+<script type="module">
+import { getJsonData, setupJQueryCsrf } from '{% static "js/utils/page-data.js" %}';
+
+// Set up CSRF for jQuery AJAX
 $(function() {
-    var csrftoken = $('[name=csrfmiddlewaretoken]').val();
-    $.ajaxSetup({
-        beforeSend: function(xhr, settings) {
-            if (!this.crossDomain) {
-                xhr.setRequestHeader("X-CSRFToken", csrftoken);
-            }
-        }
-    });
+    setupJQueryCsrf();
+
+    // Load existing mappings from JSON data
+    const existingMappingsData = getJsonData('existing-mappings-data');
+    if (existingMappingsData) {
+        // Convert camelCase to snake_case for backward compatibility
+        window.existingMappings = existingMappingsData.map(m => ({
+            id: m.id,
+            cluster_id: m.clusterId,
+            call_id: m.callId,
+            confidence: m.confidence,
+            species_name: m.speciesName,
+            call_name: m.callName
+        }));
+    } else {
+        window.existingMappings = [];
+    }
 });
 </script>
+
 {% vite_asset 'static/js/cluster_mapping/index.js' %}
 {% endblock %}

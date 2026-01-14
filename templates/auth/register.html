@@ -158,11 +158,12 @@
 </div>
 
 {% load static %}
-<script>
-    // Setup variables for the registration form validation
-    const csrfToken = '{{ csrf_token }}';
-    const usernameCheckURL = '{% url "battycoda_app:check_username" %}';
-    const emailCheckURL = '{% url "battycoda_app:check_email" %}';
-</script>
-<script src="{% static 'js/auth/register.js' %}"></script>
+<!-- Page data for registration form validation -->
+<div id="page-data"
+     data-username-check-url="{% url 'battycoda_app:check_username' %}"
+     data-email-check-url="{% url 'battycoda_app:check_email' %}"
+     hidden>
+</div>
+{% include 'includes/csrf_data.html' %}
+<script src="{% static 'js/auth/register.js' %}" type="module"></script>
 {% endblock %}

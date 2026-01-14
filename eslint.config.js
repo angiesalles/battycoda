@@ -87,20 +87,6 @@ export default [
         DataTransfer: 'readonly',
         // XMLHttpRequest
         XMLHttpRequest: 'readonly',
-        // Django template variables (TODO: remove after battycoda-wgn is complete)
-        // These are passed from Django templates via inline scripts
-        csrfToken: 'readonly',
-        usernameCheckURL: 'readonly',
-        emailCheckURL: 'readonly',
-        relabelTaskUrl: 'readonly',
-        existingMappings: 'readonly',
-        clusterMappingJsUrl: 'readonly',
-        navbarNotificationsUrl: 'readonly',
-        markNotificationReadUrl: 'readonly',
-        taskConfig: 'readonly',
-        batchSwitchData: 'readonly',
-        wavViewerConfig: 'readonly',
-        ROSEUS_COLORMAP: 'readonly',
       },
     },
     rules: {

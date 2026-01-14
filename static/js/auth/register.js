@@ -2,7 +2,15 @@
  * Registration form validation and AJAX checks
  * Handles username and email validation, availability checks
  */
+import { getPageData, getCsrfToken } from '../utils/page-data.js';
+
 document.addEventListener('DOMContentLoaded', function () {
+  // Get page data (URLs)
+  const pageData = getPageData();
+  const usernameCheckURL = pageData.usernameCheckUrl;
+  const emailCheckURL = pageData.emailCheckUrl;
+  const csrfToken = getCsrfToken();
+
   const usernameField = document.getElementById('id_username');
   const emailField = document.getElementById('id_email');
   const submitButton = document.querySelector('button[type="submit"]');

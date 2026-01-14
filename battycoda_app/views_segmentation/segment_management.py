@@ -11,7 +11,6 @@ from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 
-from battycoda_app.audio.colormaps import ROSEUS_COLORMAP
 from battycoda_app.forms import SegmentForm
 from battycoda_app.models import Recording, Segment, Segmentation, SpectrogramJob
 
@@ -199,7 +198,6 @@ def segmentation_detail_view(request, segmentation_id):
         "active_segmentation": segmentation_info,
         "segmentation": segmentation,
         "all_segmentations": all_segmentations,
-        "roseus_colormap": json.dumps(ROSEUS_COLORMAP),
     }
 
     return render(request, "segmentations/segmentation_detail.html", context)
