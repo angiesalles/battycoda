@@ -1,213 +1,239 @@
 /**
- * Drag and drop functionality for cluster mapping
+ * Cluster Mapping Drag and Drop Module
+ *
+ * Handles drag and drop functionality for cluster-to-call mapping.
  */
-(function(ClusterMapping) {
-    'use strict';
 
-    /**
-     * Initialize drag and drop functionality
-     */
-    ClusterMapping.initializeDragAndDrop = function(loadClusterDetails, createMapping, setSelectedClusterId) {
-        console.log("Initializing drag and drop functionality");
+import { setSelectedClusterId } from './state.js';
+import { addMappingToContainer, updateCallBadgeCount } from './initialization.js';
 
-        // Initialize draggable for cluster boxes
-        $('.cluster-box').each(function() {
-            $(this).attr('draggable', 'true');
+/**
+ * Initialize drag and drop functionality
+ * @param {Function} loadClusterDetails - Function to load cluster details
+ * @param {Function} createMappingFn - Function to create mapping
+ */
+export function initializeDragAndDrop(loadClusterDetails, createMappingFn) {
+    const $ = window.jQuery;
+    if (!$) return;
 
-            $(this).on('click', function() {
-                console.log("Cluster box clicked");
-                var clusterId = $(this).data('cluster-id');
-                console.log("Cluster ID: " + clusterId);
+    console.log('Initializing drag and drop functionality');
 
-                $('.cluster-box').removeClass('selected');
-                $(this).addClass('selected');
+    // Initialize draggable for cluster boxes
+    $('.cluster-box').each(function () {
+        $(this).attr('draggable', 'true');
 
-                setSelectedClusterId(clusterId);
+        $(this).on('click', function () {
+            console.log('Cluster box clicked');
+            const clusterId = $(this).data('cluster-id');
+            console.log('Cluster ID: ' + clusterId);
 
-                var modal = new bootstrap.Modal(document.getElementById('clusterPreviewModal'));
-                modal.show();
+            $('.cluster-box').removeClass('selected');
+            $(this).addClass('selected');
 
-                loadClusterDetails(clusterId);
-            });
+            setSelectedClusterId(clusterId);
 
-            $(this).on('dragstart', function(e) {
-                console.log("Drag started");
-                e.originalEvent.dataTransfer.setData('text/plain', $(this).data('cluster-id'));
-                $(this).addClass('dragging');
-            });
+            const modal = new window.bootstrap.Modal(document.getElementById('clusterPreviewModal'));
+            modal.show();
 
-            $(this).on('dragend', function() {
-                console.log("Drag ended");
-                $(this).removeClass('dragging');
-            });
+            loadClusterDetails(clusterId);
         });
 
-        console.log("Found " + $('.cluster-box').length + " cluster boxes");
-        console.log("Found " + $('.mapping-container').length + " mapping containers");
-
-        // Initialize drop areas
-        $('.mapping-container').each(function() {
-            var callId = $(this).data('call-id');
-            console.log("Setting up drop for call ID: " + callId);
-
-            $(this).on('dragover', function(e) {
-                e.preventDefault();
-                console.log("Drag over call ID: " + $(this).data('call-id'));
-                $(this).addClass('drop-hover');
-            });
-
-            $(this).on('dragleave', function() {
-                console.log("Drag left call ID: " + $(this).data('call-id'));
-                $(this).removeClass('drop-hover');
-            });
-
-            $(this).on('drop', function(e) {
-                e.preventDefault();
-                console.log("Drop on call ID: " + $(this).data('call-id'));
-                $(this).removeClass('drop-hover');
-
-                var clusterId = e.originalEvent.dataTransfer.getData('text/plain');
-                console.log("Dropped cluster ID: " + clusterId);
-
-                createMapping(clusterId, callId);
-            });
-        });
-    };
-
-    /**
-     * Create a mapping between a cluster and a call type
-     */
-    ClusterMapping.createMapping = function(clusterId, callId, addMappingToContainer, updateCallBadgeCount) {
-        console.log("Creating mapping between cluster " + clusterId + " and call " + callId);
-
-        var clusterBox = $('.cluster-box[data-cluster-id="' + clusterId + '"]');
-        if (clusterBox.length === 0) {
-            console.error("Could not find cluster box with ID " + clusterId);
-            return;
-        }
-
-        var clusterNum = clusterBox.data('cluster-num');
-        var clusterLabel = clusterBox.find('h5').text().trim();
-        var clusterColor = clusterBox.find('.color-indicator').css('background-color');
-
-        console.log("Cluster details: ", {
-            id: clusterId,
-            num: clusterNum,
-            label: clusterLabel,
-            color: clusterColor
+        $(this).on('dragstart', function (e) {
+            console.log('Drag started');
+            e.originalEvent.dataTransfer.setData('text/plain', $(this).data('cluster-id'));
+            $(this).addClass('dragging');
         });
 
-        var confidence = 0.7;
+        $(this).on('dragend', function () {
+            console.log('Drag ended');
+            $(this).removeClass('dragging');
+        });
+    });
 
-        var csrfToken = $('input[name=csrfmiddlewaretoken]').val();
-        console.log("CSRF Token present: " + (csrfToken ? "Yes" : "No"));
+    console.log('Found ' + $('.cluster-box').length + ' cluster boxes');
+    console.log('Found ' + $('.mapping-container').length + ' mapping containers');
 
-        $.ajax({
-            url: '/clustering/create-mapping/',
-            type: 'POST',
-            data: {
-                cluster_id: clusterId,
-                call_id: callId,
-                confidence: confidence,
-                csrfmiddlewaretoken: $('input[name=csrfmiddlewaretoken]').val()
-            },
-            beforeSend: function(xhr, settings) {
-                if (!this.crossDomain) {
-                    xhr.setRequestHeader("X-CSRFToken", $('input[name=csrfmiddlewaretoken]').val());
+    // Initialize drop areas
+    $('.mapping-container').each(function () {
+        const callId = $(this).data('call-id');
+        console.log('Setting up drop for call ID: ' + callId);
+
+        $(this).on('dragover', function (e) {
+            e.preventDefault();
+            console.log('Drag over call ID: ' + $(this).data('call-id'));
+            $(this).addClass('drop-hover');
+        });
+
+        $(this).on('dragleave', function () {
+            console.log('Drag left call ID: ' + $(this).data('call-id'));
+            $(this).removeClass('drop-hover');
+        });
+
+        $(this).on('drop', function (e) {
+            e.preventDefault();
+            console.log('Drop on call ID: ' + $(this).data('call-id'));
+            $(this).removeClass('drop-hover');
+
+            const clusterId = e.originalEvent.dataTransfer.getData('text/plain');
+            console.log('Dropped cluster ID: ' + clusterId);
+
+            createMappingFn(clusterId, callId);
+        });
+    });
+}
+
+/**
+ * Create a mapping between a cluster and a call type
+ * @param {number} clusterId - Cluster ID
+ * @param {number} callId - Call type ID
+ */
+export function createMapping(clusterId, callId) {
+    const $ = window.jQuery;
+    if (!$) return;
+
+    console.log('Creating mapping between cluster ' + clusterId + ' and call ' + callId);
+
+    const clusterBox = $(`.cluster-box[data-cluster-id="${clusterId}"]`);
+    if (clusterBox.length === 0) {
+        console.error('Could not find cluster box with ID ' + clusterId);
+        return;
+    }
+
+    const clusterNum = clusterBox.data('cluster-num');
+    const clusterLabel = clusterBox.find('h5').text().trim();
+    const clusterColor = clusterBox.find('.color-indicator').css('background-color');
+
+    console.log('Cluster details: ', {
+        id: clusterId,
+        num: clusterNum,
+        label: clusterLabel,
+        color: clusterColor,
+    });
+
+    const confidence = 0.7;
+    const csrfToken = $('input[name=csrfmiddlewaretoken]').val();
+    console.log('CSRF Token present: ' + (csrfToken ? 'Yes' : 'No'));
+
+    $.ajax({
+        url: '/clustering/create-mapping/',
+        type: 'POST',
+        data: {
+            cluster_id: clusterId,
+            call_id: callId,
+            confidence: confidence,
+            csrfmiddlewaretoken: csrfToken,
+        },
+        beforeSend: function (xhr) {
+            xhr.setRequestHeader('X-CSRFToken', csrfToken);
+        },
+        success: function (data) {
+            console.log('AJAX success response: ', data);
+
+            if (data.status === 'success') {
+                addMappingToContainer(
+                    clusterId,
+                    clusterNum,
+                    clusterLabel,
+                    clusterColor,
+                    callId,
+                    confidence,
+                    data.mapping_id,
+                    updateMappingConfidence,
+                    deleteMapping,
+                    updateCallBadgeCount
+                );
+
+                updateCallBadgeCount(callId, data.new_count);
+
+                if (window.toastr) {
+                    window.toastr.success('Mapping created successfully');
                 }
-            },
-            success: function(data) {
-                console.log("AJAX success response: ", data);
-
-                if (data.status === 'success') {
-                    addMappingToContainer(
-                        clusterId,
-                        clusterNum,
-                        clusterLabel,
-                        clusterColor,
-                        callId,
-                        confidence,
-                        data.mapping_id
-                    );
-
-                    updateCallBadgeCount(callId, data.new_count);
-
-                    toastr.success('Mapping created successfully');
-                } else {
-                    console.error("API returned error: ", data.message);
-                    toastr.error('Failed to create mapping: ' + data.message);
+            } else {
+                console.error('API returned error: ', data.message);
+                if (window.toastr) {
+                    window.toastr.error('Failed to create mapping: ' + data.message);
                 }
-            },
-            error: function(xhr, status, error) {
-                console.error("AJAX error: ", {
-                    status: status,
-                    error: error,
-                    response: xhr.responseText
-                });
-                toastr.error('Failed to create mapping. Please try again.');
             }
-        });
-    };
-
-    /**
-     * Update a mapping's confidence
-     */
-    ClusterMapping.updateMappingConfidence = function(mappingId, confidence) {
-        if (!mappingId) return;
-
-        $.ajax({
-            url: '/clustering/update-mapping-confidence/',
-            type: 'POST',
-            data: {
-                mapping_id: mappingId,
-                confidence: confidence,
-                csrfmiddlewaretoken: $('input[name=csrfmiddlewaretoken]').val()
-            },
-            beforeSend: function(xhr, settings) {
-                if (!this.crossDomain) {
-                    xhr.setRequestHeader("X-CSRFToken", $('input[name=csrfmiddlewaretoken]').val());
-                }
-            },
-            success: function(data) {
-                if (data.status !== 'success') {
-                    toastr.error('Failed to update confidence: ' + data.message);
-                }
-            },
-            error: function() {
-                toastr.error('Failed to update confidence. Please try again.');
+        },
+        error: function (xhr, status, error) {
+            console.error('AJAX error: ', {
+                status: status,
+                error: error,
+                response: xhr.responseText,
+            });
+            if (window.toastr) {
+                window.toastr.error('Failed to create mapping. Please try again.');
             }
-        });
-    };
+        },
+    });
+}
 
-    /**
-     * Delete a mapping
-     */
-    ClusterMapping.deleteMapping = function(mappingId, updateCallBadgeCount) {
-        if (!mappingId) return;
+/**
+ * Update a mapping's confidence
+ * @param {number} mappingId - Mapping ID
+ * @param {number} confidence - New confidence value
+ */
+export function updateMappingConfidence(mappingId, confidence) {
+    const $ = window.jQuery;
+    if (!$ || !mappingId) return;
 
-        $.ajax({
-            url: '/clustering/delete-mapping/',
-            type: 'POST',
-            data: {
-                mapping_id: mappingId,
-                csrfmiddlewaretoken: $('input[name=csrfmiddlewaretoken]').val()
-            },
-            beforeSend: function(xhr, settings) {
-                if (!this.crossDomain) {
-                    xhr.setRequestHeader("X-CSRFToken", $('input[name=csrfmiddlewaretoken]').val());
-                }
-            },
-            success: function(data) {
-                if (data.status === 'success') {
-                    updateCallBadgeCount(data.call_id, data.new_count);
-                } else {
-                    toastr.error('Failed to delete mapping: ' + data.message);
-                }
-            },
-            error: function() {
-                toastr.error('Failed to delete mapping. Please try again.');
+    const csrfToken = $('input[name=csrfmiddlewaretoken]').val();
+
+    $.ajax({
+        url: '/clustering/update-mapping-confidence/',
+        type: 'POST',
+        data: {
+            mapping_id: mappingId,
+            confidence: confidence,
+            csrfmiddlewaretoken: csrfToken,
+        },
+        beforeSend: function (xhr) {
+            xhr.setRequestHeader('X-CSRFToken', csrfToken);
+        },
+        success: function (data) {
+            if (data.status !== 'success' && window.toastr) {
+                window.toastr.error('Failed to update confidence: ' + data.message);
             }
-        });
-    };
+        },
+        error: function () {
+            if (window.toastr) {
+                window.toastr.error('Failed to update confidence. Please try again.');
+            }
+        },
+    });
+}
 
-})(window.ClusterMapping = window.ClusterMapping || {});
+/**
+ * Delete a mapping
+ * @param {number} mappingId - Mapping ID to delete
+ */
+export function deleteMapping(mappingId) {
+    const $ = window.jQuery;
+    if (!$ || !mappingId) return;
+
+    const csrfToken = $('input[name=csrfmiddlewaretoken]').val();
+
+    $.ajax({
+        url: '/clustering/delete-mapping/',
+        type: 'POST',
+        data: {
+            mapping_id: mappingId,
+            csrfmiddlewaretoken: csrfToken,
+        },
+        beforeSend: function (xhr) {
+            xhr.setRequestHeader('X-CSRFToken', csrfToken);
+        },
+        success: function (data) {
+            if (data.status === 'success') {
+                updateCallBadgeCount(data.call_id, data.new_count);
+            } else if (window.toastr) {
+                window.toastr.error('Failed to delete mapping: ' + data.message);
+            }
+        },
+        error: function () {
+            if (window.toastr) {
+                window.toastr.error('Failed to delete mapping. Please try again.');
+            }
+        },
+    });
+}

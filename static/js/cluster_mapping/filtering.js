@@ -1,71 +1,90 @@
 /**
- * Search and filter functions for cluster mapping
+ * Cluster Mapping Filtering Module
+ *
+ * Search and filter functions for cluster mapping interface.
  */
-(function(ClusterMapping) {
-    'use strict';
 
-    /**
-     * Filter clusters based on search text
-     */
-    ClusterMapping.filterClusters = function(searchText) {
-        searchText = searchText.toLowerCase();
+/**
+ * Filter clusters based on search text
+ * @param {string} searchText - Text to search for
+ */
+export function filterClusters(searchText) {
+    const $ = window.jQuery;
+    if (!$) return;
 
-        $('.cluster-box').each(function() {
-            var clusterText = $(this).text().toLowerCase();
-            if (clusterText.indexOf(searchText) !== -1) {
-                $(this).show();
-            } else {
-                $(this).hide();
-            }
-        });
-    };
+    searchText = searchText.toLowerCase();
 
-    /**
-     * Sort clusters based on the selected option
-     */
-    ClusterMapping.sortClusters = function(sortBy) {
-        var clusters = $('.cluster-box').toArray();
-
-        clusters.sort(function(a, b) {
-            var $a = $(a);
-            var $b = $(b);
-
-            switch (sortBy) {
-                case 'id':
-                    return $a.data('cluster-num') - $b.data('cluster-num');
-                case 'size':
-                    var sizeA = parseInt($a.find('.text-muted:contains("Size")').text().split(':')[1]) || 0;
-                    var sizeB = parseInt($b.find('.text-muted:contains("Size")').text().split(':')[1]) || 0;
-                    return sizeB - sizeA;
-                case 'coherence':
-                    var cohA = parseFloat($a.find('.text-muted:contains("Coherence")').text().split(':')[1]) || 0;
-                    var cohB = parseFloat($b.find('.text-muted:contains("Coherence")').text().split(':')[1]) || 0;
-                    return cohB - cohA;
-                case 'label':
-                    var labelA = $a.find('h5').text().trim();
-                    var labelB = $b.find('h5').text().trim();
-                    return labelA.localeCompare(labelB);
-                default:
-                    return 0;
-            }
-        });
-
-        var container = $('#clusters-list');
-        clusters.forEach(function(cluster) {
-            container.append(cluster);
-        });
-    };
-
-    /**
-     * Filter species sections based on the selected species
-     */
-    ClusterMapping.filterSpecies = function(speciesId) {
-        if (speciesId === 'all') {
-            $('.species-section').show();
+    $('.cluster-box').each(function () {
+        const clusterText = $(this).text().toLowerCase();
+        if (clusterText.indexOf(searchText) !== -1) {
+            $(this).show();
         } else {
-            $('.species-section').hide();
-            $('.species-section[data-species-id="' + speciesId + '"]').show();
+            $(this).hide();
         }
-    };
+    });
+}
 
-})(window.ClusterMapping = window.ClusterMapping || {});
+/**
+ * Sort clusters based on the selected option
+ * @param {string} sortBy - Sort field ('id', 'size', 'coherence', 'label')
+ */
+export function sortClusters(sortBy) {
+    const $ = window.jQuery;
+    if (!$) return;
+
+    const clusters = $('.cluster-box').toArray();
+
+    clusters.sort(function (a, b) {
+        const $a = $(a);
+        const $b = $(b);
+
+        switch (sortBy) {
+            case 'id':
+                return $a.data('cluster-num') - $b.data('cluster-num');
+            case 'size': {
+                const sizeA =
+                    parseInt($a.find('.text-muted:contains("Size")').text().split(':')[1]) || 0;
+                const sizeB =
+                    parseInt($b.find('.text-muted:contains("Size")').text().split(':')[1]) || 0;
+                return sizeB - sizeA;
+            }
+            case 'coherence': {
+                const cohA =
+                    parseFloat($a.find('.text-muted:contains("Coherence")').text().split(':')[1]) ||
+                    0;
+                const cohB =
+                    parseFloat($b.find('.text-muted:contains("Coherence")').text().split(':')[1]) ||
+                    0;
+                return cohB - cohA;
+            }
+            case 'label': {
+                const labelA = $a.find('h5').text().trim();
+                const labelB = $b.find('h5').text().trim();
+                return labelA.localeCompare(labelB);
+            }
+            default:
+                return 0;
+        }
+    });
+
+    const container = $('#clusters-list');
+    clusters.forEach(function (cluster) {
+        container.append(cluster);
+    });
+}
+
+/**
+ * Filter species sections based on the selected species
+ * @param {string|number} speciesId - Species ID or 'all'
+ */
+export function filterSpecies(speciesId) {
+    const $ = window.jQuery;
+    if (!$) return;
+
+    if (speciesId === 'all') {
+        $('.species-section').show();
+    } else {
+        $('.species-section').hide();
+        $(`.species-section[data-species-id="${speciesId}"]`).show();
+    }
+}

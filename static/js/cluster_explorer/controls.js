@@ -1,8 +1,19 @@
-// UI controls
 /**
- * Load segment details
+ * Cluster Explorer Controls Module
+ *
+ * Handles UI controls and segment detail loading.
  */
-function loadSegmentDetails(segmentId) {
+
+import { getSelectedClusterId } from './state.js';
+
+/**
+ * Load segment details into the modal
+ * @param {number} segmentId - Segment ID to load
+ */
+export function loadSegmentDetails(segmentId) {
+    const $ = window.jQuery;
+    if (!$) return;
+
     // Show a loading indicator in the modal
     $('.segment-spectrogram').html('<div class="spinner-border text-primary"></div>');
     $('.segment-audio-player').attr('src', '');
@@ -13,49 +24,53 @@ function loadSegmentDetails(segmentId) {
     $('.segment-duration').text('Loading...');
 
     // Load the segment details from the API
-    $.getJSON(`/clustering/get-segment-data/?segment_id=${segmentId}`, function(data) {
+    $.getJSON(`/clustering/get-segment-data/?segment_id=${segmentId}`, function (data) {
         if (data.status === 'success') {
-            // Update the modal
             $('.segment-id').text(data.segment_id);
             $('.segment-recording').text(data.recording_name);
             $('.segment-onset').text(data.onset.toFixed(4));
             $('.segment-offset').text(data.offset.toFixed(4));
             $('.segment-duration').text(data.duration.toFixed(4));
 
-            // Update spectrogram
             $('.segment-spectrogram').html(`
                 <img src="${data.spectrogram_url}" class="img-fluid" alt="Segment Spectrogram">
             `);
 
-            // Update audio player
             $('.segment-audio-player').attr('src', data.audio_url);
         } else {
-            // Show an error
-            $('.segment-spectrogram').html(`<div class="alert alert-danger">Failed to load segment: ${data.message}</div>`);
+            $('.segment-spectrogram').html(
+                `<div class="alert alert-danger">Failed to load segment: ${data.message}</div>`
+            );
         }
-    }).fail(function() {
-        $('.segment-spectrogram').html('<div class="alert alert-danger">Failed to load segment. Please try again.</div>');
+    }).fail(function () {
+        $('.segment-spectrogram').html(
+            '<div class="alert alert-danger">Failed to load segment. Please try again.</div>'
+        );
     });
 }
 
 /**
- * Initialize event handlers
+ * Initialize control event handlers
+ * @param {Function} onPointSizeChange - Callback when point size changes
+ * @param {Function} onOpacityChange - Callback when opacity changes
  */
-$(document).ready(function() {
-    // Note: #save-cluster-label and .view-segment-btn handlers are in visualization.js
-    // to avoid duplicate registrations
+export function initializeControls(onPointSizeChange, onOpacityChange) {
+    const $ = window.jQuery;
+    const d3 = window.d3;
+    if (!$ || !d3) return;
 
-    // Handle point size changes
-    $('#point-size').on('input', function() {
+    $('#point-size').on('input', function () {
         const size = parseInt($(this).val());
-        d3.selectAll('.cluster-point')
-            .attr('r', d => d.id === selectedClusterId ? size * 1.5 : size);
+        const selectedId = getSelectedClusterId();
+        d3.selectAll('.cluster-point').attr('r', (d) =>
+            d.id === selectedId ? size * 1.5 : size
+        );
+        if (onPointSizeChange) onPointSizeChange(size);
     });
 
-    // Handle opacity changes
-    $('#cluster-opacity').on('input', function() {
+    $('#cluster-opacity').on('input', function () {
         const opacity = parseFloat($(this).val());
-        d3.selectAll('.cluster-point')
-            .attr('opacity', opacity);
+        d3.selectAll('.cluster-point').attr('opacity', opacity);
+        if (onOpacityChange) onOpacityChange(opacity);
     });
-});
+}

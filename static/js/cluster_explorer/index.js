@@ -5,31 +5,101 @@
  * Allows users to explore clustering results, view segment details, and update labels.
  *
  * Dependencies:
- * - D3.js (loaded via CDN)
- * - jQuery (loaded via CDN)
+ * - D3.js (loaded via CDN as window.d3)
+ * - jQuery (loaded via CDN as window.jQuery)
  *
- * Components (to be converted to ES6 modules):
- * - visualization.js : Main D3 visualization rendering
- * - controls.js      : UI controls (point size, opacity, zoom)
- * - data_loader.js   : AJAX data loading for cluster/segment details
- * - interactions.js  : Click, hover, and selection handlers
- *
- * Usage:
- * Include this module on cluster exploration pages. The visualization
- * initializes automatically when the DOM is ready if the expected
- * elements are present (#cluster-visualization, etc).
- *
- * Global data expected:
- * - window.clusters: Array of cluster objects from Django template
- *
- * Note: The component files currently use global functions for compatibility
- * with Django templates. They will be converted to ES6 modules as part
- * of the module migration task. For now, they are loaded via script tags.
+ * Global data expected from Django template:
+ * - window.clusters: Array of cluster objects
+ * - window.isProjectScope: Boolean indicating project-level clustering
  */
 
-// Placeholder for future ES6 module exports
-// Once the component files are converted to ES6 modules, this file will:
-// import { initializeVisualization } from './visualization.js';
-// export { initializeVisualization };
+// Import all modules
+import { getSelectedClusterId, setSelectedClusterId } from './state.js';
+import { initializeVisualization, createLegend, updateVisualization } from './visualization.js';
+import { selectCluster, loadClusterDetails, loadClusterMembers } from './interactions.js';
+import { loadSegmentDetails, initializeControls } from './controls.js';
+import { saveClusterLabel } from './data_loader.js';
 
-console.log('Cluster explorer module entry point loaded');
+/**
+ * Initialize the cluster explorer
+ * @param {Array} clusters - Cluster data from Django template
+ */
+export function initClusterExplorer(clusters) {
+    const $ = window.jQuery;
+    if (!$ || !clusters) return;
+
+    // Store clusters globally for other components
+    window.clusters = clusters;
+
+    // Initialize the visualization
+    initializeVisualization(clusters);
+
+    // Set up control event handlers
+    initializeControls();
+
+    // Set up save button
+    $('#save-cluster-label').on('click', function () {
+        saveClusterLabel(function (clusterId) {
+            // Re-initialize visualization and re-select the cluster
+            initializeVisualization(window.clusters);
+            selectCluster(clusterId);
+        });
+    });
+
+    // Set up controls
+    $('#point-size').on('input', updateVisualization);
+    $('#cluster-opacity').on('input', updateVisualization);
+
+    // Load segment details when a segment is clicked
+    $(document).on('click', '.view-segment-btn', function () {
+        const segmentId = $(this).data('segment-id');
+        loadSegmentDetails(segmentId);
+    });
+}
+
+/**
+ * Auto-initialize if clusters data is available on page load
+ */
+function autoInitialize() {
+    const $ = window.jQuery;
+    if (!$) return;
+
+    // Check if clusters data is available
+    if (typeof window.clusters !== 'undefined' && window.clusters) {
+        initClusterExplorer(window.clusters);
+    }
+}
+
+// Auto-initialize on DOMContentLoaded
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', function () {
+        if (typeof window.jQuery !== 'undefined') {
+            window.jQuery(document).ready(autoInitialize);
+        }
+    });
+} else {
+    if (typeof window.jQuery !== 'undefined') {
+        window.jQuery(document).ready(autoInitialize);
+    }
+}
+
+// Export all functions for external use
+export {
+    getSelectedClusterId,
+    setSelectedClusterId,
+    initializeVisualization,
+    createLegend,
+    updateVisualization,
+    selectCluster,
+    loadClusterDetails,
+    loadClusterMembers,
+    loadSegmentDetails,
+    saveClusterLabel,
+};
+
+// Expose key functions globally for Django template usage
+window.initClusterExplorer = initClusterExplorer;
+window.selectCluster = selectCluster;
+window.loadSegmentDetails = loadSegmentDetails;
+window.saveClusterLabel = saveClusterLabel;
+window.initializeVisualization = initializeVisualization;

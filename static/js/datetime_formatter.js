@@ -1,18 +1,23 @@
 /**
- * Convert UTC timestamps to local time
+ * DateTime Formatter Module
+ *
+ * Converts UTC timestamps to local time for display.
+ * Looks for elements with data-utc-date attribute and formats them.
  */
-function formatDateTimeElements(container = document) {
-    // Find all elements with the data-utc-date attribute in the given container
+
+/**
+ * Format all datetime elements in a container
+ * @param {HTMLElement|Document} container - Container to search for elements
+ */
+export function formatDateTimeElements(container = document) {
     const utcDateElements = container.querySelectorAll('[data-utc-date]');
-    
-    utcDateElements.forEach(function(element) {
+
+    utcDateElements.forEach(function (element) {
         const utcDateStr = element.getAttribute('data-utc-date');
         if (utcDateStr) {
             const date = new Date(utcDateStr);
-            
-            // Get the format from data attribute or use default
             const format = element.getAttribute('data-date-format') || 'full';
-            
+
             let formattedDate;
             if (format === 'date') {
                 // Date only: Feb 5, 2023
@@ -22,23 +27,33 @@ function formatDateTimeElements(container = document) {
                 formattedDate = date.toLocaleTimeString();
             } else if (format === 'datetime') {
                 // Date and time: Feb 5, 2023, 14:30
-                formattedDate = date.toLocaleDateString() + ' ' + 
-                                date.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+                formattedDate =
+                    date.toLocaleDateString() +
+                    ' ' +
+                    date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
             } else {
                 // Full date and time (default)
                 formattedDate = date.toLocaleString();
             }
-            
-            // Update the element's text content
+
             element.textContent = formattedDate;
         }
     });
 }
 
-// Format dates on page load
-document.addEventListener('DOMContentLoaded', function() {
+/**
+ * Initialize datetime formatting on page load
+ */
+export function initialize() {
     formatDateTimeElements();
-});
+}
 
-// Make the function globally available for AJAX content
+// Auto-initialize on DOMContentLoaded
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initialize);
+} else {
+    initialize();
+}
+
+// Expose globally for AJAX content updates
 window.formatDateTimeElements = formatDateTimeElements;

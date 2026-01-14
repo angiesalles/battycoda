@@ -5,30 +5,149 @@
  * assignment of clusters to known call types with confidence scores.
  *
  * Dependencies:
- * - jQuery (loaded via CDN)
- * - jQuery UI Sortable (for drag-and-drop)
+ * - jQuery (loaded via CDN as window.jQuery)
+ * - Bootstrap 4/5 JS (for modals)
+ * - Toastr (for notifications, optional)
  *
- * Components (to be converted to ES6 modules):
- * - initialization.js : Setup and existing mapping restoration
- * - drag_drop.js      : Drag-and-drop handling for cluster-to-call mapping
- * - filtering.js      : Call type filtering and search
- * - modal_handlers.js : Modal dialogs for confirmation and details
- *
- * Usage:
- * Include this module on cluster mapping pages. Initializes when DOM is ready
- * if the expected elements are present (.cluster-box, .mapping-container, etc).
- *
- * Global namespace:
- * - window.ClusterMapping: Contains mapping functions and state
- *
- * Note: The component files use IIFE pattern and attach to window.ClusterMapping.
- * They will be converted to proper ES6 modules as part of the module migration task.
- * For now, they are loaded via script tags in Django templates.
+ * Global data expected from Django template:
+ * - existingMappings: Array of existing mapping objects
  */
 
-// Placeholder for future ES6 module exports
-// Once the component files are converted to ES6 modules, this file will:
-// import { ClusterMapping } from './initialization.js';
-// export { ClusterMapping };
+// Import all modules
+import { getSelectedClusterId, setSelectedClusterId } from './state.js';
+import {
+    initializeExistingMappings,
+    addMappingToContainer,
+    updateCallBadgeCount,
+} from './initialization.js';
+import {
+    initializeDragAndDrop,
+    createMapping,
+    updateMappingConfidence,
+    deleteMapping,
+} from './drag_drop.js';
+import { filterClusters, sortClusters, filterSpecies } from './filtering.js';
+import { initializeClusterPreviewModal, loadClusterDetails } from './modal_handlers.js';
 
-console.log('Cluster mapping module entry point loaded');
+/**
+ * Initialize the cluster mapping interface
+ * @param {Array} existingMappings - Array of existing mapping data from Django template
+ */
+export function initClusterMapping(existingMappings) {
+    const $ = window.jQuery;
+    if (!$) return;
+
+    console.log('Initializing cluster mapping interface');
+
+    // Initialize modal handlers
+    initializeClusterPreviewModal(createMapping);
+
+    // Initialize drag and drop
+    initializeDragAndDrop(loadClusterDetails, createMapping);
+
+    // Initialize existing mappings
+    if (existingMappings && existingMappings.length > 0) {
+        initializeExistingMappings(
+            existingMappings,
+            function (clusterId, clusterNum, clusterLabel, clusterColor, callId, confidence, mappingId) {
+                addMappingToContainer(
+                    clusterId,
+                    clusterNum,
+                    clusterLabel,
+                    clusterColor,
+                    callId,
+                    confidence,
+                    mappingId,
+                    updateMappingConfidence,
+                    deleteMapping,
+                    updateCallBadgeCount
+                );
+            },
+            updateCallBadgeCount
+        );
+    }
+
+    // Set up search input
+    $('#cluster-search').on('input', function () {
+        filterClusters($(this).val());
+    });
+
+    // Set up sort dropdown
+    $('#cluster-sort').on('change', function () {
+        sortClusters($(this).val());
+    });
+
+    // Set up species filter
+    $('#species-filter').on('change', function () {
+        filterSpecies($(this).val());
+    });
+
+    console.log('Cluster mapping interface initialized');
+}
+
+/**
+ * Auto-initialize if existingMappings data is available on page load
+ */
+function autoInitialize() {
+    const $ = window.jQuery;
+    if (!$) return;
+
+    // Check if existingMappings data is available
+    if (typeof window.existingMappings !== 'undefined') {
+        initClusterMapping(window.existingMappings);
+    } else {
+        // Still initialize without existing mappings
+        initClusterMapping([]);
+    }
+}
+
+// Auto-initialize on DOMContentLoaded
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', function () {
+        if (typeof window.jQuery !== 'undefined') {
+            window.jQuery(document).ready(autoInitialize);
+        }
+    });
+} else {
+    if (typeof window.jQuery !== 'undefined') {
+        window.jQuery(document).ready(autoInitialize);
+    }
+}
+
+// Export all functions for external use
+export {
+    getSelectedClusterId,
+    setSelectedClusterId,
+    initializeExistingMappings,
+    addMappingToContainer,
+    updateCallBadgeCount,
+    initializeDragAndDrop,
+    createMapping,
+    updateMappingConfidence,
+    deleteMapping,
+    filterClusters,
+    sortClusters,
+    filterSpecies,
+    initializeClusterPreviewModal,
+    loadClusterDetails,
+};
+
+// Expose key functions globally for Django template usage
+window.initClusterMapping = initClusterMapping;
+window.createMapping = createMapping;
+window.filterClusters = filterClusters;
+window.sortClusters = sortClusters;
+window.filterSpecies = filterSpecies;
+
+// Create ClusterMapping namespace for backward compatibility
+window.ClusterMapping = {
+    initClusterMapping,
+    createMapping,
+    filterClusters,
+    sortClusters,
+    filterSpecies,
+    loadClusterDetails,
+    updateCallBadgeCount,
+    getSelectedClusterId,
+    setSelectedClusterId,
+};

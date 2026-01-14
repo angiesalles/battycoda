@@ -1,16 +1,29 @@
-// User interaction handlers
+/**
+ * Cluster Explorer Interactions Module
+ *
+ * Handles cluster selection and detail loading.
+ */
+
+import { getSelectedClusterId, setSelectedClusterId } from './state.js';
+
 /**
  * Select a cluster and display its details
+ * @param {number} clusterId - Cluster ID to select
  */
-function selectCluster(clusterId) {
+export function selectCluster(clusterId) {
+    const $ = window.jQuery;
+    const d3 = window.d3;
+    if (!$ || !d3) return;
+
     // Update the selection
-    selectedClusterId = clusterId;
+    setSelectedClusterId(clusterId);
 
     // Highlight the selected cluster in the visualization
+    const pointSize = parseInt($('#point-size').val());
     d3.selectAll('.cluster-point')
-        .attr('stroke-width', d => d.id === clusterId ? 3 : 1)
-        .attr('stroke', d => d.id === clusterId ? '#fff' : '#000')
-        .attr('r', d => d.id === clusterId ? parseInt($('#point-size').val()) * 1.5 : parseInt($('#point-size').val()));
+        .attr('stroke-width', (d) => (d.id === clusterId ? 3 : 1))
+        .attr('stroke', (d) => (d.id === clusterId ? '#fff' : '#000'))
+        .attr('r', (d) => (d.id === clusterId ? pointSize * 1.5 : pointSize));
 
     // Load the cluster details
     loadClusterDetails(clusterId);
@@ -21,49 +34,52 @@ function selectCluster(clusterId) {
 
 /**
  * Load cluster details from the API
+ * @param {number} clusterId - Cluster ID to load
  */
-function loadClusterDetails(clusterId) {
+export function loadClusterDetails(clusterId) {
+    const $ = window.jQuery;
+    if (!$) return;
+
     // Show the details panel
     $('.initial-message').addClass('d-none');
     $('.cluster-details').removeClass('d-none');
 
     // Show a loading indicator
-    $('.cluster-details').html('<div class="text-center"><div class="spinner-border text-primary"></div><p>Loading cluster details...</p></div>');
+    $('.cluster-details').html(
+        '<div class="text-center"><div class="spinner-border text-primary"></div><p>Loading cluster details...</p></div>'
+    );
 
     // Load the details from the API
-    $.getJSON(`/clustering/get-cluster-data/?cluster_id=${clusterId}`, function(data) {
+    $.getJSON(`/clustering/get-cluster-data/?cluster_id=${clusterId}`, function (data) {
         if (data.status === 'success') {
-            // Update the cluster details form
             $('.cluster-id-display').text(`Cluster ${data.cluster_id}`);
             $('#cluster-label').val(data.label || '');
             $('#cluster-description').val(data.description || '');
 
-            // Update stats
             $('.cluster-size').text(data.size);
             $('.cluster-coherence').text(data.coherence ? data.coherence.toFixed(4) : 'N/A');
 
-            // Update representative sample
             if (data.representative_spectrogram_url) {
                 $('.representative-spectrogram').html(`
                     <img src="${data.representative_spectrogram_url}" class="img-fluid" alt="Representative Spectrogram">
                 `);
 
-                // Update audio player
                 if (data.representative_audio_url) {
                     $('.representative-audio-player').attr('src', data.representative_audio_url);
                 }
             } else {
-                $('.representative-spectrogram').html('<div class="alert alert-info">No representative sample available</div>');
+                $('.representative-spectrogram').html(
+                    '<div class="alert alert-info">No representative sample available</div>'
+                );
                 $('.representative-audio-player').attr('src', '');
             }
 
-            // Update mappings
             if (data.mappings && data.mappings.length > 0) {
                 $('.no-mappings').addClass('d-none');
                 const mappingList = $('.mapping-list');
                 mappingList.empty();
 
-                data.mappings.forEach(mapping => {
+                data.mappings.forEach((mapping) => {
                     mappingList.append(`
                         <li class="list-group-item d-flex justify-content-between align-items-center">
                             <div>
@@ -74,33 +90,44 @@ function loadClusterDetails(clusterId) {
                     `);
                 });
             } else {
-                $('.mapping-list').html('<li class="list-group-item no-mappings">No mappings yet</li>');
+                $('.mapping-list').html(
+                    '<li class="list-group-item no-mappings">No mappings yet</li>'
+                );
             }
         } else {
-            // Show an error
-            $('.cluster-details').html(`<div class="alert alert-danger">Failed to load cluster details: ${data.message}</div>`);
+            $('.cluster-details').html(
+                `<div class="alert alert-danger">Failed to load cluster details: ${data.message}</div>`
+            );
         }
-    }).fail(function() {
-        $('.cluster-details').html('<div class="alert alert-danger">Failed to load cluster details. Please try again.</div>');
+    }).fail(function () {
+        $('.cluster-details').html(
+            '<div class="alert alert-danger">Failed to load cluster details. Please try again.</div>'
+        );
     });
 }
 
 /**
  * Load cluster members from the API
+ * @param {number} clusterId - Cluster ID to load members for
  */
-function loadClusterMembers(clusterId) {
+export function loadClusterMembers(clusterId) {
+    const $ = window.jQuery;
+    if (!$) return;
+
     // Show the members panel
     $('.initial-members-message').addClass('d-none');
     $('.cluster-members').removeClass('d-none');
 
     // Determine column count based on scope
-    const colCount = (typeof isProjectScope !== 'undefined' && isProjectScope) ? 7 : 6;
+    const colCount = typeof window.isProjectScope !== 'undefined' && window.isProjectScope ? 7 : 6;
 
     // Show a loading indicator
-    $('#members-table-body').html(`<tr><td colspan="${colCount}" class="text-center"><div class="spinner-border text-primary"></div><p>Loading cluster members...</p></td></tr>`);
+    $('#members-table-body').html(
+        `<tr><td colspan="${colCount}" class="text-center"><div class="spinner-border text-primary"></div><p>Loading cluster members...</p></td></tr>`
+    );
 
     // Load members from the API
-    $.getJSON(`/clustering/get-cluster-members/?cluster_id=${clusterId}&limit=50`, function(data) {
+    $.getJSON(`/clustering/get-cluster-members/?cluster_id=${clusterId}&limit=50`, function (data) {
         if (data.status === 'success') {
             const members = data.members;
             const isProject = data.is_project_scope;
@@ -108,7 +135,7 @@ function loadClusterMembers(clusterId) {
             if (members && members.length > 0) {
                 let html = '';
 
-                members.forEach(member => {
+                members.forEach((member) => {
                     const onset = member.onset.toFixed(3);
                     const offset = member.offset.toFixed(3);
                     const duration = member.duration.toFixed(3);
@@ -146,13 +173,20 @@ function loadClusterMembers(clusterId) {
 
                 $('#members-table-body').html(html);
             } else {
-                $('#members-table-body').html(`<tr><td colspan="${colCount}" class="text-center">No segments in this cluster</td></tr>`);
+                $('#members-table-body').html(
+                    `<tr><td colspan="${colCount}" class="text-center">No segments in this cluster</td></tr>`
+                );
             }
         } else {
-            $('#members-table-body').html(`<tr><td colspan="${colCount}" class="text-center text-danger">Failed to load members: ${data.message}</td></tr>`);
+            $('#members-table-body').html(
+                `<tr><td colspan="${colCount}" class="text-center text-danger">Failed to load members: ${data.message}</td></tr>`
+            );
         }
-    }).fail(function() {
-        const colCount = (typeof isProjectScope !== 'undefined' && isProjectScope) ? 7 : 6;
-        $('#members-table-body').html(`<tr><td colspan="${colCount}" class="text-center text-danger">Failed to load cluster members. Please try again.</td></tr>`);
+    }).fail(function () {
+        const cols =
+            typeof window.isProjectScope !== 'undefined' && window.isProjectScope ? 7 : 6;
+        $('#members-table-body').html(
+            `<tr><td colspan="${cols}" class="text-center text-danger">Failed to load cluster members. Please try again.</td></tr>`
+        );
     });
 }

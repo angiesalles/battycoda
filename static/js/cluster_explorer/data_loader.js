@@ -1,9 +1,21 @@
-// Data loading and caching
+/**
+ * Cluster Explorer Data Loader Module
+ *
+ * Handles saving cluster labels and descriptions.
+ */
+
+import { getSelectedClusterId } from './state.js';
+
 /**
  * Save the cluster label and description
+ * @param {Function} onSuccess - Callback on successful save
  */
-function saveClusterLabel() {
-    if (!selectedClusterId) return;
+export function saveClusterLabel(onSuccess) {
+    const $ = window.jQuery;
+    if (!$) return;
+
+    const selectedId = getSelectedClusterId();
+    if (!selectedId) return;
 
     const label = $('#cluster-label').val();
     const description = $('#cluster-description').val();
@@ -19,52 +31,50 @@ function saveClusterLabel() {
         url: '/clustering/update-cluster-label/',
         type: 'POST',
         data: {
-            cluster_id: selectedClusterId,
+            cluster_id: selectedId,
             label: label,
             description: description,
-            csrfmiddlewaretoken: $('input[name=csrfmiddlewaretoken]').val()
+            csrfmiddlewaretoken: $('input[name=csrfmiddlewaretoken]').val(),
         },
-        success: function(data) {
+        success: function (data) {
             if (data.status === 'success') {
-                // Update the local data
-                const cluster = clusters.find(c => c.id === selectedClusterId);
-                if (cluster) {
-                    cluster.label = label;
-                    cluster.description = description;
-                    cluster.is_labeled = !!label;
+                // Update the local data if clusters array exists
+                if (typeof window.clusters !== 'undefined') {
+                    const cluster = window.clusters.find((c) => c.id === selectedId);
+                    if (cluster) {
+                        cluster.label = label;
+                        cluster.description = description;
+                        cluster.is_labeled = !!label;
+                    }
                 }
 
-                // Update the visualization
-                initializeVisualization();
-
                 // Show a success message
-                if (typeof toastr !== 'undefined') {
-                    toastr.success('Cluster label updated successfully');
+                if (typeof window.toastr !== 'undefined') {
+                    window.toastr.success('Cluster label updated successfully');
                 } else {
                     alert('Cluster label updated successfully');
                 }
 
-                // Select the cluster again to refresh the view
-                selectCluster(selectedClusterId);
+                // Call the success callback
+                if (onSuccess) onSuccess(selectedId);
             } else {
-                if (typeof toastr !== 'undefined') {
-                    toastr.error(`Failed to update label: ${data.message}`);
+                if (typeof window.toastr !== 'undefined') {
+                    window.toastr.error(`Failed to update label: ${data.message}`);
                 } else {
                     alert(`Failed to update label: ${data.message}`);
                 }
             }
         },
-        error: function() {
-            if (typeof toastr !== 'undefined') {
-                toastr.error('Failed to update cluster label. Please try again.');
+        error: function () {
+            if (typeof window.toastr !== 'undefined') {
+                window.toastr.error('Failed to update cluster label. Please try again.');
             } else {
                 alert('Failed to update cluster label. Please try again.');
             }
         },
-        complete: function() {
-            // Restore the button
+        complete: function () {
             saveBtn.html(originalText);
             saveBtn.attr('disabled', false);
-        }
+        },
     });
 }
