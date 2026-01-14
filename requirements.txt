@@ -48,6 +48,9 @@ hdbscan>=0.8.33,<1.0.0  # HDBSCAN clustering algorithm
 # Development and debugging
 pydevd-pycharm>=233.13135.95  # PyCharm debugging
 
+# Error tracking
+sentry-sdk[django,celery]>=2.0.0,<3.0.0
+
 # Linting and code quality tools
 flake8>=6.1.0,<7.0.0
 flake8-django>=1.4.0,<2.0.0

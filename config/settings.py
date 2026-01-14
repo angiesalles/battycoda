@@ -122,6 +122,7 @@ TEMPLATES = [
                 "django.contrib.messages.context_processors.messages",
                 "battycoda_app.context_processors.theme_choices",
                 "battycoda_app.context_processors.hijack_notification",
+                "battycoda_app.context_processors.sentry_settings",
             ],
         },
     },
@@ -329,3 +330,25 @@ SPECTACULAR_SETTINGS = {
     'COMPONENT_SPLIT_REQUEST': True,
     'SORT_OPERATIONS': False,
 }
+
+# Sentry Error Tracking Configuration
+SENTRY_DSN = os.environ.get("SENTRY_DSN")
+SENTRY_ENVIRONMENT = os.environ.get("SENTRY_ENVIRONMENT", "production")
+
+if SENTRY_DSN:
+    import sentry_sdk
+    from sentry_sdk.integrations.celery import CeleryIntegration
+    from sentry_sdk.integrations.django import DjangoIntegration
+    from sentry_sdk.integrations.logging import LoggingIntegration
+
+    sentry_sdk.init(
+        dsn=SENTRY_DSN,
+        integrations=[
+            DjangoIntegration(),
+            CeleryIntegration(),
+            LoggingIntegration(level=None, event_level=None),
+        ],
+        traces_sample_rate=0.1,
+        send_default_pii=True,
+        environment=SENTRY_ENVIRONMENT,
+    )

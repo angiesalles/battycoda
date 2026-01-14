@@ -208,6 +208,29 @@
 </div>
 
 
+<!-- Sentry Error Tracking -->
+{% if SENTRY_DSN %}
+<script
+  src="https://js.sentry-cdn.com/{{ SENTRY_DSN|slice:'8:'|cut:'@' }}.min.js"
+  crossorigin="anonymous"
+></script>
+<script>
+  Sentry.onLoad(function() {
+    Sentry.init({
+      environment: "{{ SENTRY_ENVIRONMENT|default:'production' }}",
+      tracesSampleRate: 0.1,
+    });
+    {% if user.is_authenticated %}
+    Sentry.setUser({
+      id: "{{ user.id }}",
+      email: "{{ user.email }}",
+      username: "{{ user.username }}"
+    });
+    {% endif %}
+  });
+</script>
+{% endif %}
+
 <!-- Maisonnette Core JS from CDN -->
 <script id="jqueryScript" src="https://code.jquery.com/jquery-3.3.1.min.js" integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8=" crossorigin="anonymous"></script>
 <script id="perfectScrollbarScript" src="https://cdn.jsdelivr.net/npm/perfect-scrollbar@1.5.0/dist/perfect-scrollbar.min.js"></script>

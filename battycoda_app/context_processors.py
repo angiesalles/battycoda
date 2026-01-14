@@ -1,4 +1,7 @@
+from django.conf import settings
+
 from battycoda_app.models.user import UserProfile
+
 
 def theme_choices(request):
     """
@@ -13,4 +16,12 @@ def hijack_notification(request):
     return {
         "is_hijacked": getattr(request, 'hijack', {}).get('is_hijacked', False),
         "hijacked_user": request.user if getattr(request, 'hijack', {}).get('is_hijacked', False) else None,
+    }
+
+
+def sentry_settings(request):
+    """Add Sentry configuration to template context for frontend error tracking."""
+    return {
+        "SENTRY_DSN": getattr(settings, 'SENTRY_DSN', None),
+        "SENTRY_ENVIRONMENT": getattr(settings, 'SENTRY_ENVIRONMENT', 'production'),
     }
