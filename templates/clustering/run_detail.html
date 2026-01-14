@@ -11,25 +11,25 @@
                 <h3 class="card-title">Clustering Run: {{ clustering_run.name }}</h3>
                 <div class="btn-group float-end">
                     <a href="{% url 'battycoda_app:clustering_dashboard' %}" class="btn btn-secondary">
-                        <i class="fa fa-arrow-left"></i> Back to Dashboard
+                        <i class="fas fa-arrow-left"></i> Back to Dashboard
                     </a>
                     {% if clustering_run.status == 'completed' %}
                     <a href="{% url 'battycoda_app:cluster_explorer' run_id=clustering_run.id %}" class="btn btn-success">
-                        <i class="fa fa-chart-network"></i> Explore Clusters
+                        <i class="fas fa-project-diagram"></i> Explore Clusters
                     </a>
                     <a href="{% url 'battycoda_app:map_clusters_to_calls' run_id=clustering_run.id %}" class="btn btn-info">
-                        <i class="fa fa-exchange-alt"></i> Map to Call Types
+                        <i class="fas fa-exchange-alt"></i> Map to Call Types
                     </a>
                     <div class="btn-group">
                         <button type="button" class="btn btn-outline-secondary dropdown-toggle" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                            <i class="fa fa-download"></i> Export
+                            <i class="fas fa-download"></i> Export
                         </button>
                         <div class="dropdown-menu dropdown-menu-end">
                             <a class="dropdown-item" href="{% url 'battycoda_app:export_clusters' run_id=clustering_run.id %}">
-                                <i class="fa fa-file-csv"></i> Export Clusters as CSV
+                                <i class="fas fa-file-csv"></i> Export Clusters as CSV
                             </a>
                             <a class="dropdown-item" href="{% url 'battycoda_app:export_mappings' run_id=clustering_run.id %}">
-                                <i class="fa fa-file-csv"></i> Export Mappings as CSV
+                                <i class="fas fa-file-csv"></i> Export Mappings as CSV
                             </a>
                         </div>
                     </div>
@@ -63,7 +63,7 @@
                                 <th>Source</th>
                                 <td>
                                     {% if clustering_run.scope == 'project' %}
-                                        <i class="fa fa-folder-open text-primary"></i>
+                                        <i class="fas fa-folder-open text-primary"></i>
                                         {{ clustering_run.project.name }}
                                         <br>
                                         <small class="text-muted">

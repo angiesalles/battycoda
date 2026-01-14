@@ -60,7 +60,7 @@
             <div class="card border-success">
                 <div class="card-body text-center">
                     <h5 class="card-title text-success">
-                        <i class="fa fa-cluster"></i> Clustering
+                        <i class="fas fa-layer-group"></i> Clustering
                     </h5>
                     <h3 id="clustering-count" class="mb-0">{{ clustering_jobs|length }}</h3>
                     <small class="text-muted">Active Jobs</small>
@@ -85,7 +85,7 @@
         {% include "jobs/includes/job_table.html" with jobs=segmentation_jobs title="Segmentation Jobs" icon="fas fa-scissors" detail_url_name="battycoda_app:recording_detail" job_id_param="recording_id" job_type="segmentation" cancel_statuses="pending,in_progress" show_recording=True %}
         {% include "jobs/includes/job_table.html" with jobs=detection_jobs title="Classification Jobs" icon="fas fa-desktop" detail_url_name="battycoda_app:detection_run_detail" job_id_param="run_id" job_type="detection" cancel_statuses="pending,running" show_classifier=True %}
         {% include "jobs/includes/job_table.html" with jobs=training_jobs title="Training Jobs" icon="fas fa-tools" detail_url_name="battycoda_app:classifier_training_job_detail" job_id_param="job_id" job_type="training" cancel_statuses="pending,running" %}
-        {% include "jobs/includes/job_table.html" with jobs=clustering_jobs title="Clustering Jobs" icon="fa fa-cluster" detail_url_name="battycoda_app:clustering_run_detail" job_id_param="run_id" job_type="clustering" cancel_statuses="pending,running" %}
+        {% include "jobs/includes/job_table.html" with jobs=clustering_jobs title="Clustering Jobs" icon="fas fa-layer-group" detail_url_name="battycoda_app:clustering_run_detail" job_id_param="run_id" job_type="clustering" cancel_statuses="pending,running" %}
         {% include "jobs/includes/spectrogram_table.html" %}
     </div>
     {% if not segmentation_jobs and not detection_jobs and not training_jobs and not clustering_jobs and not spectrogram_jobs %}
@@ -101,7 +101,7 @@
                 <i class="fas fa-desktop me-1"></i> Run Classification
             </a>
             <a href="{% url 'battycoda_app:clustering_dashboard' %}" class="btn btn-success">
-                <i class="fa fa-cluster me-1"></i> Start Clustering
+                <i class="fas fa-layer-group me-1"></i> Start Clustering
             </a>
         </div>
     </div>

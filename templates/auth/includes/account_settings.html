@@ -4,7 +4,7 @@
 
                     <div class="mt-3">
                         <button type="button" id="update-email-btn" class="btn btn-sm btn-primary">
-                            <i class="fa fa-save me-1"></i> Update Email
+                            <i class="fas fa-save me-1"></i> Update Email
                         </button>
                     </div>
 
@@ -18,7 +18,7 @@
                         {% if profile.api_key %}
                             <input type="text" class="form-control" value="{{ profile.api_key }}" readonly id="api-key-display">
                             <button type="button" class="btn btn-outline-secondary" onclick="copyApiKey()">
-                                <i class="fa fa-copy"></i> Copy
+                                <i class="fas fa-copy"></i> Copy
                             </button>
                         {% else %}
                             <input type="text" class="form-control" value="No API key generated" readonly>
@@ -34,7 +34,7 @@
                             {% csrf_token %}
                             <button type="submit" class="btn btn-sm btn-primary"
                                     onclick="return confirm('{% if profile.api_key %}This will replace your existing API key. Any scripts using the old key will stop working. Continue?{% else %}Generate a new API key?{% endif %}')">
-                                <i class="fa fa-key me-1"></i>
+                                <i class="fas fa-key me-1"></i>
                                 {% if profile.api_key %}Regenerate API Key{% else %}Generate API Key{% endif %}
                             </button>
                         </form>
@@ -88,7 +88,7 @@
 
                     <div class="mt-2">
                         <button type="button" id="update-management-features-btn" class="btn btn-sm btn-primary">
-                            <i class="fa fa-save me-1"></i> Update Management Features
+                            <i class="fas fa-save me-1"></i> Update Management Features
                         </button>
                     </div>
 

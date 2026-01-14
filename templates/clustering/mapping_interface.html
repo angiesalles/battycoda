@@ -18,13 +18,13 @@
                 <h3 class="card-title">Map Clusters to Call Types: {{ clustering_run.name }}</h3>
                 <div class="btn-group float-end">
                     <a href="{% url 'battycoda_app:clustering_run_detail' run_id=clustering_run.id %}" class="btn btn-secondary">
-                        <i class="fa fa-arrow-left"></i> Back to Run Details
+                        <i class="fas fa-arrow-left"></i> Back to Run Details
                     </a>
                     <a href="{% url 'battycoda_app:cluster_explorer' run_id=clustering_run.id %}" class="btn btn-success">
-                        <i class="fa fa-chart-network"></i> Explore Clusters
+                        <i class="fas fa-project-diagram"></i> Explore Clusters
                     </a>
                     <a href="{% url 'battycoda_app:export_mappings' run_id=clustering_run.id %}" class="btn btn-outline-secondary">
-                        <i class="fa fa-download"></i> Export Mappings as CSV
+                        <i class="fas fa-download"></i> Export Mappings as CSV
                     </a>
                 </div>
             </div>
@@ -32,7 +32,7 @@
                 <div class="row">
                     <div class="col-12">
                         <div class="alert alert-info">
-                            <i class="fa fa-info-circle"></i> This interface allows you to map discovered clusters to known species call types.
+                            <i class="fas fa-info-circle"></i> This interface allows you to map discovered clusters to known species call types.
                             Select a cluster from the left panel, then drag and drop it onto a call type in the right panel to create a mapping.
                         </div>
                     </div>
@@ -133,7 +133,7 @@
                                             {% empty %}
                                             <div class="col-12">
                                                 <div class="alert alert-warning">
-                                                    <i class="fa fa-exclamation-triangle"></i> No call types defined for {{ species.name }}
+                                                    <i class="fas fa-exclamation-triangle"></i> No call types defined for {{ species.name }}
                                                 </div>
                                             </div>
                                             {% endfor %}

@@ -11,7 +11,7 @@
                 <h3 class="card-title">Clustering Dashboard</h3>
                 <div class="btn-group float-end">
                     <a href="{% url 'battycoda_app:create_clustering_run' %}" class="btn btn-primary">
-                        <i class="fa fa-plus"></i> Create New Clustering Run
+                        <i class="fas fa-plus"></i> Create New Clustering Run
                     </a>
                 </div>
             </div>
@@ -60,7 +60,7 @@
                                 <td><a href="{% url 'battycoda_app:clustering_run_detail' run_id=run.id %}">{{ run.name }}</a></td>
                                 <td>
                                     {% if run.scope == 'project' %}
-                                        <i class="fa fa-folder-open text-muted"></i>
+                                        <i class="fas fa-folder-open text-muted"></i>
                                         {{ run.project.name }}
                                         <small class="text-muted">(Project)</small>
                                     {% else %}
@@ -94,14 +94,14 @@
                                 <td>
                                     <div class="btn-group">
                                         <a href="{% url 'battycoda_app:clustering_run_detail' run_id=run.id %}" class="btn btn-sm btn-primary">
-                                            <i class="fa fa-eye"></i> View
+                                            <i class="fas fa-eye"></i> View
                                         </a>
                                         {% if run.status == 'completed' %}
                                         <a href="{% url 'battycoda_app:cluster_explorer' run_id=run.id %}" class="btn btn-sm btn-success">
-                                            <i class="fa fa-chart-network"></i> Explore
+                                            <i class="fas fa-project-diagram"></i> Explore
                                         </a>
                                         <a href="{% url 'battycoda_app:map_clusters_to_calls' run_id=run.id %}" class="btn btn-sm btn-info">
-                                            <i class="fa fa-exchange-alt"></i> Map
+                                            <i class="fas fa-exchange-alt"></i> Map
                                         </a>
                                         {% endif %}
                                     </div>
@@ -113,7 +113,7 @@
                 </div>
                 {% else %}
                 <div class="alert alert-info">
-                    <i class="fa fa-info-circle"></i> No clustering runs yet. Create your first clustering run to get started.
+                    <i class="fas fa-info-circle"></i> No clustering runs yet. Create your first clustering run to get started.
                 </div>
                 {% endif %}
             </div>
@@ -157,7 +157,7 @@
                 </div>
                 {% else %}
                 <div class="alert alert-warning">
-                    <i class="fa fa-exclamation-triangle"></i> No clustering algorithms available. Please contact your administrator.
+                    <i class="fas fa-exclamation-triangle"></i> No clustering algorithms available. Please contact your administrator.
                 </div>
                 {% endif %}
             </div>
