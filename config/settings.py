@@ -123,6 +123,7 @@ TEMPLATES = [
                 "battycoda_app.context_processors.theme_choices",
                 "battycoda_app.context_processors.hijack_notification",
                 "battycoda_app.context_processors.sentry_settings",
+                "battycoda_app.context_processors.vite_features",
             ],
         },
     },
@@ -352,3 +353,31 @@ if SENTRY_DSN:
         send_default_pii=True,
         environment=SENTRY_ENVIRONMENT,
     )
+
+# Vite Frontend Build Configuration
+# Controls incremental migration from Django static files to Vite-bundled JS
+VITE_ENABLED = os.environ.get('VITE_ENABLED', 'false').lower() == 'true'
+
+# Feature flags for per-feature Vite migration
+# Each feature can be migrated independently with rollback capability
+# Migration order (suggested by risk/complexity):
+#   1. theme_switcher (low risk, low complexity)
+#   2. notifications (low risk, low complexity)
+#   3. datetime_formatter (low risk, low complexity)
+#   4. file_upload (medium risk, medium complexity)
+#   5. cluster_explorer (medium risk, high complexity)
+#   6. cluster_mapping (medium risk, high complexity)
+#   7. player (high risk, high complexity)
+#   8. task_annotation (high risk, high complexity)
+#   9. segmentation (medium risk, medium complexity)
+VITE_FEATURES = {
+    'theme_switcher': os.environ.get('VITE_FEATURE_THEME_SWITCHER', 'false').lower() == 'true',
+    'notifications': os.environ.get('VITE_FEATURE_NOTIFICATIONS', 'false').lower() == 'true',
+    'datetime_formatter': os.environ.get('VITE_FEATURE_DATETIME_FORMATTER', 'false').lower() == 'true',
+    'file_upload': os.environ.get('VITE_FEATURE_FILE_UPLOAD', 'false').lower() == 'true',
+    'cluster_explorer': os.environ.get('VITE_FEATURE_CLUSTER_EXPLORER', 'false').lower() == 'true',
+    'cluster_mapping': os.environ.get('VITE_FEATURE_CLUSTER_MAPPING', 'false').lower() == 'true',
+    'player': os.environ.get('VITE_FEATURE_PLAYER', 'false').lower() == 'true',
+    'task_annotation': os.environ.get('VITE_FEATURE_TASK_ANNOTATION', 'false').lower() == 'true',
+    'segmentation': os.environ.get('VITE_FEATURE_SEGMENTATION', 'false').lower() == 'true',
+}

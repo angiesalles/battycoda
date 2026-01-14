@@ -339,6 +339,101 @@ Configuration in `.env` file:
 - `DATABASE_BACKUP_BUCKET` - S3 bucket for backups (default: backup-battycoda)
 - `DATABASE_BACKUP_PREFIX` - S3 prefix for backups (default: database-backups/)
 
+### Vite Frontend Build (Feature Flags)
+- `VITE_ENABLED` - Master switch for Vite bundles (default: false)
+- `VITE_FEATURE_THEME_SWITCHER` - Use Vite for theme switcher (default: false)
+- `VITE_FEATURE_NOTIFICATIONS` - Use Vite for notifications (default: false)
+- `VITE_FEATURE_DATETIME_FORMATTER` - Use Vite for datetime formatter (default: false)
+- `VITE_FEATURE_FILE_UPLOAD` - Use Vite for file upload (default: false)
+- `VITE_FEATURE_CLUSTER_EXPLORER` - Use Vite for cluster explorer (default: false)
+- `VITE_FEATURE_CLUSTER_MAPPING` - Use Vite for cluster mapping (default: false)
+- `VITE_FEATURE_PLAYER` - Use Vite for audio player (default: false)
+- `VITE_FEATURE_TASK_ANNOTATION` - Use Vite for task annotation (default: false)
+- `VITE_FEATURE_SEGMENTATION` - Use Vite for segmentation (default: false)
+
+## Vite Frontend Migration
+
+BattyCoda uses an incremental migration strategy for moving from Django static files to Vite-bundled JavaScript.
+
+### Feature Flag System
+
+Each JavaScript feature can be migrated independently using feature flags in `settings.py`:
+
+```python
+VITE_ENABLED = True  # Master switch
+VITE_FEATURES = {
+    'theme_switcher': True,   # Migrated
+    'notifications': False,   # Not yet
+    # ...
+}
+```
+
+Templates check these flags to load either legacy scripts or Vite bundles:
+```html
+{% if not VITE_FEATURES.theme_switcher %}
+<script src="{% static 'js/theme-switcher.js' %}"></script>
+{% endif %}
+```
+
+### Migration Order (Suggested)
+
+| Order | Feature | Risk | Complexity |
+|-------|---------|------|------------|
+| 1 | theme_switcher | Low | Low |
+| 2 | notifications | Low | Low |
+| 3 | datetime_formatter | Low | Low |
+| 4 | file_upload | Medium | Medium |
+| 5 | cluster_explorer | Medium | High |
+| 6 | cluster_mapping | Medium | High |
+| 7 | player | High | High |
+| 8 | task_annotation | High | High |
+| 9 | segmentation | Medium | Medium |
+
+### Rollback Procedures
+
+#### Level 1: Disable Single Feature
+Set the specific feature flag to false in `.env`:
+```bash
+VITE_FEATURE_THEME_SWITCHER=false
+```
+Then restart the service:
+```bash
+sudo systemctl restart battycoda
+```
+
+#### Level 2: Disable All Vite
+Disable the master switch in `.env`:
+```bash
+VITE_ENABLED=false
+```
+Then restart:
+```bash
+sudo systemctl restart battycoda
+```
+
+#### Level 3: Full Revert
+Revert to pre-Vite commit:
+```bash
+git log --oneline  # Find the commit before Vite changes
+git revert HEAD~n..HEAD  # Or specific commits
+sudo systemctl restart battycoda
+```
+
+### Testing Checklist Per Feature
+
+Before enabling a feature in production:
+- [ ] Unit tests pass
+- [ ] E2E tests pass for this feature
+- [ ] Manual testing on staging
+- [ ] Performance comparison (bundle size, load time)
+- [ ] No console errors
+- [ ] All browsers tested
+
+### Key Files
+- `config/settings.py` - VITE_ENABLED, VITE_FEATURES settings
+- `battycoda_app/context_processors.py` - vite_features context processor
+- `templates/base.html` - Conditional script loading
+
 ## Code Style Guidelines
 
 - **Imports**: Group by standard library, Django, then project modules; alphabetize within groups

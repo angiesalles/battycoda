@@ -242,16 +242,28 @@
 
 <script id="appScript" src="{% static 'js/app.js' %}" type="text/javascript"></script>
 
-<!-- Custom Scripts -->
+<!-- Custom Scripts - Conditionally loaded based on Vite migration status -->
+{% if not VITE_FEATURES.datetime_formatter %}
 <script id="datetimeFormatterScript" src="{% static 'js/datetime_formatter.js' %}"></script>
+{% endif %}
+{% if not VITE_FEATURES.theme_switcher %}
 <script id="themeSwitcherScript" src="{% static 'js/theme-switcher.js' %}"></script>
+{% endif %}
 {% if user.is_authenticated %}
+{% if not VITE_FEATURES.notifications %}
 <script type="text/javascript">
     // Set notification URLs for JavaScript
     var navbarNotificationsUrl = "{% url 'battycoda_app:get_navbar_notifications' %}";
     var markNotificationReadUrl = "{% url 'battycoda_app:mark_notification_read' notification_id=0 %}";
 </script>
 <script id="notificationsScript" src="{% static 'js/notifications.js' %}"></script>
+{% endif %}
+{% endif %}
+
+<!-- Vite bundle placeholder (loaded when VITE_ENABLED and features are migrated) -->
+{% if VITE_ENABLED %}
+<!-- Vite bundles will be loaded here once Vite build system is set up -->
+<!-- Example: {% vite_asset 'main.js' %} -->
 {% endif %}
 
 <script id="appInitScript" type="text/javascript">

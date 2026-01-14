@@ -25,3 +25,16 @@ def sentry_settings(request):
         "SENTRY_DSN": getattr(settings, 'SENTRY_DSN', None),
         "SENTRY_ENVIRONMENT": getattr(settings, 'SENTRY_ENVIRONMENT', 'production'),
     }
+
+
+def vite_features(request):
+    """
+    Add Vite feature flags to template context for incremental JS migration.
+
+    This enables page-by-page migration from traditional Django static files
+    to Vite-bundled JavaScript modules with rollback capability.
+    """
+    return {
+        'VITE_ENABLED': getattr(settings, 'VITE_ENABLED', False),
+        'VITE_FEATURES': getattr(settings, 'VITE_FEATURES', {}),
+    }
