@@ -9,3 +9,4 @@
 /static/js/app.min.js
 /static/lib
 /tmp
+celerybeat-schedule
