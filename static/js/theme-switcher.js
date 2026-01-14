@@ -53,6 +53,22 @@ function updateThemePreference(themeName) {
 }
 
 /**
+ * Get the URL for a theme CSS file.
+ * Uses Vite manifest URLs if available (set by vite_theme_urls template tag),
+ * otherwise falls back to static URL.
+ * @param {string} themeName - Theme name
+ * @returns {string} URL for the theme CSS file
+ */
+function getThemeUrl(themeName) {
+    // Check for Vite-provided theme URLs
+    if (window.__VITE_THEME_URLS__ && window.__VITE_THEME_URLS__[themeName]) {
+        return window.__VITE_THEME_URLS__[themeName];
+    }
+    // Fallback to static URL
+    return `/static/css/themes/${themeName}.css`;
+}
+
+/**
  * Apply a theme by adding/removing CSS classes and loading theme CSS
  * @param {string} themeName - Theme name to apply
  */
@@ -75,7 +91,7 @@ export function applyTheme(themeName) {
             themeLink = document.createElement('link');
             themeLink.id = themeId;
             themeLink.rel = 'stylesheet';
-            themeLink.href = `/static/css/themes/${themeName}.css`;
+            themeLink.href = getThemeUrl(themeName);
             document.head.appendChild(themeLink);
         }
     }

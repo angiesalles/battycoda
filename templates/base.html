@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 {% load static %}
 {% load django_vite %}
+{% load vite %}
 <html id="html-root" lang="en">
 <head id="head">
     <title id="pageTitle">{% block title %}BattyCoda{% endblock %}</title>
@@ -47,9 +48,7 @@
     <!-- Load theme CSS based on user preference (only if not using default theme) -->
     {% if user.is_authenticated %}
       {% with current_theme=user.profile.theme|default:'default' %}
-        {% if current_theme != 'default' %}
-          <link id="theme-css-{{ current_theme }}" rel="stylesheet" href="{% static 'css/themes/'|add:current_theme|add:'.css' %}">
-        {% endif %}
+        {% vite_theme_css current_theme %}
       {% endwith %}
     {% endif %}
     
@@ -250,6 +249,9 @@
     var markNotificationReadUrl = "{% url 'battycoda_app:mark_notification_read' notification_id=0 %}";
 </script>
 {% endif %}
+
+<!-- Theme URLs for dynamic theme loading (used by theme-switcher.js) -->
+{% vite_theme_urls %}
 
 <!-- Main Vite bundle (includes datetime_formatter, theme-switcher, notifications) -->
 {% vite_asset 'static/js/main.js' %}

@@ -404,6 +404,29 @@ Templates check these flags to load either legacy scripts or Vite bundles:
 {% endif %}
 ```
 
+### CSS Bundling
+
+CSS is processed through Vite with PostCSS for autoprefixing and minification:
+
+**Entry Points:**
+- `static/css/main.css` - Main CSS bundle (imports app.css, themes.css, typography.css, stroke-7)
+- `static/css/themes/*.css` - Individual theme files (built separately for dynamic loading)
+
+**Key Files:**
+- `postcss.config.js` - PostCSS configuration (autoprefixer, cssnano)
+- `vite.config.js` - Vite config with CSS entry points
+- `battycoda_app/templatetags/vite.py` - Custom template tags for CSS loading
+
+**Template Tags:**
+```html
+{% load vite %}
+{% vite_css 'styles' %}           <!-- Load main CSS bundle -->
+{% vite_theme_css 'blue-sky' %}   <!-- Load specific theme CSS -->
+{% vite_theme_urls %}             <!-- Inject theme URL mapping for JS -->
+```
+
+The `vite_theme_urls` tag generates a JavaScript object (`window.__VITE_THEME_URLS__`) that maps theme names to their correct URLs (with hashes in production). This allows the theme-switcher.js to dynamically load themes without knowing the hashed filenames.
+
 ### Migration Order (Suggested)
 
 | Order | Feature | Risk | Complexity |
