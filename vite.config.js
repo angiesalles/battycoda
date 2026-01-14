@@ -8,10 +8,24 @@ export default defineConfig({
     emptyOutDir: true,
     manifest: true,
     rollupOptions: {
-      // Entry points - add more as features are migrated
+      // Entry points for code splitting
+      // Each entry point produces a separate bundle
       input: {
-        main: resolve(__dirname, 'static/js/vite/main.js'),
-        // Example: 'theme-switcher': resolve(__dirname, 'static/js/theme-switcher/index.js'),
+        // Core bundle - loaded on every page
+        main: resolve(__dirname, 'static/js/main.js'),
+
+        // Feature bundles - loaded only on pages that need them
+        player: resolve(__dirname, 'static/js/player/index.js'),
+        segmentation: resolve(__dirname, 'static/js/segmentation/index.js'),
+        clusterExplorer: resolve(__dirname, 'static/js/cluster_explorer/index.js'),
+        clusterMapping: resolve(__dirname, 'static/js/cluster_mapping/index.js'),
+        fileUpload: resolve(__dirname, 'static/js/file_upload/index.js'),
+      },
+      output: {
+        // Ensure consistent chunk naming
+        entryFileNames: '[name]-[hash].js',
+        chunkFileNames: 'chunks/[name]-[hash].js',
+        assetFileNames: 'assets/[name]-[hash][extname]',
       },
     },
   },

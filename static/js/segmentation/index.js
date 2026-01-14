@@ -26,3 +26,6 @@ export function initSegmentation(options) {
     
     return manager;
 }
+
+// Expose to window for Django template usage
+window.initSegmentation = initSegmentation;

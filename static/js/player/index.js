@@ -71,3 +71,6 @@ export function initWaveformPlayer(containerId, recordingId, allowSelection, sho
     // Initialize the player
     player.initialize();
 }
+
+// Expose to window for Django template usage
+window.initWaveformPlayer = initWaveformPlayer;
