@@ -9,6 +9,7 @@ from django.urls import reverse
 from ..models import Segment
 from ..models.clustering import Cluster, ClusterCallMapping, ClusteringRun, SegmentCluster
 from ..models.organization import Species
+from ..utils_modules.validation import get_int_param
 
 
 @login_required
@@ -167,8 +168,8 @@ def get_segment_data(request):
 def get_cluster_members(request):
     """API endpoint to get members of a cluster."""
     cluster_id = request.GET.get('cluster_id')
-    limit = int(request.GET.get('limit', 50))
-    offset = int(request.GET.get('offset', 0))
+    limit = get_int_param(request, 'limit', default=50, min_val=1, max_val=1000)
+    offset = get_int_param(request, 'offset', default=0, min_val=0)
 
     if not cluster_id:
         return JsonResponse({'status': 'error', 'message': 'No cluster ID provided'})

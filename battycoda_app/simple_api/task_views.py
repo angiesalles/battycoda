@@ -11,6 +11,7 @@ from .auth import api_key_required
 from ..models import Task, TaskBatch
 from ..models.classification import ClassificationRun, ClassificationResult, CallProbability
 from ..models import Segment
+from ..utils_modules.validation import get_int_param
 
 
 @csrf_exempt
@@ -241,8 +242,8 @@ def simple_task_batch_tasks(request, batch_id):
         )
     
     # Simple pagination
-    limit = int(request.GET.get('limit', 50))
-    offset = int(request.GET.get('offset', 0))
+    limit = get_int_param(request, 'limit', default=50, min_val=1, max_val=1000)
+    offset = get_int_param(request, 'offset', default=0, min_val=0)
     
     total_tasks = tasks.count()
     tasks_page = tasks[offset:offset + limit]

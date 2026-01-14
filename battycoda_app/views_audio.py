@@ -3,6 +3,8 @@ from django.contrib.auth.decorators import login_required
 from django.http import FileResponse, HttpResponse, JsonResponse
 import logging
 
+from .utils_modules.validation import get_int_param
+
 logger = logging.getLogger(__name__)
 
 @login_required
@@ -155,7 +157,7 @@ def task_audio_snippet_view(request, task_id):
         return HttpResponse("Task has no associated audio file", status=404)
 
     # Get optional parameters with defaults
-    channel = int(request.GET.get('channel', '0'))
+    channel = get_int_param(request, 'channel', default=0, min_val=0)
     overview = request.GET.get('overview', 'False') == 'True'
 
     # Determine window size

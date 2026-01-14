@@ -12,6 +12,7 @@ from django.http import JsonResponse
 from django.shortcuts import get_object_or_404
 
 from battycoda_app.models import Recording, SegmentationAlgorithm
+from battycoda_app.utils_modules.validation import safe_int
 import hashlib
 import os
 import uuid
@@ -50,27 +51,16 @@ def create_preview_recording_view(request, recording_id):
         start_time = float(request.POST.get("start_time", 0))
         duration = float(request.POST.get("duration", 1.0))
         
-        # Get segmentation parameters 
+        # Get segmentation parameters
         algorithm_id = request.POST.get("algorithm")
-        min_duration_ms = int(request.POST.get("min_duration_ms", 10))
-        smooth_window = int(request.POST.get("smooth_window", 3))
+        min_duration_ms = safe_int(request.POST.get("min_duration_ms"), default=10)
+        smooth_window = safe_int(request.POST.get("smooth_window"), default=3)
         threshold_factor = float(request.POST.get("threshold_factor", 0.5))
-        
+
         # Get bandpass filter parameters
-        low_freq = request.POST.get("low_freq")
-        high_freq = request.POST.get("high_freq")
-        
-        # Convert frequency parameters to integers or None
-        if low_freq and low_freq.strip():
-            low_freq = int(low_freq)
-        else:
-            low_freq = None
-            
-        if high_freq and high_freq.strip():
-            high_freq = int(high_freq)
-        else:
-            high_freq = None
-        
+        low_freq = safe_int(request.POST.get("low_freq"))
+        high_freq = safe_int(request.POST.get("high_freq"))
+
         # Validate parameters
         if start_time < 0:
             raise ValueError("Start time must be non-negative")
