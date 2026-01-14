@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+
+{% block title %}Access Denied - BattyCoda{% endblock %}
+
+{% block content %}
+<div class="container text-center py-5">
+    <h1 class="display-1 text-warning">403</h1>
+    <h2>Access Denied</h2>
+    <p class="lead">You don't have permission to access this page.</p>
+    <a href="{% url 'battycoda_app:index' %}" class="btn btn-primary mt-3">
+        <span class="s7-home mr-1"></span> Return Home
+    </a>
+</div>
+{% endblock %}
