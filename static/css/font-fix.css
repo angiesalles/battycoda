@@ -167,8 +167,14 @@
 }
 
 /* Ensure font families are properly used throughout the app */
-body, p, div, span, input, button, select, textarea, table, td, th, li, a {
+/* Note: span excluded to allow Font Awesome icons to display */
+body, p, div, input, button, select, textarea, table, td, th, li, a {
   font-family: 'Open Sans', sans-serif !important;
+}
+
+/* For spans, use non-!important so Font Awesome can override */
+span:not(.fas):not(.far):not(.fab):not(.fa) {
+  font-family: 'Open Sans', sans-serif;
 }
 
 h1, h2, h3, h4, h5, h6, .h1, .h2, .h3, .h4, .h5, .h6, .navbar-brand, .nav-link {
