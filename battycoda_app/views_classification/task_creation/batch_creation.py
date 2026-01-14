@@ -2,10 +2,11 @@
 
 Provides functionality to convert detection run results into manual tasks for review.
 """
-
-import traceback
+import logging
 
 from django.contrib import messages
+
+logger = logging.getLogger(__name__)
 from django.contrib.auth.decorators import login_required
 from django.db import models, transaction
 from django.shortcuts import get_object_or_404, redirect, render
@@ -76,9 +77,7 @@ def create_task_batch_from_detection_run(request, run_id):
             return redirect("battycoda_app:task_batch_detail", batch_id=batch.id)
 
         except Exception as e:
-            import traceback
-            print(f"Error creating task batch for run {run_id}: {str(e)}")
-            print(traceback.format_exc())
+            logger.exception(f"Error creating task batch for run {run_id}: {str(e)}")
             messages.error(request, f"Error creating task batch: {str(e)}")
             return redirect("battycoda_app:detection_run_detail", run_id=run_id)
 

@@ -23,11 +23,6 @@ def group_list_view(request):
         Group.objects.filter(group_memberships__user=request.user).select_related().distinct().order_by("name")
     )
 
-    # Debug output
-    print(f"Found {user_groups.count()} groups for user {request.user.username}")
-    for group in user_groups:
-        print(f" - Group: {group.name} (ID: {group.id})")
-
     context = {
         "groups": user_groups,
     }
@@ -42,16 +37,6 @@ def group_detail_view(request, group_id):
 
     # Check if the user is a member of this group via GroupMembership
     membership_exists = GroupMembership.objects.filter(user=request.user, group=group).exists()
-
-    # Debug output
-    print(
-        f"GroupMembership check: User {request.user.username}, Group {group.name} (ID: {group.id}), Membership exists: {membership_exists}"
-    )
-    if not membership_exists:
-        print(f"  - User's active group: {request.user.profile.group.name if request.user.profile.group else 'None'}")
-        print(
-            f"  - User's memberships: {list(GroupMembership.objects.filter(user=request.user).values_list('group__name', flat=True))}"
-        )
 
     if membership_exists:
         # Get group with members preloaded
@@ -97,11 +82,9 @@ def create_group_view(request):
                 was_admin = user_profile.is_current_group_admin
 
                 # Create GroupMembership record for the new group
-                print(f"Creating GroupMembership: User={request.user.username}, Group={group.name} (ID: {group.id})")
                 membership, created = GroupMembership.objects.get_or_create(
                     user=request.user, group=group, defaults={"is_admin": True}  # Group creator is always admin
                 )
-                print(f"GroupMembership created: {created}, ID: {membership.id if membership else 'None'}")
 
                 # Always make the creator a member and admin of the new group
                 user_profile.group = group

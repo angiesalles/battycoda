@@ -4,9 +4,8 @@ Training tasks for BattyCoda.
 This module contains tasks for training custom classifiers.
 """
 import hashlib
-import json
+import logging
 import os
-import tempfile
 import time
 from pathlib import Path
 
@@ -16,6 +15,8 @@ from celery import shared_task
 from django.conf import settings
 
 from .base import extract_audio_segment
+
+logger = logging.getLogger(__name__)
 from .classification_utils import (R_SERVER_URL, check_r_server_connection,
                                    update_detection_run_status)
 from ...utils_modules.path_utils import get_local_tmp, get_r_server_path
@@ -91,17 +92,16 @@ def train_classifier(self, training_job_id):
             try:
                 # Get wav_file directly from task_batch
                 if not task_batch.wav_file:
-                    print(f"Warning: Task batch {task_batch.id} has no wav_file")
+                    logger.warning(f"Task batch {task_batch.id} has no wav_file")
                     continue
                 
                 wav_file_path = task_batch.wav_file.path
                 
                 if not os.path.exists(wav_file_path):
-                    print(f"Warning: WAV file path does not exist: {wav_file_path}")
+                    logger.warning(f"WAV file path does not exist: {wav_file_path}")
                     continue
                 
-                # Debug info
-                print(f"Extracting segment for task {task.id}: {task.onset} to {task.offset} from {wav_file_path}")
+                logger.debug(f"Extracting segment for task {task.id}: {task.onset} to {task.offset} from {wav_file_path}")
                 
                 # Extract audio segment
                 segment_data, sample_rate = extract_audio_segment(
@@ -110,7 +110,7 @@ def train_classifier(self, training_job_id):
                 
                 # Check if we have valid audio data
                 if segment_data is None or len(segment_data) == 0:
-                    print(f"Warning: No audio data extracted for task {task.id}")
+                    logger.warning(f"No audio data extracted for task {task.id}")
                     continue
                 
                 # Save as WAV with format NUMBER_LABEL.wav
@@ -118,11 +118,11 @@ def train_classifier(self, training_job_id):
                 output_path = os.path.join(temp_dir, output_filename)
                 sf.write(output_path, segment_data, samplerate=sample_rate)
                 
-                print(f"Saved segment {file_counter} with label '{task.label}' to {output_path}")
+                logger.debug(f"Saved segment {file_counter} with label '{task.label}' to {output_path}")
                 file_counter += 1
             except Exception as e:
                 # Log error but continue with other tasks
-                print(f"Error extracting segment for task {task.id}: {str(e)}")
+                logger.warning(f"Error extracting segment for task {task.id}: {str(e)}")
                 continue
         
         update_detection_run_status(training_job, "in_progress", progress=50)
@@ -187,9 +187,9 @@ def train_classifier(self, training_job_id):
                 endpoint = f"{R_SERVER_URL}/train/knn"
                 algorithm_description = "K-Nearest Neighbors"
             
-            print(f"Using {algorithm_type.upper()} training endpoint: {endpoint}")
-            print(f"Training parameters: {train_params}")
-            
+            logger.debug(f"Using {algorithm_type.upper()} training endpoint: {endpoint}")
+            logger.debug(f"Training parameters: {train_params}")
+
             # Make the training request - IMPORTANT: Use data instead of params
             train_response = requests.post(
                 endpoint,
@@ -210,8 +210,7 @@ def train_classifier(self, training_job_id):
                 
                 return {"status": "error", "message": f"R server training failed. Status: {train_response.status_code}"}
             
-            # Debug the raw response before parsing JSON
-            print(f"Raw training response text: {train_response.text[:200]}...")  # Print first 200 chars
+            logger.debug(f"Raw training response text: {train_response.text[:200]}...")
             
             # Process successful response
             train_result = train_response.json()
@@ -428,9 +427,9 @@ def train_classifier_from_folder(self, training_job_id, species_id):
                 endpoint = f"{R_SERVER_URL}/train/knn"
                 algorithm_description = "K-Nearest Neighbors"
 
-            print(f"Training classifier from folder {folder_path}")
-            print(f"Using {algorithm_type.upper()} training endpoint: {endpoint}")
-            print(f"Training parameters: {train_params}")
+            logger.debug(f"Training classifier from folder {folder_path}")
+            logger.debug(f"Using {algorithm_type.upper()} training endpoint: {endpoint}")
+            logger.debug(f"Training parameters: {train_params}")
 
             train_response = requests.post(
                 endpoint,
@@ -473,14 +472,9 @@ def train_classifier_from_folder(self, training_job_id, species_id):
 
             folder_name = os.path.basename(folder_path)
 
-            print(f"About to create classifier with:")
-            print(f"  Name: {algorithm_type.upper()} Classifier from {folder_name}")
-            print(f"  Species: {species.id} - {species.name}")
-            print(f"  Response format: {training_job.response_format}")
-            print(f"  Accuracy: {accuracy}")
+            logger.debug(f"Creating classifier: {algorithm_type.upper()} Classifier from {folder_name}, Species: {species.name}, Accuracy: {accuracy}")
 
             try:
-                print("Creating classifier object...")
                 classifier = Classifier.objects.create(
                     name=f"{algorithm_type.upper()} Classifier from {folder_name}",
                     description=f"{algorithm_description} classifier trained from folder {folder_name} with {len(wav_files)} samples. Accuracy: {accuracy:.1f}%",
@@ -495,12 +489,10 @@ def train_classifier_from_folder(self, training_job_id, species_id):
                     group=training_job.group,
                     species=species
                 )
-                print(f"Successfully created classifier {classifier.id}")
+                logger.debug(f"Successfully created classifier {classifier.id}")
             except Exception as e:
                 error_msg = f"Error creating classifier in database: {str(e)}"
-                print(f"ERROR: {error_msg}")
-                import traceback
-                traceback.print_exc()
+                logger.exception(error_msg)
                 update_detection_run_status(training_job, "failed", error_msg)
                 return {"status": "error", "message": error_msg}
 

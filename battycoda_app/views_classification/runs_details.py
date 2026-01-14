@@ -2,14 +2,15 @@
 
 Provides views for displaying detailed information about detection runs.
 """
-
+import logging
 import os
-import tempfile
 import zipfile
 from io import BytesIO
 
 import soundfile as sf
 from django.contrib import messages
+
+logger = logging.getLogger(__name__)
 from django.contrib.auth.decorators import login_required
 from django.core.paginator import Paginator
 from django.http import FileResponse, Http404, HttpResponse, JsonResponse
@@ -178,7 +179,7 @@ def download_segments_zip_view(request, run_id):
 
             except Exception as e:
                 # Log error but continue with other segments
-                print(f"Error extracting segment {segment.id}: {str(e)}")
+                logger.warning(f"Error extracting segment {segment.id}: {str(e)}")
                 continue
 
     # Prepare response

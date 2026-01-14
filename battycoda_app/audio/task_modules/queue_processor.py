@@ -4,10 +4,12 @@ Queue processor for managing sequential classification runs.
 This module handles the database-based queue system to prevent
 classification runs from running concurrently and causing resource conflicts.
 """
-import time
+import logging
+
 from celery import shared_task
 from django.db import transaction
-from django.utils import timezone
+
+logger = logging.getLogger(__name__)
 
 
 @shared_task(bind=True, name="battycoda_app.audio.task_modules.queue_processor.process_classification_queue")
@@ -42,7 +44,7 @@ def process_classification_queue(self):
             queued_run.save(update_fields=["status"])
             
         # Now process this run outside the transaction
-        print(f"Processing queued classification run: {queued_run.id} - {queued_run.name}")
+        logger.info(f"Processing queued classification run: {queued_run.id} - {queued_run.name}")
 
         try:
             # Choose the appropriate task based on classifier
@@ -65,11 +67,11 @@ def process_classification_queue(self):
             queued_run.status = "failed"
             queued_run.error_message = f"Failed to start classification task: {str(task_error)}"
             queued_run.save(update_fields=["status", "error_message"])
-            print(f"Error starting task for run {queued_run.id}: {str(task_error)}")
+            logger.error(f"Error starting task for run {queued_run.id}: {str(task_error)}")
             raise
 
     except Exception as e:
-        print(f"Error in queue processor: {str(e)}")
+        logger.error(f"Error in queue processor: {str(e)}")
         return {"status": "error", "message": str(e)}
 
 
@@ -91,7 +93,7 @@ def queue_classification_run(self, detection_run_id):
         run.status = "queued"
         run.save(update_fields=["status"])
         
-        print(f"Queued classification run: {run.id} - {run.name}")
+        logger.info(f"Queued classification run: {run.id} - {run.name}")
         
         return {
             "status": "success",
@@ -100,11 +102,11 @@ def queue_classification_run(self, detection_run_id):
         
     except ClassificationRun.DoesNotExist:
         error_msg = f"ClassificationRun {detection_run_id} not found"
-        print(error_msg)
+        logger.error(error_msg)
         return {"status": "error", "message": error_msg}
     except Exception as e:
         error_msg = f"Error queuing run {detection_run_id}: {str(e)}"
-        print(error_msg)
+        logger.error(error_msg)
         return {"status": "error", "message": error_msg}
 
 
