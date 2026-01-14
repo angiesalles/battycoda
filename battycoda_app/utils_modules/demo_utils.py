@@ -184,7 +184,7 @@ def _create_demo_segmentation(user, recording, pickle_path):
         Segmentation: The created Segmentation object or None if creation failed
     """
     from battycoda_app.audio.utils import process_pickle_file
-    from battycoda_app.models.recording import Segment, Segmentation
+    from battycoda_app.models.segmentation import Segment, Segmentation
 
     try:
         # Open and process the pickle file
