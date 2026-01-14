@@ -22,6 +22,7 @@ from ..classification_utils import (
     get_segments,
     update_classification_run_status,
 )
+from .dummy_classifier import run_dummy_classifier
 
 logger = logging.getLogger(__name__)
 
@@ -251,7 +252,7 @@ def run_call_classification(self, classification_run_id):
         # Check if this is the Dummy Classifier - route to dummy classifier logic
         if classifier.name == "Dummy Classifier" or not classifier.service_url:
             # Run dummy classifier inline (not as a separate task)
-            return run_dummy_classification_inline(self, classification_run_id, CallProbability, ClassificationResult)
+            return run_dummy_classifier(self, classification_run_id)
 
         service_url = classifier.service_url
         endpoint = f"{service_url}{classifier.endpoint}"

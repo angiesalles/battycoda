@@ -7,6 +7,7 @@ from django.contrib.auth.decorators import login_required
 from django.db import transaction
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
+from django.urls import reverse
 
 from battycoda_app.audio.utils import process_pickle_file
 from battycoda_app.models import Recording, Segment, Segmentation
