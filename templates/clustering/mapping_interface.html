@@ -1,5 +1,6 @@
 {% extends "base.html" %}
 {% load static %}
+{% load django_vite %}
 
 {% block title %}Map Clusters to Call Types: {{ clustering_run.name }} - BattyCoda{% endblock %}
 
@@ -241,10 +242,5 @@ $(function() {
     });
 });
 </script>
-<!-- Load cluster mapping modules in dependency order -->
-<script src="{% static 'js/cluster_mapping/initialization.js' %}"></script>
-<script src="{% static 'js/cluster_mapping/filtering.js' %}"></script>
-<script src="{% static 'js/cluster_mapping/drag_drop.js' %}"></script>
-<script src="{% static 'js/cluster_mapping/modal_handlers.js' %}"></script>
-<script src="{% static 'js/cluster_mapping.js' %}"></script>
+{% vite_asset 'static/js/cluster_mapping/index.js' %}
 {% endblock %}

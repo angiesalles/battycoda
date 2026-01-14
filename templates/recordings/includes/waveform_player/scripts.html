@@ -1,17 +1,16 @@
 {% load static %}
+{% load django_vite %}
 
 <!-- Include waveform player scripts -->
+{% vite_asset 'static/js/player/index.js' %}
+
 <script type="module">
-    // Import the initialization function directly
-    import { initWaveformPlayer } from "{% static 'js/player/index.js' %}";
-
-    // Make it available globally for other scripts
-    window.initWaveformPlayer = initWaveformPlayer;
-
-    // Initialize immediately after import (module scripts are deferred by default)
+    // Wait for Vite bundle to load, then initialize
     document.addEventListener('DOMContentLoaded', function() {
         // Initialize waveform player for {{ container_id }}
-        initWaveformPlayer("{{ container_id }}", {{ recording.id }}, {{ allow_selection|yesno:"true,false" }}, {{ show_zoom|yesno:"true,false" }}, {% if segments %}{{ segments|safe }}{% else %}null{% endif %});
+        if (window.initWaveformPlayer) {
+            window.initWaveformPlayer("{{ container_id }}", {{ recording.id }}, {{ allow_selection|yesno:"true,false" }}, {{ show_zoom|yesno:"true,false" }}, {% if segments %}{{ segments|safe }}{% else %}null{% endif %});
+        }
 
         {% if spectrogram_info.status == 'available' %}
         {% include "recordings/includes/waveform_player/view_toggle.html" %}
@@ -26,6 +25,3 @@
         {% endif %}
     });
 </script>
-
-<!-- Include the play region extension -->
-<script src="{% static 'js/player/play_region.js' %}"></script>

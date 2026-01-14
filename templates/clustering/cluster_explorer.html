@@ -1,5 +1,6 @@
 {% extends "base.html" %}
 {% load static %}
+{% load django_vite %}
 
 {% block title %}Cluster Explorer: {{ clustering_run.name }} - BattyCoda{% endblock %}
 
@@ -260,5 +261,5 @@ clusters.push({
 });
 {% endfor %}
 </script>
-<script src="{% static 'js/cluster_explorer.js' %}"></script>
+{% vite_asset 'static/js/cluster_explorer/index.js' %}
 {% endblock %}

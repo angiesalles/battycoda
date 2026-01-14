@@ -1,5 +1,6 @@
 {% extends 'base.html' %}
 {% load static %}
+{% load django_vite %}
 
 {% block title %}BattyCoda - {{ active_segmentation.name }}{% endblock %}
 
@@ -99,10 +100,9 @@
 const ROSEUS_COLORMAP = {{ roseus_colormap|safe }};
 </script>
 
+{% vite_asset 'static/js/segmentation/index.js' %}
+
 <script type="module">
-    // Import segmentation module
-    import { initSegmentation } from "{% static 'js/segmentation/index.js' %}";
-    
     document.addEventListener('DOMContentLoaded', function() {
         // Initialize segmentation manager
         const csrfToken = document.querySelector('input[name=csrfmiddlewaretoken]').value;
@@ -148,7 +148,7 @@ const ROSEUS_COLORMAP = {{ roseus_colormap|safe }};
         
         // Initialize segmentation
         const isReadOnly = {{ recording.hidden|yesno:"true,false" }};
-        initSegmentation({
+        window.initSegmentation({
             recordingId: {{ recording.id }},
             segmentationId: {{ active_segmentation.id }},
             waveformId: 'segment-waveform',
