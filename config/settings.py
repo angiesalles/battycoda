@@ -196,6 +196,11 @@ else:
     STATICFILES_STORAGE = "whitenoise.storage.CompressedStaticFilesStorage"
     WHITENOISE_MAX_AGE = 31536000  # 1 year in seconds
 
+# Vite configuration
+# VITE_DEV_MODE: When True (and DEBUG=True), assets load from Vite dev server (localhost:5173)
+# When False or in production, assets load from the built manifest
+VITE_DEV_MODE = os.environ.get("VITE_DEV_MODE", "True").lower() == "true"
+
 # Media files
 MEDIA_URL = "/media/"
 MEDIA_ROOT = BASE_DIR / "media"

@@ -5,7 +5,7 @@ export default defineConfig({
   // Build output goes to static/dist/
   build: {
     outDir: 'static/dist',
-    emptyDirBeforeWrite: true,
+    emptyOutDir: true,
     manifest: true,
     rollupOptions: {
       // Entry points - add more as features are migrated
