@@ -1,24 +1,24 @@
 /**
  * BattyCoda Waveform Player - playRegion Extension
- * 
+ *
  * This file adds the playRegion functionality to the WaveformPlayer class.
  * Import this file after the main player has been initialized.
  */
 
 // Wait for the DOM to be fully loaded
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', function () {
   // Add the playRegion method to all players
-  setTimeout(function() {
+  setTimeout(function () {
     if (window.players) {
       // Extend each player with the playRegion method
       for (const id in window.players) {
-        if (window.players.hasOwnProperty(id)) {
+        if (Object.hasOwn(window.players, id)) {
           const playerWrapper = window.players[id];
           const player = playerWrapper.player;
-          
+
           // Add the playRegion method to the player instance
           if (player && !player.playRegion) {
-            player.playRegion = function(start, end) {
+            player.playRegion = function (start, end) {
               if (!this.audioPlayer) return;
 
               // Seek to start position
@@ -26,7 +26,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
               // Start playback
               this.audioPlayer.play();
-              
+
               // Set up a one-time event listener to stop playback at end time
               const stopAtEnd = () => {
                 if (this.audioPlayer.currentTime >= end) {
@@ -34,9 +34,9 @@ document.addEventListener('DOMContentLoaded', function() {
                   this.audioPlayer.removeEventListener('timeupdate', stopAtEnd);
                 }
               };
-              
+
               this.audioPlayer.addEventListener('timeupdate', stopAtEnd);
-              
+
               // If the region is completely zoomed out, zoom in on it
               if (this.zoomLevel === 1 && end - start < this.duration / 2) {
                 // Calculate needed zoom level to show the segment with padding
@@ -44,18 +44,21 @@ document.addEventListener('DOMContentLoaded', function() {
                 const segmentDuration = end - start;
                 const desiredDuration = segmentDuration * (1 + 2 * padding);
                 const newZoomLevel = Math.min(this.duration / desiredDuration, 10);
-                
+
                 // Set zoom level
                 this.zoomLevel = newZoomLevel;
-                
+
                 // Center the segment in the view
                 const segmentCenter = (start + end) / 2;
                 const visibleDuration = this.duration / this.zoomLevel;
-                this.zoomOffset = Math.max(0, Math.min(
-                  segmentCenter / this.duration - (visibleDuration / this.duration / 2),
-                  1 - visibleDuration / this.duration
-                ));
-                
+                this.zoomOffset = Math.max(
+                  0,
+                  Math.min(
+                    segmentCenter / this.duration - visibleDuration / this.duration / 2,
+                    1 - visibleDuration / this.duration
+                  )
+                );
+
                 // Update displays
                 this.redrawCurrentView();
                 this.drawTimeline();

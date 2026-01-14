@@ -10,30 +10,34 @@
  * @param {Function} addMappingToContainer - Function to add mapping to UI
  * @param {Function} updateCallBadgeCount - Function to update badge count
  */
-export function initializeExistingMappings(existingMappings, addMappingToContainer, updateCallBadgeCount) {
-    const $ = window.jQuery;
-    if (!$) return;
+export function initializeExistingMappings(
+  existingMappings,
+  addMappingToContainer,
+  updateCallBadgeCount
+) {
+  const $ = window.jQuery;
+  if (!$) return;
 
-    existingMappings.forEach(function (mapping) {
-        const clusterBox = $(`.cluster-box[data-cluster-id="${mapping.cluster_id}"]`);
-        if (clusterBox.length === 0) return;
+  existingMappings.forEach(function (mapping) {
+    const clusterBox = $(`.cluster-box[data-cluster-id="${mapping.cluster_id}"]`);
+    if (clusterBox.length === 0) return;
 
-        const clusterNum = clusterBox.data('cluster-num');
-        const clusterLabel = clusterBox.find('h5').text().trim();
-        const clusterColor = clusterBox.find('.color-indicator').css('background-color');
+    const clusterNum = clusterBox.data('cluster-num');
+    const clusterLabel = clusterBox.find('h5').text().trim();
+    const clusterColor = clusterBox.find('.color-indicator').css('background-color');
 
-        addMappingToContainer(
-            mapping.cluster_id,
-            clusterNum,
-            clusterLabel,
-            clusterColor,
-            mapping.call_id,
-            mapping.confidence,
-            mapping.id
-        );
+    addMappingToContainer(
+      mapping.cluster_id,
+      clusterNum,
+      clusterLabel,
+      clusterColor,
+      mapping.call_id,
+      mapping.confidence,
+      mapping.id
+    );
 
-        updateCallBadgeCount(mapping.call_id);
-    });
+    updateCallBadgeCount(mapping.call_id);
+  });
 }
 
 /**
@@ -50,35 +54,35 @@ export function initializeExistingMappings(existingMappings, addMappingToContain
  * @param {Function} updateCallBadgeCount - Function to update badge count
  */
 export function addMappingToContainer(
-    clusterId,
-    clusterNum,
-    clusterLabel,
-    clusterColor,
-    callId,
-    confidence,
-    mappingId,
-    updateMappingConfidence,
-    deleteMapping,
-    updateCallBadgeCount
+  clusterId,
+  clusterNum,
+  clusterLabel,
+  clusterColor,
+  callId,
+  confidence,
+  mappingId,
+  updateMappingConfidence,
+  deleteMapping,
+  updateCallBadgeCount
 ) {
-    const $ = window.jQuery;
-    if (!$) return;
+  const $ = window.jQuery;
+  if (!$) return;
 
-    const container = $(`.mapping-container[data-call-id="${callId}"]`);
-    if (container.length === 0) return;
+  const container = $(`.mapping-container[data-call-id="${callId}"]`);
+  if (container.length === 0) return;
 
-    container.find('.mapping-instruction').hide();
+  container.find('.mapping-instruction').hide();
 
-    const mappingElementId = `mapping-${clusterId}-${callId}`;
+  const mappingElementId = `mapping-${clusterId}-${callId}`;
 
-    if ($(`#${mappingElementId}`).length > 0) {
-        $(`#${mappingElementId} .confidence-value`).text(Math.round(confidence * 100) + '%');
-        $(`#${mappingElementId} .confidence-slider`).val(confidence);
-        return;
-    }
+  if ($(`#${mappingElementId}`).length > 0) {
+    $(`#${mappingElementId} .confidence-value`).text(Math.round(confidence * 100) + '%');
+    $(`#${mappingElementId} .confidence-slider`).val(confidence);
+    return;
+  }
 
-    const mappingElement = $(
-        `<div id="${mappingElementId}" class="mapping-item" data-cluster-id="${clusterId}" data-call-id="${callId}" data-mapping-id="${mappingId || ''}">
+  const mappingElement = $(
+    `<div id="${mappingElementId}" class="mapping-item" data-cluster-id="${clusterId}" data-call-id="${callId}" data-mapping-id="${mappingId || ''}">
             <div class="d-flex align-items-center">
                 <span class="drag-handle"><i class="fa fa-grip-lines"></i></span>
                 <span class="color-indicator" style="background-color: ${clusterColor};"></span>
@@ -92,32 +96,32 @@ export function addMappingToContainer(
                 </button>
             </div>
         </div>`
-    );
+  );
 
-    container.find('.mapped-clusters').append(mappingElement);
+  container.find('.mapped-clusters').append(mappingElement);
 
-    mappingElement.find('.confidence-slider').on('input', function () {
-        const newConfidence = parseFloat($(this).val());
-        mappingElement.find('.confidence-value').text(Math.round(newConfidence * 100) + '%');
-        if (updateMappingConfidence) {
-            updateMappingConfidence(mappingElement.data('mapping-id'), newConfidence);
-        }
-    });
+  mappingElement.find('.confidence-slider').on('input', function () {
+    const newConfidence = parseFloat($(this).val());
+    mappingElement.find('.confidence-value').text(Math.round(newConfidence * 100) + '%');
+    if (updateMappingConfidence) {
+      updateMappingConfidence(mappingElement.data('mapping-id'), newConfidence);
+    }
+  });
 
-    mappingElement.find('.remove-mapping').on('click', function () {
-        if (deleteMapping) {
-            deleteMapping(mappingElement.data('mapping-id'));
-        }
-        mappingElement.remove();
+  mappingElement.find('.remove-mapping').on('click', function () {
+    if (deleteMapping) {
+      deleteMapping(mappingElement.data('mapping-id'));
+    }
+    mappingElement.remove();
 
-        if (container.find('.mapping-item').length === 0) {
-            container.find('.mapping-instruction').show();
-        }
+    if (container.find('.mapping-item').length === 0) {
+      container.find('.mapping-instruction').show();
+    }
 
-        if (updateCallBadgeCount) {
-            updateCallBadgeCount(callId);
-        }
-    });
+    if (updateCallBadgeCount) {
+      updateCallBadgeCount(callId);
+    }
+  });
 }
 
 /**
@@ -126,17 +130,17 @@ export function addMappingToContainer(
  * @param {number} [count] - Specific count to set (optional)
  */
 export function updateCallBadgeCount(callId, count) {
-    const $ = window.jQuery;
-    if (!$) return;
+  const $ = window.jQuery;
+  if (!$) return;
 
-    const badge = $(`.cluster-count-badge[data-call-id="${callId}"]`);
-    if (badge.length === 0) return;
+  const badge = $(`.cluster-count-badge[data-call-id="${callId}"]`);
+  if (badge.length === 0) return;
 
-    if (count !== undefined) {
-        badge.text(count);
-        return;
-    }
+  if (count !== undefined) {
+    badge.text(count);
+    return;
+  }
 
-    const mappingCount = $(`.mapping-container[data-call-id="${callId}"] .mapping-item`).length;
-    badge.text(mappingCount);
+  const mappingCount = $(`.mapping-container[data-call-id="${callId}"] .mapping-item`).length;
+  badge.text(mappingCount);
 }

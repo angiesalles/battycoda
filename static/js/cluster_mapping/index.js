@@ -16,15 +16,15 @@
 // Import all modules
 import { getSelectedClusterId, setSelectedClusterId } from './state.js';
 import {
-    initializeExistingMappings,
-    addMappingToContainer,
-    updateCallBadgeCount,
+  initializeExistingMappings,
+  addMappingToContainer,
+  updateCallBadgeCount,
 } from './initialization.js';
 import {
-    initializeDragAndDrop,
-    createMapping,
-    updateMappingConfidence,
-    deleteMapping,
+  initializeDragAndDrop,
+  createMapping,
+  updateMappingConfidence,
+  deleteMapping,
 } from './drag_drop.js';
 import { filterClusters, sortClusters, filterSpecies } from './filtering.js';
 import { initializeClusterPreviewModal, loadClusterDetails } from './modal_handlers.js';
@@ -34,102 +34,102 @@ import { initializeClusterPreviewModal, loadClusterDetails } from './modal_handl
  * @param {Array} existingMappings - Array of existing mapping data from Django template
  */
 export function initClusterMapping(existingMappings) {
-    const $ = window.jQuery;
-    if (!$) return;
+  const $ = window.jQuery;
+  if (!$) return;
 
-    console.log('Initializing cluster mapping interface');
+  console.log('Initializing cluster mapping interface');
 
-    // Initialize modal handlers
-    initializeClusterPreviewModal(createMapping);
+  // Initialize modal handlers
+  initializeClusterPreviewModal(createMapping);
 
-    // Initialize drag and drop
-    initializeDragAndDrop(loadClusterDetails, createMapping);
+  // Initialize drag and drop
+  initializeDragAndDrop(loadClusterDetails, createMapping);
 
-    // Initialize existing mappings
-    if (existingMappings && existingMappings.length > 0) {
-        initializeExistingMappings(
-            existingMappings,
-            function (clusterId, clusterNum, clusterLabel, clusterColor, callId, confidence, mappingId) {
-                addMappingToContainer(
-                    clusterId,
-                    clusterNum,
-                    clusterLabel,
-                    clusterColor,
-                    callId,
-                    confidence,
-                    mappingId,
-                    updateMappingConfidence,
-                    deleteMapping,
-                    updateCallBadgeCount
-                );
-            },
-            updateCallBadgeCount
+  // Initialize existing mappings
+  if (existingMappings && existingMappings.length > 0) {
+    initializeExistingMappings(
+      existingMappings,
+      function (clusterId, clusterNum, clusterLabel, clusterColor, callId, confidence, mappingId) {
+        addMappingToContainer(
+          clusterId,
+          clusterNum,
+          clusterLabel,
+          clusterColor,
+          callId,
+          confidence,
+          mappingId,
+          updateMappingConfidence,
+          deleteMapping,
+          updateCallBadgeCount
         );
-    }
+      },
+      updateCallBadgeCount
+    );
+  }
 
-    // Set up search input
-    $('#cluster-search').on('input', function () {
-        filterClusters($(this).val());
-    });
+  // Set up search input
+  $('#cluster-search').on('input', function () {
+    filterClusters($(this).val());
+  });
 
-    // Set up sort dropdown
-    $('#cluster-sort').on('change', function () {
-        sortClusters($(this).val());
-    });
+  // Set up sort dropdown
+  $('#cluster-sort').on('change', function () {
+    sortClusters($(this).val());
+  });
 
-    // Set up species filter
-    $('#species-filter').on('change', function () {
-        filterSpecies($(this).val());
-    });
+  // Set up species filter
+  $('#species-filter').on('change', function () {
+    filterSpecies($(this).val());
+  });
 
-    console.log('Cluster mapping interface initialized');
+  console.log('Cluster mapping interface initialized');
 }
 
 /**
  * Auto-initialize if existingMappings data is available on page load
  */
 function autoInitialize() {
-    const $ = window.jQuery;
-    if (!$) return;
+  const $ = window.jQuery;
+  if (!$) return;
 
-    // Check if existingMappings data is available
-    if (typeof window.existingMappings !== 'undefined') {
-        initClusterMapping(window.existingMappings);
-    } else {
-        // Still initialize without existing mappings
-        initClusterMapping([]);
-    }
+  // Check if existingMappings data is available
+  if (typeof window.existingMappings !== 'undefined') {
+    initClusterMapping(window.existingMappings);
+  } else {
+    // Still initialize without existing mappings
+    initClusterMapping([]);
+  }
 }
 
 // Auto-initialize on DOMContentLoaded
 if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', function () {
-        if (typeof window.jQuery !== 'undefined') {
-            window.jQuery(document).ready(autoInitialize);
-        }
-    });
-} else {
+  document.addEventListener('DOMContentLoaded', function () {
     if (typeof window.jQuery !== 'undefined') {
-        window.jQuery(document).ready(autoInitialize);
+      window.jQuery(document).ready(autoInitialize);
     }
+  });
+} else {
+  if (typeof window.jQuery !== 'undefined') {
+    window.jQuery(document).ready(autoInitialize);
+  }
 }
 
 // Export all functions for external use
 export {
-    getSelectedClusterId,
-    setSelectedClusterId,
-    initializeExistingMappings,
-    addMappingToContainer,
-    updateCallBadgeCount,
-    initializeDragAndDrop,
-    createMapping,
-    updateMappingConfidence,
-    deleteMapping,
-    filterClusters,
-    sortClusters,
-    filterSpecies,
-    initializeClusterPreviewModal,
-    loadClusterDetails,
+  getSelectedClusterId,
+  setSelectedClusterId,
+  initializeExistingMappings,
+  addMappingToContainer,
+  updateCallBadgeCount,
+  initializeDragAndDrop,
+  createMapping,
+  updateMappingConfidence,
+  deleteMapping,
+  filterClusters,
+  sortClusters,
+  filterSpecies,
+  initializeClusterPreviewModal,
+  loadClusterDetails,
 };
 
 // Expose key functions globally for Django template usage
@@ -141,13 +141,13 @@ window.filterSpecies = filterSpecies;
 
 // Create ClusterMapping namespace for backward compatibility
 window.ClusterMapping = {
-    initClusterMapping,
-    createMapping,
-    filterClusters,
-    sortClusters,
-    filterSpecies,
-    loadClusterDetails,
-    updateCallBadgeCount,
-    getSelectedClusterId,
-    setSelectedClusterId,
+  initClusterMapping,
+  createMapping,
+  filterClusters,
+  sortClusters,
+  filterSpecies,
+  loadClusterDetails,
+  updateCallBadgeCount,
+  getSelectedClusterId,
+  setSelectedClusterId,
 };

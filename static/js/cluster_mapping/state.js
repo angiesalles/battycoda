@@ -12,7 +12,7 @@ let selectedClusterId = null;
  * @returns {number|null} Selected cluster ID
  */
 export function getSelectedClusterId() {
-    return selectedClusterId;
+  return selectedClusterId;
 }
 
 /**
@@ -20,5 +20,5 @@ export function getSelectedClusterId() {
  * @param {number|null} id - Cluster ID to select
  */
 export function setSelectedClusterId(id) {
-    selectedClusterId = id;
+  selectedClusterId = id;
 }

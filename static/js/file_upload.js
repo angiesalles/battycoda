@@ -11,20 +11,20 @@
  * This loader loads all modules in the correct order.
  */
 
-(function() {
-    const modules = [
-        'file_upload/validation.js',
-        'file_upload/progress.js',
-        'file_upload/dropzone.js',
-        'file_upload/initialization.js'
-    ];
+(function () {
+  const modules = [
+    'file_upload/validation.js',
+    'file_upload/progress.js',
+    'file_upload/dropzone.js',
+    'file_upload/initialization.js',
+  ];
 
-    const basePath = document.currentScript.src.replace(/[^\/]*$/, '');
+  const basePath = document.currentScript.src.replace(/[^/]*$/, '');
 
-    modules.forEach(function(module) {
-        const script = document.createElement('script');
-        script.src = basePath + module;
-        script.async = false; // Maintain order
-        document.head.appendChild(script);
-    });
+  modules.forEach(function (module) {
+    const script = document.createElement('script');
+    script.src = basePath + module;
+    script.async = false; // Maintain order
+    document.head.appendChild(script);
+  });
 })();

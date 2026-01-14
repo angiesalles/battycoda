@@ -11,7 +11,11 @@
     "dev": "vite",
     "build": "vite build",
     "build:watch": "vite build --watch",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "lint": "eslint static/js",
+    "lint:fix": "eslint static/js --fix",
+    "format": "prettier --write 'static/js/**/*.js'",
+    "format:check": "prettier --check 'static/js/**/*.js'"
   },
   "repository": {
     "type": "git",
@@ -19,10 +23,15 @@
   },
   "license": "ISC",
   "devDependencies": {
+    "@eslint/js": "^9.39.2",
     "autoprefixer": "^10.4.23",
     "cssnano": "^7.1.2",
+    "eslint": "^9.39.2",
+    "eslint-config-prettier": "^10.1.8",
+    "eslint-plugin-prettier": "^5.5.5",
     "glob": "^13.0.0",
     "postcss": "^8.5.6",
+    "prettier": "^3.7.4",
     "vite": "^7.3.1",
     "vite-plugin-static-copy": "^3.1.4"
   }

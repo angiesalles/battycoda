@@ -13,18 +13,18 @@ const LOCAL_STORAGE_THEME_KEY = 'battycoda_theme';
  * @returns {string|null} Cookie value or null
  */
 function getCookie(name) {
-    let cookieValue = null;
-    if (document.cookie && document.cookie !== '') {
-        const cookies = document.cookie.split(';');
-        for (let i = 0; i < cookies.length; i++) {
-            const cookie = cookies[i].trim();
-            if (cookie.substring(0, name.length + 1) === name + '=') {
-                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-                break;
-            }
-        }
+  let cookieValue = null;
+  if (document.cookie && document.cookie !== '') {
+    const cookies = document.cookie.split(';');
+    for (let i = 0; i < cookies.length; i++) {
+      const cookie = cookies[i].trim();
+      if (cookie.substring(0, name.length + 1) === name + '=') {
+        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+        break;
+      }
     }
-    return cookieValue;
+  }
+  return cookieValue;
 }
 
 /**
@@ -32,24 +32,24 @@ function getCookie(name) {
  * @param {string} themeName - Theme name to save
  */
 function updateThemePreference(themeName) {
-    const csrftoken = getCookie('csrftoken');
+  const csrftoken = getCookie('csrftoken');
 
-    fetch('/update_theme_preference/', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            'X-CSRFToken': csrftoken,
-        },
-        body: JSON.stringify({ theme: themeName }),
+  fetch('/update_theme_preference/', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'X-CSRFToken': csrftoken,
+    },
+    body: JSON.stringify({ theme: themeName }),
+  })
+    .then((response) => {
+      if (!response.ok) {
+        console.error('Failed to update theme preference');
+      }
     })
-        .then((response) => {
-            if (!response.ok) {
-                console.error('Failed to update theme preference');
-            }
-        })
-        .catch((error) => {
-            console.error('Error updating theme preference:', error);
-        });
+    .catch((error) => {
+      console.error('Error updating theme preference:', error);
+    });
 }
 
 /**
@@ -60,12 +60,12 @@ function updateThemePreference(themeName) {
  * @returns {string} URL for the theme CSS file
  */
 function getThemeUrl(themeName) {
-    // Check for Vite-provided theme URLs
-    if (window.__VITE_THEME_URLS__ && window.__VITE_THEME_URLS__[themeName]) {
-        return window.__VITE_THEME_URLS__[themeName];
-    }
-    // Fallback to static URL
-    return `/static/css/themes/${themeName}.css`;
+  // Check for Vite-provided theme URLs
+  if (window.__VITE_THEME_URLS__ && window.__VITE_THEME_URLS__[themeName]) {
+    return window.__VITE_THEME_URLS__[themeName];
+  }
+  // Fallback to static URL
+  return `/static/css/themes/${themeName}.css`;
 }
 
 /**
@@ -73,91 +73,91 @@ function getThemeUrl(themeName) {
  * @param {string} themeName - Theme name to apply
  */
 export function applyTheme(themeName) {
-    const mainBody = document.getElementById('main-body');
-    if (!mainBody) return;
+  const mainBody = document.getElementById('main-body');
+  if (!mainBody) return;
 
-    // Remove all theme classes from body
-    mainBody.className = mainBody.className.replace(/theme-[a-z-]+/g, '').trim();
+  // Remove all theme classes from body
+  mainBody.className = mainBody.className.replace(/theme-[a-z-]+/g, '').trim();
 
-    // Add new theme class to body
-    mainBody.classList.add(`theme-${themeName}`);
+  // Add new theme class to body
+  mainBody.classList.add(`theme-${themeName}`);
 
-    // Only load theme CSS if it's not the default theme
-    if (themeName !== 'default') {
-        const themeId = `theme-css-${themeName}`;
-        let themeLink = document.getElementById(themeId);
+  // Only load theme CSS if it's not the default theme
+  if (themeName !== 'default') {
+    const themeId = `theme-css-${themeName}`;
+    let themeLink = document.getElementById(themeId);
 
-        if (!themeLink) {
-            themeLink = document.createElement('link');
-            themeLink.id = themeId;
-            themeLink.rel = 'stylesheet';
-            themeLink.href = getThemeUrl(themeName);
-            document.head.appendChild(themeLink);
-        }
+    if (!themeLink) {
+      themeLink = document.createElement('link');
+      themeLink.id = themeId;
+      themeLink.rel = 'stylesheet';
+      themeLink.href = getThemeUrl(themeName);
+      document.head.appendChild(themeLink);
     }
+  }
 
-    // If switching to default, remove all theme CSS files
-    if (themeName === 'default') {
-        document.querySelectorAll('link[id^="theme-css-"]').forEach((link) => {
-            link.parentNode.removeChild(link);
-        });
-    }
+  // If switching to default, remove all theme CSS files
+  if (themeName === 'default') {
+    document.querySelectorAll('link[id^="theme-css-"]').forEach((link) => {
+      link.parentNode.removeChild(link);
+    });
+  }
 }
 
 /**
  * Initialize the theme switcher
  */
 export function initialize() {
-    const mainBody = document.getElementById('main-body');
-    const themeSwitcherLinks = document.querySelectorAll('.theme-switcher-link');
+  const mainBody = document.getElementById('main-body');
+  const themeSwitcherLinks = document.querySelectorAll('.theme-switcher-link');
 
-    if (!mainBody) return;
+  if (!mainBody) return;
 
-    // Check if user is authenticated
-    const isAuthenticated = document.getElementById('logoutLink') !== null;
+  // Check if user is authenticated
+  const isAuthenticated = document.getElementById('logoutLink') !== null;
 
-    // If not authenticated, apply theme from localStorage
-    if (!isAuthenticated) {
-        const savedTheme = localStorage.getItem(LOCAL_STORAGE_THEME_KEY);
-        if (savedTheme) {
-            applyTheme(savedTheme);
+  // If not authenticated, apply theme from localStorage
+  if (!isAuthenticated) {
+    const savedTheme = localStorage.getItem(LOCAL_STORAGE_THEME_KEY);
+    if (savedTheme) {
+      applyTheme(savedTheme);
 
-            // Update active state in dropdown
-            themeSwitcherLinks.forEach((link) => {
-                if (link.dataset.theme === savedTheme) {
-                    link.classList.add('active');
-                }
-            });
+      // Update active state in dropdown
+      themeSwitcherLinks.forEach((link) => {
+        if (link.dataset.theme === savedTheme) {
+          link.classList.add('active');
         }
+      });
     }
+  }
 
-    // Add click event to each theme switcher link
-    themeSwitcherLinks.forEach((link) => {
-        link.addEventListener('click', function (e) {
-            e.preventDefault();
+  // Add click event to each theme switcher link
+  themeSwitcherLinks.forEach((link) => {
+    link.addEventListener('click', function (e) {
+      e.preventDefault();
 
-            const themeName = this.dataset.theme;
+      const themeName = this.dataset.theme;
 
-            if (isAuthenticated) {
-                updateThemePreference(themeName);
-            } else {
-                localStorage.setItem(LOCAL_STORAGE_THEME_KEY, themeName);
-            }
+      if (isAuthenticated) {
+        updateThemePreference(themeName);
+      } else {
+        localStorage.setItem(LOCAL_STORAGE_THEME_KEY, themeName);
+      }
 
-            applyTheme(themeName);
+      applyTheme(themeName);
 
-            // Update active state in dropdown
-            themeSwitcherLinks.forEach((l) => l.classList.remove('active'));
-            this.classList.add('active');
-        });
+      // Update active state in dropdown
+      themeSwitcherLinks.forEach((l) => l.classList.remove('active'));
+      this.classList.add('active');
     });
+  });
 }
 
 // Auto-initialize on DOMContentLoaded
 if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', initialize);
+  document.addEventListener('DOMContentLoaded', initialize);
 } else {
-    initialize();
+  initialize();
 }
 
 // Expose globally for potential external use

@@ -1,0 +1,45 @@
+# Dependencies
+node_modules/
+venv/
+
+# Build output
+static/dist/
+staticfiles/
+
+# Third-party libraries
+static/js/app.js
+static/js/theme-switcher/theme-switcher.min.js
+static/lib/
+
+# Incomplete ES6 module fragments (to be fixed in battycoda-v9k)
+static/js/file_upload/dropzone.js
+static/js/file_upload/progress.js
+static/js/file_upload/validation.js
+static/js/file_upload/initialization.js
+
+# Minified files
+*.min.js
+*.min.css
+
+# Python
+*.py
+__pycache__/
+
+# Database
+*.sqlite3
+*.sql
+
+# Media files
+media/
+
+# Log files
+logs/
+*.log
+
+# Coverage
+htmlcov/
+.coverage
+
+# Other
+.git/
+*.md

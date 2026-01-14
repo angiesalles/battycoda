@@ -9,19 +9,19 @@
  * @param {string} searchText - Text to search for
  */
 export function filterClusters(searchText) {
-    const $ = window.jQuery;
-    if (!$) return;
+  const $ = window.jQuery;
+  if (!$) return;
 
-    searchText = searchText.toLowerCase();
+  searchText = searchText.toLowerCase();
 
-    $('.cluster-box').each(function () {
-        const clusterText = $(this).text().toLowerCase();
-        if (clusterText.indexOf(searchText) !== -1) {
-            $(this).show();
-        } else {
-            $(this).hide();
-        }
-    });
+  $('.cluster-box').each(function () {
+    const clusterText = $(this).text().toLowerCase();
+    if (clusterText.indexOf(searchText) !== -1) {
+      $(this).show();
+    } else {
+      $(this).hide();
+    }
+  });
 }
 
 /**
@@ -29,48 +29,44 @@ export function filterClusters(searchText) {
  * @param {string} sortBy - Sort field ('id', 'size', 'coherence', 'label')
  */
 export function sortClusters(sortBy) {
-    const $ = window.jQuery;
-    if (!$) return;
+  const $ = window.jQuery;
+  if (!$) return;
 
-    const clusters = $('.cluster-box').toArray();
+  const clusters = $('.cluster-box').toArray();
 
-    clusters.sort(function (a, b) {
-        const $a = $(a);
-        const $b = $(b);
+  clusters.sort(function (a, b) {
+    const $a = $(a);
+    const $b = $(b);
 
-        switch (sortBy) {
-            case 'id':
-                return $a.data('cluster-num') - $b.data('cluster-num');
-            case 'size': {
-                const sizeA =
-                    parseInt($a.find('.text-muted:contains("Size")').text().split(':')[1]) || 0;
-                const sizeB =
-                    parseInt($b.find('.text-muted:contains("Size")').text().split(':')[1]) || 0;
-                return sizeB - sizeA;
-            }
-            case 'coherence': {
-                const cohA =
-                    parseFloat($a.find('.text-muted:contains("Coherence")').text().split(':')[1]) ||
-                    0;
-                const cohB =
-                    parseFloat($b.find('.text-muted:contains("Coherence")').text().split(':')[1]) ||
-                    0;
-                return cohB - cohA;
-            }
-            case 'label': {
-                const labelA = $a.find('h5').text().trim();
-                const labelB = $b.find('h5').text().trim();
-                return labelA.localeCompare(labelB);
-            }
-            default:
-                return 0;
-        }
-    });
+    switch (sortBy) {
+      case 'id':
+        return $a.data('cluster-num') - $b.data('cluster-num');
+      case 'size': {
+        const sizeA = parseInt($a.find('.text-muted:contains("Size")').text().split(':')[1]) || 0;
+        const sizeB = parseInt($b.find('.text-muted:contains("Size")').text().split(':')[1]) || 0;
+        return sizeB - sizeA;
+      }
+      case 'coherence': {
+        const cohA =
+          parseFloat($a.find('.text-muted:contains("Coherence")').text().split(':')[1]) || 0;
+        const cohB =
+          parseFloat($b.find('.text-muted:contains("Coherence")').text().split(':')[1]) || 0;
+        return cohB - cohA;
+      }
+      case 'label': {
+        const labelA = $a.find('h5').text().trim();
+        const labelB = $b.find('h5').text().trim();
+        return labelA.localeCompare(labelB);
+      }
+      default:
+        return 0;
+    }
+  });
 
-    const container = $('#clusters-list');
-    clusters.forEach(function (cluster) {
-        container.append(cluster);
-    });
+  const container = $('#clusters-list');
+  clusters.forEach(function (cluster) {
+    container.append(cluster);
+  });
 }
 
 /**
@@ -78,13 +74,13 @@ export function sortClusters(sortBy) {
  * @param {string|number} speciesId - Species ID or 'all'
  */
 export function filterSpecies(speciesId) {
-    const $ = window.jQuery;
-    if (!$) return;
+  const $ = window.jQuery;
+  if (!$) return;
 
-    if (speciesId === 'all') {
-        $('.species-section').show();
-    } else {
-        $('.species-section').hide();
-        $(`.species-section[data-species-id="${speciesId}"]`).show();
-    }
+  if (speciesId === 'all') {
+    $('.species-section').show();
+  } else {
+    $('.species-section').hide();
+    $(`.species-section[data-species-id="${speciesId}"]`).show();
+  }
 }

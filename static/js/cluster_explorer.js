@@ -11,20 +11,20 @@
  * This loader loads all modules in the correct order.
  */
 
-(function() {
-    const modules = [
-        'cluster_explorer/visualization.js',
-        'cluster_explorer/data_loader.js',
-        'cluster_explorer/interactions.js',
-        'cluster_explorer/controls.js'
-    ];
+(function () {
+  const modules = [
+    'cluster_explorer/visualization.js',
+    'cluster_explorer/data_loader.js',
+    'cluster_explorer/interactions.js',
+    'cluster_explorer/controls.js',
+  ];
 
-    const basePath = document.currentScript.src.replace(/[^\/]*$/, '');
+  const basePath = document.currentScript.src.replace(/[^/]*$/, '');
 
-    modules.forEach(function(module) {
-        const script = document.createElement('script');
-        script.src = basePath + module;
-        script.async = false; // Maintain order
-        document.head.appendChild(script);
-    });
+  modules.forEach(function (module) {
+    const script = document.createElement('script');
+    script.src = basePath + module;
+    script.async = false; // Maintain order
+    document.head.appendChild(script);
+  });
 })();

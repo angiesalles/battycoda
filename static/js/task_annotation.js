@@ -1,210 +1,209 @@
 /**
  * Task Annotation JavaScript
- * 
+ *
  * This file contains all the JavaScript functionality for the task annotation interface,
  * including spectrogram switching, channel toggling, form handling, and notifications.
  */
 
-document.addEventListener('DOMContentLoaded', function() {
-    // Initialize spectrogram viewer functionality
-    initSpectrogramViewer();
-    
-    // Initialize form behavior
-    initFormBehavior();
-    
-    // Check for batch switch notification
-    checkBatchSwitchNotification();
+document.addEventListener('DOMContentLoaded', function () {
+  // Initialize spectrogram viewer functionality
+  initSpectrogramViewer();
+
+  // Initialize form behavior
+  initFormBehavior();
+
+  // Check for batch switch notification
+  checkBatchSwitchNotification();
 });
 
 /**
  * Initialize the spectrogram viewer with channel and view switching
  */
 function initSpectrogramViewer() {
-    // Find all UI elements needed
-    const mainSpectrogram = document.getElementById('main-spectrogram');
-    const detailViewBtn = document.getElementById('detail-view-btn');
-    const overviewBtn = document.getElementById('overview-btn');
-    const detailTicks = document.getElementById('detail-ticks');
-    const overviewTicks = document.getElementById('overview-ticks');
-    
-    // Channel switching elements
-    const channel1Btn = document.getElementById('channel-1-btn');
-    const channel2Btn = document.getElementById('channel-2-btn');
-    const channelToggle = document.getElementById('channel-toggle');
-    const channelLabel = document.getElementById('channel-label');
-    
-    // Check for critical elements
-    if (!mainSpectrogram || !detailViewBtn || !overviewBtn || !detailTicks || !overviewTicks) {
-        console.error("Critical elements for spectrogram viewing are missing.");
-        return;
-    }
-    
-    let currentChannel = 0;
+  // Find all UI elements needed
+  const mainSpectrogram = document.getElementById('main-spectrogram');
+  const detailViewBtn = document.getElementById('detail-view-btn');
+  const overviewBtn = document.getElementById('overview-btn');
+  const detailTicks = document.getElementById('detail-ticks');
+  const overviewTicks = document.getElementById('overview-ticks');
 
-    // Load user's saved view preference from localStorage
-    const savedViewPreference = localStorage.getItem('taskAnnotationViewPreference');
-    let isOverview;
+  // Channel switching elements
+  const channel1Btn = document.getElementById('channel-1-btn');
+  const channel2Btn = document.getElementById('channel-2-btn');
+  const channelToggle = document.getElementById('channel-toggle');
+  const channelLabel = document.getElementById('channel-label');
 
-    if (savedViewPreference !== null) {
-        // Use saved preference
-        isOverview = savedViewPreference === 'overview';
-        // Update buttons to match saved preference
-        if (isOverview) {
-            overviewBtn.classList.add('active', 'btn-primary');
-            overviewBtn.classList.remove('btn-outline-secondary');
-            detailViewBtn.classList.remove('active', 'btn-primary');
-            detailViewBtn.classList.add('btn-outline-primary');
-        } else {
-            detailViewBtn.classList.add('active', 'btn-primary');
-            detailViewBtn.classList.remove('btn-outline-primary');
-            overviewBtn.classList.remove('active', 'btn-primary');
-            overviewBtn.classList.add('btn-outline-secondary');
-        }
+  // Check for critical elements
+  if (!mainSpectrogram || !detailViewBtn || !overviewBtn || !detailTicks || !overviewTicks) {
+    console.error('Critical elements for spectrogram viewing are missing.');
+    return;
+  }
+
+  let currentChannel = 0;
+
+  // Load user's saved view preference from localStorage
+  const savedViewPreference = localStorage.getItem('taskAnnotationViewPreference');
+  let isOverview;
+
+  if (savedViewPreference !== null) {
+    // Use saved preference
+    isOverview = savedViewPreference === 'overview';
+    // Update buttons to match saved preference
+    if (isOverview) {
+      overviewBtn.classList.add('active', 'btn-primary');
+      overviewBtn.classList.remove('btn-outline-secondary');
+      detailViewBtn.classList.remove('active', 'btn-primary');
+      detailViewBtn.classList.add('btn-outline-primary');
     } else {
-        // Determine initial state from which button is active (template default)
-        isOverview = overviewBtn.classList.contains('active');
+      detailViewBtn.classList.add('active', 'btn-primary');
+      detailViewBtn.classList.remove('btn-outline-primary');
+      overviewBtn.classList.remove('active', 'btn-primary');
+      overviewBtn.classList.add('btn-outline-secondary');
     }
+  } else {
+    // Determine initial state from which button is active (template default)
+    isOverview = overviewBtn.classList.contains('active');
+  }
 
-    // Function to update spectrogram based on current settings
-    function updateSpectrogram() {
-        // Build spectrogram URL with task ID and overview parameter
-        const overviewParam = isOverview ? '1' : '0';
-        const spectrogramUrl = `${taskConfig.spectrogramBaseUrl}?overview=${overviewParam}`;
+  // Function to update spectrogram based on current settings
+  function updateSpectrogram() {
+    // Build spectrogram URL with task ID and overview parameter
+    const overviewParam = isOverview ? '1' : '0';
+    const spectrogramUrl = `${taskConfig.spectrogramBaseUrl}?overview=${overviewParam}`;
 
-        // Update the image source
-        mainSpectrogram.src = spectrogramUrl;
+    // Update the image source
+    mainSpectrogram.src = spectrogramUrl;
 
-        // Update audio player
-        updateAudioPlayer();
+    // Update audio player
+    updateAudioPlayer();
 
-        // Update x-axis ticks
-        if (isOverview) {
-            detailTicks.classList.remove('active');
-            overviewTicks.classList.add('active');
-        } else {
-            detailTicks.classList.add('active');
-            overviewTicks.classList.remove('active');
-        }
+    // Update x-axis ticks
+    if (isOverview) {
+      detailTicks.classList.remove('active');
+      overviewTicks.classList.add('active');
+    } else {
+      detailTicks.classList.add('active');
+      overviewTicks.classList.remove('active');
     }
-    
-    // Function to update audio player URL
-    function updateAudioPlayer() {
-        const audioPlayer = document.getElementById('audio-player');
-        if (audioPlayer) {
-            const cacheBuster = new Date().getTime();
+  }
 
-            // Build audio URL with configuration variables - always use False for overview (detail view audio)
-            audioPlayer.src = `${taskConfig.audioSnippetUrl}?wav_path=${encodeURIComponent(taskConfig.wavPath)}&call=0&channel=${currentChannel}&hash=${taskConfig.fileHash}&overview=False&onset=${taskConfig.onset}&offset=${taskConfig.offset}&loudness=1.0&t=${cacheBuster}`;
-        }
-    }
-    
-    // Set up event listeners
-    detailViewBtn.addEventListener('click', function() {
-        isOverview = false;
-        // Save preference to localStorage
-        localStorage.setItem('taskAnnotationViewPreference', 'detail');
-        // Update button styles
-        detailViewBtn.classList.add('active');
-        detailViewBtn.classList.remove('btn-outline-primary');
-        detailViewBtn.classList.add('btn-primary');
-        overviewBtn.classList.remove('active');
-        overviewBtn.classList.remove('btn-primary');
-        overviewBtn.classList.add('btn-outline-secondary');
-        updateSpectrogram();
-    });
+  // Function to update audio player URL
+  function updateAudioPlayer() {
+    const audioPlayer = document.getElementById('audio-player');
+    if (audioPlayer) {
+      const cacheBuster = new Date().getTime();
 
-    overviewBtn.addEventListener('click', function() {
-        isOverview = true;
-        // Save preference to localStorage
-        localStorage.setItem('taskAnnotationViewPreference', 'overview');
-        // Update button styles
-        overviewBtn.classList.add('active');
-        overviewBtn.classList.remove('btn-outline-secondary');
-        overviewBtn.classList.add('btn-primary');
-        detailViewBtn.classList.remove('active');
-        detailViewBtn.classList.remove('btn-primary');
-        detailViewBtn.classList.add('btn-outline-secondary');
-        updateSpectrogram();
-    });
-    
-    // Set up channel buttons if they exist
-    if (channel1Btn && channel2Btn) {
-        channel1Btn.addEventListener('click', function() {
-            currentChannel = 0;
-            // Update button styles
-            channel1Btn.classList.add('active', 'btn-primary');
-            channel1Btn.classList.remove('btn-outline-secondary');
-            channel2Btn.classList.remove('active', 'btn-primary');
-            channel2Btn.classList.add('btn-outline-secondary');
-            updateSpectrogram();
-        });
-        
-        channel2Btn.addEventListener('click', function() {
-            currentChannel = 1;
-            // Update button styles
-            channel2Btn.classList.add('active', 'btn-primary');
-            channel2Btn.classList.remove('btn-outline-secondary');
-            channel1Btn.classList.remove('active', 'btn-primary');
-            channel1Btn.classList.add('btn-outline-secondary');
-            updateSpectrogram();
-        });
+      // Build audio URL with configuration variables - always use False for overview (detail view audio)
+      audioPlayer.src = `${taskConfig.audioSnippetUrl}?wav_path=${encodeURIComponent(taskConfig.wavPath)}&call=0&channel=${currentChannel}&hash=${taskConfig.fileHash}&overview=False&onset=${taskConfig.onset}&offset=${taskConfig.offset}&loudness=1.0&t=${cacheBuster}`;
     }
-    // Use the legacy toggle if it exists (we don't have it anymore)
-    else if (channelToggle && channelLabel) {
-        channelToggle.addEventListener('change', function() {
-            currentChannel = this.checked ? 1 : 0;
-            channelLabel.textContent = `Channel ${currentChannel + 1}`;
-            updateSpectrogram();
-        });
-    }
-    
-    // Initialize on page load
+  }
+
+  // Set up event listeners
+  detailViewBtn.addEventListener('click', function () {
+    isOverview = false;
+    // Save preference to localStorage
+    localStorage.setItem('taskAnnotationViewPreference', 'detail');
+    // Update button styles
+    detailViewBtn.classList.add('active');
+    detailViewBtn.classList.remove('btn-outline-primary');
+    detailViewBtn.classList.add('btn-primary');
+    overviewBtn.classList.remove('active');
+    overviewBtn.classList.remove('btn-primary');
+    overviewBtn.classList.add('btn-outline-secondary');
     updateSpectrogram();
+  });
+
+  overviewBtn.addEventListener('click', function () {
+    isOverview = true;
+    // Save preference to localStorage
+    localStorage.setItem('taskAnnotationViewPreference', 'overview');
+    // Update button styles
+    overviewBtn.classList.add('active');
+    overviewBtn.classList.remove('btn-outline-secondary');
+    overviewBtn.classList.add('btn-primary');
+    detailViewBtn.classList.remove('active');
+    detailViewBtn.classList.remove('btn-primary');
+    detailViewBtn.classList.add('btn-outline-secondary');
+    updateSpectrogram();
+  });
+
+  // Set up channel buttons if they exist
+  if (channel1Btn && channel2Btn) {
+    channel1Btn.addEventListener('click', function () {
+      currentChannel = 0;
+      // Update button styles
+      channel1Btn.classList.add('active', 'btn-primary');
+      channel1Btn.classList.remove('btn-outline-secondary');
+      channel2Btn.classList.remove('active', 'btn-primary');
+      channel2Btn.classList.add('btn-outline-secondary');
+      updateSpectrogram();
+    });
+
+    channel2Btn.addEventListener('click', function () {
+      currentChannel = 1;
+      // Update button styles
+      channel2Btn.classList.add('active', 'btn-primary');
+      channel2Btn.classList.remove('btn-outline-secondary');
+      channel1Btn.classList.remove('active', 'btn-primary');
+      channel1Btn.classList.add('btn-outline-secondary');
+      updateSpectrogram();
+    });
+  }
+  // Use the legacy toggle if it exists (we don't have it anymore)
+  else if (channelToggle && channelLabel) {
+    channelToggle.addEventListener('change', function () {
+      currentChannel = this.checked ? 1 : 0;
+      channelLabel.textContent = `Channel ${currentChannel + 1}`;
+      updateSpectrogram();
+    });
+  }
+
+  // Initialize on page load
+  updateSpectrogram();
 }
 
 /**
  * Initialize form behavior for the task annotation
  */
 function initFormBehavior() {
-    // Previously handled the "Other" option which has been removed
-    
-    // Add any other form-related behavior here
+  // Previously handled the "Other" option which has been removed
+  // Add any other form-related behavior here
 }
 
 /**
  * Check if we need to show a notification about switching batches
  */
 function checkBatchSwitchNotification() {
-    // Check if toastr is available
-    if (typeof toastr !== 'undefined') {
-        // Configure toastr
-        toastr.options = {
-            "closeButton": true,
-            "positionClass": "toast-top-right",
-            "preventDuplicates": true,
-            "timeOut": "6000",
-            "extendedTimeOut": "2000",
-        };
-        
-        // Check if there's batch switch data in sessionStorage
-        if (typeof batchSwitchData !== 'undefined' && batchSwitchData) {
-            const fromBatchName = batchSwitchData.from_batch_name;
-            const toBatchName = batchSwitchData.to_batch_name;
-            const toBatchId = batchSwitchData.to_batch_id;
-            const sameProject = batchSwitchData.same_project;
-            const projectName = batchSwitchData.project_name;
+  // Check if toastr is available
+  if (typeof toastr !== 'undefined') {
+    // Configure toastr
+    toastr.options = {
+      closeButton: true,
+      positionClass: 'toast-top-right',
+      preventDuplicates: true,
+      timeOut: '6000',
+      extendedTimeOut: '2000',
+    };
 
-            // Create message with link to batch
-            const batchLink = `<a href="/tasks/batches/${toBatchId}/" class="text-white text-decoration-underline">view batch</a>`;
-            let message = `You completed all tasks in batch "${fromBatchName}" and are now working on "${toBatchName}" (${batchLink})`;
+    // Check if there's batch switch data in sessionStorage
+    if (typeof batchSwitchData !== 'undefined' && batchSwitchData) {
+      const fromBatchName = batchSwitchData.from_batch_name;
+      const toBatchName = batchSwitchData.to_batch_name;
+      const toBatchId = batchSwitchData.to_batch_id;
+      const sameProject = batchSwitchData.same_project;
+      const projectName = batchSwitchData.project_name;
 
-            // Add project context if switching within same project
-            if (sameProject && projectName) {
-                message += `<br><small>Continuing with project: ${projectName}</small>`;
-            }
+      // Create message with link to batch
+      const batchLink = `<a href="/tasks/batches/${toBatchId}/" class="text-white text-decoration-underline">view batch</a>`;
+      let message = `You completed all tasks in batch "${fromBatchName}" and are now working on "${toBatchName}" (${batchLink})`;
 
-            // Show success notification
-            toastr.success(message, 'Batch Completed!');
-        }
+      // Add project context if switching within same project
+      if (sameProject && projectName) {
+        message += `<br><small>Continuing with project: ${projectName}</small>`;
+      }
+
+      // Show success notification
+      toastr.success(message, 'Batch Completed!');
     }
+  }
 }

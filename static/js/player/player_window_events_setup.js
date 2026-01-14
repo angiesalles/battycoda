@@ -4,8 +4,8 @@
  */
 
 export function setupWindowEventListeners(player) {
-    window.addEventListener('resize', () => {
-        player.drawWaveform();
-        player.drawTimeline();
-    });
+  window.addEventListener('resize', () => {
+    player.drawWaveform();
+    player.drawTimeline();
+  });
 }

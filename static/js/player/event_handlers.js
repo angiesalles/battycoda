@@ -9,58 +9,58 @@ import { ControlEvents } from './control_events.js';
 import { SelectionEvents } from './selection_events.js';
 
 export class EventHandlers {
-    constructor(player) {
-        this.player = player;
-        this.audioEvents = new AudioEvents(player);
-        this.controlEvents = new ControlEvents(player);
-        this.selectionEvents = new SelectionEvents(player);
+  constructor(player) {
+    this.player = player;
+    this.audioEvents = new AudioEvents(player);
+    this.controlEvents = new ControlEvents(player);
+    this.selectionEvents = new SelectionEvents(player);
+  }
+
+  /**
+   * Set up all event listeners
+   */
+  setupEventListeners() {
+    this.audioEvents.setup();
+    this.controlEvents.setup();
+    this.selectionEvents.setup();
+  }
+
+  /**
+   * Animate smooth scrolling when zoomed in
+   */
+  animateScroll() {
+    // Cancel any existing animation
+    if (this.player.animationFrameId) {
+      cancelAnimationFrame(this.player.animationFrameId);
     }
 
-    /**
-     * Set up all event listeners
-     */
-    setupEventListeners() {
-        this.audioEvents.setup();
-        this.controlEvents.setup();
-        this.selectionEvents.setup();
-    }
+    const startOffset = this.player.zoomOffset;
+    const targetOffset = this.player.targetZoomOffset;
+    const offsetDiff = targetOffset - startOffset;
+    const startTime = performance.now();
+    const duration = 150; // Animation duration in ms
 
-    /**
-     * Animate smooth scrolling when zoomed in
-     */
-    animateScroll() {
-        // Cancel any existing animation
-        if (this.player.animationFrameId) {
-            cancelAnimationFrame(this.player.animationFrameId);
-        }
+    const step = (currentTime) => {
+      const elapsed = currentTime - startTime;
+      const progress = Math.min(elapsed / duration, 1);
 
-        const startOffset = this.player.zoomOffset;
-        const targetOffset = this.player.targetZoomOffset;
-        const offsetDiff = targetOffset - startOffset;
-        const startTime = performance.now();
-        const duration = 150; // Animation duration in ms
+      // Use easing function for smooth animation
+      const eased = 1 - Math.pow(1 - progress, 3); // Ease-out cubic
 
-        const step = (currentTime) => {
-            const elapsed = currentTime - startTime;
-            const progress = Math.min(elapsed / duration, 1);
+      // Update zoom offset
+      this.player.zoomOffset = startOffset + offsetDiff * eased;
 
-            // Use easing function for smooth animation
-            const eased = 1 - Math.pow(1 - progress, 3); // Ease-out cubic
+      // Redraw
+      this.player.redrawCurrentView();
+      this.player.drawTimeline();
+      this.player.updateTimeDisplay();
 
-            // Update zoom offset
-            this.player.zoomOffset = startOffset + (offsetDiff * eased);
-
-            // Redraw
-            this.player.redrawCurrentView();
-            this.player.drawTimeline();
-            this.player.updateTimeDisplay();
-
-            // Continue animation if not complete
-            if (progress < 1) {
-                this.player.animationFrameId = requestAnimationFrame(step);
-            }
-        };
-
+      // Continue animation if not complete
+      if (progress < 1) {
         this.player.animationFrameId = requestAnimationFrame(step);
-    }
+      }
+    };
+
+    this.player.animationFrameId = requestAnimationFrame(step);
+  }
 }
