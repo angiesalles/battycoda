@@ -1,4 +1,5 @@
 """User registration views."""
+
 import random
 
 from django.contrib import messages
@@ -9,7 +10,6 @@ from django.utils import timezone
 from ..forms import UserRegisterForm
 from ..models.user import GroupInvitation, GroupMembership
 from ..utils_modules.validation import safe_int
-from .login import process_invitation
 
 
 def register_view(request):
@@ -30,8 +30,8 @@ def register_view(request):
         initial_email = ""
 
     if request.method == "POST":
-        captcha_num1 = safe_int(request.POST.get('captcha_num1'), default=0)
-        captcha_num2 = safe_int(request.POST.get('captcha_num2'), default=0)
+        captcha_num1 = safe_int(request.POST.get("captcha_num1"), default=0)
+        captcha_num2 = safe_int(request.POST.get("captcha_num2"), default=0)
 
         form = UserRegisterForm(request.POST, captcha_num1=captcha_num1, captcha_num2=captcha_num2)
         if form.is_valid():
@@ -63,10 +63,11 @@ def register_view(request):
                 messages.success(request, "Registration successful!")
 
             from ..email_utils import send_welcome_email
+
             send_welcome_email(user)
 
-            username = form.cleaned_data.get('username')
-            password = form.cleaned_data.get('password1')
+            username = form.cleaned_data.get("username")
+            password = form.cleaned_data.get("password1")
             user = authenticate(username=username, password=password)
             if user:
                 login(request, user)

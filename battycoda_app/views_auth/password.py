@@ -1,6 +1,7 @@
 """Password reset and login code views."""
+
 from django.contrib import messages
-from django.contrib.auth import authenticate, login
+from django.contrib.auth import login
 from django.contrib.auth.models import User
 from django.shortcuts import redirect, render
 from django.urls import reverse
@@ -15,7 +16,7 @@ def password_reset_request(request):
         identifier = request.POST.get("identifier")
 
         user = None
-        if '@' in identifier:
+        if "@" in identifier:
             user = User.objects.filter(email=identifier).first()
         else:
             user = User.objects.filter(username=identifier).first()
@@ -24,25 +25,25 @@ def password_reset_request(request):
                 user = None
 
         if not user:
-            messages.success(request,
-                            "If an account exists with the provided information, "
-                            "password reset instructions will be sent to the associated email address.")
+            messages.success(
+                request,
+                "If an account exists with the provided information, "
+                "password reset instructions will be sent to the associated email address.",
+            )
             return redirect("battycoda_app:login")
 
-        from ..models.user import PasswordResetToken
         from ..email_utils import send_password_reset_email
+        from ..models.user import PasswordResetToken
 
         token_obj = PasswordResetToken.generate_token(user)
 
-        success = send_password_reset_email(
-            user=user,
-            token=token_obj.token,
-            expires_at=token_obj.expires_at
-        )
+        success = send_password_reset_email(user=user, token=token_obj.token, expires_at=token_obj.expires_at)
 
-        messages.success(request,
-                        "If an account exists with the provided information, "
-                        "password reset instructions will be sent to the associated email address.")
+        messages.success(
+            request,
+            "If an account exists with the provided information, "
+            "password reset instructions will be sent to the associated email address.",
+        )
         return redirect("battycoda_app:login")
 
     return render(request, "auth/forgot_password.html")
@@ -50,16 +51,13 @@ def password_reset_request(request):
 
 def password_reset(request, token):
     """Reset password with token"""
-    from ..models.user import PasswordResetToken
     from django.contrib.auth.password_validation import validate_password
     from django.core.exceptions import ValidationError
 
+    from ..models.user import PasswordResetToken
+
     try:
-        token_obj = PasswordResetToken.objects.get(
-            token=token,
-            used=False,
-            expires_at__gt=timezone.now()
-        )
+        token_obj = PasswordResetToken.objects.get(token=token, used=False, expires_at__gt=timezone.now())
         user = token_obj.user
     except PasswordResetToken.DoesNotExist:
         messages.error(request, "Invalid or expired password reset link. Please request a new password reset.")
@@ -99,22 +97,19 @@ def request_login_code(request):
         identifier = request.POST.get("username")
 
         user = None
-        if '@' in identifier:
+        if "@" in identifier:
             user = User.objects.filter(email=identifier).first()
         else:
             user = User.objects.filter(username=identifier).first()
 
         if user and user.email:
-            from ..models import LoginCode
             from ..email_utils import send_login_code_email
+            from ..models import LoginCode
 
             login_code = LoginCode.generate_code(user)
 
             send_login_code_email(
-                user=user,
-                code=login_code.code,
-                token=login_code.token,
-                expires_at=login_code.expires_at
+                user=user, code=login_code.code, token=login_code.token, expires_at=login_code.expires_at
             )
 
         messages.success(request, "If an account exists with that username or email, a login code has been sent.")
@@ -130,7 +125,7 @@ def enter_login_code(request, username):
         identifier = username
 
         user = None
-        if '@' in identifier:
+        if "@" in identifier:
             user = User.objects.filter(email=identifier).first()
         else:
             user = User.objects.filter(username=identifier).first()
@@ -140,13 +135,9 @@ def enter_login_code(request, username):
             return render(request, "auth/enter_login_code.html", {"username": identifier})
 
         from ..models import LoginCode
+
         try:
-            code_obj = LoginCode.objects.get(
-                user=user,
-                code=login_code,
-                used=False,
-                expires_at__gt=timezone.now()
-            )
+            code_obj = LoginCode.objects.get(user=user, code=login_code, used=False, expires_at__gt=timezone.now())
 
             login(request, user)
 

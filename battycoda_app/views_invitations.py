@@ -1,8 +1,6 @@
-
 import uuid
 from datetime import timedelta
 
-from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
@@ -12,7 +10,8 @@ from django.utils import timezone
 
 from .email_utils import send_invitation_email
 from .forms import GroupInvitationForm
-from .models.user import Group, GroupInvitation, GroupMembership, UserProfile
+from .models.user import GroupInvitation, GroupMembership
+
 
 @login_required
 def group_users_view(request):
@@ -41,6 +40,7 @@ def group_users_view(request):
 
     return render(request, "groups/group_users.html", context)
 
+
 @login_required
 def invite_user_view(request):
     """Send an invitation to join the group to a user by email"""
@@ -54,16 +54,16 @@ def invite_user_view(request):
 
     if request.method == "POST":
         # Check if this is a resend request
-        if 'resend' in request.POST:
-            invitation_id = request.POST.get('resend')
+        if "resend" in request.POST:
+            invitation_id = request.POST.get("resend")
             try:
                 invitation = GroupInvitation.objects.get(id=invitation_id, group=group)
-                
+
                 # Create the invitation link
                 invitation_link = request.build_absolute_uri(
                     reverse("battycoda_app:accept_invitation", kwargs={"token": invitation.token})
                 )
-                
+
                 # Resend the invitation email
                 email_sent = send_invitation_email(
                     group_name=group.name,
@@ -72,17 +72,17 @@ def invite_user_view(request):
                     invitation_link=invitation_link,
                     expires_at=invitation.expires_at,
                 )
-                
+
                 if email_sent:
                     messages.success(request, f"Invitation resent successfully to {invitation.email}.")
                 else:
                     messages.error(request, "Failed to resend invitation email. Check the email settings.")
-                    
+
             except GroupInvitation.DoesNotExist:
                 messages.error(request, "Invitation not found.")
-                
+
             return redirect("battycoda_app:group_users")
-        
+
         # Regular invitation form submission
         form = GroupInvitationForm(request.POST)
         if form.is_valid():
@@ -163,6 +163,7 @@ def invite_user_view(request):
 
     return render(request, "groups/invite_user.html", context)
 
+
 def accept_invitation_view(request, token):
     """Accept a group invitation using the token from the email"""
     # Try to find the invitation
@@ -174,8 +175,10 @@ def accept_invitation_view(request, token):
             "invitation": invitation,
             "status": "already_accepted",
             "message": "This invitation has already been accepted.",
-            "action_url": reverse("battycoda_app:login") if not request.user.is_authenticated else reverse("battycoda_app:index"),
-            "action_text": "Log in" if not request.user.is_authenticated else "Go to Dashboard"
+            "action_url": (
+                reverse("battycoda_app:login") if not request.user.is_authenticated else reverse("battycoda_app:index")
+            ),
+            "action_text": "Log in" if not request.user.is_authenticated else "Go to Dashboard",
         }
         return render(request, "groups/invitation_status.html", context)
 
@@ -186,7 +189,7 @@ def accept_invitation_view(request, token):
             "status": "expired",
             "message": "This invitation has expired.",
             "action_url": reverse("battycoda_app:index"),
-            "action_text": "Go to Dashboard"
+            "action_text": "Go to Dashboard",
         }
         return render(request, "groups/invitation_status.html", context)
 

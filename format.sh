@@ -9,11 +9,10 @@ NC='\033[0m' # No Color
 # Activate virtual environment
 source venv/bin/activate
 
-echo -e "${YELLOW}Running isort to sort imports...${NC}"
-isort .
+echo -e "${YELLOW}Running ruff linter with auto-fix...${NC}"
+ruff check --fix .
 
-echo -e "${YELLOW}Running black to format code...${NC}"
-black .
+echo -e "${YELLOW}Running ruff formatter...${NC}"
+ruff format .
 
 echo -e "${GREEN}Code formatting complete!${NC}"
-echo -e "${YELLOW}Note: flake8 issues must be fixed manually. Run './lint.sh' to check for remaining issues.${NC}"

@@ -3,9 +3,11 @@ Job management URL patterns.
 
 Handles background job monitoring, status checking, and job control.
 """
+
 from django.urls import path
+
+from .views_jobs.ajax import cancel_job_view, job_status_api_view
 from .views_jobs.dashboard import jobs_dashboard_view
-from .views_jobs.ajax import job_status_api_view, cancel_job_view
 from .views_jobs.spectrogram import create_spectrogram_job_view
 
 urlpatterns = [

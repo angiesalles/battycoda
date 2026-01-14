@@ -66,7 +66,7 @@ def vite_asset(entry_name):
             tags.append(f'<link rel="stylesheet" href="{css_url}">')
 
     # Add the main script
-    js_url = static(f'dist/{entry["file"]}')
+    js_url = static(f"dist/{entry['file']}")
     tags.append(f'<script type="module" src="{js_url}"></script>')
 
     return mark_safe("\n".join(tags))

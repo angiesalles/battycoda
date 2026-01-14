@@ -6,26 +6,27 @@ The actual clustering logic is delegated to algorithm-specific runners.
 """
 
 import os
-import sys
 
 # Environment setup for Numba and librosa
-os.environ['NUMBA_DISABLE_JIT'] = '1'
-os.environ['LIBROSA_CACHE_LEVEL'] = '0'
-os.environ['LIBROSA_CACHE_DIR'] = '/tmp/librosa_cache'
+os.environ["NUMBA_DISABLE_JIT"] = "1"
+os.environ["LIBROSA_CACHE_LEVEL"] = "0"
+os.environ["LIBROSA_CACHE_DIR"] = "/tmp/librosa_cache"
 
 # Patch Numba before any imports
 import importlib.util
+
 if importlib.util.find_spec("numba"):
     import numba
     import numba.core.registry
-    
+
     def no_jit(*args, **kwargs):
         def decorator(func):
             return func
+
         if len(args) == 1 and callable(args[0]):
             return args[0]
         return decorator
-    
+
     numba.jit = no_jit
     numba.njit = no_jit
     numba.vectorize = no_jit
@@ -33,23 +34,20 @@ if importlib.util.find_spec("numba"):
     numba.cfunc = no_jit
     numba.generated_jit = no_jit
     numba.core.registry.CPUDispatcher = no_jit
-    
-    if hasattr(numba, 'np') and hasattr(numba.np, 'vectorize'):
+
+    if hasattr(numba, "np") and hasattr(numba.np, "vectorize"):
         numba.np.vectorize = no_jit
 
 # Now safe to import other modules
 import logging
 
-import librosa
 import numpy as np
 from celery import shared_task
 from celery.exceptions import SoftTimeLimitExceeded
-from django.db import transaction
 from sklearn.metrics import silhouette_score
 from sklearn.preprocessing import StandardScaler
 
-from ....models import Segment, Segmentation
-from ....models.clustering import Cluster, ClusteringRun, SegmentCluster
+from ....models.clustering import ClusteringRun
 from .algorithms.automatic import (
     AffinityPropagationRunner,
     AutoDBSCANRunner,
@@ -57,27 +55,17 @@ from .algorithms.automatic import (
     MeanShiftRunner,
     OPTICSRunner,
 )
-from .algorithms.manual import (
-    run_dbscan_clustering,
-    run_gmm_clustering,
-    run_kmeans_clustering,
-    run_spectral_clustering,
-)
+from .algorithms.manual import run_dbscan_clustering, run_gmm_clustering, run_kmeans_clustering, run_spectral_clustering
 from .feature_extraction import get_project_segments_features, get_segments_features
 from .results import store_clustering_results
-from .utils import (
-    calculate_cluster_coherence,
-    find_representative_segments,
-    generate_tsne_visualization,
-)
 
 logger = logging.getLogger(__name__)
 
 
 @shared_task(
     bind=True,
-    time_limit=3600,      # 1 hour hard limit
-    soft_time_limit=3300, # 55 min soft limit (allows graceful cleanup)
+    time_limit=3600,  # 1 hour hard limit
+    soft_time_limit=3300,  # 55 min soft limit (allows graceful cleanup)
 )
 def run_clustering(self, clustering_run_id):
     """
@@ -113,13 +101,13 @@ def run_clustering(self, clustering_run_id):
                 raise ValueError("Species is required for project-level clustering")
 
             clustering_run.progress_message = "Extracting features from project..."
-            clustering_run.save(update_fields=['progress_message'])
+            clustering_run.save(update_fields=["progress_message"])
 
             def progress_callback(processed, total):
                 pct = 5 + (25 * processed / total) if total > 0 else 5
                 clustering_run.progress = pct
                 clustering_run.progress_message = f"Extracting features: {processed}/{total} segments"
-                clustering_run.save(update_fields=['progress', 'progress_message'])
+                clustering_run.save(update_fields=["progress", "progress_message"])
 
             segment_ids, features, segment_metadata, skipped = get_project_segments_features(
                 clustering_run.project.id,
@@ -127,7 +115,7 @@ def run_clustering(self, clustering_run_id):
                 feature_method,
                 feature_params,
                 batch_size=clustering_run.batch_size,
-                progress_callback=progress_callback
+                progress_callback=progress_callback,
             )
 
             if skipped:
@@ -139,12 +127,10 @@ def run_clustering(self, clustering_run_id):
                 raise ValueError("Segmentation is required for single-file clustering")
 
             clustering_run.progress_message = "Extracting features..."
-            clustering_run.save(update_fields=['progress_message'])
+            clustering_run.save(update_fields=["progress_message"])
 
             segment_ids, features = get_segments_features(
-                clustering_run.segmentation.id,
-                feature_method,
-                feature_params
+                clustering_run.segmentation.id, feature_method, feature_params
             )
 
         if len(segment_ids) == 0:
@@ -152,50 +138,40 @@ def run_clustering(self, clustering_run_id):
 
         clustering_run.progress = 30.0
         clustering_run.progress_message = f"Extracted features from {len(segment_ids)} segments"
-        clustering_run.save(update_fields=['progress', 'progress_message'])
+        clustering_run.save(update_fields=["progress", "progress_message"])
 
         # Standardize features
         scaler = StandardScaler()
         features_scaled = scaler.fit_transform(features)
 
         clustering_run.progress_message = "Running clustering algorithm..."
-        clustering_run.save(update_fields=['progress_message'])
+        clustering_run.save(update_fields=["progress_message"])
 
         # Run the appropriate clustering algorithm
-        if algorithm_type == 'kmeans':
-            n_clusters = clustering_run.n_clusters or params.get('n_clusters', 5)
-            random_state = params.get('random_state', 42)
+        if algorithm_type == "kmeans":
+            n_clusters = clustering_run.n_clusters or params.get("n_clusters", 5)
+            random_state = params.get("random_state", 42)
             labels, distances, centers = run_kmeans_clustering(
-                features_scaled,
-                n_clusters=n_clusters,
-                random_state=random_state
+                features_scaled, n_clusters=n_clusters, random_state=random_state
             )
 
-        elif algorithm_type == 'dbscan':
-            eps = params.get('eps', 0.5)
-            min_samples = params.get('min_samples', 5)
-            labels, distances, centers = run_dbscan_clustering(
-                features_scaled,
-                eps=eps,
-                min_samples=min_samples
-            )
+        elif algorithm_type == "dbscan":
+            eps = params.get("eps", 0.5)
+            min_samples = params.get("min_samples", 5)
+            labels, distances, centers = run_dbscan_clustering(features_scaled, eps=eps, min_samples=min_samples)
 
-        elif algorithm_type == 'spectral':
-            n_clusters = clustering_run.n_clusters or params.get('n_clusters', 5)
-            random_state = params.get('random_state', 42)
+        elif algorithm_type == "spectral":
+            n_clusters = clustering_run.n_clusters or params.get("n_clusters", 5)
+            random_state = params.get("random_state", 42)
             labels, distances, centers = run_spectral_clustering(
-                features_scaled,
-                n_clusters=n_clusters,
-                random_state=random_state
+                features_scaled, n_clusters=n_clusters, random_state=random_state
             )
 
-        elif algorithm_type == 'gaussian_mixture':
-            n_components = clustering_run.n_clusters or params.get('n_components', 5)
-            random_state = params.get('random_state', 42)
+        elif algorithm_type == "gaussian_mixture":
+            n_components = clustering_run.n_clusters or params.get("n_components", 5)
+            random_state = params.get("random_state", 42)
             labels, distances, centers = run_gmm_clustering(
-                features_scaled,
-                n_components=n_components,
-                random_state=random_state
+                features_scaled, n_components=n_components, random_state=random_state
             )
 
         else:
@@ -203,7 +179,7 @@ def run_clustering(self, clustering_run_id):
 
         clustering_run.progress = 50.0
         clustering_run.progress_message = "Calculating cluster statistics..."
-        clustering_run.save(update_fields=['progress', 'progress_message'])
+        clustering_run.save(update_fields=["progress", "progress_message"])
 
         # Calculate silhouette score if applicable
         silhouette = None
@@ -214,24 +190,17 @@ def run_clustering(self, clustering_run_id):
                 # Filter out noise points for silhouette calculation
                 non_noise_mask = labels != -1
                 if np.sum(non_noise_mask) > n_clusters_found:
-                    silhouette = silhouette_score(
-                        features_scaled[non_noise_mask],
-                        labels[non_noise_mask]
-                    )
+                    silhouette = silhouette_score(features_scaled[non_noise_mask], labels[non_noise_mask])
             except Exception as e:
                 logger.warning(f"Could not calculate silhouette score: {e}")
 
         clustering_run.progress = 70.0
         clustering_run.progress_message = "Storing results..."
-        clustering_run.save(update_fields=['progress', 'progress_message'])
+        clustering_run.save(update_fields=["progress", "progress_message"])
 
         # Store results using the batched storage function
         store_clustering_results(
-            clustering_run,
-            labels,
-            features_scaled,
-            segment_ids=segment_ids,
-            segment_metadata=segment_metadata
+            clustering_run, labels, features_scaled, segment_ids=segment_ids, segment_metadata=segment_metadata
         )
 
         # Update final stats
@@ -246,16 +215,14 @@ def run_clustering(self, clustering_run_id):
         return {
             "status": "success",
             "message": f"Clustering completed with {clustering_run.num_clusters_created} clusters",
-            "run_id": clustering_run_id
+            "run_id": clustering_run_id,
         }
 
     except SoftTimeLimitExceeded:
         logger.error(f"Clustering run {clustering_run_id} timed out")
         if clustering_run:
             clustering_run.status = "failed"
-            clustering_run.error_message = (
-                "Task timed out. Try reducing project size or using a simpler algorithm."
-            )
+            clustering_run.error_message = "Task timed out. Try reducing project size or using a simpler algorithm."
             clustering_run.save()
         raise
 

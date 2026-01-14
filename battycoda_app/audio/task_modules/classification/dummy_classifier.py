@@ -3,6 +3,7 @@ Dummy classifier task for testing purposes.
 
 Assigns equal probability to all call types without actual classification.
 """
+
 from celery import shared_task
 from django.db import transaction
 
@@ -56,7 +57,7 @@ def run_dummy_classifier(self, detection_run_id):
                 progress = ((i + 1) / total_segments) * 100
                 update_detection_run_status(detection_run, "in_progress", progress=progress)
 
-            except Exception as segment_error:
+            except Exception:
                 continue
 
         update_detection_run_status(detection_run, "completed", progress=100)

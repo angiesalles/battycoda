@@ -1,6 +1,7 @@
 """
 Views for serving spectrogram data for client-side rendering.
 """
+
 import json
 import os
 import struct
@@ -40,17 +41,17 @@ def get_spectrogram_data_view(request, recording_id):
         import h5py
         import numpy as np
 
-        with h5py.File(h5_file_path, 'r') as f:
+        with h5py.File(h5_file_path, "r") as f:
             # Get metadata
-            sample_rate = float(f.attrs['sample_rate'])
-            n_fft = int(f.attrs['n_fft'])
-            hop_length = int(f.attrs.get('hop_length', n_fft // 4))
-            duration = float(f.attrs['duration'])
-            n_frames = int(f.attrs['n_frames'])
-            n_freq_bins = int(f.attrs['n_freq_bins'])
+            sample_rate = float(f.attrs["sample_rate"])
+            n_fft = int(f.attrs["n_fft"])
+            hop_length = int(f.attrs.get("hop_length", n_fft // 4))
+            duration = float(f.attrs["duration"])
+            n_frames = int(f.attrs["n_frames"])
+            n_freq_bins = int(f.attrs["n_freq_bins"])
 
             # Load spectrogram data
-            spectrogram_data = f['spectrogram'][:]
+            spectrogram_data = f["spectrogram"][:]
 
         # Create metadata JSON
         metadata = {
@@ -61,34 +62,34 @@ def get_spectrogram_data_view(request, recording_id):
             "n_frames": n_frames,
             "n_freq_bins": n_freq_bins,
             "time_resolution": hop_length / sample_rate,
-            "freq_resolution": sample_rate / n_fft
+            "freq_resolution": sample_rate / n_fft,
         }
-        metadata_json = json.dumps(metadata).encode('utf-8')
+        metadata_json = json.dumps(metadata).encode("utf-8")
         metadata_length = len(metadata_json)
 
         # Create response with binary data
         # Format: [4 bytes: metadata length][metadata JSON][binary float16 array]
-        response = HttpResponse(content_type='application/octet-stream')
+        response = HttpResponse(content_type="application/octet-stream")
 
         # Add caching headers - spectrogram data doesn't change
         # Cache for 1 year (31536000 seconds)
-        response['Cache-Control'] = 'public, max-age=31536000, immutable'
+        response["Cache-Control"] = "public, max-age=31536000, immutable"
 
         # Add ETag based on file modification time for efficient revalidation
-        import time
+
         file_mtime = os.path.getmtime(h5_file_path)
         etag = f'"{recording.id}-{int(file_mtime)}"'
-        response['ETag'] = etag
+        response["ETag"] = etag
 
         # Write metadata length as 4-byte integer
-        response.write(struct.pack('<I', metadata_length))
+        response.write(struct.pack("<I", metadata_length))
 
         # Write metadata JSON
         response.write(metadata_json)
 
         # Write binary spectrogram data (float16, little-endian)
         # Ensure it's C-contiguous for efficient transfer
-        if not spectrogram_data.flags['C_CONTIGUOUS']:
+        if not spectrogram_data.flags["C_CONTIGUOUS"]:
             spectrogram_data = np.ascontiguousarray(spectrogram_data)
         response.write(spectrogram_data.tobytes())
 

@@ -5,7 +5,6 @@ from django.contrib.auth.models import User
 from battycoda_app.forms import (
     GroupForm,
     ProjectForm,
-    SpeciesForm,
     TaskForm,
     TaskUpdateForm,
     UserLoginForm,
@@ -14,6 +13,7 @@ from battycoda_app.forms import (
 )
 from battycoda_app.models import Group, Project, Species, UserProfile
 from battycoda_app.tests.test_base import BattycodaTestCase
+
 
 class UserFormsTest(BattycodaTestCase):
     def setUp(self):
@@ -74,6 +74,7 @@ class UserFormsTest(BattycodaTestCase):
         # Admin should see is_admin field
         self.assertIn("is_admin", form.fields)
 
+
 class TaskFormsTest(BattycodaTestCase):
     def setUp(self):
         self.user = User.objects.create_user(username="testuser", email="test@example.com", password="password123")
@@ -121,6 +122,7 @@ class TaskFormsTest(BattycodaTestCase):
         )
         self.assertTrue(form.is_valid())
 
+
 class ProjectFormsTest(BattycodaTestCase):
     def test_project_form_valid(self):
         form = ProjectForm(data={"name": "Test Project", "description": "A test project description"})
@@ -130,6 +132,7 @@ class ProjectFormsTest(BattycodaTestCase):
         form = ProjectForm(data={"description": "A test project description"})
         self.assertFalse(form.is_valid())
         self.assertIn("name", form.errors)
+
 
 class GroupFormsTest(BattycodaTestCase):
     def test_group_form_valid(self):

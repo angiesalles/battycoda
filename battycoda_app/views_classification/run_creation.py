@@ -1,15 +1,13 @@
 """Classification run creation and management views."""
+
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.db import models
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
-from django.urls import reverse
 
 from battycoda_app.models import Segmentation
-from battycoda_app.models.classification import (CallProbability, Classifier,
-                                                 ClassificationResult,
-                                                 ClassificationRun)
+from battycoda_app.models.classification import CallProbability, ClassificationResult, ClassificationRun, Classifier
 
 
 @login_required
@@ -67,6 +65,7 @@ def create_detection_run_view(request, segmentation_id=None):
 
             # Queue the run for processing by the queue processor
             from battycoda_app.audio.task_modules.queue_processor import queue_classification_run
+
             queue_classification_run.delay(run.id)
 
             if request.headers.get("x-requested-with") == "XMLHttpRequest":
@@ -76,7 +75,6 @@ def create_detection_run_view(request, segmentation_id=None):
             return redirect("battycoda_app:detection_run_detail", run_id=run.id)
 
         except Exception as e:
-
             if request.headers.get("x-requested-with") == "XMLHttpRequest":
                 return JsonResponse({"success": False, "error": str(e)})
 
@@ -111,8 +109,7 @@ def create_detection_run_view(request, segmentation_id=None):
 
         if not classifiers.exists():
             messages.error(
-                request,
-                f"No classifiers available for {recording_species.name}. Please contact an administrator."
+                request, f"No classifiers available for {recording_species.name}. Please contact an administrator."
             )
             return redirect("battycoda_app:recording_detail", recording_id=segmentation.recording.id)
 
@@ -130,33 +127,29 @@ def create_detection_run_view(request, segmentation_id=None):
     if profile.group:
         if profile.is_current_group_admin:
             segmentations = Segmentation.objects.filter(
-                recording__group=profile.group,
-                recording__hidden=False,
-                status="completed"
+                recording__group=profile.group, recording__hidden=False, status="completed"
             ).order_by("-created_at")
         else:
             segmentations = Segmentation.objects.filter(
-                created_by=request.user,
-                recording__hidden=False,
-                status="completed"
+                created_by=request.user, recording__hidden=False, status="completed"
             ).order_by("-created_at")
     else:
         segmentations = Segmentation.objects.filter(
-            created_by=request.user,
-            recording__hidden=False,
-            status="completed"
+            created_by=request.user, recording__hidden=False, status="completed"
         ).order_by("-created_at")
 
     items = []
     for segmentation in segmentations:
-        items.append({
-            "name": f"Segmentation #{segmentation.id} - {segmentation.recording.name}",
-            "type_name": "Segmentation Run",
-            "count": segmentation.segments.count(),
-            "created_at": segmentation.created_at,
-            "detail_url": f"/recordings/{segmentation.recording.id}/segment/?segmentation_id={segmentation.id}",
-            "action_url": f"/classification/runs/create/{segmentation.id}/",
-        })
+        items.append(
+            {
+                "name": f"Segmentation #{segmentation.id} - {segmentation.recording.name}",
+                "type_name": "Segmentation Run",
+                "count": segmentation.segments.count(),
+                "created_at": segmentation.created_at,
+                "detail_url": f"/recordings/{segmentation.recording.id}/segment/?segmentation_id={segmentation.id}",
+                "action_url": f"/classification/runs/create/{segmentation.id}/",
+            }
+        )
 
     context = {
         "title": "Create Classification Run",

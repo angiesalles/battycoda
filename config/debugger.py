@@ -4,8 +4,7 @@ PyCharm debugger configuration for BattyCoda.
 This module provides a function to activate the PyCharm debugger
 with a single import.
 """
-import os
-import sys
+
 
 def activate_debugger(port=12345):
     """

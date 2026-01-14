@@ -28,9 +28,7 @@ class RecordingModelTests(BattycodaTestCase):
     """Tests for the Recording model."""
 
     def setUp(self):
-        self.user = User.objects.create_user(
-            username="testuser", email="test@example.com", password="password123"
-        )
+        self.user = User.objects.create_user(username="testuser", email="test@example.com", password="password123")
         self.group = Group.objects.create(name="Test Group", description="A test group")
         self.species = Species.objects.create(
             name="Test Species", description="A test species", created_by=self.user, group=self.group
@@ -168,9 +166,7 @@ class SegmentationModelTests(BattycodaTestCase):
     """Tests for the Segmentation model."""
 
     def setUp(self):
-        self.user = User.objects.create_user(
-            username="testuser", email="test@example.com", password="password123"
-        )
+        self.user = User.objects.create_user(username="testuser", email="test@example.com", password="password123")
         self.group = Group.objects.create(name="Test Group", description="A test group")
         self.species = Species.objects.create(
             name="Test Species", description="A test species", created_by=self.user, group=self.group
@@ -253,9 +249,7 @@ class SegmentModelTests(BattycodaTestCase):
     """Tests for the Segment model."""
 
     def setUp(self):
-        self.user = User.objects.create_user(
-            username="testuser", email="test@example.com", password="password123"
-        )
+        self.user = User.objects.create_user(username="testuser", email="test@example.com", password="password123")
         self.group = Group.objects.create(name="Test Group", description="A test group")
         self.species = Species.objects.create(
             name="Test Species", description="A test species", created_by=self.user, group=self.group
@@ -377,9 +371,7 @@ class ClassifierModelTests(BattycodaTestCase):
     """Tests for the Classifier model."""
 
     def setUp(self):
-        self.user = User.objects.create_user(
-            username="testuser", email="test@example.com", password="password123"
-        )
+        self.user = User.objects.create_user(username="testuser", email="test@example.com", password="password123")
         self.group = Group.objects.create(name="Test Group", description="A test group")
         self.species = Species.objects.create(
             name="Test Species", description="A test species", created_by=self.user, group=self.group
@@ -455,9 +447,7 @@ class ClassificationRunModelTests(BattycodaTestCase):
     """Tests for the ClassificationRun model."""
 
     def setUp(self):
-        self.user = User.objects.create_user(
-            username="testuser", email="test@example.com", password="password123"
-        )
+        self.user = User.objects.create_user(username="testuser", email="test@example.com", password="password123")
         self.group = Group.objects.create(name="Test Group", description="A test group")
         self.species = Species.objects.create(
             name="Test Species", description="A test species", created_by=self.user, group=self.group
@@ -520,9 +510,7 @@ class ClassificationResultModelTests(BattycodaTestCase):
     """Tests for the ClassificationResult model."""
 
     def setUp(self):
-        self.user = User.objects.create_user(
-            username="testuser", email="test@example.com", password="password123"
-        )
+        self.user = User.objects.create_user(username="testuser", email="test@example.com", password="password123")
         self.group = Group.objects.create(name="Test Group", description="A test group")
         self.species = Species.objects.create(
             name="Test Species", description="A test species", created_by=self.user, group=self.group
@@ -573,9 +561,7 @@ class CallProbabilityModelTests(BattycodaTestCase):
     """Tests for the CallProbability model."""
 
     def setUp(self):
-        self.user = User.objects.create_user(
-            username="testuser", email="test@example.com", password="password123"
-        )
+        self.user = User.objects.create_user(username="testuser", email="test@example.com", password="password123")
         self.group = Group.objects.create(name="Test Group", description="A test group")
         self.species = Species.objects.create(
             name="Test Species", description="A test species", created_by=self.user, group=self.group
@@ -636,9 +622,7 @@ class ClassifierTrainingJobModelTests(BattycodaTestCase):
     """Tests for the ClassifierTrainingJob model."""
 
     def setUp(self):
-        self.user = User.objects.create_user(
-            username="testuser", email="test@example.com", password="password123"
-        )
+        self.user = User.objects.create_user(username="testuser", email="test@example.com", password="password123")
         self.group = Group.objects.create(name="Test Group", description="A test group")
 
     def test_str_representation_without_task_batch(self):
@@ -671,9 +655,7 @@ class UserNotificationModelTests(BattycodaTestCase):
     """Tests for the UserNotification model."""
 
     def setUp(self):
-        self.user = User.objects.create_user(
-            username="testuser", email="test@example.com", password="password123"
-        )
+        self.user = User.objects.create_user(username="testuser", email="test@example.com", password="password123")
 
     def test_str_representation(self):
         """Test that the string representation returns expected format."""

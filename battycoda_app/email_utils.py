@@ -1,7 +1,7 @@
-
 from django.conf import settings
 from django.core.mail import send_mail as django_send_mail
 from django.template.loader import render_to_string
+
 
 def send_mail(subject, message, recipient_list, html_message=None, from_email=None):
     """
@@ -30,10 +30,11 @@ def send_mail(subject, message, recipient_list, html_message=None, from_email=No
             html_message=html_message,
             fail_silently=False,
         )
-        
+
         return True
-    except Exception as e:
+    except Exception:
         return False
+
 
 def send_invitation_email(group_name, inviter_name, recipient_email, invitation_link, expires_at):
     """
@@ -87,16 +88,16 @@ def send_login_code_email(user, code, token, expires_at):
         bool: True if email was sent successfully, False otherwise
     """
     from django.conf import settings
-    
+
     subject = "Your BattyCoda Login Code"
-    
+
     # Format expiry time
-    expiry_str = expires_at.strftime('%Y-%m-%d %H:%M')
-    
+    expiry_str = expires_at.strftime("%Y-%m-%d %H:%M")
+
     # Create login link URL using the domain name from settings
-    domain = settings.DOMAIN_NAME if hasattr(settings, 'DOMAIN_NAME') else "localhost"
+    domain = settings.DOMAIN_NAME if hasattr(settings, "DOMAIN_NAME") else "localhost"
     login_link = f"https://{domain}/accounts/login-with-token/{token}/"
-    
+
     # Create plain text message
     message = (
         f"Hello {user.username},\n\n"
@@ -106,7 +107,7 @@ def send_login_code_email(user, code, token, expires_at):
         f"This code and link will expire on {expiry_str}.\n\n"
         f"If you did not request this code, please ignore this email."
     )
-    
+
     # Create HTML message
     html_message = f"""
     <html>
@@ -124,33 +125,29 @@ def send_login_code_email(user, code, token, expires_at):
     </body>
     </html>
     """
-    
+
     # Send the email
-    return send_mail(
-        subject=subject, 
-        message=message, 
-        recipient_list=[user.email], 
-        html_message=html_message
-    )
-    
+    return send_mail(subject=subject, message=message, recipient_list=[user.email], html_message=html_message)
+
+
 def send_welcome_email(user):
     """
     Send a welcome email to a new user.
-    
+
     Args:
         user (User): User object for the new user
-        
+
     Returns:
         bool: True if email was sent successfully, False otherwise
     """
     from django.conf import settings
-    
+
     subject = "Welcome to BattyCoda!"
-    
+
     # Create login URL using the domain name from settings
-    domain = settings.DOMAIN_NAME if hasattr(settings, 'DOMAIN_NAME') else "localhost"
+    domain = settings.DOMAIN_NAME if hasattr(settings, "DOMAIN_NAME") else "localhost"
     login_url = f"https://{domain}/accounts/login/"
-    
+
     # Create plain text message
     message = (
         f"Hello {user.username},\n\n"
@@ -162,7 +159,7 @@ def send_welcome_email(user):
         f"Thank you for joining!\n\n"
         f"The BattyCoda Team"
     )
-    
+
     # Create HTML message
     html_message = f"""
     <html>
@@ -180,14 +177,10 @@ def send_welcome_email(user):
     </body>
     </html>
     """
-    
+
     # Send the email
-    return send_mail(
-        subject=subject, 
-        message=message, 
-        recipient_list=[user.email], 
-        html_message=html_message
-    )
+    return send_mail(subject=subject, message=message, recipient_list=[user.email], html_message=html_message)
+
 
 def send_worker_failure_email(service_name, failure_reason=None, hostname=None):
     """
@@ -201,16 +194,18 @@ def send_worker_failure_email(service_name, failure_reason=None, hostname=None):
     Returns:
         bool: True if email was sent successfully, False otherwise
     """
-    from django.conf import settings
     import datetime
+
+    from django.conf import settings
 
     subject = f"[BattyCoda ALERT] Worker {service_name} failed"
 
     if hostname is None:
         import socket
+
         hostname = socket.gethostname()
 
-    timestamp = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+    timestamp = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
     reason_text = failure_reason if failure_reason else "Unknown"
 
@@ -255,17 +250,12 @@ def send_worker_failure_email(service_name, failure_reason=None, hostname=None):
     </html>
     """
 
-    admin_emails = [email for name, email in getattr(settings, 'ADMINS', [])]
+    admin_emails = [email for name, email in getattr(settings, "ADMINS", [])]
 
     if not admin_emails:
         return False
 
-    return send_mail(
-        subject=subject,
-        message=message,
-        recipient_list=admin_emails,
-        html_message=html_message
-    )
+    return send_mail(subject=subject, message=message, recipient_list=admin_emails, html_message=html_message)
 
 
 def send_disk_usage_warning_email(disk_info, threshold=90, hostname=None):
@@ -280,23 +270,24 @@ def send_disk_usage_warning_email(disk_info, threshold=90, hostname=None):
     Returns:
         bool: True if email was sent successfully, False otherwise
     """
-    from django.conf import settings
     import datetime
+
+    from django.conf import settings
 
     subject = f"[BattyCoda ALERT] Disk usage exceeds {threshold}%"
 
     if hostname is None:
         import socket
+
         hostname = socket.gethostname()
 
-    timestamp = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+    timestamp = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
     # Build plain text message
     disk_lines = []
     for disk in disk_info:
         disk_lines.append(
-            f"  {disk['mount']}: {disk['percent']}% used "
-            f"({disk['used']} / {disk['total']}, {disk['free']} free)"
+            f"  {disk['mount']}: {disk['percent']}% used ({disk['used']} / {disk['total']}, {disk['free']} free)"
         )
     disk_text = "\n".join(disk_lines)
 
@@ -314,13 +305,13 @@ def send_disk_usage_warning_email(disk_info, threshold=90, hostname=None):
     # Build HTML message
     disk_rows = ""
     for disk in disk_info:
-        color = "#dc3545" if disk['percent'] >= 95 else "#ffc107"
+        color = "#dc3545" if disk["percent"] >= 95 else "#ffc107"
         disk_rows += f"""
             <tr>
-                <td style="padding: 8px; border: 1px solid #ddd;">{disk['mount']}</td>
-                <td style="padding: 8px; border: 1px solid #ddd; color: {color}; font-weight: bold;">{disk['percent']}%</td>
-                <td style="padding: 8px; border: 1px solid #ddd;">{disk['used']} / {disk['total']}</td>
-                <td style="padding: 8px; border: 1px solid #ddd;">{disk['free']}</td>
+                <td style="padding: 8px; border: 1px solid #ddd;">{disk["mount"]}</td>
+                <td style="padding: 8px; border: 1px solid #ddd; color: {color}; font-weight: bold;">{disk["percent"]}%</td>
+                <td style="padding: 8px; border: 1px solid #ddd;">{disk["used"]} / {disk["total"]}</td>
+                <td style="padding: 8px; border: 1px solid #ddd;">{disk["free"]}</td>
             </tr>
         """
 
@@ -357,17 +348,12 @@ def send_disk_usage_warning_email(disk_info, threshold=90, hostname=None):
     </html>
     """
 
-    admin_emails = [email for name, email in getattr(settings, 'ADMINS', [])]
+    admin_emails = [email for name, email in getattr(settings, "ADMINS", [])]
 
     if not admin_emails:
         return False
 
-    return send_mail(
-        subject=subject,
-        message=message,
-        recipient_list=admin_emails,
-        html_message=html_message
-    )
+    return send_mail(subject=subject, message=message, recipient_list=admin_emails, html_message=html_message)
 
 
 def send_backup_failure_email(error_message, bucket_name=None, hostname=None):
@@ -382,16 +368,18 @@ def send_backup_failure_email(error_message, bucket_name=None, hostname=None):
     Returns:
         bool: True if email was sent successfully, False otherwise
     """
-    from django.conf import settings
     import datetime
+
+    from django.conf import settings
 
     subject = "[BattyCoda ALERT] Database backup failed"
 
     if hostname is None:
         import socket
+
         hostname = socket.gethostname()
 
-    timestamp = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+    timestamp = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     bucket_text = bucket_name if bucket_name else "unknown"
 
     message = (
@@ -433,42 +421,37 @@ def send_backup_failure_email(error_message, bucket_name=None, hostname=None):
     </html>
     """
 
-    admin_emails = [email for name, email in getattr(settings, 'ADMINS', [])]
+    admin_emails = [email for name, email in getattr(settings, "ADMINS", [])]
 
     if not admin_emails:
         return False
 
-    return send_mail(
-        subject=subject,
-        message=message,
-        recipient_list=admin_emails,
-        html_message=html_message
-    )
+    return send_mail(subject=subject, message=message, recipient_list=admin_emails, html_message=html_message)
 
 
 def send_password_reset_email(user, token, expires_at):
     """
     Send a password reset email to a user.
-    
+
     Args:
         user (User): User object
         token (str): Password reset token for the reset link
         expires_at (datetime): Expiration time for the token
-        
+
     Returns:
         bool: True if email was sent successfully, False otherwise
     """
     from django.conf import settings
-    
+
     subject = "Reset Your BattyCoda Password"
-    
+
     # Format expiry time
-    expiry_str = expires_at.strftime('%Y-%m-%d %H:%M')
-    
+    expiry_str = expires_at.strftime("%Y-%m-%d %H:%M")
+
     # Create reset link URL using the domain name from settings
-    domain = settings.DOMAIN_NAME if hasattr(settings, 'DOMAIN_NAME') else "localhost"
+    domain = settings.DOMAIN_NAME if hasattr(settings, "DOMAIN_NAME") else "localhost"
     reset_link = f"https://{domain}/accounts/reset-password/{token}/"
-    
+
     # Create plain text message
     message = (
         f"Hello {user.username},\n\n"
@@ -478,7 +461,7 @@ def send_password_reset_email(user, token, expires_at):
         f"This link will expire on {expiry_str}.\n\n"
         f"If you did not request this password reset, please ignore this email."
     )
-    
+
     # Create HTML message
     html_message = f"""
     <html>
@@ -495,11 +478,6 @@ def send_password_reset_email(user, token, expires_at):
     </body>
     </html>
     """
-    
+
     # Send the email
-    return send_mail(
-        subject=subject, 
-        message=message, 
-        recipient_list=[user.email], 
-        html_message=html_message
-    )
+    return send_mail(subject=subject, message=message, recipient_list=[user.email], html_message=html_message)

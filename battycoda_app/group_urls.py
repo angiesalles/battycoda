@@ -3,7 +3,9 @@ Group management and user invitation URL patterns.
 
 Handles group CRUD operations, member management, and user invitations.
 """
+
 from django.urls import path
+
 from . import views_group, views_invitations
 
 urlpatterns = [

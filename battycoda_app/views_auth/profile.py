@@ -1,4 +1,5 @@
 """User profile management views."""
+
 import json
 import random
 
@@ -46,11 +47,11 @@ def edit_profile_view(request):
 
         form = UserProfileForm(request.POST, request.FILES, instance=profile, user=request.user)
         if form.is_valid():
-            if 'profile_image' in request.FILES:
+            if "profile_image" in request.FILES:
                 if profile.profile_image:
                     profile.profile_image.delete(save=False)
 
-                profile.profile_image = request.FILES['profile_image']
+                profile.profile_image = request.FILES["profile_image"]
 
             form.save()
 
@@ -64,12 +65,7 @@ def edit_profile_view(request):
     else:
         form = UserProfileForm(instance=profile, user=request.user)
 
-    context = {
-        "form": form,
-        "user": request.user,
-        "profile": profile,
-        "random": random.randint(1, 1000000)
-    }
+    context = {"form": form, "user": request.user, "profile": profile, "random": random.randint(1, 1000000)}
 
     return render(request, "auth/edit_profile.html", context)
 
@@ -91,19 +87,19 @@ def update_theme_preference(request):
     """Update user theme preference via AJAX"""
     try:
         data = json.loads(request.body)
-        theme = data.get('theme')
+        theme = data.get("theme")
 
         valid_themes = dict(UserProfile.THEME_CHOICES).keys()
         if theme not in valid_themes:
-            return JsonResponse({'status': 'error', 'message': 'Invalid theme name'}, status=400)
+            return JsonResponse({"status": "error", "message": "Invalid theme name"}, status=400)
 
         profile = request.user.profile
         profile.theme = theme
-        profile.save(update_fields=['theme'])
+        profile.save(update_fields=["theme"])
 
-        return JsonResponse({'status': 'success'})
+        return JsonResponse({"status": "success"})
     except Exception as e:
-        return JsonResponse({'status': 'error', 'message': str(e)}, status=500)
+        return JsonResponse({"status": "error", "message": str(e)}, status=500)
 
 
 @login_required
@@ -112,38 +108,39 @@ def update_profile_ajax(request):
     """Handle profile updates via AJAX for email and profile image"""
     try:
         profile = request.user.profile
-        action = request.POST.get('action')
+        action = request.POST.get("action")
 
-        if action == 'update_email':
-            email = request.POST.get('email')
+        if action == "update_email":
+            email = request.POST.get("email")
             if not email:
-                return JsonResponse({'success': False, 'message': 'Email is required'})
+                return JsonResponse({"success": False, "message": "Email is required"})
 
-            from django.core.validators import validate_email
             from django.core.exceptions import ValidationError
+            from django.core.validators import validate_email
+
             try:
                 validate_email(email)
             except ValidationError:
-                return JsonResponse({'success': False, 'message': 'Please enter a valid email address'})
+                return JsonResponse({"success": False, "message": "Please enter a valid email address"})
 
             request.user.email = email
-            request.user.save(update_fields=['email'])
+            request.user.save(update_fields=["email"])
 
-            return JsonResponse({
-                'success': True,
-                'message': 'Email updated successfully'
-            })
+            return JsonResponse({"success": True, "message": "Email updated successfully"})
 
-        elif action == 'upload_image':
-            if 'profile_image' not in request.FILES:
-                return JsonResponse({'success': False, 'message': 'No image file provided'})
+        elif action == "upload_image":
+            if "profile_image" not in request.FILES:
+                return JsonResponse({"success": False, "message": "No image file provided"})
 
-            image_file = request.FILES['profile_image']
+            image_file = request.FILES["profile_image"]
 
             import imghdr
+
             image_type = imghdr.what(image_file)
-            if image_type not in ['jpeg', 'png', 'gif']:
-                return JsonResponse({'success': False, 'message': 'Invalid image format. Please upload a JPEG, PNG, or GIF.'})
+            if image_type not in ["jpeg", "png", "gif"]:
+                return JsonResponse(
+                    {"success": False, "message": "Invalid image format. Please upload a JPEG, PNG, or GIF."}
+                )
 
             if profile.profile_image:
                 profile.profile_image.delete(save=False)
@@ -151,45 +148,46 @@ def update_profile_ajax(request):
             profile.profile_image = image_file
             profile.save()
 
-            return JsonResponse({
-                'success': True,
-                'message': 'Profile image uploaded successfully',
-                'image_url': profile.profile_image.url,
-                'has_image': bool(profile.profile_image)
-            })
+            return JsonResponse(
+                {
+                    "success": True,
+                    "message": "Profile image uploaded successfully",
+                    "image_url": profile.profile_image.url,
+                    "has_image": bool(profile.profile_image),
+                }
+            )
 
-        elif action == 'remove_image':
+        elif action == "remove_image":
             if not profile.profile_image:
-                return JsonResponse({'success': False, 'message': 'No profile image to remove'})
+                return JsonResponse({"success": False, "message": "No profile image to remove"})
 
             profile.profile_image.delete(save=False)
             profile.profile_image = None
             profile.save()
 
-            return JsonResponse({
-                'success': True,
-                'message': 'Profile image removed successfully',
-                'has_image': False
-            })
+            return JsonResponse({"success": True, "message": "Profile image removed successfully", "has_image": False})
 
-        elif action == 'update_management_features':
-            enabled = request.POST.get('enabled') == 'true'
+        elif action == "update_management_features":
+            enabled = request.POST.get("enabled") == "true"
             profile.management_features_enabled = enabled
-            profile.save(update_fields=['management_features_enabled'])
+            profile.save(update_fields=["management_features_enabled"])
 
-            return JsonResponse({
-                'success': True,
-                'message': f'Management features {"enabled" if enabled else "disabled"} successfully',
-                'enabled': enabled
-            })
+            return JsonResponse(
+                {
+                    "success": True,
+                    "message": f"Management features {'enabled' if enabled else 'disabled'} successfully",
+                    "enabled": enabled,
+                }
+            )
 
         else:
-            return JsonResponse({'success': False, 'message': 'Invalid action'})
+            return JsonResponse({"success": False, "message": "Invalid action"})
 
     except Exception as e:
         import traceback
+
         traceback.print_exc()
-        return JsonResponse({'success': False, 'message': f'An error occurred: {str(e)}'}, status=500)
+        return JsonResponse({"success": False, "message": f"An error occurred: {str(e)}"}, status=500)
 
 
 @login_required
@@ -197,36 +195,36 @@ def hijack_user_view(request, user_id):
     """Custom view for hijacking a user."""
     if not request.user.is_superuser:
         messages.error(request, "You don't have permission to impersonate users.")
-        return redirect('/')
+        return redirect("/")
 
     user = get_object_or_404(User, id=user_id)
 
-    if 'hijack_history' not in request.session:
-        request.session['hijack_history'] = []
+    if "hijack_history" not in request.session:
+        request.session["hijack_history"] = []
 
-    request.session['hijack_history'].append(request.user.id)
+    request.session["hijack_history"].append(request.user.id)
 
     login(request, user)
 
     messages.success(
         request,
-        f"You are now impersonating {user.username}. Use the release button at the top to return to your account."
+        f"You are now impersonating {user.username}. Use the release button at the top to return to your account.",
     )
 
-    return redirect('/')
+    return redirect("/")
 
 
 @login_required
 def release_hijacked_user_view(request):
     """Custom view for releasing a hijacked user."""
-    if 'hijack_history' not in request.session or not request.session['hijack_history']:
+    if "hijack_history" not in request.session or not request.session["hijack_history"]:
         messages.error(request, "No user impersonation in progress.")
-        return redirect('/')
+        return redirect("/")
 
-    original_user_id = request.session['hijack_history'].pop()
+    original_user_id = request.session["hijack_history"].pop()
 
-    if not request.session['hijack_history']:
-        del request.session['hijack_history']
+    if not request.session["hijack_history"]:
+        del request.session["hijack_history"]
 
     original_user = get_object_or_404(User, id=original_user_id)
 
@@ -234,4 +232,4 @@ def release_hijacked_user_view(request):
 
     messages.success(request, "You have been returned to your account.")
 
-    return redirect('/admin/auth/user/')
+    return redirect("/admin/auth/user/")

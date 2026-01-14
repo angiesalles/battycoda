@@ -3,7 +3,9 @@ Project management URL patterns.
 
 Handles project CRUD operations.
 """
+
 from django.urls import path
+
 from . import views_project
 
 urlpatterns = [

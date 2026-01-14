@@ -4,7 +4,9 @@ Clustering URL patterns.
 Handles clustering run management, cluster exploration, mapping,
 and cluster data API endpoints.
 """
+
 from django.urls import path
+
 from . import views_clustering
 
 urlpatterns = [
@@ -21,7 +23,15 @@ urlpatterns = [
     path("clustering/update-cluster-label/", views_clustering.update_cluster_label, name="update_cluster_label"),
     path("clustering/create-mapping/", views_clustering.create_cluster_mapping, name="create_cluster_mapping"),
     path("clustering/delete-mapping/", views_clustering.delete_cluster_mapping, name="delete_cluster_mapping"),
-    path("clustering/update-mapping-confidence/", views_clustering.update_mapping_confidence, name="update_mapping_confidence"),
+    path(
+        "clustering/update-mapping-confidence/",
+        views_clustering.update_mapping_confidence,
+        name="update_mapping_confidence",
+    ),
     path("clustering/get-segment-data/", views_clustering.get_segment_data, name="get_segment_data"),
-    path("clustering/project-segments/<int:project_id>/", views_clustering.get_project_segment_count, name="get_project_segment_count"),
+    path(
+        "clustering/project-segments/<int:project_id>/",
+        views_clustering.get_project_segment_count,
+        name="get_project_segment_count",
+    ),
 ]

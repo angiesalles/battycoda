@@ -1,18 +1,16 @@
 """
 Views for importing segments from external data sources.
 """
-import os
-import traceback
 
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.db import transaction
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
-from django.utils import timezone
 
 from battycoda_app.audio.utils import process_pickle_file
 from battycoda_app.models import Recording, Segment, Segmentation
+
 
 @login_required
 def upload_pickle_segments_view(request, recording_id):
@@ -44,13 +42,15 @@ def upload_pickle_segments_view(request, recording_id):
             # Get recording duration for validation
             recording_duration = None
             if recording.spectrogram_file:
-                import h5py
                 import os
+
+                import h5py
                 from django.conf import settings
-                h5_path = os.path.join(settings.MEDIA_ROOT, 'spectrograms', 'recordings', recording.spectrogram_file)
+
+                h5_path = os.path.join(settings.MEDIA_ROOT, "spectrograms", "recordings", recording.spectrogram_file)
                 if os.path.exists(h5_path):
-                    with h5py.File(h5_path, 'r') as f:
-                        recording_duration = float(f.attrs['duration'])
+                    with h5py.File(h5_path, "r") as f:
+                        recording_duration = float(f.attrs["duration"])
 
             # Process the pickle file with duration validation
             onsets, offsets = process_pickle_file(pickle_file, max_duration=recording_duration)
@@ -77,7 +77,7 @@ def upload_pickle_segments_view(request, recording_id):
                 for i in range(len(onsets)):
                     try:
                         # Create segment name
-                        segment_name = f"Segment {i+1}"
+                        segment_name = f"Segment {i + 1}"
 
                         # Create and save the segment
                         segment = Segment(
@@ -90,8 +90,7 @@ def upload_pickle_segments_view(request, recording_id):
                         )
                         segment.save(manual_edit=False)  # Don't mark as manually edited for pickle uploads
                         segments_created += 1
-                    except Exception as e:
-
+                    except Exception:
                         raise  # Re-raise to trigger transaction rollback
 
             # Return appropriate response based on request type
@@ -112,7 +111,8 @@ def upload_pickle_segments_view(request, recording_id):
         except Exception as e:
             # Log the error with filename for troubleshooting
             import logging
-            pickle_filename = pickle_file.name if hasattr(pickle_file, 'name') else 'unknown'
+
+            pickle_filename = pickle_file.name if hasattr(pickle_file, "name") else "unknown"
             logging.error(f"Error processing pickle file '{pickle_filename}': {str(e)}")
 
             # Return appropriate error response

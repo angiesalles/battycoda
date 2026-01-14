@@ -9,6 +9,7 @@ from django.urls import reverse
 from django.urls.exceptions import NoReverseMatch
 from django.utils import timezone
 
+
 class AuthenticationMiddleware:
     """
     Django middleware to verify user authentication
@@ -36,7 +37,7 @@ class AuthenticationMiddleware:
             "/accounts/check-username/",
             "/accounts/check-email/",
             "/welcome/",  # Allow access to the landing page
-            "/hijack/",   # Allow hijack functionality access
+            "/hijack/",  # Allow hijack functionality access
             "/simple-api/",  # Allow simple API access (uses API key auth)
         ]
 
@@ -51,7 +52,7 @@ class AuthenticationMiddleware:
         # Check if the user is authenticated
         if not request.user.is_authenticated:
             # If this is the root URL, redirect to landing page instead of login
-            if request.path == '/' or request.path == '':
+            if request.path == "/" or request.path == "":
                 try:
                     landing_url = reverse("battycoda_app:landing")
                     return HttpResponseRedirect(landing_url)
@@ -68,14 +69,14 @@ class AuthenticationMiddleware:
             return HttpResponseRedirect(login_url)
 
         # Update last activity for authenticated users (throttled to avoid too many DB writes)
-        if hasattr(request.user, 'profile'):
+        if hasattr(request.user, "profile"):
             profile = request.user.profile
             now = timezone.now()
-            
+
             # Only update if more than 5 minutes have passed since last update
             if not profile.last_activity or (now - profile.last_activity).total_seconds() > 300:
                 profile.last_activity = now
-                profile.save(update_fields=['last_activity'])
+                profile.save(update_fields=["last_activity"])
 
         # Process the request and return the response
         return self.get_response(request)

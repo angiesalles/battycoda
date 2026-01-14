@@ -3,13 +3,13 @@ Utility functions for creating demo data.
 """
 
 import os
-import traceback
 
 from django.core.files import File
 from django.db import transaction
 from django.utils import timezone
 
 # Set up logging
+
 
 def create_demo_task_batch(user):
     """Create a demo task batch for a new user using sample files.
@@ -20,20 +20,13 @@ def create_demo_task_batch(user):
     Returns:
         TaskBatch or None: The created TaskBatch object, or None if creation failed
     """
-    from battycoda_app.audio.task_modules.classification.dummy_classifier import run_dummy_classifier
-    from battycoda_app.audio.utils import process_pickle_file
+
     # Import from specific model modules
-    from battycoda_app.models.classification import CallProbability, Classifier, ClassificationResult, ClassificationRun
-    from battycoda_app.models.organization import Project, Species
-    from battycoda_app.models.recording import Recording
-    from battycoda_app.models.segmentation import Segment, Segmentation
-    from battycoda_app.models.task import Task, TaskBatch
 
     # Get the user's group and profile
     profile = user.profile
     group = profile.group
     if not group:
-
         return None
 
     # Prerequisites: check for required resources
@@ -65,15 +58,16 @@ def create_demo_task_batch(user):
         batch = _create_task_batch_from_classification(user, group, project, species, recording, classification_run)
 
         if batch:
-
             return batch
 
     except Exception as e:
         # Print the exception for debugging
         print(f"Error creating demo task batch: {str(e)}")
         import traceback
+
         traceback.print_exc()
         return None
+
 
 def _check_demo_prerequisites(user, group):
     """Check prerequisites for creating a demo task batch
@@ -90,7 +84,6 @@ def _check_demo_prerequisites(user, group):
     # Find the user's demo project
     project = Project.objects.filter(group=group, name__contains="Demo Project").first()
     if not project:
-
         return None, None, None
 
     # Find the Carollia species - first try in the user's group, then look for system species
@@ -99,11 +92,11 @@ def _check_demo_prerequisites(user, group):
         # Try system species
         species = Species.objects.filter(is_system=True, name__icontains="Carollia").first()
     if not species:
-
         return None, None, None
 
     # Define the paths to the sample files
     from django.conf import settings
+
     sample_audio_dir = os.path.join(settings.BASE_DIR, "data", "sample_audio")
     sample_paths = {
         "wav": [os.path.join(sample_audio_dir, "bat1_angie_19.wav")],
@@ -120,7 +113,6 @@ def _check_demo_prerequisites(user, group):
             break
 
     if not wav_path:
-
         return None, None, None
 
     # Find the sample pickle file
@@ -131,10 +123,10 @@ def _check_demo_prerequisites(user, group):
             break
 
     if not pickle_path:
-
         return None, None, None
 
     return project, species, (wav_path, pickle_path)
+
 
 def _create_demo_recording(user, group, project, species, wav_path):
     """Create a demo recording for a user
@@ -168,9 +160,9 @@ def _create_demo_recording(user, group, project, species, wav_path):
             recording.wav_file.save("bat1_angie_19.wav", File(wav_file), save=True)
 
         return recording
-    except Exception as e:
-
+    except Exception:
         return None
+
 
 def _create_demo_segmentation(user, recording, pickle_path):
     """Create demo segmentation for a recording
@@ -217,7 +209,7 @@ def _create_demo_segmentation(user, recording, pickle_path):
                 # Create and save the segment
                 segment = Segment(
                     recording=recording,
-                    name=f"Segment {i+1}",
+                    name=f"Segment {i + 1}",
                     onset=onset_value,
                     offset=offset_value,
                     created_by=user,
@@ -226,9 +218,9 @@ def _create_demo_segmentation(user, recording, pickle_path):
                 segments_created += 1
 
         return segmentation
-    except Exception as e:
-
+    except Exception:
         return None
+
 
 def _run_demo_classification(user, group, segmentation):
     """Run the dummy classifier on demo segments
@@ -242,7 +234,7 @@ def _run_demo_classification(user, group, segmentation):
         ClassificationRun: The created ClassificationRun object or None if creation failed
     """
     from battycoda_app.audio.task_modules.classification.dummy_classifier import run_dummy_classifier
-    from battycoda_app.models.classification import Classifier, ClassificationRun
+    from battycoda_app.models.classification import ClassificationRun, Classifier
 
     try:
         # Find the dummy classifier
@@ -272,11 +264,10 @@ def _run_demo_classification(user, group, segmentation):
 
         return classification_run
     except Classifier.DoesNotExist:
-
         return None
-    except Exception as e:
-
+    except Exception:
         return None
+
 
 def _create_task_batch_from_classification(user, group, project, species, recording, classification_run):
     """Create a task batch from a classification run
@@ -348,6 +339,5 @@ def _create_task_batch_from_classification(user, group, project, species, record
                 tasks_created += 1
 
         return batch
-    except Exception as e:
-
+    except Exception:
         return None

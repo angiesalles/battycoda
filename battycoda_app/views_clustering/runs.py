@@ -1,4 +1,5 @@
 """Clustering run management views."""
+
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse
@@ -15,35 +16,26 @@ def dashboard(request):
     group = request.user.profile.group
 
     if group:
-        clustering_runs = ClusteringRun.objects.filter(group=group).order_by('-created_at')
+        clustering_runs = ClusteringRun.objects.filter(group=group).order_by("-created_at")
     else:
-        clustering_runs = ClusteringRun.objects.filter(created_by=request.user).order_by('-created_at')
+        clustering_runs = ClusteringRun.objects.filter(created_by=request.user).order_by("-created_at")
 
     if group:
-        algorithms = ClusteringAlgorithm.objects.filter(
-            is_active=True
-        ).filter(
-            group=group
-        ).order_by('name')
+        algorithms = ClusteringAlgorithm.objects.filter(is_active=True).filter(group=group).order_by("name")
     else:
-        algorithms = ClusteringAlgorithm.objects.filter(
-            is_active=True
-        ).filter(
-            created_by=request.user
-        ).order_by('name')
+        algorithms = ClusteringAlgorithm.objects.filter(is_active=True).filter(created_by=request.user).order_by("name")
 
     algorithms = list(algorithms) + list(
-        ClusteringAlgorithm.objects.filter(
-            is_active=True,
-            group__isnull=True
-        ).exclude(id__in=[a.id for a in algorithms])
+        ClusteringAlgorithm.objects.filter(is_active=True, group__isnull=True).exclude(
+            id__in=[a.id for a in algorithms]
+        )
     )
 
     context = {
-        'clustering_runs': clustering_runs,
-        'algorithms': algorithms,
+        "clustering_runs": clustering_runs,
+        "algorithms": algorithms,
     }
-    return render(request, 'clustering/dashboard.html', context)
+    return render(request, "clustering/dashboard.html", context)
 
 
 @login_required
@@ -53,55 +45,40 @@ def create_clustering_run(request):
 
     # Get available segmentations
     if group:
-        segmentations = Segmentation.objects.filter(
-            recording__group=group,
-            status='completed'
-        ).order_by('-created_at')
-        projects = Project.objects.filter(group=group).order_by('name')
+        segmentations = Segmentation.objects.filter(recording__group=group, status="completed").order_by("-created_at")
+        projects = Project.objects.filter(group=group).order_by("name")
     else:
-        segmentations = Segmentation.objects.filter(
-            created_by=request.user,
-            status='completed'
-        ).order_by('-created_at')
-        projects = Project.objects.filter(created_by=request.user).order_by('name')
+        segmentations = Segmentation.objects.filter(created_by=request.user, status="completed").order_by("-created_at")
+        projects = Project.objects.filter(created_by=request.user).order_by("name")
 
     # Get available algorithms
     if group:
-        algorithms = ClusteringAlgorithm.objects.filter(
-            is_active=True
-        ).filter(
-            group=group
-        ).order_by('name')
+        algorithms = ClusteringAlgorithm.objects.filter(is_active=True).filter(group=group).order_by("name")
     else:
-        algorithms = ClusteringAlgorithm.objects.filter(
-            is_active=True
-        ).filter(
-            created_by=request.user
-        ).order_by('name')
+        algorithms = ClusteringAlgorithm.objects.filter(is_active=True).filter(created_by=request.user).order_by("name")
 
     algorithms = list(algorithms) + list(
-        ClusteringAlgorithm.objects.filter(
-            is_active=True,
-            group__isnull=True
-        ).exclude(id__in=[a.id for a in algorithms])
+        ClusteringAlgorithm.objects.filter(is_active=True, group__isnull=True).exclude(
+            id__in=[a.id for a in algorithms]
+        )
     )
 
-    if request.method == 'POST':
-        scope = request.POST.get('scope', 'segmentation')
-        segmentation_id = request.POST.get('segmentation')
-        project_id = request.POST.get('project')
-        species_id = request.POST.get('species')
-        algorithm_id = request.POST.get('algorithm')
-        name = request.POST.get('name')
-        description = request.POST.get('description', '')
-        n_clusters = request.POST.get('n_clusters')
-        feature_method = request.POST.get('feature_method', 'mfcc')
-        batch_size = request.POST.get('batch_size', 500)
+    if request.method == "POST":
+        scope = request.POST.get("scope", "segmentation")
+        segmentation_id = request.POST.get("segmentation")
+        project_id = request.POST.get("project")
+        species_id = request.POST.get("species")
+        algorithm_id = request.POST.get("algorithm")
+        name = request.POST.get("name")
+        description = request.POST.get("description", "")
+        n_clusters = request.POST.get("n_clusters")
+        feature_method = request.POST.get("feature_method", "mfcc")
+        batch_size = request.POST.get("batch_size", 500)
 
         # Validate required fields
         if not all([algorithm_id, name]):
             messages.error(request, "Please fill in all required fields")
-            return redirect('battycoda_app:create_clustering_run')
+            return redirect("battycoda_app:create_clustering_run")
 
         algorithm = get_object_or_404(ClusteringAlgorithm, id=algorithm_id)
 
@@ -109,37 +86,34 @@ def create_clustering_run(request):
         project = None
         species = None
 
-        if scope == 'project':
+        if scope == "project":
             # Project-level clustering
             if not project_id:
                 messages.error(request, "Please select a project")
-                return redirect('battycoda_app:create_clustering_run')
+                return redirect("battycoda_app:create_clustering_run")
 
             project = get_object_or_404(Project, id=project_id)
 
             # Permission check
             if project.group != group:
                 messages.error(request, "You don't have permission to cluster this project")
-                return redirect('battycoda_app:create_clustering_run')
+                return redirect("battycoda_app:create_clustering_run")
 
             # Get all species in the project
-            project_species = Species.objects.filter(
-                recordings__project=project
-            ).distinct()
+            project_species = Species.objects.filter(recordings__project=project).distinct()
 
             if project_species.count() == 0:
                 messages.error(request, "Project has no recordings")
-                return redirect('battycoda_app:create_clustering_run')
+                return redirect("battycoda_app:create_clustering_run")
 
             # Species selection
             if project_species.count() > 1:
                 if not species_id:
                     messages.error(
                         request,
-                        f"Project contains {project_species.count()} species. "
-                        "Please select which species to cluster."
+                        f"Project contains {project_species.count()} species. Please select which species to cluster.",
                     )
-                    return redirect('battycoda_app:create_clustering_run')
+                    return redirect("battycoda_app:create_clustering_run")
                 species = get_object_or_404(Species, id=species_id)
             else:
                 # Single species - auto-select
@@ -149,33 +123,27 @@ def create_clustering_run(request):
             recordings_query = project.recordings.filter(species=species)
             if recordings_query.count() == 0:
                 messages.error(request, f"No recordings of {species.name} in this project")
-                return redirect('battycoda_app:create_clustering_run')
+                return redirect("battycoda_app:create_clustering_run")
 
             # Validation: Must have at least one completed segmentation
-            completed_segs = Segmentation.objects.filter(
-                recording__in=recordings_query, status='completed'
-            ).count()
+            completed_segs = Segmentation.objects.filter(recording__in=recordings_query, status="completed").count()
             if completed_segs == 0:
                 messages.error(request, "No recordings have completed segmentations")
-                return redirect('battycoda_app:create_clustering_run')
+                return redirect("battycoda_app:create_clustering_run")
 
             # Count segments for warning
             segment_count = Segment.objects.filter(
-                segmentation__recording__in=recordings_query,
-                segmentation__status='completed'
+                segmentation__recording__in=recordings_query, segmentation__status="completed"
             ).count()
 
             if segment_count > 10000:
-                messages.warning(
-                    request,
-                    f"Large dataset ({segment_count} segments). This may take a while."
-                )
+                messages.warning(request, f"Large dataset ({segment_count} segments). This may take a while.")
 
         else:
             # Single-segmentation clustering
             if not segmentation_id:
                 messages.error(request, "Please select a segmentation")
-                return redirect('battycoda_app:create_clustering_run')
+                return redirect("battycoda_app:create_clustering_run")
 
             segmentation = get_object_or_404(Segmentation, id=segmentation_id)
 
@@ -193,8 +161,8 @@ def create_clustering_run(request):
             batch_size=int(batch_size) if batch_size else 500,
             created_by=request.user,
             group=group,
-            status='pending',
-            progress=0.0
+            status="pending",
+            progress=0.0,
         )
 
         # Submit task
@@ -206,20 +174,21 @@ def create_clustering_run(request):
             task = task_func.delay(clustering_run.id)
         else:
             from ..audio.task_modules.clustering.tasks import run_clustering
+
             task = run_clustering.delay(clustering_run.id)
 
         clustering_run.task_id = task.id
         clustering_run.save()
 
         messages.success(request, f"Clustering run '{name}' created and submitted")
-        return redirect('battycoda_app:clustering_run_detail', run_id=clustering_run.id)
+        return redirect("battycoda_app:clustering_run_detail", run_id=clustering_run.id)
 
     context = {
-        'segmentations': segmentations,
-        'projects': projects,
-        'algorithms': algorithms,
+        "segmentations": segmentations,
+        "projects": projects,
+        "algorithms": algorithms,
     }
-    return render(request, 'clustering/create_run.html', context)
+    return render(request, "clustering/create_run.html", context)
 
 
 @login_required
@@ -230,21 +199,21 @@ def clustering_run_detail(request, run_id):
     if not request.user.is_staff:
         if clustering_run.group and clustering_run.group != request.user.profile.group:
             messages.error(request, "You don't have permission to view this clustering run")
-            return redirect('battycoda_app:clustering_dashboard')
+            return redirect("battycoda_app:clustering_dashboard")
 
         if not clustering_run.group and clustering_run.created_by != request.user:
             messages.error(request, "You don't have permission to view this clustering run")
-            return redirect('battycoda_app:clustering_dashboard')
+            return redirect("battycoda_app:clustering_dashboard")
 
     clusters = []
-    if clustering_run.status == 'completed':
-        clusters = Cluster.objects.filter(clustering_run=clustering_run).order_by('cluster_id')
+    if clustering_run.status == "completed":
+        clusters = Cluster.objects.filter(clustering_run=clustering_run).order_by("cluster_id")
 
     context = {
-        'clustering_run': clustering_run,
-        'clusters': clusters,
+        "clustering_run": clustering_run,
+        "clusters": clusters,
     }
-    return render(request, 'clustering/run_detail.html', context)
+    return render(request, "clustering/run_detail.html", context)
 
 
 @login_required
@@ -254,17 +223,19 @@ def clustering_run_status(request, run_id):
 
     if not request.user.is_staff:
         if clustering_run.group and clustering_run.group != request.user.profile.group:
-            return JsonResponse({'status': 'error', 'message': 'Permission denied'}, status=403)
+            return JsonResponse({"status": "error", "message": "Permission denied"}, status=403)
 
         if not clustering_run.group and clustering_run.created_by != request.user:
-            return JsonResponse({'status': 'error', 'message': 'Permission denied'}, status=403)
+            return JsonResponse({"status": "error", "message": "Permission denied"}, status=403)
 
-    return JsonResponse({
-        'status': clustering_run.status,
-        'progress': clustering_run.progress,
-        'progress_message': clustering_run.progress_message or '',
-        'clusters_created': clustering_run.num_clusters_created,
-    })
+    return JsonResponse(
+        {
+            "status": clustering_run.status,
+            "progress": clustering_run.progress,
+            "progress_message": clustering_run.progress_message or "",
+            "clusters_created": clustering_run.num_clusters_created,
+        }
+    )
 
 
 @login_required
@@ -274,25 +245,26 @@ def get_project_segment_count(request, project_id):
 
     # Permission check
     if project.group != request.user.profile.group:
-        return JsonResponse({'error': 'Permission denied'}, status=403)
+        return JsonResponse({"error": "Permission denied"}, status=403)
 
     # Optional species filter
-    species_id = request.GET.get('species')
+    species_id = request.GET.get("species")
 
     if species_id:
         # Return stats for specific species
         species = get_object_or_404(Species, id=species_id)
         recordings = project.recordings.filter(species=species)
         segment_count = Segment.objects.filter(
-            segmentation__recording__in=recordings,
-            segmentation__status='completed'
+            segmentation__recording__in=recordings, segmentation__status="completed"
         ).count()
-        return JsonResponse({
-            'species_name': species.name,
-            'recording_count': recordings.count(),
-            'segment_count': segment_count,
-            'warning': segment_count > 5000
-        })
+        return JsonResponse(
+            {
+                "species_name": species.name,
+                "recording_count": recordings.count(),
+                "segment_count": segment_count,
+                "warning": segment_count > 5000,
+            }
+        )
 
     # Return all species in project with counts
     species_list = []
@@ -300,21 +272,19 @@ def get_project_segment_count(request, project_id):
         recordings = project.recordings.filter(species=species)
         rec_count = recordings.count()
         seg_count = Segment.objects.filter(
-            segmentation__recording__in=recordings,
-            segmentation__status='completed'
+            segmentation__recording__in=recordings, segmentation__status="completed"
         ).count()
-        species_list.append({
-            'id': species.id,
-            'name': species.name,
-            'recording_count': rec_count,
-            'segment_count': seg_count
-        })
+        species_list.append(
+            {"id": species.id, "name": species.name, "recording_count": rec_count, "segment_count": seg_count}
+        )
 
-    total_segments = sum(s['segment_count'] for s in species_list)
+    total_segments = sum(s["segment_count"] for s in species_list)
 
-    return JsonResponse({
-        'species': species_list,
-        'total_recordings': project.recordings.count(),
-        'segment_count': total_segments,
-        'warning': total_segments > 5000
-    })
+    return JsonResponse(
+        {
+            "species": species_list,
+            "total_recordings": project.recordings.count(),
+            "segment_count": total_segments,
+            "warning": total_segments > 5000,
+        }
+    )

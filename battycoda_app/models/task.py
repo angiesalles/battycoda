@@ -1,21 +1,14 @@
 """Task models for BattyCoda application."""
 
-import hashlib
-
-import os
-
-from datetime import timedelta
-
-from django.conf import settings
 from django.contrib.auth.models import User
 from django.db import models
-from django.utils import timezone
 
 from .organization import Project, Species
 from .user import Group
 
 # Task lock timeout in minutes
 TASK_LOCK_TIMEOUT_MINUTES = 30
+
 
 class TaskBatch(models.Model):
     """Task Batch for grouping tasks that were created together."""
@@ -39,6 +32,7 @@ class TaskBatch(models.Model):
 
     def __str__(self):
         return self.name
+
 
 class Task(models.Model):
     """Task model for storing bat vocalization analysis tasks."""
@@ -64,7 +58,7 @@ class Task(models.Model):
         related_name="tasks",
         null=True,
         blank=True,
-        help_text="The segment this task was created from"
+        help_text="The segment this task was created from",
     )
 
     # Task metadata
@@ -96,17 +90,23 @@ class Task(models.Model):
 
     # Annotation tracking
     annotated_by = models.ForeignKey(
-        User, on_delete=models.SET_NULL, related_name="annotated_tasks",
-        null=True, blank=True, help_text="User who provided the annotation/label"
+        User,
+        on_delete=models.SET_NULL,
+        related_name="annotated_tasks",
+        null=True,
+        blank=True,
+        help_text="User who provided the annotation/label",
     )
-    annotated_at = models.DateTimeField(
-        null=True, blank=True, help_text="When the annotation was completed"
-    )
+    annotated_at = models.DateTimeField(null=True, blank=True, help_text="When the annotation was completed")
 
     # In-progress tracking (who is currently working on this task)
     in_progress_by = models.ForeignKey(
-        User, on_delete=models.SET_NULL, related_name="tasks_in_progress",
-        null=True, blank=True, help_text="User currently working on this task"
+        User,
+        on_delete=models.SET_NULL,
+        related_name="tasks_in_progress",
+        null=True,
+        blank=True,
+        help_text="User currently working on this task",
     )
     in_progress_since = models.DateTimeField(
         null=True, blank=True, help_text="When the user started working on this task"

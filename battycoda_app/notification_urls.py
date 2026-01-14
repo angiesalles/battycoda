@@ -3,10 +3,10 @@ Notification URL patterns.
 
 Handles notification viewing and management.
 """
+
 from django.urls import path
-from .views_notifications import (
-    notification_list_view, mark_notification_read, mark_all_read, get_navbar_notifications
-)
+
+from .views_notifications import get_navbar_notifications, mark_all_read, mark_notification_read, notification_list_view
 
 urlpatterns = [
     path("notifications/", notification_list_view, name="notifications"),

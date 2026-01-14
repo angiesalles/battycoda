@@ -1,10 +1,10 @@
 from django.contrib.auth.models import User
-from django.core.files.uploadedfile import SimpleUploadedFile
 from django.test import Client
 from django.urls import reverse
 
 from battycoda_app.models import Group, Project, Species, Task, TaskBatch, UserProfile
 from battycoda_app.tests.test_base import BattycodaTestCase
+
 
 class TaskViewsTest(BattycodaTestCase):
     def setUp(self):

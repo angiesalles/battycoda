@@ -4,6 +4,7 @@ Safe cleanup utilities for BattyCoda.
 Provides helper functions for safely cleaning up temporary files and directories
 with proper error logging.
 """
+
 import logging
 import os
 import shutil

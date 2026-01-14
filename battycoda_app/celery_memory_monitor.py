@@ -4,6 +4,7 @@ Memory monitor for Celery workers.
 Periodically checks memory usage and dumps profiling info when memory exceeds threshold.
 This helps diagnose OOM issues by capturing state before the kernel kills the process.
 """
+
 import gc
 import logging
 import os
@@ -98,14 +99,14 @@ class MemoryMonitor:
                     f.write("TOP MEMORY ALLOCATIONS (tracemalloc):\n")
                     f.write("-" * 60 + "\n")
                     snapshot = tracemalloc.take_snapshot()
-                    top_stats = snapshot.statistics('lineno')
+                    top_stats = snapshot.statistics("lineno")
 
                     for stat in top_stats[:30]:
                         f.write(f"{stat}\n")
 
                     f.write("\n\nTOP ALLOCATIONS BY FILE:\n")
                     f.write("-" * 60 + "\n")
-                    top_files = snapshot.statistics('filename')
+                    top_files = snapshot.statistics("filename")
                     for stat in top_files[:20]:
                         f.write(f"{stat}\n")
 
@@ -136,10 +137,7 @@ class MemoryMonitor:
                 f.write(f"Threads: {process.num_threads()}\n")
                 f.write(f"Open files: {len(process.open_files())}\n")
 
-            logger.warning(
-                "Memory %s: %.1f MB - dump written to %s",
-                level, memory_mb, dump_file
-            )
+            logger.warning("Memory %s: %.1f MB - dump written to %s", level, memory_mb, dump_file)
 
             # Also print to stdout so it appears in Celery logs
             print(f"[MEMORY {level}] {memory_mb:.1f} MB - dump: {dump_file}")

@@ -49,6 +49,7 @@ ALLOWED_HOSTS = [DOMAIN_NAME, f"www.{DOMAIN_NAME}", "localhost", "127.0.0.1", "[
 
 # Add public IP for AWS deployments
 from .aws_utils import get_public_ip
+
 public_ip = get_public_ip()
 if public_ip:
     ALLOWED_HOSTS.append(public_ip)
@@ -86,11 +87,11 @@ INSTALLED_APPS = [
 ]
 
 # Settings for django-hijack
-HIJACK_LOGIN_REDIRECT_URL = '/'  # Where to redirect after hijacking
-HIJACK_LOGOUT_REDIRECT_URL = '/admin/auth/user/'  # Where to redirect after releasing the user
+HIJACK_LOGIN_REDIRECT_URL = "/"  # Where to redirect after hijacking
+HIJACK_LOGOUT_REDIRECT_URL = "/admin/auth/user/"  # Where to redirect after releasing the user
 HIJACK_ALLOW_GET_REQUESTS = False  # Do not allow GET requests for hijacking
 HIJACK_USE_BOOTSTRAP = True  # Use Bootstrap for styling
-HIJACK_INSERT_BEFORE = '</body>'  # Insert notification before closing body tag
+HIJACK_INSERT_BEFORE = "</body>"  # Insert notification before closing body tag
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
@@ -131,16 +132,16 @@ TEMPLATES = [
 
 WSGI_APPLICATION = "config.wsgi.application"
 
+import os
+
 # Database
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases
 import dj_database_url
-import os
 
 # Use PostgreSQL exclusively - no fallbacks
 DATABASES = {
-    'default': dj_database_url.config(
-        default='postgres://battycoda:battycoda@localhost:5432/battycoda',
-        conn_max_age=600
+    "default": dj_database_url.config(
+        default="postgres://battycoda:battycoda@localhost:5432/battycoda", conn_max_age=600
     )
 }
 
@@ -230,19 +231,19 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 # Audio processing configuration
 # Configure cache directories with proper permissions - let permission errors surface
-os.environ['LIBROSA_CACHE_DIR'] = '/tmp/librosa_cache'
-os.environ['NUMBA_CACHE_DIR'] = '/tmp/numba_cache'
-os.environ['MPLCONFIGDIR'] = '/tmp/matplotlib_config'
+os.environ["LIBROSA_CACHE_DIR"] = "/tmp/librosa_cache"
+os.environ["NUMBA_CACHE_DIR"] = "/tmp/numba_cache"
+os.environ["MPLCONFIGDIR"] = "/tmp/matplotlib_config"
 
 # Create cache directories - any permission errors will be visible
-os.makedirs('/tmp/librosa_cache', mode=0o755, exist_ok=True)
-os.makedirs('/tmp/numba_cache', mode=0o755, exist_ok=True)
-os.makedirs('/tmp/matplotlib_config', mode=0o755, exist_ok=True)
+os.makedirs("/tmp/librosa_cache", mode=0o755, exist_ok=True)
+os.makedirs("/tmp/numba_cache", mode=0o755, exist_ok=True)
+os.makedirs("/tmp/matplotlib_config", mode=0o755, exist_ok=True)
 
 # Set proper permissions - fail if we can't
-os.chmod('/tmp/librosa_cache', 0o755)
-os.chmod('/tmp/numba_cache', 0o755)
-os.chmod('/tmp/matplotlib_config', 0o755)
+os.chmod("/tmp/librosa_cache", 0o755)
+os.chmod("/tmp/numba_cache", 0o755)
+os.chmod("/tmp/matplotlib_config", 0o755)
 
 # Logging Configuration
 LOGGING = {
@@ -310,31 +311,31 @@ DATABASE_BACKUP_PREFIX = os.environ.get("DATABASE_BACKUP_PREFIX", "database-back
 # R Server path mapping (for Docker or local development)
 # R_SERVER_BASE_PATH: The base path the R server sees for this project (e.g., '/app' in Docker)
 # R_SERVER_TMP_DIR: The temp directory the R server uses (e.g., '/app/tmp' in Docker)
-R_SERVER_BASE_PATH = os.environ.get('R_SERVER_BASE_PATH', str(BASE_DIR))
-R_SERVER_TMP_DIR = os.environ.get('R_SERVER_TMP_DIR', os.path.join(str(BASE_DIR), 'tmp'))
+R_SERVER_BASE_PATH = os.environ.get("R_SERVER_BASE_PATH", str(BASE_DIR))
+R_SERVER_TMP_DIR = os.environ.get("R_SERVER_TMP_DIR", os.path.join(str(BASE_DIR), "tmp"))
 
 # Django REST Framework Configuration
 REST_FRAMEWORK = {
-    'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
-    'DEFAULT_AUTHENTICATION_CLASSES': [
-        'rest_framework.authentication.SessionAuthentication',
+    "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
+    "DEFAULT_AUTHENTICATION_CLASSES": [
+        "rest_framework.authentication.SessionAuthentication",
     ],
-    'DEFAULT_PERMISSION_CLASSES': [
-        'rest_framework.permissions.IsAuthenticated',
+    "DEFAULT_PERMISSION_CLASSES": [
+        "rest_framework.permissions.IsAuthenticated",
     ],
-    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
-    'PAGE_SIZE': 50,
+    "DEFAULT_PAGINATION_CLASS": "rest_framework.pagination.PageNumberPagination",
+    "PAGE_SIZE": 50,
 }
 
 # drf-spectacular Configuration
 SPECTACULAR_SETTINGS = {
-    'TITLE': 'BattyCoda API',
-    'DESCRIPTION': 'API for BattyCoda - Animal Call Analysis Platform',
-    'VERSION': '1.0.0',
-    'SERVE_INCLUDE_SCHEMA': False,
-    'SCHEMA_PATH_PREFIX': '/api/',
-    'COMPONENT_SPLIT_REQUEST': True,
-    'SORT_OPERATIONS': False,
+    "TITLE": "BattyCoda API",
+    "DESCRIPTION": "API for BattyCoda - Animal Call Analysis Platform",
+    "VERSION": "1.0.0",
+    "SERVE_INCLUDE_SCHEMA": False,
+    "SCHEMA_PATH_PREFIX": "/api/",
+    "COMPONENT_SPLIT_REQUEST": True,
+    "SORT_OPERATIONS": False,
 }
 
 # Sentry Error Tracking Configuration
@@ -361,7 +362,7 @@ if SENTRY_DSN:
 
 # Vite Frontend Build Configuration
 # Controls incremental migration from Django static files to Vite-bundled JS
-VITE_ENABLED = os.environ.get('VITE_ENABLED', 'false').lower() == 'true'
+VITE_ENABLED = os.environ.get("VITE_ENABLED", "false").lower() == "true"
 
 # Feature flags for per-feature Vite migration
 # Each feature can be migrated independently with rollback capability
@@ -376,13 +377,13 @@ VITE_ENABLED = os.environ.get('VITE_ENABLED', 'false').lower() == 'true'
 #   8. task_annotation (high risk, high complexity)
 #   9. segmentation (medium risk, medium complexity)
 VITE_FEATURES = {
-    'theme_switcher': os.environ.get('VITE_FEATURE_THEME_SWITCHER', 'false').lower() == 'true',
-    'notifications': os.environ.get('VITE_FEATURE_NOTIFICATIONS', 'false').lower() == 'true',
-    'datetime_formatter': os.environ.get('VITE_FEATURE_DATETIME_FORMATTER', 'false').lower() == 'true',
-    'file_upload': os.environ.get('VITE_FEATURE_FILE_UPLOAD', 'false').lower() == 'true',
-    'cluster_explorer': os.environ.get('VITE_FEATURE_CLUSTER_EXPLORER', 'false').lower() == 'true',
-    'cluster_mapping': os.environ.get('VITE_FEATURE_CLUSTER_MAPPING', 'false').lower() == 'true',
-    'player': os.environ.get('VITE_FEATURE_PLAYER', 'false').lower() == 'true',
-    'task_annotation': os.environ.get('VITE_FEATURE_TASK_ANNOTATION', 'false').lower() == 'true',
-    'segmentation': os.environ.get('VITE_FEATURE_SEGMENTATION', 'false').lower() == 'true',
+    "theme_switcher": os.environ.get("VITE_FEATURE_THEME_SWITCHER", "false").lower() == "true",
+    "notifications": os.environ.get("VITE_FEATURE_NOTIFICATIONS", "false").lower() == "true",
+    "datetime_formatter": os.environ.get("VITE_FEATURE_DATETIME_FORMATTER", "false").lower() == "true",
+    "file_upload": os.environ.get("VITE_FEATURE_FILE_UPLOAD", "false").lower() == "true",
+    "cluster_explorer": os.environ.get("VITE_FEATURE_CLUSTER_EXPLORER", "false").lower() == "true",
+    "cluster_mapping": os.environ.get("VITE_FEATURE_CLUSTER_MAPPING", "false").lower() == "true",
+    "player": os.environ.get("VITE_FEATURE_PLAYER", "false").lower() == "true",
+    "task_annotation": os.environ.get("VITE_FEATURE_TASK_ANNOTATION", "false").lower() == "true",
+    "segmentation": os.environ.get("VITE_FEATURE_SEGMENTATION", "false").lower() == "true",
 }

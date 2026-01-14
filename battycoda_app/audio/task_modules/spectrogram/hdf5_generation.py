@@ -1,11 +1,11 @@
 """
 HDF5 spectrogram generation for full recordings.
 """
+
 import logging
 import os
 import uuid
 
-import numpy as np
 from celery import shared_task
 from django.conf import settings
 from django.db import DatabaseError
@@ -24,7 +24,6 @@ def generate_hdf5_spectrogram(recording_id, celery_task_id=None):
     Returns:
         dict: Result with the spectrogram file path
     """
-    import soundfile as sf
 
     from battycoda_app.models.recording import Recording
     from battycoda_app.models.spectrogram import SpectrogramJob
@@ -32,14 +31,10 @@ def generate_hdf5_spectrogram(recording_id, celery_task_id=None):
     job = None
     try:
         if celery_task_id:
-            job = SpectrogramJob.objects.filter(
-                recording_id=recording_id,
-                celery_task_id=celery_task_id
-            ).first()
+            job = SpectrogramJob.objects.filter(recording_id=recording_id, celery_task_id=celery_task_id).first()
         else:
             job = SpectrogramJob.objects.filter(
-                recording_id=recording_id,
-                status__in=['pending', 'in_progress']
+                recording_id=recording_id, status__in=["pending", "in_progress"]
             ).first()
     except DatabaseError as e:
         logger.warning(f"Could not fetch SpectrogramJob for recording {recording_id}: {e}")
@@ -57,12 +52,12 @@ def generate_hdf5_spectrogram(recording_id, celery_task_id=None):
 
     try:
         recording = Recording.all_objects.get(id=recording_id)
-        update_job_progress(20, 'in_progress')
+        update_job_progress(20, "in_progress")
 
         wav_path = recording.wav_file.path
 
         if recording.spectrogram_file:
-            base_name = recording.spectrogram_file.replace('.png', '').replace('.h5', '')
+            base_name = recording.spectrogram_file.replace(".png", "").replace(".h5", "")
             spectrogram_filename = f"{base_name}.h5"
         else:
             spectrogram_filename = f"{uuid.uuid4().hex}.h5"
@@ -74,7 +69,7 @@ def generate_hdf5_spectrogram(recording_id, celery_task_id=None):
         output_path = os.path.join(output_dir, spectrogram_filename)
 
         if os.path.exists(output_path) and os.path.getsize(output_path) > 0:
-            update_job_progress(100, 'completed')
+            update_job_progress(100, "completed")
             if job:
                 job.output_file_path = output_path
                 job.save()
@@ -83,15 +78,11 @@ def generate_hdf5_spectrogram(recording_id, celery_task_id=None):
         # Use chunked processing to avoid loading entire file into memory
         from .hdf5_generation_chunked import generate_hdf5_spectrogram_chunked
 
-        result = generate_hdf5_spectrogram_chunked(
-            wav_path,
-            output_path,
-            progress_callback=update_job_progress
-        )
+        result = generate_hdf5_spectrogram_chunked(wav_path, output_path, progress_callback=update_job_progress)
 
         update_job_progress(90)
 
-        update_job_progress(100, 'completed')
+        update_job_progress(100, "completed")
         if job:
             job.output_file_path = output_path
             job.save()
@@ -100,14 +91,16 @@ def generate_hdf5_spectrogram(recording_id, celery_task_id=None):
 
     except Exception as e:
         if job:
-            job.status = 'failed'
+            job.status = "failed"
             job.error_message = str(e)
             job.save()
 
         return {"status": "error", "message": str(e), "recording_id": recording_id}
 
 
-@shared_task(bind=True, name="battycoda_app.audio.task_modules.spectrogram.hdf5_generation.generate_recording_spectrogram")
+@shared_task(
+    bind=True, name="battycoda_app.audio.task_modules.spectrogram.hdf5_generation.generate_recording_spectrogram"
+)
 def generate_recording_spectrogram(self, recording_id):
     """
     Celery task to generate a full HDF5 spectrogram for a recording.

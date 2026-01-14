@@ -1,4 +1,5 @@
 """Login and logout views for authentication."""
+
 from django.contrib import messages
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
@@ -23,18 +24,18 @@ def process_invitation(request, user, invitation_token):
 
             from ..models.notification import UserNotification
 
-            dashboard_link = reverse('battycoda_app:index')
+            dashboard_link = reverse("battycoda_app:index")
 
             UserNotification.add_notification(
                 user=user,
                 title="Welcome to BattyCoda!",
                 message=(
                     f'You have been added to the group "{invitation.group.name}". '
-                    f'You can explore existing projects and content created by your group.'
+                    f"You can explore existing projects and content created by your group."
                 ),
                 notification_type="system",
                 icon="s7-like",
-                link=dashboard_link
+                link=dashboard_link,
             )
 
             messages.success(request, f'You have been added to the group "{invitation.group.name}".')
@@ -57,7 +58,7 @@ def login_view(request):
 
         user = authenticate(username=username_or_email, password=password)
 
-        if not user and '@' in username_or_email:
+        if not user and "@" in username_or_email:
             email_user = User.objects.filter(email=username_or_email).first()
             if email_user:
                 user = authenticate(username=email_user.username, password=password)
@@ -80,11 +81,11 @@ def login_view(request):
             return redirect(next_page)
         else:
             login_error = "Invalid login credentials. Please check your username/email and password and try again."
-            return render(request, "auth/login.html", {
-                "form": UserLoginForm(),
-                "username_or_email": username_or_email,
-                "login_error": login_error
-            })
+            return render(
+                request,
+                "auth/login.html",
+                {"form": UserLoginForm(), "username_or_email": username_or_email, "login_error": login_error},
+            )
     else:
         form = UserLoginForm()
 
@@ -96,11 +97,7 @@ def login_with_token(request, token):
     from ..models import LoginCode
 
     try:
-        login_code = LoginCode.objects.get(
-            token=token,
-            used=False,
-            expires_at__gt=timezone.now()
-        )
+        login_code = LoginCode.objects.get(token=token, used=False, expires_at__gt=timezone.now())
 
         user = login_code.user
         login(request, user)

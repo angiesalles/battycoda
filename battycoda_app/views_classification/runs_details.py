@@ -2,6 +2,7 @@
 
 Provides views for displaying detailed information about detection runs.
 """
+
 import logging
 import os
 import zipfile
@@ -13,12 +14,13 @@ from django.contrib import messages
 logger = logging.getLogger(__name__)
 from django.contrib.auth.decorators import login_required
 from django.core.paginator import Paginator
-from django.http import FileResponse, Http404, HttpResponse, JsonResponse
+from django.http import FileResponse, HttpResponse, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 
 from battycoda_app.audio.task_modules.base import extract_audio_segment
 from battycoda_app.models.classification import CallProbability, ClassificationResult, ClassificationRun
 from battycoda_app.models.organization import Call
+
 
 @login_required
 def detection_run_detail_view(request, run_id):
@@ -41,7 +43,7 @@ def detection_run_detail_view(request, run_id):
     # Add pagination
     page_size = 50  # Show 50 results per page
     paginator = Paginator(results_query, page_size)
-    page_number = request.GET.get('page', 1)
+    page_number = request.GET.get("page", 1)
     page_obj = paginator.get_page(page_number)
 
     # Prepare the data for rendering
@@ -71,6 +73,7 @@ def detection_run_detail_view(request, run_id):
 
     return render(request, "classification/run_detail.html", context)
 
+
 @login_required
 def detection_run_status_view(request, run_id):
     """AJAX view for checking status of a detection run."""
@@ -92,6 +95,7 @@ def detection_run_status_view(request, run_id):
         }
     )
 
+
 @login_required
 def download_features_file_view(request, run_id):
     """Download the features CSV file for a detection run."""
@@ -108,29 +112,27 @@ def download_features_file_view(request, run_id):
     if not run.features_file:
         messages.error(request, "No features file available for this run.")
         return redirect("battycoda_app:detection_run_detail", run_id=run_id)
-    
+
     # Check if file exists on disk
     if not os.path.exists(run.features_file):
         messages.error(request, "Features file not found on disk.")
         return redirect("battycoda_app:detection_run_detail", run_id=run_id)
-    
+
     # Generate a user-friendly filename
     filename = f"features_{run.name}_{run.id}.csv"
     # Remove any problematic characters from filename
     filename = "".join(c for c in filename if c.isalnum() or c in "._- ")
-    
+
     # Return the file as a download
     try:
         response = FileResponse(
-            open(run.features_file, 'rb'),
-            as_attachment=True,
-            filename=filename,
-            content_type='text/csv'
+            open(run.features_file, "rb"), as_attachment=True, filename=filename, content_type="text/csv"
         )
         return response
     except Exception as e:
         messages.error(request, f"Error downloading features file: {str(e)}")
         return redirect("battycoda_app:detection_run_detail", run_id=run_id)
+
 
 @login_required
 def download_segments_zip_view(request, run_id):
@@ -146,11 +148,11 @@ def download_segments_zip_view(request, run_id):
     # Get the recording and check if WAV file exists
     recording = run.segmentation.recording
     if not recording.wav_file or not os.path.exists(recording.wav_file.path):
-        messages.error(request, f"WAV file not found for recording.")
+        messages.error(request, "WAV file not found for recording.")
         return redirect("battycoda_app:detection_run_detail", run_id=run_id)
 
     # Get all segments
-    segments = run.segmentation.segments.all().order_by('onset')
+    segments = run.segmentation.segments.all().order_by("onset")
 
     if not segments.exists():
         messages.error(request, "No segments found for this classification run.")
@@ -159,7 +161,7 @@ def download_segments_zip_view(request, run_id):
     # Create ZIP file in memory
     zip_buffer = BytesIO()
 
-    with zipfile.ZipFile(zip_buffer, 'w', zipfile.ZIP_DEFLATED) as zip_file:
+    with zipfile.ZipFile(zip_buffer, "w", zipfile.ZIP_DEFLATED) as zip_file:
         # Add each segment as a WAV file
         for segment in segments:
             try:
@@ -170,7 +172,7 @@ def download_segments_zip_view(request, run_id):
 
                 # Create WAV file in memory
                 wav_buffer = BytesIO()
-                sf.write(wav_buffer, segment_data, samplerate=sample_rate, format='WAV')
+                sf.write(wav_buffer, segment_data, samplerate=sample_rate, format="WAV")
                 wav_buffer.seek(0)
 
                 # Add to ZIP with descriptive filename
@@ -189,7 +191,7 @@ def download_segments_zip_view(request, run_id):
     zip_filename = f"segments_{run.name}_{run.id}.zip"
     zip_filename = "".join(c for c in zip_filename if c.isalnum() or c in "._- ")
 
-    response = HttpResponse(zip_buffer.read(), content_type='application/zip')
-    response['Content-Disposition'] = f'attachment; filename="{zip_filename}"'
+    response = HttpResponse(zip_buffer.read(), content_type="application/zip")
+    response["Content-Disposition"] = f'attachment; filename="{zip_filename}"'
 
     return response

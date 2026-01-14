@@ -1,11 +1,12 @@
 """Classification dashboard views."""
+
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.db import models
 from django.shortcuts import redirect, render
 
 from battycoda_app.models import Project
-from battycoda_app.models.classification import Classifier, ClassificationRun
+from battycoda_app.models.classification import ClassificationRun, Classifier
 
 
 @login_required
@@ -24,7 +25,9 @@ def classification_home_view(request):
                 ).order_by("-created_at")
                 training_jobs = ClassifierTrainingJob.objects.filter(group=profile.group).order_by("-created_at")
             else:
-                runs = ClassificationRun.objects.filter(group=profile.group, created_by=request.user).order_by("-created_at")
+                runs = ClassificationRun.objects.filter(group=profile.group, created_by=request.user).order_by(
+                    "-created_at"
+                )
                 classifiers = Classifier.objects.filter(
                     models.Q(group=profile.group, created_by=request.user) | models.Q(group__isnull=True)
                 ).order_by("-created_at")
@@ -46,7 +49,7 @@ def classification_home_view(request):
             except (AttributeError, Exception):
                 continue
 
-        project_id = request.GET.get('project')
+        project_id = request.GET.get("project")
         selected_project_id = None
         if project_id:
             try:
@@ -57,9 +60,9 @@ def classification_home_view(request):
                 pass
 
         if profile.group:
-            available_projects = Project.objects.filter(group=profile.group).order_by('name')
+            available_projects = Project.objects.filter(group=profile.group).order_by("name")
         else:
-            available_projects = Project.objects.filter(created_by=request.user).order_by('name')
+            available_projects = Project.objects.filter(created_by=request.user).order_by("name")
 
         context = {
             "runs": valid_runs,
@@ -71,7 +74,6 @@ def classification_home_view(request):
 
         return render(request, "classification/dashboard.html", context)
     except Exception as e:
-
         messages.error(request, f"An error occurred: {str(e)}")
         return render(request, "classification/dashboard.html", {"runs": [], "classifiers": []})
 

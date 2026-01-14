@@ -1,6 +1,7 @@
 """
 Core views for handling recording CRUD operations.
 """
+
 import logging
 import os
 import tempfile
@@ -18,6 +19,7 @@ logger = logging.getLogger(__name__)
 
 from .views_recordings_duplicates import has_duplicate_recordings
 
+
 @login_required
 def recording_list_view(request):
     """Display list of all recordings for the user's group"""
@@ -29,14 +31,12 @@ def recording_list_view(request):
         if profile.is_current_group_admin:
             # Admin sees all recordings in their group
             recordings = Recording.objects.filter(group=profile.group).order_by("-created_at")
-            
+
             # Check if there are recordings with missing sample rates
             has_missing_sample_rates = Recording.objects.filter(
-                group=profile.group,
-                sample_rate__isnull=True,
-                file_ready=True
+                group=profile.group, sample_rate__isnull=True, file_ready=True
             ).exists()
-            
+
             # Check if there are duplicate recordings
             has_duplicate_recordings_flag = has_duplicate_recordings(profile.group)
         else:
@@ -51,7 +51,7 @@ def recording_list_view(request):
         has_duplicate_recordings_flag = False
 
     # Apply project filter if provided
-    project_id = request.GET.get('project')
+    project_id = request.GET.get("project")
     selected_project_id = None
     if project_id:
         try:
@@ -63,9 +63,9 @@ def recording_list_view(request):
 
     # Get available projects for the filter dropdown
     if profile.group:
-        available_projects = Project.objects.filter(group=profile.group).order_by('name')
+        available_projects = Project.objects.filter(group=profile.group).order_by("name")
     else:
-        available_projects = Project.objects.filter(created_by=request.user).order_by('name')
+        available_projects = Project.objects.filter(created_by=request.user).order_by("name")
 
     context = {
         "recordings": recordings,
@@ -76,6 +76,7 @@ def recording_list_view(request):
     }
 
     return render(request, "recordings/recording_list.html", context)
+
 
 @login_required
 def recording_detail_view(request, recording_id):
@@ -92,11 +93,11 @@ def recording_detail_view(request, recording_id):
 
     # Import the spectrogram status function
     from .views_segmentation.segment_management import get_spectrogram_status
-    
+
     # Check spectrogram status and jobs
     spectrogram_info = get_spectrogram_status(recording)
-    spectrogram_url = spectrogram_info.get('url')
-    
+    spectrogram_url = spectrogram_info.get("url")
+
     context = {
         "recording": recording,
         "spectrogram_info": spectrogram_info,
@@ -104,6 +105,7 @@ def recording_detail_view(request, recording_id):
     }
 
     return render(request, "recordings/recording_detail.html", context)
+
 
 @login_required
 def create_recording_view(request):
@@ -120,15 +122,15 @@ def create_recording_view(request):
                 return redirect("battycoda_app:create_recording")
 
             # Check if user wants to split long files
-            split_long_files = request.POST.get('split_long_files') == 'on'
+            split_long_files = request.POST.get("split_long_files") == "on"
 
             # Get the uploaded WAV file
-            wav_file = request.FILES.get('wav_file')
+            wav_file = request.FILES.get("wav_file")
 
             # Check duration and split if needed
             if split_long_files and wav_file:
                 # Save uploaded file to temporary location to check duration
-                with tempfile.NamedTemporaryFile(delete=False, suffix='.wav') as temp_file:
+                with tempfile.NamedTemporaryFile(delete=False, suffix=".wav") as temp_file:
                     for chunk in wav_file.chunks():
                         temp_file.write(chunk)
                     temp_file_path = temp_file.name
@@ -144,28 +146,26 @@ def create_recording_view(request):
                         recordings_created = []
 
                         # Get form data for creating chunks
-                        original_name = form.cleaned_data['name']
-                        description = form.cleaned_data.get('description', '')
-                        recorded_date = form.cleaned_data.get('recorded_date')
-                        location = form.cleaned_data.get('location', '')
-                        equipment = form.cleaned_data.get('equipment', '')
-                        environmental_conditions = form.cleaned_data.get('environmental_conditions', '')
-                        species = form.cleaned_data['species']
-                        project = form.cleaned_data['project']
+                        original_name = form.cleaned_data["name"]
+                        description = form.cleaned_data.get("description", "")
+                        recorded_date = form.cleaned_data.get("recorded_date")
+                        location = form.cleaned_data.get("location", "")
+                        equipment = form.cleaned_data.get("equipment", "")
+                        environmental_conditions = form.cleaned_data.get("environmental_conditions", "")
+                        species = form.cleaned_data["species"]
+                        project = form.cleaned_data["project"]
 
                         # Create a recording for each chunk
                         for i, chunk_path in enumerate(chunk_paths):
-                            with open(chunk_path, 'rb') as chunk_file:
+                            with open(chunk_path, "rb") as chunk_file:
                                 chunk_file_name = os.path.basename(chunk_path)
                                 chunk_django_file = SimpleUploadedFile(
-                                    chunk_file_name,
-                                    chunk_file.read(),
-                                    content_type='audio/wav'
+                                    chunk_file_name, chunk_file.read(), content_type="audio/wav"
                                 )
 
                                 # Create fresh recording for each chunk
                                 recording = Recording(
-                                    name=f"{original_name} (Part {i+1}/{len(chunk_paths)})",
+                                    name=f"{original_name} (Part {i + 1}/{len(chunk_paths)})",
                                     wav_file=chunk_django_file,
                                     description=description,
                                     recorded_date=recorded_date,
@@ -193,7 +193,7 @@ def create_recording_view(request):
                         # Return success message
                         messages.success(
                             request,
-                            f"Successfully created {len(recordings_created)} recordings from split file (original duration: {duration:.1f}s)"
+                            f"Successfully created {len(recordings_created)} recordings from split file (original duration: {duration:.1f}s)",
                         )
                         return redirect("battycoda_app:recording_list")
 
@@ -244,6 +244,7 @@ def create_recording_view(request):
 
     return render(request, "recordings/create_recording.html", context)
 
+
 @login_required
 def edit_recording_view(request, recording_id):
     """Edit an existing recording"""
@@ -272,6 +273,7 @@ def edit_recording_view(request, recording_id):
     }
 
     return render(request, "recordings/edit_recording.html", context)
+
 
 @login_required
 def delete_recording_view(request, recording_id):
@@ -323,8 +325,9 @@ def recalculate_audio_info_view(request, recording_id):
 
     # Import the task function and run it synchronously
     import os
+
     import soundfile as sf
-    
+
     try:
         # Check if file exists
         if not os.path.exists(recording.wav_file.path):
@@ -333,17 +336,18 @@ def recalculate_audio_info_view(request, recording_id):
 
         # Extract audio information from file
         info = sf.info(recording.wav_file.path)
-        
+
         # Update the recording
         recording.duration = info.duration
         recording.sample_rate = info.samplerate
         recording.save(update_fields=["duration", "sample_rate"])
-        
+
         messages.success(request, "Audio information has been recalculated successfully.")
     except Exception as e:
         messages.error(request, f"Failed to recalculate audio information: {str(e)}")
-    
+
     return redirect("battycoda_app:recording_detail", recording_id=recording.id)
+
 
 @login_required
 def process_missing_sample_rates(request):
@@ -353,30 +357,26 @@ def process_missing_sample_rates(request):
     if not profile.is_current_group_admin:
         messages.error(request, "Only administrators can perform this action.")
         return redirect("battycoda_app:recording_list")
-    
+
     # Get user's group
     if not profile.group:
         messages.error(request, "You must be assigned to a group to perform this action.")
         return redirect("battycoda_app:recording_list")
-    
+
     # Find recordings without sample rates in user's group
-    recordings_to_process = Recording.objects.filter(
-        group=profile.group, 
-        sample_rate__isnull=True,
-        file_ready=True
-    )
-    
+    recordings_to_process = Recording.objects.filter(group=profile.group, sample_rate__isnull=True, file_ready=True)
+
     # Count how many were found
     count = recordings_to_process.count()
-    
+
     if count == 0:
         messages.info(request, "No recordings need sample rate measurement.")
         return redirect("battycoda_app:recording_list")
-    
+
     # Process each recording
     for recording in recordings_to_process:
         # Trigger the calculation task
         calculate_audio_duration.delay(recording.id)
-    
+
     messages.success(request, f"Sample rate calculation started for {count} recordings. This may take a few moments.")
     return redirect("battycoda_app:recording_list")

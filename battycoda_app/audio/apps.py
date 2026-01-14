@@ -1,7 +1,9 @@
 """
 Application configuration for the audio module.
 """
+
 from django.apps import AppConfig
+
 
 class AudioConfig(AppConfig):
     name = "battycoda_app.audio"
@@ -9,4 +11,4 @@ class AudioConfig(AppConfig):
 
     def ready(self):
         # Import the tasks module to ensure tasks are registered
-        from . import tasks
+        pass

@@ -2,19 +2,17 @@
 Base utilities for BattyCoda audio processing tasks.
 """
 
-import os
 import time
-import traceback
-
-from django.conf import settings
 
 # Configure logging
+
 
 def log_performance(start_time, message):
     """Log performance with elapsed time - only for total task time"""
     # Only log total task completions to reduce log volume
     if "TOTAL" in message:
         elapsed = time.time() - start_time
+
 
 def extract_audio_segment(wav_path, onset, offset=None):
     """
@@ -79,7 +77,7 @@ def extract_audio_segment(wav_path, onset, offset=None):
 
                 # Create padded segment
                 segment = np.zeros((req_num_samples, valid_segment.shape[1]), dtype=np.float32)
-                
+
                 # Insert valid data at the correct position
                 insert_pos = max(0, -req_start_sample)
                 segment[insert_pos : insert_pos + valid_segment.shape[0]] = valid_segment
@@ -95,6 +93,5 @@ def extract_audio_segment(wav_path, onset, offset=None):
                 segment = segment.reshape(-1, 1)
 
         return segment, sample_rate
-    except Exception as e:
-
+    except Exception:
         raise

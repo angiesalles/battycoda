@@ -1,9 +1,8 @@
 from django import forms
-from django.db import models
 
-from .models.organization import Project, Species
 from .models.recording import Recording
 from .models.user import UserProfile
+
 
 class RecordingEditForm(forms.ModelForm):
     """Form specifically for editing recordings - doesn't allow changing species or file"""

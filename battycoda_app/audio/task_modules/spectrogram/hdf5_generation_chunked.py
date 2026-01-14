@@ -4,11 +4,11 @@ Memory-efficient HDF5 spectrogram generation using chunked processing.
 This module processes large audio files in chunks to avoid loading the entire
 file into memory, preventing out-of-memory crashes for large recordings (>500MB).
 """
-import os
+
+import h5py
+import librosa
 import numpy as np
 import soundfile as sf
-import librosa
-import h5py
 
 
 def generate_hdf5_spectrogram_chunked(wav_path, output_path, progress_callback=None):
@@ -56,23 +56,23 @@ def generate_hdf5_spectrogram_chunked(wav_path, output_path, progress_callback=N
     n_freq_bins = n_fft // 2 + 1
 
     # Create HDF5 file with resizable dataset for streaming writes
-    with h5py.File(output_path, 'w') as f:
+    with h5py.File(output_path, "w") as f:
         # Create resizable dataset (we don't know final size yet)
         dataset = f.create_dataset(
-            'spectrogram',
+            "spectrogram",
             shape=(n_freq_bins, 0),  # Start with 0 columns
             maxshape=(n_freq_bins, None),  # Unlimited columns
-            dtype='float16',
-            compression='gzip',
+            dtype="float16",
+            compression="gzip",
             compression_opts=9,
-            chunks=(n_freq_bins, 100)  # Chunk size for HDF5 storage
+            chunks=(n_freq_bins, 100),  # Chunk size for HDF5 storage
         )
 
         total_written_frames = 0
         frames_processed = 0
 
         # Read and process audio in chunks
-        with sf.SoundFile(wav_path, 'r') as audio_file:
+        with sf.SoundFile(wav_path, "r") as audio_file:
             while frames_processed < total_frames:
                 # Read chunk
                 frames_to_read = min(chunk_size, total_frames - frames_processed)
@@ -105,20 +105,20 @@ def generate_hdf5_spectrogram_chunked(wav_path, output_path, progress_callback=N
                     progress_callback(progress)
 
         # Store metadata
-        f.attrs['sample_rate'] = effective_sample_rate
-        f.attrs['n_fft'] = n_fft
-        f.attrs['hop_length'] = hop_length
-        f.attrs['duration'] = total_frames / sample_rate
-        f.attrs['n_frames'] = total_written_frames
-        f.attrs['n_freq_bins'] = n_freq_bins
+        f.attrs["sample_rate"] = effective_sample_rate
+        f.attrs["n_fft"] = n_fft
+        f.attrs["hop_length"] = hop_length
+        f.attrs["duration"] = total_frames / sample_rate
+        f.attrs["n_frames"] = total_written_frames
+        f.attrs["n_freq_bins"] = n_freq_bins
 
     if progress_callback:
         progress_callback(80)
 
     return {
-        'status': 'success',
-        'file_path': output_path,
-        'shape': (n_freq_bins, total_written_frames),
-        'duration': total_frames / sample_rate,
-        'sample_rate': effective_sample_rate
+        "status": "success",
+        "file_path": output_path,
+        "shape": (n_freq_bins, total_written_frames),
+        "duration": total_frames / sample_rate,
+        "sample_rate": effective_sample_rate,
     }

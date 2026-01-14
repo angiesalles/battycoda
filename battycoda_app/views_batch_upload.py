@@ -13,7 +13,6 @@ from django.contrib.auth.decorators import login_required
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.db import transaction
 from django.shortcuts import redirect, render
-from django.utils import timezone
 
 from .audio.utils import get_audio_duration, process_pickle_file, split_audio_file
 from .forms import RecordingForm
@@ -24,6 +23,7 @@ from .utils_modules.cleanup import safe_remove_file
 logger = logging.getLogger(__name__)
 
 # Placeholder for future upload progress functionality
+
 
 @login_required
 def batch_upload_recordings_view(request):
@@ -45,7 +45,6 @@ def batch_upload_recordings_view(request):
 
         # Process form for common metadata
         if form.is_valid():
-
             # Get common fields from the form but don't save yet
             species = form.cleaned_data.get("species")
             project = form.cleaned_data.get("project")
@@ -71,7 +70,7 @@ def batch_upload_recordings_view(request):
             split_count = 0
 
             # Check if user wants to split long files
-            split_long_files = request.POST.get('split_long_files') == 'on'
+            split_long_files = request.POST.get("split_long_files") == "on"
 
             # Processing uploads
 
@@ -85,7 +84,7 @@ def batch_upload_recordings_view(request):
                         processed_files = set()  # Track files to avoid duplicates
 
                         # Debug: print contents of the ZIP
-                        
+
                         for file_info in zip_ref.infolist():
                             # Skip directories, already processed files, and macOS metadata files
                             if (
@@ -97,7 +96,6 @@ def batch_upload_recordings_view(request):
                                 continue
 
                             if file_info.filename.lower().endswith(".wav"):
-
                                 zip_ref.extract(file_info, wav_temp_dir)
                                 extracted_path = os.path.join(wav_temp_dir, file_info.filename)
                                 wav_files.append(extracted_path)
@@ -157,14 +155,12 @@ def batch_upload_recordings_view(request):
                                         with open(chunk_path, "rb") as chunk_file_obj:
                                             chunk_file_name = os.path.basename(chunk_path)
                                             chunk_file = SimpleUploadedFile(
-                                                chunk_file_name,
-                                                chunk_file_obj.read(),
-                                                content_type="audio/wav"
+                                                chunk_file_name, chunk_file_obj.read(), content_type="audio/wav"
                                             )
 
                                             with transaction.atomic():
                                                 # Create recording for chunk
-                                                chunk_recording_name = f"{file_name} (Part {i+1}/{len(chunk_paths)})"
+                                                chunk_recording_name = f"{file_name} (Part {i + 1}/{len(chunk_paths)})"
 
                                                 recording = Recording(
                                                     name=chunk_recording_name,
@@ -193,7 +189,7 @@ def batch_upload_recordings_view(request):
                                     # Skip normal processing
                                     continue
 
-                            except Exception as duration_error:
+                            except Exception:
                                 # If we can't check duration, fall back to normal processing
                                 pass
 
@@ -254,7 +250,7 @@ def batch_upload_recordings_view(request):
                                         segments_created = 0
                                         for i in range(len(onsets)):
                                             # Create segment name
-                                            segment_name = f"Segment {i+1}"
+                                            segment_name = f"Segment {i + 1}"
 
                                             # Create and save the segment - linked to the new segmentation
                                             segment = Segment(
@@ -279,9 +275,10 @@ def batch_upload_recordings_view(request):
 
                                 success_count += 1
 
-                    except Exception as e:
+                    except Exception:
                         error_count += 1
                         import traceback
+
                         traceback.print_exc()
 
             # Upload complete
@@ -303,7 +300,6 @@ def batch_upload_recordings_view(request):
             # Redirect to the recordings list
             return redirect("battycoda_app:recording_list")
         else:
-
             for field, errors in form.errors.items():
                 for error in errors:
                     messages.error(request, f"Error in {field}: {error}")

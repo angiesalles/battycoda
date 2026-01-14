@@ -2,11 +2,10 @@
 Utility functions for working with recordings.
 """
 
-import traceback
-
 from django.db import transaction
 
 # Set up logging
+
 
 def create_recording_from_batch(batch, onsets=None, offsets=None, pickle_file=None):
     """Create a recording and segments from a task batch
@@ -22,7 +21,6 @@ def create_recording_from_batch(batch, onsets=None, offsets=None, pickle_file=No
                or (None, 0) if creation failed
     """
     from battycoda_app.audio.utils import process_pickle_file
-    from battycoda_app.models.recording import Recording, Segment, Segmentation
 
     # Ensure we have a valid batch with a WAV file
     if not batch.wav_file:
@@ -47,6 +45,7 @@ def create_recording_from_batch(batch, onsets=None, offsets=None, pickle_file=No
 
     return recording, segments_created
 
+
 def _create_recording_from_batch(batch):
     """Create a Recording object from a TaskBatch
 
@@ -70,6 +69,7 @@ def _create_recording_from_batch(batch):
     )
     recording.save()
     return recording
+
 
 def _create_segments_for_recording(recording, onsets, offsets, user):
     """Create segments for a recording
@@ -99,7 +99,7 @@ def _create_segments_for_recording(recording, onsets, offsets, user):
         # Now create the segments
         for i in range(len(onsets)):
             # Create segment name
-            segment_name = f"Segment {i+1}"
+            segment_name = f"Segment {i + 1}"
 
             # Convert numpy types to Python native types if needed
             onset_value = float(onsets[i])

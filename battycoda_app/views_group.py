@@ -1,17 +1,17 @@
-
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
-from django.db import models, transaction
+from django.db import transaction
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
 
 from .forms import GroupForm
 from .models.organization import Project, Species
 from .models.task import TaskBatch
-from .models.user import Group, GroupMembership, UserProfile
+from .models.user import Group, GroupMembership
 
 # Set up logging
+
 
 @login_required
 def group_list_view(request):
@@ -28,6 +28,7 @@ def group_list_view(request):
     }
 
     return render(request, "groups/group_list.html", context)
+
 
 @login_required
 def group_detail_view(request, group_id):
@@ -63,6 +64,7 @@ def group_detail_view(request, group_id):
         messages.error(request, "You do not have permission to view this group.")
         return redirect("battycoda_app:group_list")
 
+
 @login_required
 def create_group_view(request):
     """Handle creation of a group"""
@@ -83,7 +85,9 @@ def create_group_view(request):
 
                 # Create GroupMembership record for the new group
                 membership, created = GroupMembership.objects.get_or_create(
-                    user=request.user, group=group, defaults={"is_admin": True}  # Group creator is always admin
+                    user=request.user,
+                    group=group,
+                    defaults={"is_admin": True},  # Group creator is always admin
                 )
 
                 # Always make the creator a member and admin of the new group
@@ -100,6 +104,7 @@ def create_group_view(request):
     }
 
     return render(request, "groups/create_group.html", context)
+
 
 @login_required
 def edit_group_view(request, group_id):
@@ -128,6 +133,7 @@ def edit_group_view(request, group_id):
     }
 
     return render(request, "groups/edit_group.html", context)
+
 
 @login_required
 def manage_group_members_view(request, group_id):
@@ -182,7 +188,7 @@ def manage_group_members_view(request, group_id):
                 if GroupMembership.objects.filter(group=group, is_admin=True).count() <= 1:
                     membership = GroupMembership.objects.get(user=user, group=group)
                     if membership.is_admin:
-                        messages.error(request, f"Cannot remove the last admin from the group.")
+                        messages.error(request, "Cannot remove the last admin from the group.")
                         return redirect("battycoda_app:manage_group_members", group_id=group.id)
 
                 # Delete the membership
@@ -204,7 +210,7 @@ def manage_group_members_view(request, group_id):
 
                 # Check if we're trying to demote the last admin
                 if membership.is_admin and GroupMembership.objects.filter(group=group, is_admin=True).count() <= 1:
-                    messages.error(request, f"Cannot remove admin status from the last admin.")
+                    messages.error(request, "Cannot remove admin status from the last admin.")
                     return redirect("battycoda_app:manage_group_members", group_id=group.id)
 
                 # Toggle admin status
@@ -226,6 +232,7 @@ def manage_group_members_view(request, group_id):
     }
 
     return render(request, "groups/manage_members.html", context)
+
 
 @login_required
 def switch_group_view(request, group_id):

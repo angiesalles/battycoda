@@ -9,11 +9,7 @@ from sklearn.metrics import silhouette_score
 from sklearn.preprocessing import StandardScaler
 
 from .....models.clustering import ClusteringRun
-from ..feature_extraction import (
-    extract_features_from_segments,
-    get_project_segments_features,
-    get_segments_features,
-)
+from ..feature_extraction import get_project_segments_features, get_segments_features
 from ..results import store_clustering_results
 
 logger = logging.getLogger(__name__)
@@ -62,7 +58,7 @@ class BaseClusteringRunner:
             return {
                 "status": "success",
                 "message": f"{self.get_algorithm_name()} completed with {num_clusters} clusters",
-                "run_id": self.clustering_run_id
+                "run_id": self.clustering_run_id,
             }
 
         except Exception as e:
@@ -85,10 +81,7 @@ class BaseClusteringRunner:
 
             def progress_callback(processed, total):
                 pct = 15 + (25 * processed / total) if total > 0 else 15
-                self._update_progress(
-                    pct,
-                    message=f"Extracting features: {processed}/{total} segments"
-                )
+                self._update_progress(pct, message=f"Extracting features: {processed}/{total} segments")
 
             segment_ids, features, segment_metadata, skipped = get_project_segments_features(
                 self.clustering_run.project.id,
@@ -96,7 +89,7 @@ class BaseClusteringRunner:
                 feature_method,
                 feature_params,
                 batch_size=self.clustering_run.batch_size,
-                progress_callback=progress_callback
+                progress_callback=progress_callback,
             )
 
             self.segment_ids = segment_ids
@@ -115,16 +108,14 @@ class BaseClusteringRunner:
             self._update_progress(15, message="Extracting features...")
 
             segment_ids, features = get_segments_features(
-                self.clustering_run.segmentation.id,
-                feature_method,
-                feature_params
+                self.clustering_run.segmentation.id, feature_method, feature_params
             )
 
             self.segment_ids = segment_ids
             self.segment_metadata = None
 
             return features
-    
+
     def _scale_features(self, features):
         """Standardize features."""
         scaler = StandardScaler()
@@ -140,7 +131,7 @@ class BaseClusteringRunner:
             cluster_labels,
             features_scaled,
             segment_ids=self.segment_ids,
-            segment_metadata=self.segment_metadata
+            segment_metadata=self.segment_metadata,
         )
 
         # Calculate silhouette score if applicable
@@ -150,32 +141,29 @@ class BaseClusteringRunner:
 
         self.clustering_run.num_clusters_created = num_clusters
         self.clustering_run.save()
-    
+
     def _calculate_silhouette_score(self, cluster_labels, features_scaled):
         """Calculate silhouette score for clustering quality assessment."""
         unique_labels = set(cluster_labels)
-        
+
         # Remove noise cluster if present
         if -1 in unique_labels:
             unique_labels.discard(-1)
             # Only calculate for non-noise points
             non_noise_mask = cluster_labels != -1
             if len(unique_labels) > 1 and np.sum(non_noise_mask) > 1:
-                return silhouette_score(
-                    features_scaled[non_noise_mask], 
-                    cluster_labels[non_noise_mask]
-                )
+                return silhouette_score(features_scaled[non_noise_mask], cluster_labels[non_noise_mask])
         elif len(unique_labels) > 1:
             return silhouette_score(features_scaled, cluster_labels)
-        
+
         return None
-    
+
     def _count_clusters(self, cluster_labels):
         """Count the number of clusters (excluding noise)."""
         unique_labels = set(cluster_labels)
         unique_labels.discard(-1)  # Remove noise cluster
         return len(unique_labels)
-    
+
     def _update_progress(self, progress, status=None, message=None):
         """Update clustering run progress with optional message."""
         self.clustering_run.progress = progress
@@ -184,25 +172,25 @@ class BaseClusteringRunner:
         if message:
             self.clustering_run.progress_message = message
         self.clustering_run.save()
-    
+
     def _handle_error(self, error):
         """Handle clustering errors."""
         if self.clustering_run:
             self.clustering_run.status = "failed"
             self.clustering_run.error_message = str(error)
             self.clustering_run.save()
-    
+
     def _get_parameters(self):
         """Get merged algorithm parameters."""
         base_params = self.clustering_run.algorithm.parameters or {}
         runtime_params = self.clustering_run.runtime_parameters or {}
         return {**base_params, **runtime_params}
-    
+
     # Abstract methods to be implemented by subclasses
     def _run_algorithm(self, features_scaled):
         """Run the specific clustering algorithm. Must be implemented by subclasses."""
         raise NotImplementedError("Subclasses must implement _run_algorithm")
-    
+
     def get_algorithm_name(self):
         """Get the algorithm name for logging. Must be implemented by subclasses."""
         raise NotImplementedError("Subclasses must implement get_algorithm_name")

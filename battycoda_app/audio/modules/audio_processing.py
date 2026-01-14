@@ -2,84 +2,89 @@
 Core audio processing functions for BattyCoda.
 """
 
-import traceback
 import hashlib
 import os
+
 from django.conf import settings
 from django.http import FileResponse
 
 # Configure logging
 
+
 def deliverAudioBit(file_path, onset, offset, loudness=1.0, pitch_shift=1.0):
     """
     Core function to deliver audio segments with caching and efficient extraction.
-    
+
     Args:
         file_path: Path to the source audio file
         onset: Start time in seconds
-        offset: End time in seconds  
+        offset: End time in seconds
         loudness: Volume multiplier (1.0 = original volume)
         pitch_shift: Pitch shift factor (1.0 = original pitch, 0.5 = one octave down, 2.0 = one octave up)
-        
+
     Returns:
         Django FileResponse with the audio segment
     """
     import numpy as np
-    
+
     # Generate cache key from parameters (include pitch_shift)
     cache_key = f"{hashlib.md5(file_path.encode()).hexdigest()}_{onset}_{offset}_{loudness}_{pitch_shift}"
-    
+
     # Create cache directory
     cache_dir = os.path.join(settings.MEDIA_ROOT, "audio_cache")
     os.makedirs(cache_dir, exist_ok=True)
-    
+
     # Check if cached file exists
     cached_file = os.path.join(cache_dir, f"{cache_key}.wav")
-    
+
     if os.path.exists(cached_file) and os.path.getsize(cached_file) > 0:
         # Return cached file
         return FileResponse(open(cached_file, "rb"), content_type="audio/wav")
-    
+
     # Extract audio segment if not cached
     try:
         # Import here to avoid circular imports
         from ..task_modules.base import extract_audio_segment
-        
+
         # Extract the exact time window requested
         audio_data, sample_rate = extract_audio_segment(file_path, onset, offset)
-        
+
         # Apply pitch shift if different from 1.0
         if pitch_shift != 1.0:
             import librosa
+
             # Use librosa's pitch shift - preserves duration
             audio_data = librosa.effects.pitch_shift(
-                audio_data.flatten(), 
-                sr=sample_rate, 
-                n_steps=12 * np.log2(pitch_shift)  # Convert ratio to semitones
+                audio_data.flatten(),
+                sr=sample_rate,
+                n_steps=12 * np.log2(pitch_shift),  # Convert ratio to semitones
             )
-            
+
             # Ensure we maintain the original shape (handle stereo if needed)
             if len(audio_data.shape) == 1:
                 # Convert back to column format for consistency
                 audio_data = audio_data.reshape(-1, 1)
-        
+
         # Apply loudness adjustment
         if loudness != 1.0:
             audio_data = audio_data * loudness
             # Clip to prevent distortion
             audio_data = np.clip(audio_data, -1.0, 1.0)
-        
+
         # Save to cache
         import soundfile as sf
+
         sf.write(cached_file, audio_data, sample_rate)
-        
+
         # Return the cached file
         return FileResponse(open(cached_file, "rb"), content_type="audio/wav")
-        
+
     except Exception as e:
         # Log error and return 500
         from django.http import HttpResponse
+
         return HttpResponse(f"Error extracting audio: {str(e)}", status=500)
+
 
 def normal_hwin(species=None):
     """Returns the window padding as (pre_window, post_window) in milliseconds.
@@ -95,6 +100,7 @@ def normal_hwin(species=None):
         return (species.detail_padding_start_ms, species.detail_padding_end_ms)
     return (8, 8)
 
+
 def overview_hwin(species=None):
     """Returns the window padding as (pre_window, post_window) in milliseconds.
 
@@ -108,6 +114,7 @@ def overview_hwin(species=None):
     if species is not None:
         return (species.overview_padding_start_ms, species.overview_padding_end_ms)
     return (500, 500)
+
 
 def get_audio_bit(audio_path, call_number, window_size, extra_params=None):
     """
@@ -135,7 +142,6 @@ def get_audio_bit(audio_path, call_number, window_size, extra_params=None):
 
         # Check if audio file exists - no alternative paths, just fail if not found
         if not os.path.exists(audio_path):
-
             raise FileNotFoundError(f"Audio file not found: {audio_path}")
 
         # If we have onset/offset data, use extract_audio_segment
@@ -188,9 +194,8 @@ def get_audio_bit(audio_path, call_number, window_size, extra_params=None):
                 audiodata /= std
 
             return audiodata, sample_rate, file_hash
-    except Exception as e:
-
+    except Exception:
         return None, 0, ""
 
+
 # Missing imports
-import os

@@ -4,8 +4,10 @@ Task management URL patterns.
 Handles task viewing, task batch management, task navigation,
 and task annotation.
 """
+
 from django.urls import path
-from . import views_task_listing, views_task_batch, views_task_navigation, views_task_annotation
+
+from . import views_task_annotation, views_task_batch, views_task_listing, views_task_navigation
 from .views_batch_export import export_completed_batches
 from .views_task_batch_management import delete_task_batch_view
 
@@ -22,7 +24,11 @@ urlpatterns = [
     path("tasks/relabel-ajax/", views_task_batch.relabel_task_ajax, name="relabel_task_ajax"),
     path("tasks/next/", views_task_navigation.get_next_task_view, name="get_next_task"),
     path("tasks/last/", views_task_navigation.get_last_task_view, name="get_last_task"),
-    path("tasks/<int:current_task_id>/skip-batch/", views_task_navigation.skip_to_next_batch_view, name="skip_to_next_batch"),
+    path(
+        "tasks/<int:current_task_id>/skip-batch/",
+        views_task_navigation.skip_to_next_batch_view,
+        name="skip_to_next_batch",
+    ),
     path(
         "tasks/batch/<int:batch_id>/annotate/",
         views_task_navigation.get_next_task_from_batch_view,

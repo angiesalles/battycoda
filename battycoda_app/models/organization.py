@@ -8,6 +8,7 @@ from django.db import models
 
 from .user import Group
 
+
 def get_species_image_path(instance, filename):
     """
     Generate a unique path for species images.
@@ -35,6 +36,7 @@ def get_species_image_path(instance, filename):
     # Format: user_<id>/species_<id>/<timestamp>_<clean_filename><ext>
     return f"species_images/user_{user_id}/species_{species_id}/{timestamp}_{clean_filename}{ext}"
 
+
 class Project(models.Model):
     """Project model for research projects."""
 
@@ -51,6 +53,7 @@ class Project(models.Model):
     def __str__(self):
         return self.name
 
+
 class Species(models.Model):
     """Species model for bat species."""
 
@@ -60,23 +63,21 @@ class Species(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     created_by = models.ForeignKey(User, on_delete=models.CASCADE, related_name="species", null=True, blank=True)
     group = models.ForeignKey(Group, on_delete=models.CASCADE, related_name="species", null=True, blank=True)
-    is_system = models.BooleanField(default=False, help_text="Designates whether this is a system-wide species available to all users")
+    is_system = models.BooleanField(
+        default=False, help_text="Designates whether this is a system-wide species available to all users"
+    )
 
     detail_padding_start_ms = models.IntegerField(
-        default=8,
-        help_text="Padding in milliseconds before the call in detail view spectrograms"
+        default=8, help_text="Padding in milliseconds before the call in detail view spectrograms"
     )
     detail_padding_end_ms = models.IntegerField(
-        default=8,
-        help_text="Padding in milliseconds after the call in detail view spectrograms"
+        default=8, help_text="Padding in milliseconds after the call in detail view spectrograms"
     )
     overview_padding_start_ms = models.IntegerField(
-        default=500,
-        help_text="Padding in milliseconds before the call in overview spectrograms"
+        default=500, help_text="Padding in milliseconds before the call in overview spectrograms"
     )
     overview_padding_end_ms = models.IntegerField(
-        default=500,
-        help_text="Padding in milliseconds after the call in overview spectrograms"
+        default=500, help_text="Padding in milliseconds after the call in overview spectrograms"
     )
 
     class Meta:
@@ -88,7 +89,7 @@ class Species(models.Model):
         if self.is_system:
             return f"{self.name} (System)"
         return self.name
-        
+
     def can_modify_calls(self):
         """
         Check if this species' call types can be modified.
@@ -97,31 +98,29 @@ class Species(models.Model):
         # System species can't be modified
         if self.is_system:
             return False
-            
+
         # Import here to avoid circular imports
         from .classification import Classifier
+
         return not Classifier.objects.filter(species=self).exists()
-    
+
     @classmethod
     def get_available_for_user(cls, user):
         """
         Get all species available to a user, including system species
         and those belonging to the user's group.
         """
-        if not user or not hasattr(user, 'profile'):
+        if not user or not hasattr(user, "profile"):
             return cls.objects.none()
-            
+
         # Get system species and species for the user's group
         if user.profile.group:
-            return cls.objects.filter(
-                models.Q(is_system=True) | 
-                models.Q(group=user.profile.group)
-            ).order_by('name')
+            return cls.objects.filter(models.Q(is_system=True) | models.Q(group=user.profile.group)).order_by("name")
         else:
             return cls.objects.filter(
-                models.Q(is_system=True) | 
-                models.Q(created_by=user, group__isnull=True)
-            ).order_by('name')
+                models.Q(is_system=True) | models.Q(created_by=user, group__isnull=True)
+            ).order_by("name")
+
 
 class Call(models.Model):
     """Call types for species."""
@@ -137,7 +136,7 @@ class Call(models.Model):
 
     def __str__(self):
         return f"{self.species.name} - {self.short_name}"
-        
+
     def can_be_deleted(self):
         """
         Check if this call type can be safely deleted.

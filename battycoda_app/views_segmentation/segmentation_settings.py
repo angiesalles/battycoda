@@ -1,12 +1,14 @@
 """
 Views for managing segmentation configuration settings.
 """
+
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, redirect
 
 from battycoda_app.models import Segmentation
+
 
 @login_required
 def activate_segmentation_view(request, segmentation_id):

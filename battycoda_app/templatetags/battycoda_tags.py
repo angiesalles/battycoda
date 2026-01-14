@@ -1,9 +1,7 @@
-from itertools import groupby
-
 from django import template
-from django.template.defaultfilters import floatformat
 
 register = template.Library()
+
 
 @register.filter
 def get_item(dictionary, key):
@@ -15,6 +13,7 @@ def get_item(dictionary, key):
     """
     return dictionary.get(key, "")
 
+
 @register.filter
 def add_class(field, css_class):
     """
@@ -24,6 +23,7 @@ def add_class(field, css_class):
         {{ form.field|add_class:"form-control" }}
     """
     return field.as_widget(attrs={"class": css_class})
+
 
 @register.filter
 def div(value, arg):
@@ -38,6 +38,7 @@ def div(value, arg):
     except (ValueError, ZeroDivisionError):
         return 0
 
+
 @register.filter
 def mul(value, arg):
     """
@@ -50,6 +51,7 @@ def mul(value, arg):
         return float(value) * float(arg)
     except ValueError:
         return 0
+
 
 @register.filter
 def regroup_by(queryset, key_value):
@@ -65,6 +67,7 @@ def regroup_by(queryset, key_value):
             result.append(item)
     return result
 
+
 @register.filter
 def count_by_status(queryset, status_value):
     """
@@ -78,6 +81,7 @@ def count_by_status(queryset, status_value):
         if hasattr(item, "status") and item.status == status_value:
             count += 1
     return count
+
 
 @register.filter
 def count_done(queryset):
@@ -93,6 +97,7 @@ def count_done(queryset):
             count += 1
     return count
 
+
 @register.filter
 def multiply(value, arg):
     """
@@ -105,6 +110,7 @@ def multiply(value, arg):
         return float(value) * float(arg)
     except (ValueError, TypeError):
         return 0
+
 
 @register.filter
 def subtract(value, arg):

@@ -1,6 +1,8 @@
 """Group-related models."""
+
 from django.contrib.auth.models import User
 from django.db import models
+
 
 class Group(models.Model):
     """Group model for user grouping and permissions."""
@@ -11,6 +13,7 @@ class Group(models.Model):
 
     def __str__(self):
         return self.name
+
 
 class GroupInvitation(models.Model):
     """Group invitation model for inviting users via email."""
@@ -32,6 +35,7 @@ class GroupInvitation(models.Model):
 
         return self.expires_at < timezone.now()
 
+
 class GroupMembership(models.Model):
     """Model for user membership in groups."""
 
@@ -45,4 +49,3 @@ class GroupMembership(models.Model):
 
     def __str__(self):
         return f"{self.user.username} in {self.group.name} ({'Admin' if self.is_admin else 'Member'})"
-

@@ -1,7 +1,8 @@
 """Helper functions for task batch creation."""
 
-from django.db.models import Subquery, OuterRef, Max
-from battycoda_app.models.classification import ClassificationResult, CallProbability
+from django.db.models import OuterRef, Subquery
+
+from battycoda_app.models.classification import CallProbability, ClassificationResult
 from battycoda_app.models.task import Task, TaskBatch
 
 
@@ -26,7 +27,7 @@ def create_task_batch_helper(run, batch_name, description, created_by, group, ma
         name=batch_name,
         description=description,
         created_by=created_by,
-        wav_file_name=recording.wav_file.name if recording.wav_file else '',
+        wav_file_name=recording.wav_file.name if recording.wav_file else "",
         wav_file=recording.wav_file,
         species=recording.species,
         project=recording.project,
@@ -36,22 +37,26 @@ def create_task_batch_helper(run, batch_name, description, created_by, group, ma
 
     # Get all segment IDs that already have tasks (one query)
     segments_with_tasks = set(
-        Task.objects.filter(
-            source_segment__classification_results__classification_run=run
-        ).values_list('source_segment_id', flat=True)
+        Task.objects.filter(source_segment__classification_results__classification_run=run).values_list(
+            "source_segment_id", flat=True
+        )
     )
 
     # Get the top probability for each result using a subquery (much faster than prefetch_related)
-    top_prob_subquery = CallProbability.objects.filter(
-        classification_result=OuterRef('pk')
-    ).order_by('-probability').values('probability', 'call__short_name')[:1]
+    top_prob_subquery = (
+        CallProbability.objects.filter(classification_result=OuterRef("pk"))
+        .order_by("-probability")
+        .values("probability", "call__short_name")[:1]
+    )
 
     # Fetch results with just the max probability annotated
-    results = ClassificationResult.objects.filter(
-        classification_run=run
-    ).select_related('segment').annotate(
-        top_probability=Subquery(top_prob_subquery.values('probability')),
-        top_call=Subquery(top_prob_subquery.values('call__short_name'))
+    results = (
+        ClassificationResult.objects.filter(classification_run=run)
+        .select_related("segment")
+        .annotate(
+            top_probability=Subquery(top_prob_subquery.values("probability")),
+            top_call=Subquery(top_prob_subquery.values("call__short_name")),
+        )
     )
 
     tasks_to_create = []
@@ -71,7 +76,7 @@ def create_task_batch_helper(run, batch_name, description, created_by, group, ma
             continue
 
         task_data = Task(
-            wav_file_name=recording.wav_file.name if recording.wav_file else '',
+            wav_file_name=recording.wav_file.name if recording.wav_file else "",
             onset=segment.onset,
             offset=segment.offset,
             species=recording.species,

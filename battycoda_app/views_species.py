@@ -1,7 +1,5 @@
 import json
 
-import traceback
-
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.core.paginator import Paginator
@@ -12,12 +10,13 @@ from django.shortcuts import get_object_or_404, redirect, render
 from django.template.loader import render_to_string
 from django.views.decorators.http import require_POST
 
-from .forms import CallFormSetFactory, SpeciesEditForm, SpeciesForm
+from .forms import SpeciesEditForm, SpeciesForm
 from .models.organization import Call, Species
 from .models.recording import Recording
 from .models.task import Task, TaskBatch
 
 # Set up logging
+
 
 @login_required
 def species_list_view(request):
@@ -27,13 +26,13 @@ def species_list_view(request):
 
     # Get system species with task counts filtered by user's group
     system_species = Species.objects.filter(is_system=True).annotate(
-        group_task_count=Count('tasks', filter=Q(tasks__group=profile.group))
+        group_task_count=Count("tasks", filter=Q(tasks__group=profile.group))
     )
 
     # Get group species if the user is in a group
     if profile.group:
         group_species = Species.objects.filter(group=profile.group).annotate(
-            group_task_count=Count('tasks', filter=Q(tasks__group=profile.group))
+            group_task_count=Count("tasks", filter=Q(tasks__group=profile.group))
         )
         # Combine system and group species
         species_list = list(system_species) + list(group_species)
@@ -48,6 +47,7 @@ def species_list_view(request):
 
     return render(request, "species/species_list.html", context)
 
+
 @login_required
 def species_detail_view(request, species_id):
     """Display detail of a species"""
@@ -58,19 +58,19 @@ def species_detail_view(request, species_id):
     user_group = profile.group
 
     # Get tasks for this species - limited to user's group
-    tasks_list = Task.objects.filter(species=species, group=user_group).order_by('-created_at')
+    tasks_list = Task.objects.filter(species=species, group=user_group).order_by("-created_at")
 
     # Paginate tasks
     tasks_paginator = Paginator(tasks_list, 50)
-    tasks_page_number = request.GET.get('tasks_page', 1)
+    tasks_page_number = request.GET.get("tasks_page", 1)
     tasks_page = tasks_paginator.get_page(tasks_page_number)
 
     # Get batches for this species - limited to user's group
-    batches_list = TaskBatch.objects.filter(species=species, group=user_group).order_by('-created_at')
+    batches_list = TaskBatch.objects.filter(species=species, group=user_group).order_by("-created_at")
 
     # Paginate batches
     batches_paginator = Paginator(batches_list, 50)
-    batches_page_number = request.GET.get('batches_page', 1)
+    batches_page_number = request.GET.get("batches_page", 1)
     batches_page = batches_paginator.get_page(batches_page_number)
 
     # Get calls for this species
@@ -86,6 +86,7 @@ def species_detail_view(request, species_id):
     }
 
     return render(request, "species/species_detail.html", context)
+
 
 @login_required
 def create_species_view(request):
@@ -142,6 +143,7 @@ def create_species_view(request):
 
     return render(request, "species/create_species.html", context)
 
+
 @login_required
 def edit_species_view(request, species_id):
     """Handle editing of a species"""
@@ -174,7 +176,7 @@ def edit_species_view(request, species_id):
 
     # Get calls again to ensure they're in the context
     calls = Call.objects.filter(species=species)
-    
+
     # Check if this species has classifiers (which would prevent modifying call types)
     can_modify_calls = species.can_modify_calls()
 
@@ -187,6 +189,7 @@ def edit_species_view(request, species_id):
     }
 
     return render(request, "species/edit_species.html", context)
+
 
 @login_required
 def delete_species_view(request, species_id):
@@ -211,9 +214,10 @@ def delete_species_view(request, species_id):
     batch_count = TaskBatch.objects.filter(species=species).count()
     call_count = Call.objects.filter(species=species).count()
     recording_count = Recording.objects.filter(species=species).count()
-    
+
     # Check if this species has classifiers
     from .models.classification import Classifier
+
     classifier_count = Classifier.objects.filter(species=species).count()
 
     # Check if deletion is allowed (no tasks, batches, recordings, or classifiers associated)
@@ -239,7 +243,6 @@ def delete_species_view(request, species_id):
                 messages.success(request, f"Successfully deleted species: {species_name}")
                 return redirect("battycoda_app:species_list")
         except Exception as e:
-
             messages.error(request, f"Failed to delete species: {str(e)}")
 
     context = {
@@ -253,6 +256,7 @@ def delete_species_view(request, species_id):
 
     return render(request, "species/delete_species.html", context)
 
+
 @login_required
 @require_POST
 def add_call_view(request, species_id):
@@ -261,23 +265,24 @@ def add_call_view(request, species_id):
 
     # Prevent modifying system species
     if species.is_system:
-        return JsonResponse({
-            "success": False, 
-            "error": "System species cannot be modified. They are available to all users."
-        })
+        return JsonResponse(
+            {"success": False, "error": "System species cannot be modified. They are available to all users."}
+        )
 
     # Check if user has permission to edit this species
     profile = request.user.profile
     if species.group != profile.group:
         return JsonResponse({"success": False, "error": "You don't have permission to modify this species."})
-        
+
     # Check if species has classifiers (which would prevent modifying call types)
     if not species.can_modify_calls():
-        return JsonResponse({
-            "success": False, 
-            "error": "Cannot modify call types for this species because it is used by one or more classifiers. "
-                     "Classifiers are tied to the call types of their species."
-        })
+        return JsonResponse(
+            {
+                "success": False,
+                "error": "Cannot modify call types for this species because it is used by one or more classifiers. "
+                "Classifiers are tied to the call types of their species.",
+            }
+        )
 
     # Get the call data from the request
     try:
@@ -300,15 +305,17 @@ def add_call_view(request, species_id):
         calls = Call.objects.filter(species=species)
 
         # Render the updated calls table HTML
-        calls_html = render_to_string("species/includes/calls_table.html", {"calls": calls, "can_modify": species.can_modify_calls()})
+        calls_html = render_to_string(
+            "species/includes/calls_table.html", {"calls": calls, "can_modify": species.can_modify_calls()}
+        )
 
         return JsonResponse(
             {"success": True, "calls_html": calls_html, "message": f"Call '{short_name}' added successfully."}
         )
 
     except Exception as e:
-
         return JsonResponse({"success": False, "error": str(e)})
+
 
 @login_required
 @require_POST
@@ -319,23 +326,24 @@ def delete_call_view(request, species_id, call_id):
 
     # Prevent modifying system species
     if species.is_system:
-        return JsonResponse({
-            "success": False, 
-            "error": "System species cannot be modified. They are available to all users."
-        })
+        return JsonResponse(
+            {"success": False, "error": "System species cannot be modified. They are available to all users."}
+        )
 
     # Check if user has permission to edit this species
     profile = request.user.profile
     if species.group != profile.group:
         return JsonResponse({"success": False, "error": "You don't have permission to modify this species."})
-        
+
     # Check if call can be deleted (species must not have classifiers)
     if not call.can_be_deleted():
-        return JsonResponse({
-            "success": False, 
-            "error": "Cannot delete call types for this species because it is used by one or more classifiers. "
-                     "Classifiers are tied to the call types of their species."
-        })
+        return JsonResponse(
+            {
+                "success": False,
+                "error": "Cannot delete call types for this species because it is used by one or more classifiers. "
+                "Classifiers are tied to the call types of their species.",
+            }
+        )
 
     try:
         # Delete the call
@@ -346,15 +354,17 @@ def delete_call_view(request, species_id, call_id):
         calls = Call.objects.filter(species=species)
 
         # Render the updated calls table HTML
-        calls_html = render_to_string("species/includes/calls_table.html", {"calls": calls, "can_modify": species.can_modify_calls()})
+        calls_html = render_to_string(
+            "species/includes/calls_table.html", {"calls": calls, "can_modify": species.can_modify_calls()}
+        )
 
         return JsonResponse(
             {"success": True, "calls_html": calls_html, "message": f"Call '{call_short_name}' deleted successfully."}
         )
 
     except Exception as e:
-
         return JsonResponse({"success": False, "error": str(e)})
+
 
 @login_required
 @require_POST
@@ -404,5 +414,4 @@ def parse_calls_file_view(request):
         return JsonResponse({"success": True, "calls": calls})
 
     except Exception as e:
-
         return JsonResponse({"success": False, "error": str(e)})

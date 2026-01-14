@@ -2,16 +2,13 @@
 Dashboard view for the BattyCoda application.
 """
 
-from datetime import datetime, timedelta
+from datetime import timedelta
 
-from django.db import models
-from django.db.models import Count, Q
+from django.db.models import Count
 from django.shortcuts import redirect, render
 from django.utils import timezone
 
-from .models.classification import ClassificationRun
-from .models.organization import Project, Species
-from .models import Recording, Segmentation
+from .models.organization import Project
 from .models.task import Task, TaskBatch
 from .models.user import GroupInvitation
 
@@ -25,10 +22,8 @@ def index(request):
         # Check for pending invitations for this user
         if request.user.email:
             pending_invitations = GroupInvitation.objects.filter(
-                email=request.user.email,
-                accepted=False,
-                expires_at__gt=timezone.now()
-            ).select_related('group', 'invited_by')
+                email=request.user.email, accepted=False, expires_at__gt=timezone.now()
+            ).select_related("group", "invited_by")
             context["pending_invitations"] = pending_invitations
 
         # Section 1: Get projects with tasks
@@ -100,29 +95,19 @@ def _get_my_work_stats(user, profile):
     streak = _calculate_streak(user, profile)
 
     # Get recently worked on batches
-    recent_batches_data = my_tasks.filter(
-        annotated_at__gte=now - timedelta(days=7),
-        batch__isnull=False,
-        is_done=True
-    ).values('batch').annotate(
-        count=Count('id')
-    ).order_by('-count')[:5]
+    recent_batches_data = (
+        my_tasks.filter(annotated_at__gte=now - timedelta(days=7), batch__isnull=False, is_done=True)
+        .values("batch")
+        .annotate(count=Count("id"))
+        .order_by("-count")[:5]
+    )
 
     recent_batches = []
     for batch_data in recent_batches_data:
-        batch = TaskBatch.objects.select_related('project').get(id=batch_data['batch'])
-        recent_batches.append({
-            'batch': batch,
-            'count': batch_data['count']
-        })
+        batch = TaskBatch.objects.select_related("project").get(id=batch_data["batch"])
+        recent_batches.append({"batch": batch, "count": batch_data["count"]})
 
-    return {
-        'today': today,
-        'this_week': this_week,
-        'total': total,
-        'streak': streak,
-        'recent_batches': recent_batches
-    }
+    return {"today": today, "this_week": this_week, "total": total, "streak": streak, "recent_batches": recent_batches}
 
 
 def _calculate_streak(user, profile):
@@ -134,10 +119,11 @@ def _calculate_streak(user, profile):
         tasks = Task.objects.filter(annotated_by=user)
 
     # Get dates when user completed tasks
-    completed_dates = tasks.filter(
-        is_done=True,
-        annotated_at__isnull=False
-    ).values_list('annotated_at', flat=True).order_by('-annotated_at')
+    completed_dates = (
+        tasks.filter(is_done=True, annotated_at__isnull=False)
+        .values_list("annotated_at", flat=True)
+        .order_by("-annotated_at")
+    )
 
     if not completed_dates:
         return 0
@@ -190,20 +176,22 @@ def _get_leaderboard(group, current_user):
         total = user_tasks.filter(is_done=True).count()
         streak = _calculate_streak(user, user.profile)
 
-        leaderboard.append({
-            'username': user.username,
-            'today': today,
-            'this_week': this_week,
-            'total': total,
-            'streak': streak,
-            'is_current_user': user == current_user
-        })
+        leaderboard.append(
+            {
+                "username": user.username,
+                "today": today,
+                "this_week": this_week,
+                "total": total,
+                "streak": streak,
+                "is_current_user": user == current_user,
+            }
+        )
 
     # Sort by total (primary), then by this_week, then by today
-    leaderboard.sort(key=lambda x: (x['total'], x['this_week'], x['today']), reverse=True)
+    leaderboard.sort(key=lambda x: (x["total"], x["this_week"], x["today"]), reverse=True)
 
     # Add ranks
     for i, entry in enumerate(leaderboard, 1):
-        entry['rank'] = i
+        entry["rank"] = i
 
     return leaderboard

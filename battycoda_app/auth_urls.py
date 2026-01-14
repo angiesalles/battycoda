@@ -4,7 +4,9 @@ Authentication URL patterns.
 Handles user authentication, registration, profile management,
 password resets, and API key generation.
 """
+
 from django.urls import path
+
 from . import views_auth
 
 urlpatterns = [

@@ -1,22 +1,13 @@
 """
 Tests for the clustering system, including project-level clustering.
 """
+
 import json
 
 from django.contrib.auth.models import User
-from django.core.files.uploadedfile import SimpleUploadedFile
-from django.test import RequestFactory
 from django.urls import reverse
 
-from battycoda_app.models import (
-    Group,
-    Project,
-    Recording,
-    Segment,
-    Segmentation,
-    SegmentationAlgorithm,
-    Species,
-)
+from battycoda_app.models import Group, Project, Recording, Segment, Segmentation, SegmentationAlgorithm, Species
 from battycoda_app.models.clustering import (
     Cluster,
     ClusteringAlgorithm,
@@ -54,9 +45,7 @@ class ClusteringRunModelTest(BattycodaTestCase):
     """Tests for ClusteringRun model, including project-level clustering fields."""
 
     def setUp(self):
-        self.user = User.objects.create_user(
-            username="testuser", email="test@example.com", password="password123"
-        )
+        self.user = User.objects.create_user(username="testuser", email="test@example.com", password="password123")
         self.group = Group.objects.create(name="Test Group", description="Test group")
         self.species = Species.objects.create(
             name="Test Species", description="A test species", created_by=self.user, group=self.group
@@ -239,9 +228,7 @@ class ClusteringRunSegmentationModelTest(BattycodaTestCase):
     """Tests for ClusteringRunSegmentation junction table."""
 
     def setUp(self):
-        self.user = User.objects.create_user(
-            username="testuser", email="test@example.com", password="password123"
-        )
+        self.user = User.objects.create_user(username="testuser", email="test@example.com", password="password123")
         self.group = Group.objects.create(name="Test Group", description="Test group")
         self.species = Species.objects.create(
             name="Test Species", description="A test species", created_by=self.user, group=self.group
@@ -354,9 +341,7 @@ class ClusteringViewsTest(BattycodaTestCase):
     """Tests for clustering views and API endpoints."""
 
     def setUp(self):
-        self.user = User.objects.create_user(
-            username="testuser", email="test@example.com", password="password123"
-        )
+        self.user = User.objects.create_user(username="testuser", email="test@example.com", password="password123")
         self.group = Group.objects.create(name="Test Group", description="Test group")
 
         # Update user profile to use this group
@@ -426,9 +411,7 @@ class ClusteringViewsTest(BattycodaTestCase):
     def test_get_project_segment_count_single_species(self):
         """Test API returns correct counts for single species."""
         # Create a project with only one species
-        project2 = Project.objects.create(
-            name="Single Species Project", created_by=self.user, group=self.group
-        )
+        project2 = Project.objects.create(name="Single Species Project", created_by=self.user, group=self.group)
         recording = Recording.objects.create(
             name="Single Species Recording",
             project=project2,
@@ -445,9 +428,7 @@ class ClusteringViewsTest(BattycodaTestCase):
         for i in range(7):
             create_test_segment(segmentation, i * 0.1, (i + 1) * 0.1, self.user)
 
-        response = self.client.get(
-            reverse("battycoda_app:get_project_segment_count", args=[project2.id])
-        )
+        response = self.client.get(reverse("battycoda_app:get_project_segment_count", args=[project2.id]))
         self.assertEqual(response.status_code, 200)
 
         data = json.loads(response.content)
@@ -457,9 +438,7 @@ class ClusteringViewsTest(BattycodaTestCase):
 
     def test_get_project_segment_count_multiple_species(self):
         """Test API returns species breakdown for multi-species project."""
-        response = self.client.get(
-            reverse("battycoda_app:get_project_segment_count", args=[self.project.id])
-        )
+        response = self.client.get(reverse("battycoda_app:get_project_segment_count", args=[self.project.id]))
         self.assertEqual(response.status_code, 200)
 
         data = json.loads(response.content)
@@ -486,13 +465,9 @@ class ClusteringViewsTest(BattycodaTestCase):
     def test_get_project_segment_count_permission_denied(self):
         """Test API returns 403 for projects user doesn't have access to."""
         other_group = Group.objects.create(name="Other Group")
-        other_project = Project.objects.create(
-            name="Other Project", created_by=self.user, group=other_group
-        )
+        other_project = Project.objects.create(name="Other Project", created_by=self.user, group=other_group)
 
-        response = self.client.get(
-            reverse("battycoda_app:get_project_segment_count", args=[other_project.id])
-        )
+        response = self.client.get(reverse("battycoda_app:get_project_segment_count", args=[other_project.id]))
         self.assertEqual(response.status_code, 403)
 
     def test_get_cluster_members_returns_recording_info_for_project_scope(self):
@@ -570,9 +545,7 @@ class ClusteringExportTest(BattycodaTestCase):
     """Tests for clustering export functionality."""
 
     def setUp(self):
-        self.user = User.objects.create_user(
-            username="testuser", email="test@example.com", password="password123"
-        )
+        self.user = User.objects.create_user(username="testuser", email="test@example.com", password="password123")
         self.group = Group.objects.create(name="Test Group", description="Test group")
 
         from battycoda_app.models import UserProfile
@@ -581,12 +554,8 @@ class ClusteringExportTest(BattycodaTestCase):
         profile.group = self.group
         profile.save()
 
-        self.species = Species.objects.create(
-            name="Test Species", created_by=self.user, group=self.group
-        )
-        self.project = Project.objects.create(
-            name="Test Project", created_by=self.user, group=self.group
-        )
+        self.species = Species.objects.create(name="Test Species", created_by=self.user, group=self.group)
+        self.project = Project.objects.create(name="Test Project", created_by=self.user, group=self.group)
 
         # Create segmentation algorithm
         self.seg_algorithm = create_test_segmentation_algorithm(self.group)
@@ -635,9 +604,7 @@ class ClusteringExportTest(BattycodaTestCase):
             confidence=0.9,
         )
 
-        response = self.client.get(
-            reverse("battycoda_app:export_clusters", args=[run.id])
-        )
+        response = self.client.get(reverse("battycoda_app:export_clusters", args=[run.id]))
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response["Content-Type"], "text/csv")
 
@@ -672,9 +639,7 @@ class ClusteringExportTest(BattycodaTestCase):
             confidence=0.9,
         )
 
-        response = self.client.get(
-            reverse("battycoda_app:export_clusters", args=[run.id])
-        )
+        response = self.client.get(reverse("battycoda_app:export_clusters", args=[run.id]))
         self.assertEqual(response.status_code, 200)
 
         content = response.content.decode("utf-8")

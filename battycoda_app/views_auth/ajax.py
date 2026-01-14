@@ -1,4 +1,5 @@
 """AJAX endpoints for authentication."""
+
 import json
 import re
 
@@ -18,7 +19,7 @@ def check_username(request):
     """
     if request.method == "POST":
         try:
-            if request.content_type == 'application/json':
+            if request.content_type == "application/json":
                 data = json.loads(request.body)
                 username = data.get("username", "")
                 email = data.get("email", "")
@@ -26,24 +27,19 @@ def check_username(request):
                 username = request.POST.get("username", "")
                 email = request.POST.get("email", "")
 
-            response = {
-                "exists": False,
-                "valid": True,
-                "message": "",
-                "email_exists": False
-            }
+            response = {"exists": False, "valid": True, "message": "", "email_exists": False}
 
             if not username:
                 response["valid"] = False
                 response["message"] = "Username cannot be empty."
                 return JsonResponse(response)
 
-            if '@' in username:
+            if "@" in username:
                 response["valid"] = False
                 response["message"] = "Username cannot contain the @ symbol."
                 return JsonResponse(response)
 
-            if not re.match(r'^[\w.-]+$', username):
+            if not re.match(r"^[\w.-]+$", username):
                 response["valid"] = False
                 response["message"] = "Username can only contain letters, numbers, and the characters ._-"
                 return JsonResponse(response)
@@ -76,16 +72,13 @@ def check_email(request):
     """
     if request.method == "POST":
         try:
-            if request.content_type == 'application/json':
+            if request.content_type == "application/json":
                 data = json.loads(request.body)
                 email = data.get("email", "")
             else:
                 email = request.POST.get("email", "")
 
-            response = {
-                "exists": False,
-                "message": ""
-            }
+            response = {"exists": False, "message": ""}
 
             if not email:
                 response["exists"] = False

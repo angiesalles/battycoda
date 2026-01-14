@@ -7,8 +7,9 @@ from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import get_object_or_404, redirect
 
-from battycoda_app.models.classification import CallProbability, ClassificationResult, ClassificationRun
 from battycoda_app.models import Segment
+from battycoda_app.models.classification import CallProbability, ClassificationResult, ClassificationRun
+
 
 @login_required
 def apply_detection_results_view(request, run_id, segment_id=None):
@@ -43,7 +44,9 @@ def apply_detection_results_view(request, run_id, segment_id=None):
             # Handle differently based on algorithm type
             if run.classifier and run.classifier.response_format == "highest_only":
                 # For highest-only algorithm, we just need to get the non-zero probability
-                top_probability = CallProbability.objects.filter(classification_result=result, probability__gt=0).first()
+                top_probability = CallProbability.objects.filter(
+                    classification_result=result, probability__gt=0
+                ).first()
 
                 if top_probability:
                     # We no longer apply call_type directly to segment model
@@ -97,7 +100,9 @@ def apply_detection_results_view(request, run_id, segment_id=None):
                 skipped_count += 1
         else:
             # For full probability algorithm, get the highest probability
-            top_probability = CallProbability.objects.filter(classification_result=result).order_by("-probability").first()
+            top_probability = (
+                CallProbability.objects.filter(classification_result=result).order_by("-probability").first()
+            )
 
             if top_probability and top_probability.probability >= threshold:
                 # We no longer apply call_type directly to segment model

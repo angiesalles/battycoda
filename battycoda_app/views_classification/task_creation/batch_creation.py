@@ -2,20 +2,20 @@
 
 Provides functionality to convert detection run results into manual tasks for review.
 """
+
 import logging
 
 from django.contrib import messages
 
 logger = logging.getLogger(__name__)
 from django.contrib.auth.decorators import login_required
-from django.db import models, transaction
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
-from django.utils import timezone
 
-from battycoda_app.models.classification import CallProbability, ClassificationResult, ClassificationRun
+from battycoda_app.models.classification import ClassificationRun
 from battycoda_app.models.organization import Species
-from battycoda_app.models.task import Task, TaskBatch
+from battycoda_app.models.task import TaskBatch
+
 from .helpers import create_task_batch_helper
 
 
@@ -41,7 +41,7 @@ def create_task_batch_from_detection_run(request, run_id):
         batch_name = request.POST.get("name") or f"Review of {run.name}"
         description = request.POST.get("description") or f"Manual review of classification run: {run.name}"
         confidence_threshold = request.POST.get("confidence_threshold")
-        
+
         # Parse confidence threshold
         max_confidence = None
         if confidence_threshold:
@@ -62,11 +62,13 @@ def create_task_batch_from_detection_run(request, run_id):
                 description=description,
                 created_by=request.user,
                 group=profile.group,
-                max_confidence=max_confidence
+                max_confidence=max_confidence,
             )
 
             if batch is None:
-                messages.warning(request, "No tasks were created. All segments may already have tasks or were filtered out.")
+                messages.warning(
+                    request, "No tasks were created. All segments may already have tasks or were filtered out."
+                )
                 return redirect("battycoda_app:detection_run_detail", run_id=run_id)
 
             # Create success message with filtering info
@@ -85,9 +87,7 @@ def create_task_batch_from_detection_run(request, run_id):
     recording = run.segmentation.recording
 
     # Check for existing task batches linked to this recording
-    existing_batches = TaskBatch.objects.filter(
-        classification_run__segmentation__recording=recording
-    ).exclude(
+    existing_batches = TaskBatch.objects.filter(classification_run__segmentation__recording=recording).exclude(
         classification_run=run
     )
 
@@ -134,7 +134,7 @@ def get_pending_runs_for_species(species, user_profile, lock_for_processing=Fals
 
     # Filter runs without task batches using a subquery to avoid outer join
     # (select_for_update doesn't work with outer joins)
-    has_task_batch = TaskBatch.objects.filter(classification_run=OuterRef('pk'))
+    has_task_batch = TaskBatch.objects.filter(classification_run=OuterRef("pk"))
     query = base_query.annotate(has_batch=Exists(has_task_batch)).filter(has_batch=False)
 
     # Optionally lock rows to prevent race conditions during processing
@@ -151,13 +151,12 @@ def create_task_batches_for_species_view(request):
     """Display species with completed classification runs that don't have task batches."""
     profile = request.user.profile
 
-    project_id = request.GET.get('project')
+    project_id = request.GET.get("project")
 
     # Get all species with completed detection runs
     if profile.group and profile.is_current_group_admin:
         query = Species.objects.filter(
-            recordings__segmentations__classification_runs__status="completed",
-            recordings__group=profile.group
+            recordings__segmentations__classification_runs__status="completed", recordings__group=profile.group
         )
         if project_id:
             try:
@@ -167,8 +166,7 @@ def create_task_batches_for_species_view(request):
         species_list = query.distinct()
     else:
         query = Species.objects.filter(
-            recordings__segmentations__classification_runs__status="completed",
-            recordings__created_by=request.user
+            recordings__segmentations__classification_runs__status="completed", recordings__created_by=request.user
         )
         if project_id:
             try:
@@ -176,38 +174,40 @@ def create_task_batches_for_species_view(request):
             except (ValueError, TypeError):
                 pass
         species_list = query.distinct()
-    
+
     items = []
     for species in species_list:
         # Get pending runs for this species
         pending_runs = get_pending_runs_for_species(species, profile)
         pending_runs_count = pending_runs.count()
-        
+
         if pending_runs_count > 0:
-            items.append({
-                'name': species.name,
-                'type_name': 'Bat Species',
-                'count': pending_runs_count,
-                'created_at': species.created_at,
-                'detail_url': reverse('battycoda_app:species_detail', args=[species.id]),
-                'action_url': reverse('battycoda_app:create_tasks_for_species', args=[species.id])
-            })
-    
+            items.append(
+                {
+                    "name": species.name,
+                    "type_name": "Bat Species",
+                    "count": pending_runs_count,
+                    "created_at": species.created_at,
+                    "detail_url": reverse("battycoda_app:species_detail", args=[species.id]),
+                    "action_url": reverse("battycoda_app:create_tasks_for_species", args=[species.id]),
+                }
+            )
+
     context = {
-        'title': 'Create Task Batches for Classified Segments',
-        'list_title': 'Species with Completed Classification Runs',
-        'parent_url': 'battycoda_app:classification_home',
-        'parent_name': 'Classification',
-        'th1': 'Species',
-        'th2': 'Type',
-        'th3': 'Classification Runs',
-        'show_count': True,
-        'action_text': 'Create Tasks',
-        'action_icon': 'clipboard',
-        'empty_message': 'No species with pending classification runs found.',
-        'items': items
+        "title": "Create Task Batches for Classified Segments",
+        "list_title": "Species with Completed Classification Runs",
+        "parent_url": "battycoda_app:classification_home",
+        "parent_name": "Classification",
+        "th1": "Species",
+        "th2": "Type",
+        "th3": "Classification Runs",
+        "show_count": True,
+        "action_text": "Create Tasks",
+        "action_icon": "clipboard",
+        "empty_message": "No species with pending classification runs found.",
+        "items": items,
     }
-    
+
     return render(request, "classification/select_entity.html", context)
 
 
@@ -216,21 +216,19 @@ def create_tasks_for_species_view(request, species_id):
     """Create task batches for all completed classification runs of a species."""
     species = get_object_or_404(Species, id=species_id)
     profile = request.user.profile
-    
+
     # Check permissions
     if profile.group and profile.is_current_group_admin:
         if not ClassificationRun.objects.filter(
-            segmentation__recording__species=species, 
-            segmentation__recording__group=profile.group,
-            status="completed"
+            segmentation__recording__species=species, segmentation__recording__group=profile.group, status="completed"
         ).exists():
             messages.error(request, "No completed classification runs for this species in your group.")
-            return redirect('battycoda_app:create_task_batches_for_species')
+            return redirect("battycoda_app:create_task_batches_for_species")
     else:
         if not ClassificationRun.objects.filter(
             segmentation__recording__species=species,
             segmentation__recording__created_by=request.user,
-            status="completed"
+            status="completed",
         ).exists():
             messages.error(request, "No completed classification runs for this species.")
-            return redirect('battycoda_app:create_task_batches_for_species')
+            return redirect("battycoda_app:create_task_batches_for_species")

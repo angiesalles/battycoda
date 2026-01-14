@@ -1,4 +1,3 @@
-
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.core.paginator import Paginator
@@ -9,6 +8,7 @@ from .models.organization import Project
 from .models.task import Task, TaskBatch
 
 # Set up logging
+
 
 @login_required
 def project_list_view(request):
@@ -34,25 +34,26 @@ def project_list_view(request):
 
     return render(request, "projects/project_list.html", context)
 
+
 @login_required
 def project_detail_view(request, project_id):
     """Display detail of a project"""
     project = get_object_or_404(Project, id=project_id)
 
     # Get tasks for this project
-    tasks_list = Task.objects.filter(project=project).order_by('-created_at')
+    tasks_list = Task.objects.filter(project=project).order_by("-created_at")
 
     # Paginate tasks
     tasks_paginator = Paginator(tasks_list, 50)
-    tasks_page_number = request.GET.get('tasks_page', 1)
+    tasks_page_number = request.GET.get("tasks_page", 1)
     tasks_page = tasks_paginator.get_page(tasks_page_number)
 
     # Get batches for this project
-    batches_list = TaskBatch.objects.filter(project=project).order_by('-created_at')
+    batches_list = TaskBatch.objects.filter(project=project).order_by("-created_at")
 
     # Paginate batches
     batches_paginator = Paginator(batches_list, 50)
-    batches_page_number = request.GET.get('batches_page', 1)
+    batches_page_number = request.GET.get("batches_page", 1)
     batches_page = batches_paginator.get_page(batches_page_number)
 
     context = {
@@ -64,6 +65,7 @@ def project_detail_view(request, project_id):
     }
 
     return render(request, "projects/project_detail.html", context)
+
 
 @login_required
 def create_project_view(request):
@@ -89,13 +91,16 @@ def create_project_view(request):
 
     return render(request, "projects/create_project.html", context)
 
+
 @login_required
 def edit_project_view(request, project_id):
     """Handle editing of a project"""
     project = get_object_or_404(Project, id=project_id)
 
     # Only allow editing if the user is admin or in the same group
-    if request.user.profile.is_current_group_admin or (request.user.profile.group and request.user.profile.group == project.group):
+    if request.user.profile.is_current_group_admin or (
+        request.user.profile.group and request.user.profile.group == project.group
+    ):
         if request.method == "POST":
             form = ProjectForm(request.POST, instance=project)
             if form.is_valid():
@@ -115,6 +120,7 @@ def edit_project_view(request, project_id):
     else:
         messages.error(request, "You do not have permission to edit this project.")
         return redirect("battycoda_app:project_list")
+
 
 @login_required
 def delete_project_view(request, project_id):
@@ -155,9 +161,6 @@ def delete_project_view(request, project_id):
                     messages.success(request, f"Successfully deleted project: {project_name}")
                     return redirect("battycoda_app:project_list")
             except Exception as e:
-
-                import traceback
-
                 messages.error(request, f"Failed to delete project: {str(e)}")
 
         context = {

@@ -1,27 +1,83 @@
-[tool.black]
+[tool.ruff]
+# Target Python 3.14
+target-version = "py314"
 line-length = 120
-target-version = ['py310']
-include = '\.pyi?$'
-exclude = '''
-/(
-    \.git
-  | \.hg
-  | \.mypy_cache
-  | \.tox
-  | \.venv
-  | _build
-  | buck-out
-  | build
-  | dist
-  | migrations
-)/
-'''
 
-[tool.isort]
-profile = "black"
-line_length = 120
-multi_line_output = 3
-include_trailing_comma = true
-skip = ["migrations"]
-sections = ["FUTURE", "STDLIB", "DJANGO", "THIRDPARTY", "FIRSTPARTY", "LOCALFOLDER"]
-known_django = ["django", "rest_framework"]
+# Exclude directories
+exclude = [
+    ".git",
+    ".hg",
+    ".mypy_cache",
+    ".tox",
+    ".venv",
+    "venv",
+    "env",
+    "_build",
+    "buck-out",
+    "build",
+    "dist",
+    "migrations",
+    "node_modules",
+    "static",
+    "media",
+    "data",
+    "training_data",
+    "batch_0_168",
+]
+
+[tool.ruff.lint]
+# Enable rules (replaces flake8 + plugins)
+select = [
+    "E",      # pycodestyle errors
+    "W",      # pycodestyle warnings
+    "F",      # pyflakes
+    "I",      # isort
+    "B",      # flake8-bugbear
+    "C4",     # flake8-comprehensions
+    "DJ",     # flake8-django
+]
+
+ignore = [
+    "E203",   # whitespace before ':' (conflicts with formatter)
+    "E501",   # line too long (handled by formatter)
+    # Temporarily ignored - tracked in beads for incremental fixes:
+    "F405",   # undefined name from star import (battycoda-1b8)
+    "F841",   # unused variable (battycoda-lrf)
+    "E402",   # import not at top (battycoda-27d)
+    "F821",   # undefined name (battycoda-pj4)
+    "B904",   # raise without from (battycoda-uvo)
+    "B007",   # unused loop variable (battycoda-aoj)
+    "F403",   # star import (battycoda-nt1)
+    "B905",   # zip without strict (battycoda-1lc)
+    "C401",   # unnecessary list comprehension (battycoda-afs)
+    "E741",   # ambiguous variable name (battycoda-uvm)
+    "DJ001",  # null=True on string fields (battycoda-usx)
+    "DJ012",  # model class ordering (battycoda-5xa)
+    "DJ008",  # models missing __str__ (battycoda-c2i)
+]
+
+# Allow autofix for all enabled rules
+fixable = ["ALL"]
+unfixable = []
+
+# Per-file ignores (like flake8's per-file-ignores)
+[tool.ruff.lint.per-file-ignores]
+"__init__.py" = ["F401", "F403"]
+"*/models.py" = ["E501"]
+"*/settings.py" = ["E501", "F401", "F403", "F405", "E402"]
+"scripts/*.py" = ["E402"]  # Scripts need django.setup() before imports
+"manage.py" = ["E402"]
+"*/management/commands/*.py" = ["E402"]
+
+[tool.ruff.lint.isort]
+# isort configuration (replaces [tool.isort])
+known-first-party = ["battycoda_app", "config"]
+known-third-party = ["django", "rest_framework", "celery"]
+section-order = ["future", "standard-library", "third-party", "first-party", "local-folder"]
+
+[tool.ruff.format]
+# Formatting options (replaces black)
+quote-style = "double"
+indent-style = "space"
+skip-magic-trailing-comma = false
+line-ending = "auto"

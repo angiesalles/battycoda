@@ -1,8 +1,8 @@
-
 from django.contrib.auth.models import User
 from django.core.management.base import BaseCommand
 
 from battycoda_app.utils_modules.species_utils import import_default_species
+
 
 class Command(BaseCommand):
     help = "Import default species for all users or a specific user"

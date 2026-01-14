@@ -3,53 +3,55 @@ from django.contrib.auth.forms import AuthenticationForm, UserCreationForm
 from django.contrib.auth.models import User
 from django.db import models
 
-from .models import Call, Project, Species, Recording, Segment, Task, TaskBatch, Group, UserProfile
+from .models import Call, Group, Project, Recording, Segment, Species, Task, TaskBatch, UserProfile
+
 
 class UserRegisterForm(UserCreationForm):
     email = forms.EmailField(required=True)
     captcha_answer = forms.IntegerField(
-        label="CAPTCHA (Anti-spam verification)",
-        help_text="Please solve the math problem above to verify you're human"
+        label="CAPTCHA (Anti-spam verification)", help_text="Please solve the math problem above to verify you're human"
     )
 
     class Meta:
         model = User
         fields = ["username", "email", "password1", "password2", "captcha_answer"]
-        
+
     def __init__(self, *args, **kwargs):
         # Extract captcha values from kwargs if provided
-        self.captcha_num1 = kwargs.pop('captcha_num1', None)
-        self.captcha_num2 = kwargs.pop('captcha_num2', None)
+        self.captcha_num1 = kwargs.pop("captcha_num1", None)
+        self.captcha_num2 = kwargs.pop("captcha_num2", None)
         super().__init__(*args, **kwargs)
-        
+
     def clean_username(self):
-        username = self.cleaned_data.get('username')
-        if '@' in username:
+        username = self.cleaned_data.get("username")
+        if "@" in username:
             raise forms.ValidationError("Username cannot contain the @ symbol. Please choose a different username.")
         return username
 
     def clean_email(self):
-        email = self.cleaned_data.get('email')
+        email = self.cleaned_data.get("email")
         if User.objects.filter(email=email).exists():
             raise forms.ValidationError("This email address is already registered.")
         return email
 
     def clean_captcha_answer(self):
-        answer = self.cleaned_data.get('captcha_answer')
-        
+        answer = self.cleaned_data.get("captcha_answer")
+
         # Check if we have the captcha values (they should be passed from the view)
         if self.captcha_num1 is None or self.captcha_num2 is None:
             raise forms.ValidationError("CAPTCHA verification failed. Please try again.")
-        
+
         correct_answer = self.captcha_num1 + self.captcha_num2
         if answer != correct_answer:
             raise forms.ValidationError("Incorrect answer. Please solve the math problem correctly.")
-        
+
         return answer
+
 
 class UserLoginForm(AuthenticationForm):
     username = forms.CharField(label="Username")
     password = forms.CharField(label="Password", widget=forms.PasswordInput)
+
 
 class UserProfileForm(forms.ModelForm):
     class Meta:
@@ -63,28 +65,24 @@ class UserProfileForm(forms.ModelForm):
 
         # Add styling to the theme select field
         if "theme" in self.fields:
-            self.fields["theme"].widget.attrs.update(
-                {"class": "form-control"}
-            )
-            
+            self.fields["theme"].widget.attrs.update({"class": "form-control"})
+
         # Add styling to the profile image field
         if "profile_image" in self.fields:
-            self.fields["profile_image"].widget.attrs.update({
-                "class": "form-control",
-                "accept": "image/*"  # Only accept image files
-            })
+            self.fields["profile_image"].widget.attrs.update(
+                {"class": "form-control", "accept": "image/*"}  # Only accept image files
+            )
             self.fields["profile_image"].required = False
             self.fields["profile_image"].help_text = "Upload a profile image (JPG, PNG, etc.)"
-            
+
         # Add styling and help text to the management features field
         if "management_features_enabled" in self.fields:
-            self.fields["management_features_enabled"].widget.attrs.update({
-                "class": "form-check-input"
-            })
+            self.fields["management_features_enabled"].widget.attrs.update({"class": "form-check-input"})
             self.fields["management_features_enabled"].help_text = (
                 "Enable access to administrative features like viewing all group data, "
                 "managing recordings and task batches for other users, and system-wide statistics."
             )
+
 
 class TaskBatchForm(forms.ModelForm):
     wav_file = forms.FileField(
@@ -172,6 +170,7 @@ class TaskForm(forms.ModelForm):
                 self.fields["species"].queryset = self.fields["species"].queryset.filter(group=profile.group)
                 self.fields["project"].queryset = self.fields["project"].queryset.filter(group=profile.group)
 
+
 class TaskUpdateForm(forms.ModelForm):
     """Form for updating task status and labels"""
 
@@ -181,6 +180,7 @@ class TaskUpdateForm(forms.ModelForm):
         widgets = {
             "notes": forms.Textarea(attrs={"rows": 3}),
         }
+
 
 class SpeciesForm(forms.ModelForm):
     class Meta:
@@ -209,6 +209,7 @@ class SpeciesForm(forms.ModelForm):
             "overview_padding_start_ms": "Padding in milliseconds before the call in overview (default: 500ms)",
             "overview_padding_end_ms": "Padding in milliseconds after the call in overview (default: 500ms)",
         }
+
 
 class SpeciesEditForm(forms.ModelForm):
     """Form for editing species without calls file upload"""
@@ -240,6 +241,7 @@ class SpeciesEditForm(forms.ModelForm):
             "overview_padding_end_ms": "Padding in milliseconds after the call in overview (default: 500ms)",
         }
 
+
 class CallForm(forms.ModelForm):
     class Meta:
         model = Call
@@ -250,6 +252,7 @@ class CallForm(forms.ModelForm):
             "DELETE": forms.CheckboxInput(attrs={"class": "form-check-input"}),
         }
 
+
 class CallFormSet(forms.BaseModelFormSet):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -257,10 +260,16 @@ class CallFormSet(forms.BaseModelFormSet):
         if not self.queryset:
             self.queryset = Call.objects.none()
 
+
 # Use extra=1 to add a single empty form by default
 CallFormSetFactory = forms.modelformset_factory(
-    Call, form=CallForm, formset=CallFormSet, extra=1, can_delete=True  # Add one empty form
+    Call,
+    form=CallForm,
+    formset=CallFormSet,
+    extra=1,
+    can_delete=True,  # Add one empty form
 )
+
 
 class ProjectForm(forms.ModelForm):
     class Meta:
@@ -268,8 +277,11 @@ class ProjectForm(forms.ModelForm):
         fields = ["name", "description"]
         widgets = {
             "name": forms.TextInput(attrs={"class": "form-control", "placeholder": "Enter project name"}),
-            "description": forms.Textarea(attrs={"rows": 4, "class": "form-control", "placeholder": "Describe your project here"}),
+            "description": forms.Textarea(
+                attrs={"rows": 4, "class": "form-control", "placeholder": "Describe your project here"}
+            ),
         }
+
 
 class GroupForm(forms.ModelForm):
     class Meta:
@@ -279,17 +291,21 @@ class GroupForm(forms.ModelForm):
             "description": forms.Textarea(attrs={"rows": 3}),
         }
 
+
 class GroupInvitationForm(forms.Form):
     email = forms.EmailField(
         label="Email Address", help_text="Enter the email address of the person you want to invite to your group"
     )
+
 
 class RecordingForm(forms.ModelForm):
     """Form for creating and editing recordings"""
 
     # Make name optional - it will be set automatically for batch uploads
     name = forms.CharField(
-        max_length=255, required=False, help_text="Name of the recording"  # Make it optional for batch upload
+        max_length=255,
+        required=False,
+        help_text="Name of the recording",  # Make it optional for batch upload
     )
 
     recorded_date = forms.DateField(
@@ -336,7 +352,7 @@ class RecordingForm(forms.ModelForm):
             if self.profile.group:
                 self.fields["species"].queryset = Species.objects.filter(
                     models.Q(is_system=True) | models.Q(group=self.profile.group)
-                ).order_by('name')
+                ).order_by("name")
                 project_queryset = self.fields["project"].queryset.filter(group=self.profile.group)
                 self.fields["project"].queryset = project_queryset
 
@@ -348,6 +364,7 @@ class RecordingForm(forms.ModelForm):
         """Name validation"""
         name = self.cleaned_data.get("name")
         return name
+
 
 class SegmentForm(forms.ModelForm):
     """Form for creating and editing segments in recordings"""
@@ -377,6 +394,7 @@ class SegmentForm(forms.ModelForm):
 
         return cleaned_data
 
+
 class SegmentFormSet(forms.BaseModelFormSet):
     """Formset for managing multiple segments"""
 
@@ -405,6 +423,7 @@ class SegmentFormSet(forms.BaseModelFormSet):
                         raise forms.ValidationError("Segments cannot overlap")
 
                 segments.append((onset, offset))
+
 
 # Create formset factory for segments
 SegmentFormSetFactory = forms.modelformset_factory(

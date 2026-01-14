@@ -1,7 +1,6 @@
 """
 Views for executing automated segmentation tasks on recordings.
 """
-import traceback
 
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
@@ -9,9 +8,9 @@ from django.db import transaction
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
-from django.utils import timezone
 
 from battycoda_app.models import Recording, Segment, Segmentation, SegmentationAlgorithm
+
 
 @login_required
 def select_recording_for_segmentation_view(request):
@@ -34,31 +33,34 @@ def select_recording_for_segmentation_view(request):
     # Transform recordings to match the generalized template's expected format
     items = []
     for recording in recordings:
-        items.append({
-            'id': recording.id,
-            'name': recording.name,
-            'type_name': f"{recording.species.name if recording.species else 'Unknown'} Recording",
-            'created_at': recording.created_at,
-            'detail_url': reverse('battycoda_app:recording_detail', kwargs={'recording_id': recording.id}),
-            'action_url': reverse('battycoda_app:auto_segment_recording', kwargs={'recording_id': recording.id}),
-        })
+        items.append(
+            {
+                "id": recording.id,
+                "name": recording.name,
+                "type_name": f"{recording.species.name if recording.species else 'Unknown'} Recording",
+                "created_at": recording.created_at,
+                "detail_url": reverse("battycoda_app:recording_detail", kwargs={"recording_id": recording.id}),
+                "action_url": reverse("battycoda_app:auto_segment_recording", kwargs={"recording_id": recording.id}),
+            }
+        )
 
     context = {
-        'title': "Select Recording for Segmentation",
-        'list_title': "Available Recordings",
-        'info_message': "Select a recording to create a new segmentation.",
-        'items': items,
-        'th1': "Recording Name",
-        'th2': "Species",
-        'action_text': "Segment This Recording",
-        'action_icon': 'cut',
-        'parent_url': 'battycoda_app:batch_segmentation',
-        'parent_name': 'Segmentation Overview',
-        'empty_message': "No recordings available. Upload a recording first.",
-        'create_url': 'battycoda_app:create_recording',
+        "title": "Select Recording for Segmentation",
+        "list_title": "Available Recordings",
+        "info_message": "Select a recording to create a new segmentation.",
+        "items": items,
+        "th1": "Recording Name",
+        "th2": "Species",
+        "action_text": "Segment This Recording",
+        "action_icon": "cut",
+        "parent_url": "battycoda_app:batch_segmentation",
+        "parent_name": "Segmentation Overview",
+        "empty_message": "No recordings available. Upload a recording first.",
+        "create_url": "battycoda_app:create_recording",
     }
 
     return render(request, "classification/select_entity.html", context)
+
 
 @login_required
 def auto_segment_recording_view(request, recording_id, algorithm_id=None):
@@ -131,7 +133,6 @@ def auto_segment_recording_view(request, recording_id, algorithm_id=None):
                     return redirect("battycoda_app:auto_segment_recording", recording_id=recording_id)
 
             except Exception as e:
-
                 messages.error(request, f"Error selecting algorithm: {str(e)}")
                 return redirect("battycoda_app:auto_segment_recording", recording_id=recording_id)
 
@@ -149,19 +150,19 @@ def auto_segment_recording_view(request, recording_id, algorithm_id=None):
         # Extract bandpass filter parameters
         low_freq = request.POST.get("low_freq")
         high_freq = request.POST.get("high_freq")
-        
+
         # Convert to appropriate types
         try:
             min_duration_ms = int(min_duration_ms)
             smooth_window = int(smooth_window)
             threshold_factor = float(threshold_factor)
-            
+
             # Convert frequency parameters to integers or None
             if low_freq and low_freq.strip():
                 low_freq = int(low_freq)
             else:
                 low_freq = None
-                
+
             if high_freq and high_freq.strip():
                 high_freq = int(high_freq)
             else:
@@ -182,7 +183,6 @@ def auto_segment_recording_view(request, recording_id, algorithm_id=None):
         try:
             from celery import current_app
 
-
             # Create a Segmentation entry first to track this job
             segmentation = Segmentation.objects.create(
                 recording=recording,
@@ -198,12 +198,20 @@ def auto_segment_recording_view(request, recording_id, algorithm_id=None):
             # Launch Celery task with segmentation_id as the first parameter
             task = current_app.send_task(
                 algorithm.celery_task,
-                args=[recording.id, segmentation.id, min_duration_ms, smooth_window, threshold_factor, low_freq, high_freq],
+                args=[
+                    recording.id,
+                    segmentation.id,
+                    min_duration_ms,
+                    smooth_window,
+                    threshold_factor,
+                    low_freq,
+                    high_freq,
+                ],
             )
-            
+
             # Update the segmentation with the actual task ID
             segmentation.task_id = task.id
-            segmentation.save(update_fields=['task_id'])
+            segmentation.save(update_fields=["task_id"])
 
             # Store task ID in session for status checking
             request.session[f"auto_segment_task_{recording_id}"] = task.id
@@ -213,7 +221,6 @@ def auto_segment_recording_view(request, recording_id, algorithm_id=None):
                 # Delete existing segments
                 existing_count = Segment.objects.filter(recording=recording).count()
                 if existing_count > 0:
-
                     Segment.objects.filter(recording=recording).delete()
 
                 # The segmentation was already created before launching the task
@@ -228,7 +235,6 @@ def auto_segment_recording_view(request, recording_id, algorithm_id=None):
             return redirect("battycoda_app:batch_segmentation")
 
         except Exception as e:
-
             # Set error message
             messages.error(request, f"Error starting segmentation: {str(e)}")
 
@@ -266,6 +272,7 @@ def auto_segment_recording_view(request, recording_id, algorithm_id=None):
     }
 
     return render(request, "segmentations/auto_segment.html", context)
+
 
 @login_required
 def auto_segment_status_view(request, recording_id):
@@ -334,7 +341,6 @@ def auto_segment_status_view(request, recording_id):
                         "result": task_result,
                     }
 
-
                     return JsonResponse(response_data)
                 else:
                     # Task returned error status
@@ -378,5 +384,4 @@ def auto_segment_status_view(request, recording_id):
             )
 
     except Exception as e:
-
         return JsonResponse({"success": False, "status": "error", "message": f"Error checking task status: {str(e)}"})

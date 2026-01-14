@@ -5,8 +5,8 @@ from django.core.exceptions import ValidationError
 from django.db import models
 
 from .organization import Call, Species
-from .task import TaskBatch
 from .user import Group
+
 
 class Classifier(models.Model):
     """Classifier model for storing algorithm information."""
@@ -48,12 +48,9 @@ class Classifier(models.Model):
 
     # Model file path if this is a custom trained classifier
     model_file = models.CharField(
-        max_length=512, 
-        blank=True, 
-        null=True, 
-        help_text="Path to the model file for custom trained classifiers"
+        max_length=512, blank=True, null=True, help_text="Path to the model file for custom trained classifiers"
     )
-    
+
     # Species this classifier is trained for
     species = models.ForeignKey(
         Species,
@@ -61,7 +58,7 @@ class Classifier(models.Model):
         related_name="classifiers",
         null=True,
         blank=True,
-        help_text="Species this classifier is trained for. Once set, this cannot be changed."
+        help_text="Species this classifier is trained for. Once set, this cannot be changed.",
     )
 
     # Admin only flag
@@ -86,7 +83,7 @@ class Classifier(models.Model):
 
     def __str__(self):
         return self.name
-        
+
     def clean(self):
         """Validate the model before saving"""
         # If this is an existing classifier with a species already set
@@ -94,11 +91,13 @@ class Classifier(models.Model):
             original = Classifier.objects.get(pk=self.pk)
             # Check if species is being changed and was previously set
             if original.species and self.species != original.species:
-                raise ValidationError({
-                    'species': "Cannot change the species of an existing classifier. "
-                               "The classifier is tied to the call types of its species."
-                })
-    
+                raise ValidationError(
+                    {
+                        "species": "Cannot change the species of an existing classifier. "
+                        "The classifier is tied to the call types of its species."
+                    }
+                )
+
     def save(self, *args, **kwargs):
         """Override save to enforce validation"""
         self.clean()
@@ -106,6 +105,7 @@ class Classifier(models.Model):
 
     class Meta:
         ordering = ["name"]
+
 
 class ClassificationRun(models.Model):
     """Classification run model for tracking automated classification jobs."""
@@ -151,10 +151,7 @@ class ClassificationRun(models.Model):
     progress = models.FloatField(default=0.0, help_text="Progress percentage from 0-100")
     error_message = models.TextField(blank=True, null=True)
     features_file = models.CharField(
-        max_length=512, 
-        blank=True, 
-        null=True, 
-        help_text="Path to the exported features CSV file"
+        max_length=512, blank=True, null=True, help_text="Path to the exported features CSV file"
     )
 
     class Meta:
@@ -163,11 +160,14 @@ class ClassificationRun(models.Model):
     def __str__(self):
         return f"{self.name} - {self.segmentation.recording.name}"
 
+
 class ClassificationResult(models.Model):
     """Classification Result model for storing individual call classification probabilities."""
 
     classification_run = models.ForeignKey(ClassificationRun, on_delete=models.CASCADE, related_name="results")
-    segment = models.ForeignKey("battycoda_app.Segment", on_delete=models.CASCADE, related_name="classification_results")
+    segment = models.ForeignKey(
+        "battycoda_app.Segment", on_delete=models.CASCADE, related_name="classification_results"
+    )
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
@@ -176,10 +176,13 @@ class ClassificationResult(models.Model):
     def __str__(self):
         return f"Classification for {self.segment}"
 
+
 class CallProbability(models.Model):
     """Call probability model for storing probability for each call type."""
 
-    classification_result = models.ForeignKey(ClassificationResult, on_delete=models.CASCADE, related_name="probabilities")
+    classification_result = models.ForeignKey(
+        ClassificationResult, on_delete=models.CASCADE, related_name="probabilities"
+    )
     call = models.ForeignKey(Call, on_delete=models.CASCADE, related_name="probabilities")
     probability = models.FloatField(help_text="Probability value between 0-1")
 
@@ -201,20 +204,20 @@ class ClassifierTrainingJob(models.Model):
         related_name="training_jobs",
         null=True,
         blank=True,
-        help_text="The task batch used for training this classifier (null if trained from folder)"
+        help_text="The task batch used for training this classifier (null if trained from folder)",
     )
     created_at = models.DateTimeField(auto_now_add=True)
     created_by = models.ForeignKey(User, on_delete=models.CASCADE, related_name="training_jobs")
     group = models.ForeignKey(Group, on_delete=models.CASCADE, related_name="training_jobs", null=True)
-    
+
     # Classifier settings
     response_format = models.CharField(
-        max_length=20, 
+        max_length=20,
         choices=Classifier.RESPONSE_FORMAT_CHOICES,
         default="highest_only",
-        help_text="Format of the response returned by this classifier"
+        help_text="Format of the response returned by this classifier",
     )
-    
+
     # Reference to resulting classifier (set when training completes)
     classifier = models.ForeignKey(
         Classifier,
@@ -222,16 +225,12 @@ class ClassifierTrainingJob(models.Model):
         related_name="training_job",
         null=True,
         blank=True,
-        help_text="The classifier created by this training job (set after successful completion)"
+        help_text="The classifier created by this training job (set after successful completion)",
     )
-    
+
     # Training parameters (can be extended as needed)
-    parameters = models.JSONField(
-        blank=True, 
-        null=True, 
-        help_text="JSON with training parameters"
-    )
-    
+    parameters = models.JSONField(blank=True, null=True, help_text="JSON with training parameters")
+
     # Status tracking
     STATUS_CHOICES = (
         ("pending", "Pending"),
@@ -242,10 +241,10 @@ class ClassifierTrainingJob(models.Model):
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default="pending")
     progress = models.FloatField(default=0.0, help_text="Progress percentage from 0-100")
     error_message = models.TextField(blank=True, null=True)
-    
+
     class Meta:
         ordering = ["-created_at"]
-        
+
     def __str__(self):
         if self.task_batch:
             return f"{self.name} - {self.task_batch.name}"

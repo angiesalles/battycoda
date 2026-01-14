@@ -52,9 +52,5 @@ pydevd-pycharm>=233.13135.95  # PyCharm debugging
 sentry-sdk[django,celery]>=2.0.0,<3.0.0
 
 # Linting and code quality tools
-flake8>=6.1.0,<7.0.0
-flake8-django>=1.4.0,<2.0.0
-flake8-docstrings>=1.7.0,<2.0.0
-black>=24.3.0,<25.0.0
-isort>=5.13.0,<6.0.0
+ruff>=0.14.0  # Replaces flake8, black, isort - much faster and Python 3.14 compatible
 h5py

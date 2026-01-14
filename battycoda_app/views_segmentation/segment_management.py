@@ -1,108 +1,83 @@
 """
 Views for managing individual recording segments (CRUD operations).
 """
+
 import json
 import os
-import hashlib
 
 from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
-from django.db import transaction
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
-from django.utils import timezone
 
+from battycoda_app.audio.colormaps import ROSEUS_COLORMAP
 from battycoda_app.forms import SegmentForm
 from battycoda_app.models import Recording, Segment, Segmentation, SpectrogramJob
-from battycoda_app.audio.colormaps import ROSEUS_COLORMAP
 
 
 def get_spectrogram_status(recording):
     """
     Get comprehensive spectrogram status for a recording.
-    
+
     Returns:
         dict: Contains 'status', 'url', 'job', 'progress' information
     """
     try:
         # Check if recording has spectrogram file stored in database
         if recording.spectrogram_file:
-            spectrogram_path = os.path.join(settings.MEDIA_ROOT, "spectrograms", "recordings", recording.spectrogram_file)
-            
+            spectrogram_path = os.path.join(
+                settings.MEDIA_ROOT, "spectrograms", "recordings", recording.spectrogram_file
+            )
+
             # Check if spectrogram file actually exists
             if os.path.exists(spectrogram_path) and os.path.getsize(spectrogram_path) > 0:
                 return {
-                    'status': 'available',
-                    'url': f"/media/spectrograms/recordings/{recording.spectrogram_file}",
-                    'job': None,
-                    'progress': 100
+                    "status": "available",
+                    "url": f"/media/spectrograms/recordings/{recording.spectrogram_file}",
+                    "job": None,
+                    "progress": 100,
                 }
-        
+
         # Check for existing jobs
-        active_job = SpectrogramJob.objects.filter(
-            recording=recording,
-            status__in=['pending', 'in_progress']
-        ).first()
-        
+        active_job = SpectrogramJob.objects.filter(recording=recording, status__in=["pending", "in_progress"]).first()
+
         if active_job:
-            return {
-                'status': 'generating',
-                'url': None,
-                'job': active_job,
-                'progress': active_job.progress
-            }
-        
+            return {"status": "generating", "url": None, "job": active_job, "progress": active_job.progress}
+
         # Check for completed jobs with file
-        completed_job = SpectrogramJob.objects.filter(
-            recording=recording,
-            status='completed'
-        ).order_by('-created_at').first()
-        
+        completed_job = (
+            SpectrogramJob.objects.filter(recording=recording, status="completed").order_by("-created_at").first()
+        )
+
         if completed_job and completed_job.output_file_path and os.path.exists(completed_job.output_file_path):
             # Extract the relative URL from the full path
-            relative_path = str(completed_job.output_file_path).replace(settings.MEDIA_ROOT, '').lstrip('/')
-            return {
-                'status': 'available',
-                'url': f"/media/{relative_path}",
-                'job': completed_job,
-                'progress': 100
-            }
-        
+            relative_path = str(completed_job.output_file_path).replace(settings.MEDIA_ROOT, "").lstrip("/")
+            return {"status": "available", "url": f"/media/{relative_path}", "job": completed_job, "progress": 100}
+
         # No spectrogram available, no active jobs
-        return {
-            'status': 'not_available',
-            'url': None,
-            'job': None,
-            'progress': 0
-        }
-        
+        return {"status": "not_available", "url": None, "job": None, "progress": 0}
+
     except Exception as e:
-        return {
-            'status': 'error',
-            'url': None,
-            'job': None,
-            'progress': 0,
-            'error': str(e)
-        }
+        return {"status": "error", "url": None, "job": None, "progress": 0, "error": str(e)}
 
 
 @login_required
 def segment_recording_view(request, segmentation_id=None):
     """View for segmenting - handles list, create, and detail views"""
     profile = request.user.profile
-    
+
     # Handle different URL patterns
     if segmentation_id is None:
         # /segmentations/ - list view
-        if request.path == '/segmentations/':
+        if request.path == "/segmentations/":
             return segmentation_list_view(request)
-        # /segmentations/create/ - create view  
-        elif request.path == '/segmentations/create/':
+        # /segmentations/create/ - create view
+        elif request.path == "/segmentations/create/":
             return create_segmentation_view(request)
         else:
             # Fallback for old recording-based URLs - extract recording_id from kwargs
-            recording_id = request.resolver_match.kwargs.get('recording_id')
+            recording_id = request.resolver_match.kwargs.get("recording_id")
             if recording_id:
                 return segment_recording_legacy_view(request, recording_id)
             else:
@@ -112,18 +87,18 @@ def segment_recording_view(request, segmentation_id=None):
         return segmentation_detail_view(request, segmentation_id)
 
 
-@login_required  
+@login_required
 def segment_recording_legacy_view(request, recording_id):
     """Legacy view for segmenting a recording (marking regions) - redirects to new URL"""
     recording = get_object_or_404(Recording, id=recording_id)
-    
+
     # Find most recent segmentation or create one
     active_segmentation = Segmentation.objects.filter(recording=recording).order_by("-created_at").first()
-    
+
     if not active_segmentation:
         # No segmentation exists - redirect to create one
         return redirect("battycoda_app:create_segmentation", recording=recording.id)
-    
+
     # Redirect to the new URL structure
     return redirect("battycoda_app:segmentation_detail", segmentation_id=active_segmentation.id)
 
@@ -132,56 +107,54 @@ def segment_recording_legacy_view(request, recording_id):
 def segmentation_list_view(request):
     """List all segmentations available to the user"""
     profile = request.user.profile
-    
+
     # Filter segmentations by user's permissions (exclude hidden recordings)
     if profile.group and profile.is_current_group_admin:
         segmentations = Segmentation.objects.filter(
             recording__group=profile.group,
-            recording__hidden=False  # Exclude hidden recordings
+            recording__hidden=False,  # Exclude hidden recordings
         ).order_by("-created_at")
     else:
         segmentations = Segmentation.objects.filter(
             recording__created_by=request.user,
-            recording__hidden=False  # Exclude hidden recordings
+            recording__hidden=False,  # Exclude hidden recordings
         ).order_by("-created_at")
-    
+
     context = {
         "segmentations": segmentations,
     }
     return render(request, "segmentations/segmentation_list.html", context)
 
 
-@login_required  
+@login_required
 def create_segmentation_view(request):
     """Create a new segmentation for a recording"""
-    recording_id = request.GET.get('recording')
+    recording_id = request.GET.get("recording")
     if not recording_id:
         messages.error(request, "No recording specified for segmentation.")
         return redirect("battycoda_app:recording_list")
-        
+
     recording = get_object_or_404(Recording, id=recording_id)
-    
+
     # Check permissions
     profile = request.user.profile
     if recording.created_by != request.user and (not profile.group or recording.group != profile.group):
         messages.error(request, "You don't have permission to create segmentations for this recording.")
         return redirect("battycoda_app:recording_list")
-    
+
     # For now, just create a default empty segmentation and redirect to it
     # TODO: Add a proper creation form later
     segmentation = Segmentation.objects.create(
-        recording=recording,
-        name=f"Segmentation for {recording.name}",
-        created_by=request.user
+        recording=recording, name=f"Segmentation for {recording.name}", created_by=request.user
     )
-    
+
     messages.success(request, f"Created new segmentation for {recording.name}")
     return redirect("battycoda_app:segmentation_detail", segmentation_id=segmentation.id)
 
 
 @login_required
 def segmentation_detail_view(request, segmentation_id):
-    """View for editing a specific segmentation (marking regions)"""  
+    """View for editing a specific segmentation (marking regions)"""
     segmentation = get_object_or_404(Segmentation, id=segmentation_id)
     recording = segmentation.recording  # This works through FK even if recording is hidden
 
@@ -192,7 +165,7 @@ def segmentation_detail_view(request, segmentation_id):
         return redirect("battycoda_app:segmentation_list")
 
     # No need to manage is_active field anymore - just use the current segmentation
-    
+
     # Use this specific segmentation
     active_segmentation = segmentation
     segments_queryset = Segment.objects.filter(segmentation=active_segmentation).order_by("onset")
@@ -257,6 +230,7 @@ def delete_segmentation_view(request, segmentation_id):
     # If GET request, show confirmation page (though we'll use JS confirmation instead)
     return redirect("battycoda_app:segmentation_detail", segmentation_id=segmentation_id)
 
+
 @login_required
 def add_segment_view(request, segmentation_id):
     """Add a segment to a segmentation via AJAX"""
@@ -283,6 +257,7 @@ def add_segment_view(request, segmentation_id):
 
     return JsonResponse({"success": False, "error": "Invalid request method"}, status=405)
 
+
 @login_required
 def edit_segment_view(request, segmentation_id, segment_id):
     """Edit a segment via AJAX"""
@@ -305,6 +280,7 @@ def edit_segment_view(request, segmentation_id, segment_id):
             return JsonResponse({"success": False, "errors": form.errors}, status=400)
 
     return JsonResponse({"success": False, "error": "Invalid request method"}, status=405)
+
 
 @login_required
 def delete_segment_view(request, segmentation_id, segment_id):

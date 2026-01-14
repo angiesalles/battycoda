@@ -8,15 +8,18 @@ without errors. They help catch issues like:
 - Template syntax errors
 - Invalid template variable references
 """
+
 import os
-from django.test import TestCase, RequestFactory
-from django.template import Context, Template, TemplateDoesNotExist, TemplateSyntaxError
-from django.template.loader import get_template
-from django.contrib.auth.models import User
+
 from django.conf import settings
-from battycoda_app.models.user import UserProfile, Group
-from battycoda_app.models.organization import Species, Project
+from django.contrib.auth.models import User
+from django.template import TemplateDoesNotExist, TemplateSyntaxError
+from django.template.loader import get_template
+from django.test import RequestFactory, TestCase
+
 from battycoda_app.forms import SpeciesForm
+from battycoda_app.models.organization import Species
+from battycoda_app.models.user import Group
 
 
 class TemplateValidationTestCase(TestCase):
@@ -25,12 +28,8 @@ class TemplateValidationTestCase(TestCase):
     def setUp(self):
         """Set up test data."""
         self.factory = RequestFactory()
-        self.user = User.objects.create_user(
-            username='testuser',
-            email='test@example.com',
-            password='testpass123'
-        )
-        self.group = Group.objects.create(name='Test Group')
+        self.user = User.objects.create_user(username="testuser", email="test@example.com", password="testpass123")
+        self.group = Group.objects.create(name="Test Group")
         self.profile = self.user.profile
         self.profile.group = self.group
         self.profile.save()
@@ -41,11 +40,11 @@ class TemplateValidationTestCase(TestCase):
         Returns list of template paths relative to templates dir.
         """
         templates = []
-        templates_dir = os.path.join(settings.BASE_DIR, 'templates')
+        templates_dir = os.path.join(settings.BASE_DIR, "templates")
 
         for root, dirs, files in os.walk(templates_dir):
             for filename in files:
-                if filename.endswith('.html'):
+                if filename.endswith(".html"):
                     full_path = os.path.join(root, filename)
                     rel_path = os.path.relpath(full_path, templates_dir)
                     templates.append(rel_path)
@@ -75,7 +74,7 @@ class TemplateValidationTestCase(TestCase):
     def test_base_template_loads(self):
         """Test that the base template loads correctly."""
         try:
-            template = get_template('base.html')
+            template = get_template("base.html")
             self.assertIsNotNone(template)
         except TemplateSyntaxError as e:
             self.fail(f"base.html has syntax error: {str(e)}")
@@ -83,7 +82,7 @@ class TemplateValidationTestCase(TestCase):
     def test_species_create_template_loads(self):
         """Test that the species create template loads correctly."""
         try:
-            template = get_template('species/create_species.html')
+            template = get_template("species/create_species.html")
             self.assertIsNotNone(template)
         except TemplateSyntaxError as e:
             self.fail(f"species/create_species.html has syntax error: {str(e)}")
@@ -91,8 +90,8 @@ class TemplateValidationTestCase(TestCase):
     def test_species_create_includes_exist(self):
         """Test that all includes referenced by species/create_species.html exist."""
         includes = [
-            'species/includes/basic_form.html',
-            'species/includes/call_types.html',
+            "species/includes/basic_form.html",
+            "species/includes/call_types.html",
         ]
 
         for include_path in includes:
@@ -106,36 +105,33 @@ class TemplateValidationTestCase(TestCase):
 
     def test_species_create_template_renders(self):
         """Test that the species create template can render with appropriate context."""
-        template = get_template('species/create_species.html')
+        template = get_template("species/create_species.html")
 
         context = {
-            'form': SpeciesForm(),
-            'existing_species_names': [],
-            'user': self.user,
+            "form": SpeciesForm(),
+            "existing_species_names": [],
+            "user": self.user,
         }
 
         try:
             rendered = template.render(context)
             self.assertIsNotNone(rendered)
-            self.assertIn('Add New Species', rendered)
-            self.assertIn('call_types_json', rendered)
+            self.assertIn("Add New Species", rendered)
+            self.assertIn("call_types_json", rendered)
         except Exception as e:
             self.fail(f"Template rendering failed: {str(e)}")
 
     def test_species_list_template_renders(self):
         """Test that the species list template can render."""
-        template = get_template('species/species_list.html')
+        template = get_template("species/species_list.html")
 
-        species = Species.objects.create(
-            name='Test Species',
-            group=self.group
-        )
+        species = Species.objects.create(name="Test Species", group=self.group)
 
         context = {
-            'system_species': [species],
-            'user_species': [],
-            'user': self.user,
-            'profile': self.profile,
+            "system_species": [species],
+            "user_species": [],
+            "user": self.user,
+            "profile": self.profile,
         }
 
         try:
@@ -146,19 +142,16 @@ class TemplateValidationTestCase(TestCase):
 
     def test_species_detail_template_renders(self):
         """Test that the species detail template can render."""
-        template = get_template('species/species_detail.html')
+        template = get_template("species/species_detail.html")
 
-        species = Species.objects.create(
-            name='Test Species',
-            group=self.group
-        )
+        species = Species.objects.create(name="Test Species", group=self.group)
 
         context = {
-            'species': species,
-            'tasks_page': [],
-            'batches_page': [],
-            'user': self.user,
-            'profile': self.profile,
+            "species": species,
+            "tasks_page": [],
+            "batches_page": [],
+            "user": self.user,
+            "profile": self.profile,
         }
 
         try:
@@ -181,7 +174,7 @@ class TemplateBlockStructureTestCase(TestCase):
             # If it loads without TemplateSyntaxError, blocks are valid
             return True, None
         except TemplateSyntaxError as e:
-            if 'endblock' in str(e).lower():
+            if "endblock" in str(e).lower():
                 return False, str(e)
             # Other syntax errors are handled elsewhere
             return True, None
@@ -190,15 +183,15 @@ class TemplateBlockStructureTestCase(TestCase):
 
     def test_species_create_blocks(self):
         """Test that species/create_species.html has valid block structure."""
-        is_valid, error = self.check_template_blocks('species/create_species.html')
+        is_valid, error = self.check_template_blocks("species/create_species.html")
         if not is_valid:
             self.fail(f"Invalid block structure: {error}")
 
     def test_species_includes_blocks(self):
         """Test that species includes have valid block structure."""
         includes = [
-            'species/includes/basic_form.html',
-            'species/includes/call_types.html',
+            "species/includes/basic_form.html",
+            "species/includes/call_types.html",
         ]
 
         errors = []
@@ -216,12 +209,8 @@ class TemplateCriticalPathTestCase(TestCase):
 
     def setUp(self):
         """Set up test data."""
-        self.user = User.objects.create_user(
-            username='testuser',
-            email='test@example.com',
-            password='testpass123'
-        )
-        self.group = Group.objects.create(name='Test Group')
+        self.user = User.objects.create_user(username="testuser", email="test@example.com", password="testpass123")
+        self.group = Group.objects.create(name="Test Group")
         self.profile = self.user.profile
         self.profile.group = self.group
         self.profile.save()
@@ -229,13 +218,13 @@ class TemplateCriticalPathTestCase(TestCase):
     def test_critical_templates_exist(self):
         """Test that critical templates exist and load."""
         critical_templates = [
-            'base.html',
-            'species/species_list.html',
-            'species/species_detail.html',
-            'species/create_species.html',
-            'tasks/annotate_task.html',
-            'recordings/recording_list.html',
-            'projects/project_list.html',
+            "base.html",
+            "species/species_list.html",
+            "species/species_detail.html",
+            "species/create_species.html",
+            "tasks/annotate_task.html",
+            "recordings/recording_list.html",
+            "projects/project_list.html",
         ]
 
         missing = []

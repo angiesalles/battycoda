@@ -3,9 +3,9 @@ Main classification task for BattyCoda.
 
 Runs automated call classification on segments using configured classifiers.
 """
+
 import logging
 import os
-from pathlib import Path
 
 import requests
 import soundfile as sf
@@ -13,18 +13,30 @@ from celery import shared_task
 from django.conf import settings
 from django.db import transaction
 
-from ..base import extract_audio_segment
-from ..classification_utils import (R_SERVER_URL, check_r_server_connection,
-                                    get_call_types, get_segments,
-                                    update_classification_run_status)
 from ....utils_modules.cleanup import safe_cleanup_dir, safe_remove_file
 from ....utils_modules.path_utils import get_local_tmp, get_r_server_path
+from ..base import extract_audio_segment
+from ..classification_utils import (
+    check_r_server_connection,
+    get_call_types,
+    get_segments,
+    update_classification_run_status,
+)
 
 logger = logging.getLogger(__name__)
 
 
-def process_classification_batch(batch_index, batch_segments, classification_run, recording, classifier,
-                                 service_url, endpoint, model_path_for_r_server, segment_list_start_idx):
+def process_classification_batch(
+    batch_index,
+    batch_segments,
+    classification_run,
+    recording,
+    classifier,
+    service_url,
+    endpoint,
+    model_path_for_r_server,
+    segment_list_start_idx,
+):
     """Process a single batch of segments for classification."""
     shared_tmp_dir = get_local_tmp()
     os.makedirs(shared_tmp_dir, exist_ok=True)
@@ -37,9 +49,7 @@ def process_classification_batch(batch_index, batch_segments, classification_run
         segment_map = {}
 
         for i, segment in enumerate(batch_segments):
-            segment_data, sample_rate = extract_audio_segment(
-                recording.wav_file.path, segment.onset, segment.offset
-            )
+            segment_data, sample_rate = extract_audio_segment(recording.wav_file.path, segment.onset, segment.offset)
 
             segment_filename = f"segment_{segment.id}.wav"
             segment_path = os.path.join(batch_dir, segment_filename)
@@ -47,16 +57,16 @@ def process_classification_batch(batch_index, batch_segments, classification_run
             sf.write(segment_path, segment_data, samplerate=sample_rate)
 
             task_id = None
-            if hasattr(segment, 'task') and segment.task:
+            if hasattr(segment, "task") and segment.task:
                 task_id = segment.task.id
 
             segment_metadata = {
-                'segment_id': segment.id,
-                'task_id': task_id,
-                'start_time': segment.onset,
-                'end_time': segment.offset,
-                'recording_name': recording.name,
-                'wav_filename': os.path.basename(recording.wav_file.name) if recording.wav_file else 'unknown.wav'
+                "segment_id": segment.id,
+                "task_id": task_id,
+                "start_time": segment.onset,
+                "end_time": segment.offset,
+                "recording_name": recording.name,
+                "wav_filename": os.path.basename(recording.wav_file.name) if recording.wav_file else "unknown.wav",
             }
             segment_map[segment_filename] = segment_metadata
 
@@ -69,32 +79,37 @@ def process_classification_batch(batch_index, batch_segments, classification_run
         params = {
             "wav_folder": r_server_path,
             "model_path": model_path_for_r_server,
-            "export_features_path": features_path_r_server
+            "export_features_path": features_path_r_server,
         }
 
-        logger.debug(f"Calling classifier service for batch {batch_index+1} at {endpoint}")
+        logger.debug(f"Calling classifier service for batch {batch_index + 1} at {endpoint}")
 
         response = requests.post(endpoint, data=params, timeout=60)
 
         if response.status_code != 200:
-            raise RuntimeError(f"Classifier service error for batch {batch_index+1}: Status {response.status_code} - {response.text}")
+            raise RuntimeError(
+                f"Classifier service error for batch {batch_index + 1}: Status {response.status_code} - {response.text}"
+            )
 
         prediction_data = response.json()
 
-        status_value = prediction_data.get('status')
-        is_success = (status_value == 'success' or
-                     (isinstance(status_value, list) and len(status_value) > 0 and status_value[0] == 'success'))
+        status_value = prediction_data.get("status")
+        is_success = status_value == "success" or (
+            isinstance(status_value, list) and len(status_value) > 0 and status_value[0] == "success"
+        )
 
         if not is_success:
-            raise ValueError(f"Classifier returned error for batch {batch_index+1}: {prediction_data.get('message', 'Unknown error')}")
+            raise ValueError(
+                f"Classifier returned error for batch {batch_index + 1}: {prediction_data.get('message', 'Unknown error')}"
+            )
 
-        file_results = prediction_data.get('file_results', {})
+        file_results = prediction_data.get("file_results", {})
 
         batch_results = []
         for filename, result_data in file_results.items():
             segment_metadata = segment_map.get(filename)
             if segment_metadata:
-                segment_id = segment_metadata['segment_id']
+                segment_id = segment_metadata["segment_id"]
                 processed_data = {}
                 for key, value in result_data.items():
                     if isinstance(value, list) and len(value) > 0:
@@ -102,10 +117,10 @@ def process_classification_batch(batch_index, batch_segments, classification_run
                     else:
                         processed_data[key] = value
 
-                if 'class_probabilities' in result_data:
-                    prob_data = result_data['class_probabilities']
+                if "class_probabilities" in result_data:
+                    prob_data = result_data["class_probabilities"]
                     if isinstance(prob_data, list) and len(prob_data) > 0:
-                        processed_data['class_probabilities'] = prob_data[0]
+                        processed_data["class_probabilities"] = prob_data[0]
 
                 batch_results.append((segment_id, processed_data, segment_metadata))
 
@@ -142,38 +157,49 @@ def combine_features_files(all_features_files, all_segment_metadata, classificat
 
             enhanced_columns = []
             for index, row in combined_features.iterrows():
-                sound_file = row['sound.files']
+                sound_file = row["sound.files"]
                 if sound_file in all_segment_metadata:
                     metadata = all_segment_metadata[sound_file]
-                    enhanced_columns.append({
-                        'task_id': metadata['task_id'],
-                        'call_start_time': metadata['start_time'],
-                        'call_end_time': metadata['end_time'],
-                        'call_duration': metadata['end_time'] - metadata['start_time'],
-                        'recording_name': metadata['recording_name'],
-                        'original_wav_file': metadata['wav_filename']
-                    })
+                    enhanced_columns.append(
+                        {
+                            "task_id": metadata["task_id"],
+                            "call_start_time": metadata["start_time"],
+                            "call_end_time": metadata["end_time"],
+                            "call_duration": metadata["end_time"] - metadata["start_time"],
+                            "recording_name": metadata["recording_name"],
+                            "original_wav_file": metadata["wav_filename"],
+                        }
+                    )
                 else:
-                    enhanced_columns.append({
-                        'task_id': None,
-                        'call_start_time': None,
-                        'call_end_time': None,
-                        'call_duration': None,
-                        'recording_name': 'Unknown',
-                        'original_wav_file': 'Unknown'
-                    })
+                    enhanced_columns.append(
+                        {
+                            "task_id": None,
+                            "call_start_time": None,
+                            "call_end_time": None,
+                            "call_duration": None,
+                            "recording_name": "Unknown",
+                            "original_wav_file": "Unknown",
+                        }
+                    )
 
             enhanced_df = pd.DataFrame(enhanced_columns)
 
             original_cols = combined_features.columns.tolist()
 
             insert_index = 2
-            if 'selec' in original_cols:
-                insert_index = original_cols.index('selec') + 1
-            elif 'sound.files' in original_cols:
-                insert_index = original_cols.index('sound.files') + 1
+            if "selec" in original_cols:
+                insert_index = original_cols.index("selec") + 1
+            elif "sound.files" in original_cols:
+                insert_index = original_cols.index("sound.files") + 1
 
-            new_cols = ['task_id', 'call_start_time', 'call_end_time', 'call_duration', 'recording_name', 'original_wav_file']
+            new_cols = [
+                "task_id",
+                "call_start_time",
+                "call_end_time",
+                "call_duration",
+                "recording_name",
+                "original_wav_file",
+            ]
             final_cols = original_cols[:insert_index] + new_cols + original_cols[insert_index:]
 
             final_features = pd.concat([combined_features, enhanced_df], axis=1)
@@ -192,14 +218,16 @@ def combine_features_files(all_features_files, all_segment_metadata, classificat
         return None
 
 
-@shared_task(bind=True, name="battycoda_app.audio.task_modules.classification.run_classification.run_call_classification")
+@shared_task(
+    bind=True, name="battycoda_app.audio.task_modules.classification.run_classification.run_call_classification"
+)
 def run_call_classification(self, classification_run_id):
     """
     Run automated call classification on segments using the configured classifier.
 
     Processes segments in small batches for better progress tracking and reliability.
     """
-    from battycoda_app.models.classification import CallProbability, Classifier, ClassificationResult, ClassificationRun
+    from battycoda_app.models.classification import CallProbability, ClassificationResult, ClassificationRun, Classifier
 
     try:
         classification_run = ClassificationRun.objects.get(id=classification_run_id)
@@ -215,7 +243,9 @@ def run_call_classification(self, classification_run_id):
                 try:
                     classifier = Classifier.objects.get(name="R-direct Classifier")
                 except Classifier.DoesNotExist:
-                    update_classification_run_status(classification_run, "failed", "No classifier specified and default classifier not found")
+                    update_classification_run_status(
+                        classification_run, "failed", "No classifier specified and default classifier not found"
+                    )
                     return {"status": "error", "message": "No classifier specified and default classifier not found"}
 
         # Check if this is the Dummy Classifier - route to dummy classifier logic
@@ -228,8 +258,10 @@ def run_call_classification(self, classification_run_id):
 
         recording = classification_run.segmentation.recording
         if not recording.wav_file or not os.path.exists(recording.wav_file.path):
-            update_classification_run_status(classification_run, "failed", f"WAV file not found for recording {recording.id}")
-            return {"status": "error", "message": f"WAV file not found"}
+            update_classification_run_status(
+                classification_run, "failed", f"WAV file not found for recording {recording.id}"
+            )
+            return {"status": "error", "message": "WAV file not found"}
 
         server_ok, error_msg = check_r_server_connection(service_url)
         if not server_ok:
@@ -276,8 +308,15 @@ def run_call_classification(self, classification_run_id):
                 batch_segments = segment_list[start_idx:end_idx]
 
                 batch_results, segment_map, features_file = process_classification_batch(
-                    batch_index, batch_segments, classification_run, recording, classifier,
-                    service_url, endpoint, model_path_for_r_server, start_idx
+                    batch_index,
+                    batch_segments,
+                    classification_run,
+                    recording,
+                    classifier,
+                    service_url,
+                    endpoint,
+                    model_path_for_r_server,
+                    start_idx,
                 )
 
                 all_segment_metadata.update(segment_map)
@@ -294,7 +333,7 @@ def run_call_classification(self, classification_run_id):
                             classification_run=classification_run, segment=segment
                         )
 
-                        class_probabilities = result_data.get('class_probabilities', {})
+                        class_probabilities = result_data.get("class_probabilities", {})
 
                         for call in calls:
                             if call.short_name not in class_probabilities:
@@ -302,7 +341,11 @@ def run_call_classification(self, classification_run_id):
                             else:
                                 probability = class_probabilities[call.short_name]
                                 if not isinstance(probability, (int, float)):
-                                    if isinstance(probability, list) and len(probability) == 1 and isinstance(probability[0], (int, float)):
+                                    if (
+                                        isinstance(probability, list)
+                                        and len(probability) == 1
+                                        and isinstance(probability[0], (int, float))
+                                    ):
                                         probability = probability[0]
                                     else:
                                         probability = 0.0
@@ -311,9 +354,7 @@ def run_call_classification(self, classification_run_id):
                             prob_value = max(0.0, min(1.0, float(prob_value)))
 
                             CallProbability.objects.create(
-                                classification_result=result,
-                                call=call,
-                                probability=prob_value
+                                classification_result=result, call=call, probability=prob_value
                             )
 
                         total_saved += 1
@@ -321,9 +362,13 @@ def run_call_classification(self, classification_run_id):
                 # Update progress after each batch is saved
                 batch_progress = 100 * ((batch_index + 1) / num_batches)
                 update_classification_run_status(classification_run, status="in_progress", progress=batch_progress)
-                logger.debug(f"Batch {batch_index + 1}/{num_batches} complete: {total_saved}/{total_segments} results saved")
+                logger.debug(
+                    f"Batch {batch_index + 1}/{num_batches} complete: {total_saved}/{total_segments} results saved"
+                )
 
-            combined_features_path = combine_features_files(all_features_files, all_segment_metadata, classification_run)
+            combined_features_path = combine_features_files(
+                all_features_files, all_segment_metadata, classification_run
+            )
 
             if combined_features_path and os.path.exists(combined_features_path):
                 classification_run.features_file = combined_features_path
@@ -339,7 +384,7 @@ def run_call_classification(self, classification_run_id):
 
             if combined_features_path and os.path.exists(combined_features_path):
                 result["features_file"] = combined_features_path
-                result["message"] += f" | Features exported to CSV file"
+                result["message"] += " | Features exported to CSV file"
 
             return result
 

@@ -3,7 +3,9 @@ Species management URL patterns.
 
 Handles species CRUD operations and call management.
 """
+
 from django.urls import path
+
 from . import views_species
 
 urlpatterns = [

@@ -2,14 +2,15 @@
 Utility functions for file handling and caching in BattyCoda audio processing.
 """
 
+import logging
 import os
 import pickle
-import logging
 import tempfile
 
 from django.conf import settings
 
 # Configure logging
+
 
 def appropriate_file(path, args, folder_only=False):
     """
@@ -64,6 +65,7 @@ def appropriate_file(path, args, folder_only=False):
 
     return os.path.join(cache_dir, filename)
 
+
 def process_pickle_file(pickle_file, max_duration=None):
     """Process a pickle file that contains onset and offset data.
 
@@ -81,7 +83,7 @@ def process_pickle_file(pickle_file, max_duration=None):
         Exception: For any other errors during processing
     """
     # Get the filename for error reporting
-    filename = getattr(pickle_file, 'name', 'unknown')
+    filename = getattr(pickle_file, "name", "unknown")
 
     try:
         import numpy as np
@@ -120,11 +122,15 @@ def process_pickle_file(pickle_file, max_duration=None):
 
         # Validate data
         if len(onsets) == 0 or len(offsets) == 0:
-            raise ValueError(f"Pickle file '{os.path.basename(filename)}' does not contain required onset and offset lists.")
+            raise ValueError(
+                f"Pickle file '{os.path.basename(filename)}' does not contain required onset and offset lists."
+            )
 
         # Check if lists are the same length
         if len(onsets) != len(offsets):
-            raise ValueError(f"In pickle file '{os.path.basename(filename)}': Onsets and offsets lists must have the same length.")
+            raise ValueError(
+                f"In pickle file '{os.path.basename(filename)}': Onsets and offsets lists must have the same length."
+            )
 
         # Convert numpy types to Python native types if needed
         onsets = [float(onset) for onset in onsets]
@@ -136,24 +142,24 @@ def process_pickle_file(pickle_file, max_duration=None):
                 # Check if onset is valid
                 if onset < 0:
                     raise ValueError(
-                        f"Pickle file '{os.path.basename(filename)}': Segment {i+1} has negative onset ({onset:.3f}s)"
+                        f"Pickle file '{os.path.basename(filename)}': Segment {i + 1} has negative onset ({onset:.3f}s)"
                     )
 
                 # Check if segment exceeds recording duration
                 if onset >= max_duration:
                     raise ValueError(
-                        f"Pickle file '{os.path.basename(filename)}': Segment {i+1} onset ({onset:.3f}s) exceeds recording duration ({max_duration:.3f}s)"
+                        f"Pickle file '{os.path.basename(filename)}': Segment {i + 1} onset ({onset:.3f}s) exceeds recording duration ({max_duration:.3f}s)"
                     )
 
                 if offset > max_duration:
                     raise ValueError(
-                        f"Pickle file '{os.path.basename(filename)}': Segment {i+1} offset ({offset:.3f}s) exceeds recording duration ({max_duration:.3f}s)"
+                        f"Pickle file '{os.path.basename(filename)}': Segment {i + 1} offset ({offset:.3f}s) exceeds recording duration ({max_duration:.3f}s)"
                     )
 
                 # Check if onset < offset
                 if onset >= offset:
                     raise ValueError(
-                        f"Pickle file '{os.path.basename(filename)}': Segment {i+1} has invalid onset >= offset ({onset:.3f}s >= {offset:.3f}s)"
+                        f"Pickle file '{os.path.basename(filename)}': Segment {i + 1} has invalid onset >= offset ({onset:.3f}s >= {offset:.3f}s)"
                     )
 
         return onsets, offsets
@@ -166,7 +172,10 @@ def process_pickle_file(pickle_file, max_duration=None):
         else:
             # Wrap other exceptions with filename information
             import traceback
-            logging.error(f"Error processing pickle file '{os.path.basename(filename)}': {str(e)}\n{traceback.format_exc()}")
+
+            logging.error(
+                f"Error processing pickle file '{os.path.basename(filename)}': {str(e)}\n{traceback.format_exc()}"
+            )
             raise Exception(f"Error processing pickle file '{os.path.basename(filename)}': {str(e)}") from e
 
 
@@ -206,8 +215,8 @@ def split_audio_file(audio_file_path, chunk_duration_seconds=60):
     Raises:
         Exception: If the file cannot be split
     """
-    import soundfile as sf
     import numpy as np
+    import soundfile as sf
 
     try:
         # Read the audio file
@@ -241,14 +250,14 @@ def split_audio_file(audio_file_path, chunk_duration_seconds=60):
                 chunk_data = data[start_sample:end_sample]
 
             # Create chunk filename
-            chunk_filename = f"{original_name}_chunk_{i+1:03d}.wav"
+            chunk_filename = f"{original_name}_chunk_{i + 1:03d}.wav"
             chunk_path = os.path.join(temp_dir, chunk_filename)
 
             # Write chunk to file
             sf.write(chunk_path, chunk_data, samplerate)
             chunk_paths.append(chunk_path)
 
-            logging.info(f"Created chunk {i+1}/{num_chunks}: {chunk_filename} ({len(chunk_data)/samplerate:.2f}s)")
+            logging.info(f"Created chunk {i + 1}/{num_chunks}: {chunk_filename} ({len(chunk_data) / samplerate:.2f}s)")
 
         return chunk_paths
 

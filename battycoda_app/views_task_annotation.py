@@ -1,5 +1,4 @@
 import hashlib
-import json
 import os
 
 from django.conf import settings
@@ -8,10 +7,9 @@ from django.contrib.auth.decorators import login_required
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
 
-from .models.organization import Species
 from .models.task import Task
 from .utils_modules.path_utils import convert_path_to_os_specific
-from .audio.colormaps import ROSEUS_COLORMAP
+
 
 @login_required
 def task_annotation_view(request, task_id):
@@ -28,18 +26,19 @@ def task_annotation_view(request, task_id):
     if task.in_progress_by and task.in_progress_by != request.user and task.status == "in_progress":
         # Check if the task has been in progress for more than 30 minutes (stale lock)
         from datetime import timedelta
+
         if task.in_progress_since and timezone.now() - task.in_progress_since > timedelta(minutes=30):
             # Lock is stale, allow taking over
             messages.warning(
                 request,
                 f"User {task.in_progress_by.username} was working on this task but their session appears to be stale. "
-                f"You can now work on it."
+                f"You can now work on it.",
             )
         else:
             messages.warning(
                 request,
                 f"User {task.in_progress_by.username} is currently working on this task (started {task.in_progress_since.strftime('%H:%M')}). "
-                f"Your changes may conflict with theirs."
+                f"Your changes may conflict with theirs.",
             )
 
     # Handle task update if form submitted
@@ -125,21 +124,24 @@ def task_annotation_view(request, task_id):
 
     # If no call types were loaded from the database
     if not call_types:
-
         # Add a default "Unknown" call type to ensure the interface has at least one option
         call_types.append("Unknown")
         call_descriptions["Unknown"] = "Unspecified call type"
 
     # Check if HDF5 spectrogram file exists for the recording
     from .models.recording import Recording
+
     try:
         recording = Recording.objects.get(wav_file=task.wav_file_name)
         if not recording.spectrogram_file:
-            messages.error(request, "Spectrogram file is missing for this recording. Please contact an administrator to generate it.")
+            messages.error(
+                request,
+                "Spectrogram file is missing for this recording. Please contact an administrator to generate it.",
+            )
             return redirect("battycoda_app:task_batch_list")
 
         # Check if HDF5 file exists on disk
-        base_name = recording.spectrogram_file.replace('.png', '').replace('.h5', '')
+        base_name = recording.spectrogram_file.replace(".png", "").replace(".h5", "")
         spectrogram_filename = f"{base_name}.h5"
         output_dir = os.path.join(settings.MEDIA_ROOT, "spectrograms", "recordings")
         h5_path = os.path.join(output_dir, spectrogram_filename)
@@ -152,7 +154,6 @@ def task_annotation_view(request, task_id):
         return redirect("battycoda_app:task_batch_list")
 
     # Get pre-generated spectrogram URLs
-    from .audio.utils import appropriate_file
 
     # Create cache paths for spectrograms
     spectrogram_urls = {}
@@ -203,9 +204,9 @@ def task_annotation_view(request, task_id):
 
     # Check if there's batch switch data in the session (only when coming from a different batch)
     batch_switch_data = None
-    if 'batch_switch' in request.session:
-        batch_switch_data = request.session.pop('batch_switch')
-    
+    if "batch_switch" in request.session:
+        batch_switch_data = request.session.pop("batch_switch")
+
     # Create context for the template
     context = {
         "task": task,

@@ -1,16 +1,24 @@
 """
 Segmentation tasks for BattyCoda.
 """
+
 import os
-import traceback
 
 from celery import shared_task
 
 # logger import removed
 
+
 @shared_task(bind=True, name="battycoda_app.audio.task_modules.segmentation_tasks.auto_segment_recording_task")
 def auto_segment_recording_task(
-    self, recording_id, segmentation_id, min_duration_ms=10, smooth_window=3, threshold_factor=0.5, low_freq=None, high_freq=None
+    self,
+    recording_id,
+    segmentation_id,
+    min_duration_ms=10,
+    smooth_window=3,
+    threshold_factor=0.5,
+    low_freq=None,
+    high_freq=None,
 ):
     """
     Automatically segment a recording using the steps:
@@ -29,7 +37,6 @@ def auto_segment_recording_task(
     Returns:
         dict: Result information including number of segments created and optional debug image path
     """
-    from django.conf import settings
     from django.db import transaction
 
     from ...models import Recording, Segment, Segmentation
@@ -48,11 +55,11 @@ def auto_segment_recording_task(
         try:
             # Find the segmentation record by ID - more reliable than using task_id
             segmentation = Segmentation.objects.get(id=segmentation_id)
-            
+
             # Update task_id in the segmentation record to match what the worker sees
             if segmentation.task_id != self.request.id:
                 segmentation.task_id = self.request.id
-                segmentation.save(update_fields=['task_id'])
+                segmentation.save(update_fields=["task_id"])
 
             # Determine which algorithm to use based on the segmentation's algorithm type
             algorithm = segmentation.algorithm
@@ -62,7 +69,6 @@ def auto_segment_recording_task(
                 algorithm_type = algorithm.algorithm_type
 
             if algorithm_type == "energy":
-
                 from ..utils import energy_based_segment_audio
 
                 onsets, offsets = energy_based_segment_audio(
@@ -106,7 +112,7 @@ def auto_segment_recording_task(
             # Create segments for each onset/offset pair
             for i in range(len(onsets)):
                 # Generate segment name
-                segment_name = f"Auto Segment {i+1}"
+                segment_name = f"Auto Segment {i + 1}"
 
                 # Create segment and associate with the new segmentation
                 segment = Segment(
@@ -134,9 +140,7 @@ def auto_segment_recording_task(
             },
         }
 
-
         return result
 
     except Exception as e:
-
         return {"status": "error", "message": str(e)}

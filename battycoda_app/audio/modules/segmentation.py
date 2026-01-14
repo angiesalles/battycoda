@@ -2,51 +2,52 @@
 Functions for audio segmentation and event detection in BattyCoda.
 """
 
-import traceback
 
 # Configure logging
+
 
 def apply_bandpass_filter(audio_data, sample_rate, low_freq=None, high_freq=None):
     """
     Apply bandpass filter to audio data.
-    
+
     Args:
         audio_data: Audio signal array
         sample_rate: Sample rate in Hz
         low_freq: High-pass filter frequency in Hz (optional)
         high_freq: Low-pass filter frequency in Hz (optional)
-    
+
     Returns:
         Filtered audio data
     """
     if low_freq is None and high_freq is None:
         return audio_data
-    
+
     from scipy import signal
-    
+
     # Ensure we have valid frequency bounds
     nyquist_freq = sample_rate / 2
     if low_freq is not None:
         low_freq = min(low_freq, nyquist_freq - 1)
     if high_freq is not None:
         high_freq = min(high_freq, nyquist_freq - 1)
-    
+
     # Apply appropriate filter
     if low_freq is not None and high_freq is not None:
         # Bandpass filter
         if low_freq < high_freq:
-            sos = signal.butter(4, [low_freq, high_freq], btype='band', fs=sample_rate, output='sos')
+            sos = signal.butter(4, [low_freq, high_freq], btype="band", fs=sample_rate, output="sos")
             return signal.sosfilt(sos, audio_data)
     elif low_freq is not None:
         # High-pass filter only
-        sos = signal.butter(4, low_freq, btype='high', fs=sample_rate, output='sos')
+        sos = signal.butter(4, low_freq, btype="high", fs=sample_rate, output="sos")
         return signal.sosfilt(sos, audio_data)
     elif high_freq is not None:
         # Low-pass filter only
-        sos = signal.butter(4, high_freq, btype='low', fs=sample_rate, output='sos')
+        sos = signal.butter(4, high_freq, btype="low", fs=sample_rate, output="sos")
         return signal.sosfilt(sos, audio_data)
-    
+
     return audio_data
+
 
 def auto_segment_audio(
     audio_path, min_duration_ms=10, smooth_window=3, threshold_factor=0.5, low_freq=None, high_freq=None
@@ -69,11 +70,9 @@ def auto_segment_audio(
     Returns:
         tuple: (onsets, offsets) as lists of floats in seconds
     """
-    import os
 
     import numpy as np
     import soundfile as sf
-
 
     # Load the audio file
     audio_data, sample_rate = sf.read(audio_path)
@@ -81,7 +80,7 @@ def auto_segment_audio(
     # For stereo files, use the first channel for detection
     if len(audio_data.shape) > 1 and audio_data.shape[1] > 1:
         audio_data = audio_data[:, 0]
-    
+
     # Apply bandpass filter if specified
     audio_data = apply_bandpass_filter(audio_data, sample_rate, low_freq, high_freq)
 
@@ -148,6 +147,7 @@ def auto_segment_audio(
 
     return filtered_onsets, filtered_offsets
 
+
 def energy_based_segment_audio(
     audio_path, min_duration_ms=10, smooth_window=3, threshold_factor=0.5, low_freq=None, high_freq=None
 ):
@@ -169,11 +169,9 @@ def energy_based_segment_audio(
     Returns:
         tuple: (onsets, offsets) as lists of floats in seconds
     """
-    import os
 
     import numpy as np
     import soundfile as sf
-
 
     # Load the audio file
     audio_data, sample_rate = sf.read(audio_path)
@@ -181,7 +179,7 @@ def energy_based_segment_audio(
     # For stereo files, use the first channel for detection
     if len(audio_data.shape) > 1 and audio_data.shape[1] > 1:
         audio_data = audio_data[:, 0]
-    
+
     # Apply bandpass filter if specified
     audio_data = apply_bandpass_filter(audio_data, sample_rate, low_freq, high_freq)
 

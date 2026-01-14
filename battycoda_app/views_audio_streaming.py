@@ -1,9 +1,11 @@
 """
 Views for streaming audio files and generating waveform data.
 """
+
 from .views_common import *
 
 # Set up logging
+
 
 @login_required
 def get_audio_waveform_data(request, recording_id):
@@ -80,7 +82,6 @@ def get_audio_waveform_data(request, recording_id):
         )
 
     except Exception as e:
-
         # Make sure we always return duration even on error
         return JsonResponse(
             {
@@ -90,6 +91,7 @@ def get_audio_waveform_data(request, recording_id):
                 "waveform": [],  # Empty waveform data
             }
         )
+
 
 @login_required
 def stream_audio_view(request, recording_id):
@@ -107,7 +109,6 @@ def stream_audio_view(request, recording_id):
     # Get the file path and validate it exists
     file_path = recording.wav_file.path
     if not os.path.exists(file_path):
-
         raise Http404("Audio file not found")
 
     # Get file info
@@ -154,6 +155,7 @@ def stream_audio_view(request, recording_id):
 
     # Return the response
     return response
+
 
 def streaming_file_iterator(file_path, start_byte, end_byte):
     """Iterator function to stream a file in chunks, respecting byte range requests"""

@@ -4,7 +4,7 @@ BattyCoda Models Module
 Re-exports all model classes from the models package for backward compatibility.
 """
 
-from battycoda_app.models.classification import CallProbability, Classifier, ClassificationResult, ClassificationRun
+from battycoda_app.models.classification import CallProbability, ClassificationResult, ClassificationRun, Classifier
 
 # Backwards compatibility aliases
 ClassificationRun = ClassificationRun
@@ -39,7 +39,7 @@ __all__ = [
     # Classification models
     "Classifier",
     "ClassificationRun",
-    "ClassificationResult", 
+    "ClassificationResult",
     "CallProbability",
     # Backwards compatibility aliases
     "ClassificationRun",

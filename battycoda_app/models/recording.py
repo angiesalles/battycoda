@@ -2,7 +2,6 @@
 
 from django.contrib.auth.models import User
 from django.db import models
-from django.utils import timezone
 
 from .organization import Project, Species
 from .user import Group
@@ -10,12 +9,14 @@ from .user import Group
 
 class RecordingManager(models.Manager):
     """Manager that excludes hidden recordings by default"""
+
     def get_queryset(self):
         return super().get_queryset().filter(hidden=False)
 
 
 class AllRecordingManager(models.Manager):
     """Manager that includes all recordings, including hidden ones"""
+
     pass
 
 
@@ -28,9 +29,15 @@ class Recording(models.Model):
     wav_file = models.FileField(upload_to="recordings/", help_text="WAV file for the recording")
     duration = models.FloatField(blank=True, null=True, help_text="Duration of the recording in seconds")
     sample_rate = models.IntegerField(blank=True, null=True, help_text="Sample rate of the recording in Hz")
-    file_ready = models.BooleanField(default=False, help_text="Flag indicating if the file is fully uploaded and ready for processing")
-    spectrogram_file = models.CharField(max_length=255, blank=True, null=True, help_text="Filename of the generated spectrogram PNG")
-    hidden = models.BooleanField(default=False, help_text="Hidden recordings are temporary previews that don't appear in normal lists")
+    file_ready = models.BooleanField(
+        default=False, help_text="Flag indicating if the file is fully uploaded and ready for processing"
+    )
+    spectrogram_file = models.CharField(
+        max_length=255, blank=True, null=True, help_text="Filename of the generated spectrogram PNG"
+    )
+    hidden = models.BooleanField(
+        default=False, help_text="Hidden recordings are temporary previews that don't appear in normal lists"
+    )
 
     # Recording metadata
     recorded_date = models.DateField(blank=True, null=True, help_text="Date when the recording was made")
@@ -80,5 +87,5 @@ class Recording(models.Model):
     def get_segments(self):
         """Get all segments for this recording, sorted by onset time"""
         from .segmentation import Segment
-        return Segment.objects.filter(recording=self).order_by("onset")
 
+        return Segment.objects.filter(recording=self).order_by("onset")

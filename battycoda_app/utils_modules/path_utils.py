@@ -6,6 +6,7 @@ import os
 
 from django.conf import settings
 
+
 def convert_path_to_os_specific(path):
     """
     Convert a web path to an OS-specific path
@@ -41,7 +42,7 @@ def get_r_server_path(local_path: str) -> str:
         Path as the R server expects it
     """
     base = str(settings.BASE_DIR)
-    r_base = getattr(settings, 'R_SERVER_BASE_PATH', base)
+    r_base = getattr(settings, "R_SERVER_BASE_PATH", base)
     return local_path.replace(base, r_base)
 
 
@@ -52,7 +53,7 @@ def get_r_server_tmp() -> str:
     Returns:
         Temp directory path for R server
     """
-    return getattr(settings, 'R_SERVER_TMP_DIR', os.path.join(str(settings.BASE_DIR), 'tmp'))
+    return getattr(settings, "R_SERVER_TMP_DIR", os.path.join(str(settings.BASE_DIR), "tmp"))
 
 
 def get_local_tmp() -> str:
@@ -62,7 +63,7 @@ def get_local_tmp() -> str:
     Returns:
         Local temp directory path
     """
-    return os.path.join(settings.BASE_DIR, 'tmp')
+    return os.path.join(settings.BASE_DIR, "tmp")
 
 
 def get_species_images_path() -> str:
@@ -72,4 +73,4 @@ def get_species_images_path() -> str:
     Returns:
         Path to data/species_images directory
     """
-    return os.path.join(settings.BASE_DIR, 'data', 'species_images')
+    return os.path.join(settings.BASE_DIR, "data", "species_images")

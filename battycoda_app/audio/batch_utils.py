@@ -4,17 +4,16 @@ Utility functions for batch audio processing in BattyCoda.
 
 import os
 import tempfile
-import traceback
 import zipfile
 from pathlib import Path
 
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.db import transaction
-from django.utils import timezone
 
 from .utils import process_pickle_file
 
 # Configure logging
+
 
 def process_batch_upload(wav_zip, pickle_zip, form_data, user, group):
     """
@@ -59,7 +58,6 @@ def process_batch_upload(wav_zip, pickle_zip, form_data, user, group):
                         wav_files.append(os.path.join(wav_temp_dir, file_info.filename))
 
         except Exception as e:
-
             return {
                 "success_count": 0,
                 "error_count": 1,
@@ -89,7 +87,6 @@ def process_batch_upload(wav_zip, pickle_zip, form_data, user, group):
                     wav_file = SimpleUploadedFile(wav_file_name, wav_file_obj.read(), content_type="audio/wav")
 
                     with transaction.atomic():
-
                         # Create a Recording object for this file
                         file_name = Path(wav_file_name).stem  # Get file name without extension
                         recording = Recording(
@@ -116,7 +113,6 @@ def process_batch_upload(wav_zip, pickle_zip, form_data, user, group):
                         # Process pickle file if found
                         if pickle_path:
                             try:
-
                                 # Open and process the pickle file
                                 with open(pickle_path, "rb") as pickle_file_obj:
                                     # Create a Django file object
@@ -142,7 +138,7 @@ def process_batch_upload(wav_zip, pickle_zip, form_data, user, group):
                                     segments_created = 0
                                     for i in range(len(onsets)):
                                         # Create segment name
-                                        segment_name = f"Segment {i+1}"
+                                        segment_name = f"Segment {i + 1}"
 
                                         # Create and save the segment - linked to the new segmentation
                                         segment = Segment(
@@ -168,6 +164,7 @@ def process_batch_upload(wav_zip, pickle_zip, form_data, user, group):
                             except Exception as e:
                                 # Log the error with the filename for troubleshooting
                                 import logging
+
                                 logging.error(f"Error processing pickle file {pickle_filename}: {str(e)}")
                                 # Exception during pickle processing or segment creation
                                 segmented_count = segmented_count

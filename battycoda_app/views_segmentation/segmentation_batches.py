@@ -1,17 +1,14 @@
 """
 Views for managing batch segmentation operations.
 """
-import os
 
-from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse
-from django.shortcuts import get_object_or_404, redirect, render
-from django.conf import settings
+from django.shortcuts import render
 from django.urls import reverse
-from django.utils import timezone
 
-from battycoda_app.models import Recording, Segmentation, Segment, Project
+from battycoda_app.models import Project, Recording, Segmentation
+
 
 @login_required
 def batch_segmentation_view(request):
@@ -32,7 +29,7 @@ def batch_segmentation_view(request):
         recordings = Recording.objects.filter(created_by=request.user).order_by("-created_at")
 
     # Apply project filter if provided
-    project_id = request.GET.get('project')
+    project_id = request.GET.get("project")
     selected_project_id = None
     if project_id:
         try:
@@ -44,9 +41,9 @@ def batch_segmentation_view(request):
 
     # Get available projects for the filter dropdown
     if profile.group:
-        available_projects = Project.objects.filter(group=profile.group).order_by('name')
+        available_projects = Project.objects.filter(group=profile.group).order_by("name")
     else:
-        available_projects = Project.objects.filter(created_by=request.user).order_by('name')
+        available_projects = Project.objects.filter(created_by=request.user).order_by("name")
 
     context = {
         "recordings": recordings,
@@ -57,6 +54,7 @@ def batch_segmentation_view(request):
     }
 
     return render(request, "segmentations/batch_segmentation.html", context)
+
 
 @login_required
 def segmentation_jobs_status_view(request):
@@ -123,9 +121,9 @@ def segmentation_jobs_status_view(request):
             "start_time": segmentation.created_at.isoformat(),
             "segments_created": segments_count,
             "algorithm_name": segmentation.algorithm.name if segmentation.algorithm else "Manual Import",
-            "algorithm_type": segmentation.algorithm.get_algorithm_type_display()
-            if segmentation.algorithm
-            else "Manual",
+            "algorithm_type": (
+                segmentation.algorithm.get_algorithm_type_display() if segmentation.algorithm else "Manual"
+            ),
             "view_url": reverse("battycoda_app:segmentation_detail", kwargs={"segmentation_id": segmentation.id}),
             "retry_url": reverse(
                 "battycoda_app:auto_segment_recording", kwargs={"recording_id": segmentation.recording.id}
@@ -133,7 +131,6 @@ def segmentation_jobs_status_view(request):
             "is_processing": segmentation.is_processing,
             "manually_edited": segmentation.manually_edited,
         }
-
 
         formatted_jobs.append(formatted_job)
 

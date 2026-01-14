@@ -9,6 +9,7 @@ Usage:
 Example:
     ./notify_worker_failure.py battycoda-celery.service oom-kill
 """
+
 import os
 import sys
 
@@ -17,9 +18,10 @@ project_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, project_dir)
 
 # Setup Django
-os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'config.settings')
+os.environ.setdefault("DJANGO_SETTINGS_MODULE", "config.settings")
 
 import django
+
 django.setup()
 
 from battycoda_app.email_utils import send_worker_failure_email
@@ -37,23 +39,18 @@ def main():
     if not failure_reason:
         try:
             import subprocess
+
             result = subprocess.run(
-                ['systemctl', 'show', service_name, '--property=Result'],
-                capture_output=True,
-                text=True,
-                timeout=5
+                ["systemctl", "show", service_name, "--property=Result"], capture_output=True, text=True, timeout=5
             )
             if result.returncode == 0:
                 output = result.stdout.strip()
-                if '=' in output:
-                    failure_reason = output.split('=', 1)[1]
+                if "=" in output:
+                    failure_reason = output.split("=", 1)[1]
         except Exception:
             pass
 
-    success = send_worker_failure_email(
-        service_name=service_name,
-        failure_reason=failure_reason
-    )
+    success = send_worker_failure_email(service_name=service_name, failure_reason=failure_reason)
 
     if success:
         print(f"Failure notification sent for {service_name}")
@@ -63,5 +60,5 @@ def main():
         sys.exit(1)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()
