@@ -15,3 +15,8 @@ celerybeat-schedule
 node_modules/
 static/dist/
 coverage/
+
+# Playwright
+playwright-report/
+test-results/
+.playwright/
