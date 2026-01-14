@@ -2,6 +2,7 @@
 Recording upload API views.
 Handles WAV file uploads with optional pickle segmentation data.
 """
+import logging
 import os
 
 from django.http import JsonResponse
@@ -15,6 +16,10 @@ from ..models import Recording, Project
 from ..models.organization import Species
 from ..models import Segmentation, Segment
 from ..audio.utils import process_pickle_file
+from ..utils_modules.cleanup import safe_remove_file, safe_cleanup_dir
+from ..utils_modules.validation import safe_int
+
+logger = logging.getLogger(__name__)
 
 
 @csrf_exempt
@@ -33,18 +38,11 @@ def upload_recording(request):
     
     # Get required fields
     try:
-        # Debug request data
-        print(f"DEBUG: POST data: {dict(request.POST)}")
-        print(f"DEBUG: FILES data: {dict(request.FILES)}")
-        
         name = request.POST.get('name')
         species_id = request.POST.get('species_id')
         wav_file = request.FILES.get('wav_file')
         pickle_file = request.FILES.get('pickle_file')  # Optional segmentation data
-        
-        print(f"DEBUG: Extracted - name: {name}, species_id: {species_id}")
-        print(f"DEBUG: wav_file: {wav_file}, pickle_file: {pickle_file}")
-        
+
         if not all([name, species_id, wav_file]):
             return JsonResponse({
                 'success': False,
@@ -105,7 +103,6 @@ def upload_recording(request):
         
         # Check if file should be split
         import tempfile
-        import shutil
         from ..audio.utils import get_audio_duration, split_audio_file
         from django.core.files.uploadedfile import SimpleUploadedFile
 
@@ -118,13 +115,11 @@ def upload_recording(request):
         try:
             # Check duration
             duration = get_audio_duration(temp_file_path)
-            print(f"DEBUG: Audio duration: {duration:.2f}s")
 
             recordings_created = []
 
             # If duration > 60 seconds, split into 1-minute chunks
             if duration > 60:
-                print(f"DEBUG: File duration ({duration:.2f}s) > 60s, splitting into chunks")
                 chunk_paths = split_audio_file(temp_file_path, chunk_duration_seconds=60)
 
                 # Create a recording for each chunk
@@ -154,11 +149,8 @@ def upload_recording(request):
 
                 # Clean up chunk files
                 for chunk_path in chunk_paths:
-                    try:
-                        os.remove(chunk_path)
-                        os.rmdir(os.path.dirname(chunk_path))
-                    except:
-                        pass
+                    safe_remove_file(chunk_path, "audio chunk file")
+                    safe_cleanup_dir(os.path.dirname(chunk_path), "chunk directory")
 
                 # Return response for split recordings
                 return JsonResponse({
@@ -195,17 +187,13 @@ def upload_recording(request):
             # Process pickle file if provided
             segmentation_info = None
             if pickle_file:
-                print(f"DEBUG: Pickle file detected: {pickle_file.name}, size: {pickle_file.size}")
                 try:
                     # Reset file pointer to beginning (important for file processing)
                     pickle_file.seek(0)
-                    print("DEBUG: File pointer reset to beginning")
-                    
+
                     # Process the pickle file to extract onsets and offsets
-                    print("DEBUG: Calling process_pickle_file...")
                     onsets, offsets = process_pickle_file(pickle_file)
-                    print(f"DEBUG: Processed pickle - {len(onsets)} onsets, {len(offsets)} offsets")
-                    
+
                     # Create a new segmentation
                     segmentation = Segmentation.objects.create(
                         recording=recording,
@@ -215,7 +203,6 @@ def upload_recording(request):
                         created_by=user,
                         segments_created=len(onsets)
                     )
-                    print(f"DEBUG: Created segmentation {segmentation.id}")
                     
                     # Create individual segments
                     segments_created = 0
@@ -233,8 +220,7 @@ def upload_recording(request):
                     # Update segments count
                     segmentation.segments_created = segments_created
                     segmentation.save()
-                    print(f"DEBUG: Created {segments_created} segments")
-                    
+
                     segmentation_info = {
                         'id': segmentation.id,
                         'name': segmentation.name,
@@ -244,14 +230,9 @@ def upload_recording(request):
                     
                 except Exception as pickle_error:
                     # If pickle processing fails, still return the recording but note the error
-                    print(f"DEBUG: Pickle processing error: {str(pickle_error)}")
-                    import traceback
-                    traceback.print_exc()
                     segmentation_info = {
                         'error': f'Pickle file processing failed: {str(pickle_error)}'
                     }
-            else:
-                print("DEBUG: No pickle file provided in request")
 
             # Prepare response (only for non-split files)
             response_data = {
@@ -275,10 +256,7 @@ def upload_recording(request):
 
         finally:
             # Clean up temporary file
-            try:
-                os.remove(temp_file_path)
-            except:
-                pass
+            safe_remove_file(temp_file_path, "temporary upload file")
         
     except Exception as e:
         return JsonResponse({

@@ -95,14 +95,6 @@ def create_detection_run_view(request, segmentation_id=None):
 
         recording_species = segmentation.recording.species
 
-        all_classifiers = Classifier.objects.filter(is_active=True)
-
-        print(f"DEBUG: All classifiers: {len(all_classifiers)}")
-        for c in all_classifiers:
-            print(f"DEBUG: Classifier: {c.name}, Species: {c.species.name if c.species else 'None'}")
-
-        print(f"DEBUG: Recording species: {recording_species.name}")
-
         if profile.group:
             classifiers = (
                 Classifier.objects.filter(is_active=True)
@@ -116,10 +108,6 @@ def create_detection_run_view(request, segmentation_id=None):
                 .filter(models.Q(species=recording_species) | models.Q(species__isnull=True))
                 .order_by("name")
             )
-
-        print(f"DEBUG: Filtered classifiers: {len(classifiers)}")
-        for c in classifiers:
-            print(f"DEBUG: Filtered classifier: {c.name}, Species: {c.species.name if c.species else 'None'}")
 
         if not classifiers.exists():
             messages.error(
