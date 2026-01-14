@@ -130,7 +130,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 const imageDisplay = document.getElementById('profile-image-display');
                 imageDisplay.innerHTML = `
                     <div class="profile-placeholder rounded-circle d-flex align-items-center justify-content-center bg-primary" style="width: 150px; height: 150px; margin: 0 auto;">
-                        <span class="s7-user text-white" style="font-size: 4rem;"></span>
+                        <span class="fas fa-user text-white" style="font-size: 4rem;"></span>
                     </div>
                 `;
                 
@@ -143,7 +143,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 const navbarProfileImage = document.querySelector('.nav.navbar-nav a.dropdown-toggle img');
                 if (navbarProfileImage) {
                     const navbarUserIcon = navbarProfileImage.parentNode;
-                    navbarUserIcon.innerHTML = '<span class="icon s7-user"></span>';
+                    navbarUserIcon.innerHTML = '<span class="icon fas fa-user"></span>';
                 }
             } else {
                 showStatus(imageUploadStatus, data.message || 'An error occurred.', false);

@@ -66,26 +66,26 @@
         </a>
         <ul id="navLinks" class="navbar-nav">
           {% if user.is_authenticated %}
-          <li id="navHomeItem" class="nav-item"><a id="navHome" class="nav-link" href="{% url 'battycoda_app:index' %}"><span class="s7-home me-1"></span> Home</a></li>
+          <li id="navHomeItem" class="nav-item"><a id="navHome" class="nav-link" href="{% url 'battycoda_app:index' %}"><span class="fas fa-home me-1"></span> Home</a></li>
           {% if user.profile.management_features_enabled %}
-          <li id="navRecordingsItem" class="nav-item"><a id="navRecordings" class="nav-link" href="{% url 'battycoda_app:recording_list' %}"><span class="s7-micro me-1"></span> Recordings</a></li>
-          <li id="navSegmentationItem" class="nav-item"><a id="navSegmentation" class="nav-link" href="{% url 'battycoda_app:segmentation_list' %}"><span class="s7-scissors me-1"></span> Segmentation</a></li>
-          <li id="navClassificationItem" class="nav-item"><a id="navClassification" class="nav-link" href="{% url 'battycoda_app:classification_home' %}"><span class="s7-display1 me-1"></span> Classification</a></li>
+          <li id="navRecordingsItem" class="nav-item"><a id="navRecordings" class="nav-link" href="{% url 'battycoda_app:recording_list' %}"><span class="fas fa-microphone me-1"></span> Recordings</a></li>
+          <li id="navSegmentationItem" class="nav-item"><a id="navSegmentation" class="nav-link" href="{% url 'battycoda_app:segmentation_list' %}"><span class="fas fa-scissors me-1"></span> Segmentation</a></li>
+          <li id="navClassificationItem" class="nav-item"><a id="navClassification" class="nav-link" href="{% url 'battycoda_app:classification_home' %}"><span class="fas fa-desktop me-1"></span> Classification</a></li>
           <li id="navClusteringItem" class="nav-item"><a id="navClustering" class="nav-link" href="{% url 'battycoda_app:clustering_dashboard' %}"><span class="fa fa-cluster me-1"></span> Clustering</a></li>
-          <li id="navJobsItem" class="nav-item"><a id="navJobs" class="nav-link" href="{% url 'battycoda_app:jobs_dashboard' %}"><span class="s7-clock me-1"></span> Jobs</a></li>
-          <li id="navTaskBatchesItem" class="nav-item"><a id="navTaskBatches" class="nav-link" href="{% url 'battycoda_app:task_batch_list' %}"><span class="s7-box1 me-1"></span> Task Batches</a></li>
-          <li id="navProjectsItem" class="nav-item"><a id="navProjects" class="nav-link" href="{% url 'battycoda_app:project_list' %}"><span class="s7-portfolio me-1"></span> Projects</a></li>
-          <li id="navSpeciesItem" class="nav-item"><a id="navSpecies" class="nav-link" href="{% url 'battycoda_app:species_list' %}"><span class="s7-leaf me-1"></span> Species</a></li>
+          <li id="navJobsItem" class="nav-item"><a id="navJobs" class="nav-link" href="{% url 'battycoda_app:jobs_dashboard' %}"><span class="fas fa-clock me-1"></span> Jobs</a></li>
+          <li id="navTaskBatchesItem" class="nav-item"><a id="navTaskBatches" class="nav-link" href="{% url 'battycoda_app:task_batch_list' %}"><span class="fas fa-box me-1"></span> Task Batches</a></li>
+          <li id="navProjectsItem" class="nav-item"><a id="navProjects" class="nav-link" href="{% url 'battycoda_app:project_list' %}"><span class="fas fa-briefcase me-1"></span> Projects</a></li>
+          <li id="navSpeciesItem" class="nav-item"><a id="navSpecies" class="nav-link" href="{% url 'battycoda_app:species_list' %}"><span class="fas fa-leaf me-1"></span> Species</a></li>
           {% if user.profile.is_current_group_admin and user.profile.group %}
-          <li id="navUsersItem" class="nav-item"><a id="navUsers" class="nav-link" href="{% url 'battycoda_app:group_users' %}"><span class="s7-users me-1"></span> Users</a></li>
+          <li id="navUsersItem" class="nav-item"><a id="navUsers" class="nav-link" href="{% url 'battycoda_app:group_users' %}"><span class="fas fa-users me-1"></span> Users</a></li>
           {% endif %}
           {% if user.is_staff %}
-          <li id="navAdminItem" class="nav-item"><a id="navAdmin" class="nav-link" href="{% url 'admin:index' %}"><span class="s7-tools me-1"></span> Admin</a></li>
+          <li id="navAdminItem" class="nav-item"><a id="navAdmin" class="nav-link" href="{% url 'admin:index' %}"><span class="fas fa-tools me-1"></span> Admin</a></li>
           {% endif %}
           {% else %}
           <li id="navActivateManagementItem" class="nav-item">
             <a id="navActivateManagement" class="nav-link" href="#" onclick="activateManagementFeatures(); return false;">
-              <span class="s7-power me-1"></span> Activate Management Features
+              <span class="fas fa-power-off me-1"></span> Activate Management Features
             </a>
           </li>
           {% endif %}
@@ -95,7 +95,7 @@
           {% if user.is_authenticated %}
           <li id="navNotificationsItem" class="dropdown nav-item">
             <a id="notificationsDropdown" class="nav-link dropdown-toggle" href="#" data-bs-toggle="dropdown" role="button" aria-expanded="false">
-              <span id="bellIcon" class="icon s7-bell"></span><span id="notificationIndicator" class="indicator"></span>
+              <span id="bellIcon" class="icon fas fa-bell"></span><span id="notificationIndicator" class="indicator"></span>
             </a>
             <ul id="notificationsMenu" class="dropdown-menu">
               <li>
@@ -105,7 +105,7 @@
                     <ul id="notificationsList">
                       <!-- Notification items will be loaded dynamically via JavaScript -->
                       <li id="loadingNotification"><a href="#">
-                          <div class="icon"><span class="s7-reload"></span></div>
+                          <div class="icon"><span class="fas fa-sync"></span></div>
                           <div class="content"><span class="desc">Loading notifications...</span><span class="date">Please wait</span></div></a></li>
                     </ul>
                   </div>
@@ -117,7 +117,7 @@
           {% endif %}
           <li id="themeSelectorItem" class="dropdown nav-item">
             <a id="themeSelector" class="nav-link dropdown-toggle" href="#" data-bs-toggle="dropdown" role="button" aria-expanded="false">
-              <span id="themeIcon" class="icon s7-paint-bucket"></span> 
+              <span id="themeIcon" class="icon fas fa-fill-drip"></span> 
               {% if not user.is_authenticated %}
               <span id="themeText" class="ms-1">Choose Theme</span>
               {% endif %}
@@ -149,14 +149,14 @@
               {% if user.profile.profile_image %}
                 <img id="userProfileImage" src="{{ user.profile.profile_image.url }}" alt="{{ user.username }}" class="rounded-circle me-1" style="width: 30px; height: 30px; object-fit: cover;">
               {% else %}
-                <span id="userIcon" class="icon s7-user"></span>
+                <span id="userIcon" class="icon fas fa-user"></span>
               {% endif %}
               <span id="userName" class="user-name">{{ user.username }}</span>
-              <span id="userDropdownArrow" class="angle-down s7-angle-down"></span>
+              <span id="userDropdownArrow" class="angle-down fas fa-angle-down"></span>
             </a>
             <div id="userDropdownMenu" class="dropdown-menu dropdown-menu-end" role="menu">
               <a id="profileLink" class="dropdown-item" href="{% url 'battycoda_app:edit_profile' %}">
-                <span class="icon s7-user me-1"></span> Profile
+                <span class="icon fas fa-user me-1"></span> Profile
               </a>
               
               <!-- Group Dropdown Menu Items -->
@@ -166,10 +166,10 @@
               <a id="group-{{ membership.group.id }}" class="dropdown-item {% if user.profile.group == membership.group %}active bg-primary text-white{% endif %}" 
                 href="{% url 'battycoda_app:switch_group' group_id=membership.group.id %}">
                 {% if user.profile.group == membership.group %}
-                <span id="groupCheck-{{ membership.group.id }}" class="s7-check me-1"></span>
+                <span id="groupCheck-{{ membership.group.id }}" class="fas fa-check me-1"></span>
                 {% endif %}
                 <span id="groupName-{{ membership.group.id }}">{{ membership.group.name }}</span>
-                {% if membership.is_admin %}<span id="groupAdmin-{{ membership.group.id }}" class="s7-shield ms-1" title="Admin"></span>{% endif %}
+                {% if membership.is_admin %}<span id="groupAdmin-{{ membership.group.id }}" class="fas fa-shield ms-1" title="Admin"></span>{% endif %}
               </a>
               {% empty %}
               <span id="noGroupsMessage" class="dropdown-item">No groups available</span>
@@ -177,24 +177,24 @@
               
               <div id="groupDivider2" class="dropdown-divider"></div>
               <a id="createGroupLink" class="dropdown-item" href="{% url 'battycoda_app:create_group' %}">
-                <span class="s7-plus me-1"></span> Create New Group
+                <span class="fas fa-plus me-1"></span> Create New Group
               </a>
               
               <div id="logoutDivider" class="dropdown-divider"></div>
               <a id="logoutLink" class="dropdown-item" href="{% url 'battycoda_app:logout' %}">
-                <span class="s7-power me-1"></span> Logout
+                <span class="fas fa-power-off me-1"></span> Logout
               </a>
             </div>
           </li>
           {% else %}
           <li id="loginItem" class="nav-item">
             <a id="loginBtn" href="{% url 'battycoda_app:login' %}" class="nav-link">
-              <span class="s7-user me-1"></span> Login
+              <span class="fas fa-user me-1"></span> Login
             </a>
           </li>
           <li id="registerItem" class="nav-item">
             <a id="registerBtn" href="{% url 'battycoda_app:register' %}" class="nav-link">
-              <span class="s7-add-user me-1"></span> Register
+              <span class="fas fa-user-plus me-1"></span> Register
             </a>
           </li>
           {% endif %}

@@ -46,11 +46,11 @@
                     errorElement.style.display = 'block';
                     errorElement.innerHTML = `
                         <div class="alert alert-danger">
-                            <span class="s7-attention me-1"></span> Error loading segmentations: ${error.message}
+                            <span class="fas fa-exclamation-triangle me-1"></span> Error loading segmentations: ${error.message}
                         </div>
                         <div class="text-center mt-3">
                             <button id="retry-btn" class="btn btn-primary">
-                                <span class="s7-refresh me-1"></span> Retry
+                                <span class="fas fa-sync me-1"></span> Retry
                             </button>
                         </div>
                     `;
@@ -211,7 +211,7 @@
                             statusBadge += `
                                 <br><span class="badge badge-secondary mt-1" data-bs-toggle="tooltip" 
                                 title="${job.algorithm_type}">
-                                    <span class="s7-settings"></span> ${job.algorithm_name}
+                                    <span class="fas fa-cog"></span> ${job.algorithm_name}
                                 </span>
                             `;
                         }
@@ -221,7 +221,7 @@
                             statusBadge += `
                                 <br><span class="badge badge-warning mt-1" data-bs-toggle="tooltip" 
                                 title="This segmentation has been manually edited">
-                                    <span class="s7-pen"></span> Manually Edited
+                                    <span class="fas fa-pen"></span> Manually Edited
                                 </span>
                             `;
                         }
@@ -232,7 +232,7 @@
                                 <br><span class="badge badge-info mt-1 viz-badge" data-bs-toggle="tooltip" 
                                 title="Debug visualization available" 
                                 data-viz-url="${job.debug_visualization.url}">
-                                    <span class="s7-graph1"></span> Debug Viz
+                                    <span class="fas fa-chart-bar"></span> Debug Viz
                                 </span>
                             `;
                         }
@@ -242,19 +242,19 @@
                         if (job.status === 'completed') {
                             actionsHtml = `
                                 <a href="${job.view_url}" class="btn btn-sm btn-primary" data-bs-toggle="tooltip" data-placement="top" title="View Segments">
-                                    <span class="s7-look"></span>
+                                    <span class="fas fa-eye"></span>
                                 </a>
                             `;
                         } else if (job.status === 'in_progress') {
                             actionsHtml = `
                                 <a href="${job.view_url}" class="btn btn-sm btn-info" data-bs-toggle="tooltip" data-placement="top" title="View Details">
-                                    <span class="s7-info"></span>
+                                    <span class="fas fa-info-circle"></span>
                                 </a>
                             `;
                         } else if (job.status === 'failed') {
                             actionsHtml = `
                                 <a href="${job.retry_url}" class="btn btn-sm btn-warning" data-bs-toggle="tooltip" data-placement="top" title="Retry">
-                                    <span class="s7-refresh"></span>
+                                    <span class="fas fa-sync"></span>
                                 </a>
                             `;
                         }

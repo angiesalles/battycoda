@@ -18,7 +18,7 @@
                             <label for="id_username" class="form-control-label">Username</label>
                             <div class="input-group">
                                 <div class="input-group-prepend">
-                                    <span class="input-group-text bg-primary text-white"><i class="s7-user" style="font-size: 1.25rem;"></i></span>
+                                    <span class="input-group-text bg-primary text-white"><i class="fas fa-user" style="font-size: 1.25rem;"></i></span>
                                 </div>
                                 {% if request.GET.username %}
                                     <input type="text" name="username" id="id_username" value="{{ request.GET.username }}" maxlength="150" required class="form-control form-control-lg">
@@ -38,7 +38,7 @@
                             <label for="id_email" class="form-control-label">Email</label>
                             <div class="input-group">
                                 <div class="input-group-prepend">
-                                    <span class="input-group-text bg-primary text-white"><i class="s7-mail" style="font-size: 1.25rem;"></i></span>
+                                    <span class="input-group-text bg-primary text-white"><i class="fas fa-envelope" style="font-size: 1.25rem;"></i></span>
                                 </div>
                                 {% if request.GET.email %}
                                     <input type="email" name="email" id="id_email" value="{{ request.GET.email }}" required class="form-control form-control-lg">
@@ -58,7 +58,7 @@
                             <label for="id_password1" class="form-control-label">Password</label>
                             <div class="input-group">
                                 <div class="input-group-prepend">
-                                    <span class="input-group-text bg-primary text-white"><i class="s7-lock" style="font-size: 1.25rem;"></i></span>
+                                    <span class="input-group-text bg-primary text-white"><i class="fas fa-lock" style="font-size: 1.25rem;"></i></span>
                                 </div>
                                 {{ form.password1 }}
                             </div>
@@ -73,7 +73,7 @@
                             <label for="id_password2" class="form-control-label">Confirm Password</label>
                             <div class="input-group">
                                 <div class="input-group-prepend">
-                                    <span class="input-group-text bg-primary text-white"><i class="s7-check" style="font-size: 1.25rem;"></i></span>
+                                    <span class="input-group-text bg-primary text-white"><i class="fas fa-check" style="font-size: 1.25rem;"></i></span>
                                 </div>
                                 {{ form.password2 }}
                             </div>
@@ -129,7 +129,7 @@
                         
                         <div class="mt-5">
                             <button type="submit" class="btn btn-primary btn-lg btn-block font-weight-bold" style="padding: 12px 0; font-size: 1.2rem;">
-                                <span class="s7-add-user me-2" style="font-size: 1.3rem; vertical-align: middle;"></span>Create Account
+                                <span class="fas fa-user-plus me-2" style="font-size: 1.3rem; vertical-align: middle;"></span>Create Account
                             </button>
                         </div>
                     </form>

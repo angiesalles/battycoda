@@ -9,7 +9,7 @@
 {% block action_buttons %}
 <a href="{% url 'battycoda_app:create_species' %}" class="btn btn-primary" 
    data-bs-toggle="tooltip" data-bs-placement="bottom" title="Add a new species">
-    <span class="s7-plus me-1"></span> New Species
+    <span class="fas fa-plus me-1"></span> New Species
 </a>
 {% endblock %}
 
@@ -58,7 +58,7 @@
                class="btn btn-sm btn-primary me-1"
                data-bs-toggle="tooltip" data-bs-placement="top" 
                title="View details">
-                <span class="s7-look"></span>
+                <span class="fas fa-eye"></span>
             </a>
             
             {% if item.is_system %}
@@ -67,7 +67,7 @@
                class="btn btn-sm btn-secondary me-1 disabled"
                data-bs-toggle="tooltip" data-bs-placement="top" 
                title="System species cannot be edited">
-                <span class="s7-pen"></span>
+                <span class="fas fa-pen"></span>
             </a>
             
             <!-- Disabled delete button for system species -->
@@ -75,7 +75,7 @@
                class="btn btn-sm btn-secondary disabled"
                data-bs-toggle="tooltip" data-bs-placement="top" 
                title="System species cannot be deleted">
-                <span class="s7-trash"></span>
+                <span class="fas fa-trash"></span>
             </a>
             {% else %}
             <!-- Edit button for regular species -->
@@ -83,7 +83,7 @@
                class="btn btn-sm btn-info me-1"
                data-bs-toggle="tooltip" data-bs-placement="top" 
                title="Edit">
-                <span class="s7-pen"></span>
+                <span class="fas fa-pen"></span>
             </a>
             
             <!-- Delete button for regular species -->
@@ -91,7 +91,7 @@
                class="btn btn-sm btn-danger"
                data-bs-toggle="tooltip" data-bs-placement="top" 
                title="Delete">
-                <span class="s7-trash"></span>
+                <span class="fas fa-trash"></span>
             </a>
             {% endif %}
         </div>
@@ -100,7 +100,7 @@
 {% endfor %}
 {% endblock %}
 
-{% block empty_icon %}s7-leaf{% endblock %}
+{% block empty_icon %}fas fa-leaf{% endblock %}
 {% block empty_title %}No Species Found{% endblock %}
 {% block empty_text %}Create your first species to get started.{% endblock %}
 {% block create_url %}{% url 'battycoda_app:create_species' %}{% endblock %}

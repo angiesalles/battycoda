@@ -42,7 +42,7 @@
         <div class="col-12">
             <div class="card border-primary">
                 <div class="card-header bg-primary text-white">
-                    <h5 class="card-title mb-0"><span class="s7-folder me-2"></span>Select Project to Work On</h5>
+                    <h5 class="card-title mb-0"><span class="fas fa-folder me-2"></span>Select Project to Work On</h5>
                 </div>
                 <div class="card-body">
                     {% if projects_with_tasks %}
@@ -80,7 +80,7 @@
 
                                     <a href="{% url 'battycoda_app:get_next_task' %}?project={{ project.id }}"
                                        class="btn btn-primary btn-block">
-                                        <span class="s7-play me-2"></span>Start Working
+                                        <span class="fas fa-play me-2"></span>Start Working
                                     </a>
                                 </div>
                             </div>
@@ -89,11 +89,11 @@
                     </div>
                     {% else %}
                     <div class="text-center py-5">
-                        <span class="s7-folder text-muted" style="font-size: 72px;"></span>
+                        <span class="fas fa-folder text-muted" style="font-size: 72px;"></span>
                         <h5 class="text-muted mt-3">No Projects Available</h5>
                         <p class="text-muted mb-3">Create a project and add tasks to get started.</p>
                         <a href="{% url 'battycoda_app:project_list' %}" class="btn btn-primary">
-                            <span class="s7-plus me-2"></span>Go to Projects
+                            <span class="fas fa-plus me-2"></span>Go to Projects
                         </a>
                     </div>
                     {% endif %}
@@ -107,34 +107,34 @@
         <div class="col-12">
             <div class="card">
                 <div class="card-header bg-info text-white">
-                    <h5 class="card-title mb-0"><span class="s7-user me-2"></span>My Work Progress</h5>
+                    <h5 class="card-title mb-0"><span class="fas fa-user me-2"></span>My Work Progress</h5>
                 </div>
                 <div class="card-body">
                     <div class="row text-center">
                         <div class="col-6 col-md-3 mb-3">
                             <div class="p-3">
-                                <span class="s7-sun" style="font-size: 36px; color: #f39c12;"></span>
+                                <span class="fas fa-sun" style="font-size: 36px; color: #f39c12;"></span>
                                 <h3 class="mt-2 mb-1">{{ my_stats.today }}</h3>
                                 <p class="text-muted mb-0">Today</p>
                             </div>
                         </div>
                         <div class="col-6 col-md-3 mb-3">
                             <div class="p-3">
-                                <span class="s7-date" style="font-size: 36px; color: #3498db;"></span>
+                                <span class="fas fa-calendar" style="font-size: 36px; color: #3498db;"></span>
                                 <h3 class="mt-2 mb-1">{{ my_stats.this_week }}</h3>
                                 <p class="text-muted mb-0">This Week</p>
                             </div>
                         </div>
                         <div class="col-6 col-md-3 mb-3">
                             <div class="p-3">
-                                <span class="s7-check" style="font-size: 36px; color: #27ae60;"></span>
+                                <span class="fas fa-check" style="font-size: 36px; color: #27ae60;"></span>
                                 <h3 class="mt-2 mb-1">{{ my_stats.total }}</h3>
                                 <p class="text-muted mb-0">Total</p>
                             </div>
                         </div>
                         <div class="col-6 col-md-3 mb-3">
                             <div class="p-3">
-                                <span class="s7-fire" style="font-size: 36px; color: #e74c3c;"></span>
+                                <span class="fas fa-fire" style="font-size: 36px; color: #e74c3c;"></span>
                                 <h3 class="mt-2 mb-1">{{ my_stats.streak }}</h3>
                                 <p class="text-muted mb-0">Day Streak</p>
                             </div>
@@ -148,7 +148,7 @@
                         {% for batch_info in my_stats.recent_batches %}
                         <div class="col-md-6 mb-2">
                             <div class="d-flex align-items-center">
-                                <span class="s7-folder me-2 text-primary"></span>
+                                <span class="fas fa-folder me-2 text-primary"></span>
                                 <div class="flex-grow-1">
                                     <strong>{{ batch_info.batch.name }}</strong>
                                     <br><small class="text-muted">{{ batch_info.batch.project.name }} • {{ batch_info.count }} tasks</small>
@@ -169,7 +169,7 @@
         <div class="col-12">
             <div class="card">
                 <div class="card-header bg-success text-white">
-                    <h5 class="card-title mb-0"><span class="s7-medal me-2"></span>Leaderboard</h5>
+                    <h5 class="card-title mb-0"><span class="fas fa-medal me-2"></span>Leaderboard</h5>
                 </div>
                 <div class="card-body">
                     <div class="table-responsive">
@@ -189,11 +189,11 @@
                                 <tr {% if entry.is_current_user %}class="table-primary"{% endif %}>
                                     <td class="text-center">
                                         {% if entry.rank == 1 %}
-                                            <span class="s7-medal" style="color: #FFD700; font-size: 24px;"></span>
+                                            <span class="fas fa-medal" style="color: #FFD700; font-size: 24px;"></span>
                                         {% elif entry.rank == 2 %}
-                                            <span class="s7-medal" style="color: #C0C0C0; font-size: 24px;"></span>
+                                            <span class="fas fa-medal" style="color: #C0C0C0; font-size: 24px;"></span>
                                         {% elif entry.rank == 3 %}
-                                            <span class="s7-medal" style="color: #CD7F32; font-size: 24px;"></span>
+                                            <span class="fas fa-medal" style="color: #CD7F32; font-size: 24px;"></span>
                                         {% else %}
                                             <strong>{{ entry.rank }}</strong>
                                         {% endif %}

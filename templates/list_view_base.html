@@ -69,7 +69,7 @@
                                                class="btn btn-sm btn-primary me-1"
                                                data-bs-toggle="tooltip" data-bs-placement="top" 
                                                title="View details">
-                                                <span class="s7-look"></span>
+                                                <span class="fas fa-eye"></span>
                                             </a>
                                             
                                             <!-- Edit button -->
@@ -77,7 +77,7 @@
                                                class="btn btn-sm btn-info me-1"
                                                data-bs-toggle="tooltip" data-bs-placement="top" 
                                                title="Edit">
-                                                <span class="s7-pen"></span>
+                                                <span class="fas fa-pen"></span>
                                             </a>
                                             
                                             <!-- Delete button -->
@@ -85,7 +85,7 @@
                                                class="btn btn-sm btn-danger"
                                                data-bs-toggle="tooltip" data-bs-placement="top" 
                                                title="Delete">
-                                                <span class="s7-trash"></span>
+                                                <span class="fas fa-trash"></span>
                                             </a>
                                             
                                             <!-- Additional actions can be added in child templates -->
@@ -101,11 +101,11 @@
                     {% else %}
                     {% block empty_state %}
                     <div class="text-center p-5">
-                        <span class="{% block empty_icon %}s7-box{% endblock %} icon mb-3 d-block" style="font-size: 3rem; color: #ddd;"></span>
+                        <span class="{% block empty_icon %}fas fa-box{% endblock %} icon mb-3 d-block" style="font-size: 3rem; color: #ddd;"></span>
                         <h4>{% block empty_title %}No Items Found{% endblock %}</h4>
                         <p class="text-muted">{% block empty_text %}Create your first item to get started.{% endblock %}</p>
                         <a href="{% block create_url %}#{% endblock %}" class="btn btn-primary mt-2">
-                            <span class="s7-plus me-1"></span> {% block create_text %}Add New Item{% endblock %}
+                            <span class="fas fa-plus me-1"></span> {% block create_text %}Add New Item{% endblock %}
                         </a>
                     </div>
                     {% endblock %}
@@ -117,7 +117,7 @@
                 {% if items and items|length > 0 %}
                 <div class="card-footer text-end">
                     <a href="{% block all_items_url %}#{% endblock %}" class="btn btn-sm btn-primary">
-                        View All <span class="s7-angle-right"></span>
+                        View All <span class="fas fa-angle-right"></span>
                     </a>
                 </div>
                 {% endif %}
