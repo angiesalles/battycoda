@@ -2,6 +2,8 @@
  * Segment Drag Handler - Handles dragging segment boundaries on the timeline
  */
 
+import { getCsrfToken } from '../utils/page-data.js';
+
 export class SegmentDragHandler {
   constructor(player) {
     this.player = player;
@@ -129,7 +131,7 @@ export class SegmentDragHandler {
             method: 'POST',
             headers: {
               'Content-Type': 'application/x-www-form-urlencoded',
-              'X-CSRFToken': this.getCSRFToken(),
+              'X-CSRFToken': getCsrfToken(),
             },
             body: new URLSearchParams({
               onset: segment.onset.toFixed(6),
@@ -179,24 +181,5 @@ export class SegmentDragHandler {
 
     document.addEventListener('mousemove', onMouseMove);
     document.addEventListener('mouseup', onMouseUp);
-  }
-
-  /**
-   * Get CSRF token from cookie
-   */
-  getCSRFToken() {
-    const name = 'csrftoken';
-    let cookieValue = null;
-    if (document.cookie && document.cookie !== '') {
-      const cookies = document.cookie.split(';');
-      for (let i = 0; i < cookies.length; i++) {
-        const cookie = cookies[i].trim();
-        if (cookie.substring(0, name.length + 1) === name + '=') {
-          cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-          break;
-        }
-      }
-    }
-    return cookieValue;
   }
 }

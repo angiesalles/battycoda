@@ -6,6 +6,7 @@
 
 import { setSelectedClusterId } from './state.js';
 import { addMappingToContainer, updateCallBadgeCount } from './initialization.js';
+import { getCsrfToken } from '../utils/page-data.js';
 
 /**
  * Initialize drag and drop functionality
@@ -111,20 +112,17 @@ export function createMapping(clusterId, callId) {
   });
 
   const confidence = 0.7;
-  const csrfToken = $('input[name=csrfmiddlewaretoken]').val();
+  const csrfToken = getCsrfToken();
   console.log('CSRF Token present: ' + (csrfToken ? 'Yes' : 'No'));
 
   $.ajax({
     url: '/clustering/create-mapping/',
     type: 'POST',
+    headers: { 'X-CSRFToken': csrfToken },
     data: {
       cluster_id: clusterId,
       call_id: callId,
       confidence: confidence,
-      csrfmiddlewaretoken: csrfToken,
-    },
-    beforeSend: function (xhr) {
-      xhr.setRequestHeader('X-CSRFToken', csrfToken);
     },
     success: function (data) {
       console.log('AJAX success response: ', data);
@@ -177,18 +175,13 @@ export function updateMappingConfidence(mappingId, confidence) {
   const $ = window.jQuery;
   if (!$ || !mappingId) return;
 
-  const csrfToken = $('input[name=csrfmiddlewaretoken]').val();
-
   $.ajax({
     url: '/clustering/update-mapping-confidence/',
     type: 'POST',
+    headers: { 'X-CSRFToken': getCsrfToken() },
     data: {
       mapping_id: mappingId,
       confidence: confidence,
-      csrfmiddlewaretoken: csrfToken,
-    },
-    beforeSend: function (xhr) {
-      xhr.setRequestHeader('X-CSRFToken', csrfToken);
     },
     success: function (data) {
       if (data.status !== 'success' && window.toastr) {
@@ -211,17 +204,12 @@ export function deleteMapping(mappingId) {
   const $ = window.jQuery;
   if (!$ || !mappingId) return;
 
-  const csrfToken = $('input[name=csrfmiddlewaretoken]').val();
-
   $.ajax({
     url: '/clustering/delete-mapping/',
     type: 'POST',
+    headers: { 'X-CSRFToken': getCsrfToken() },
     data: {
       mapping_id: mappingId,
-      csrfmiddlewaretoken: csrfToken,
-    },
-    beforeSend: function (xhr) {
-      xhr.setRequestHeader('X-CSRFToken', csrfToken);
     },
     success: function (data) {
       if (data.status === 'success') {
