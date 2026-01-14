@@ -4,8 +4,6 @@ Views for streaming audio files and generating waveform data.
 
 from .views_common import *
 
-# Set up logging
-
 
 @login_required
 def get_audio_waveform_data(request, recording_id):

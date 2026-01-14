@@ -1,7 +1,10 @@
 """User profile model."""
 
+import secrets
+
 from django.contrib.auth.models import User
 from django.db import models
+from django.utils import timezone
 
 from .group import Group, GroupMembership
 
