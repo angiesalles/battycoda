@@ -18,6 +18,7 @@ from ..classification_utils import (R_SERVER_URL, check_r_server_connection,
                                     get_call_types, get_segments,
                                     update_classification_run_status)
 from ....utils_modules.cleanup import safe_cleanup_dir, safe_remove_file
+from ....utils_modules.path_utils import get_local_tmp, get_r_server_path
 
 logger = logging.getLogger(__name__)
 
@@ -25,7 +26,7 @@ logger = logging.getLogger(__name__)
 def process_classification_batch(batch_index, batch_segments, classification_run, recording, classifier,
                                  service_url, endpoint, model_path_for_r_server, segment_list_start_idx):
     """Process a single batch of segments for classification."""
-    shared_tmp_dir = os.path.join(settings.BASE_DIR, 'tmp')
+    shared_tmp_dir = get_local_tmp()
     os.makedirs(shared_tmp_dir, exist_ok=True)
 
     batch_dir_name = f"batch_{batch_index}_{classification_run.id}"
@@ -59,11 +60,11 @@ def process_classification_batch(batch_index, batch_segments, classification_run
             }
             segment_map[segment_filename] = segment_metadata
 
-        r_server_path = os.path.join('/app', 'tmp', batch_dir_name)
+        r_server_path = get_r_server_path(batch_dir)
 
         features_filename = f"batch_{batch_index}_{classification_run.id}_features.csv"
         features_path_local = os.path.join(shared_tmp_dir, features_filename)
-        features_path_r_server = os.path.join('/app', 'tmp', features_filename)
+        features_path_r_server = get_r_server_path(features_path_local)
 
         params = {
             "wav_folder": r_server_path,
@@ -124,7 +125,7 @@ def combine_features_files(all_features_files, all_segment_metadata, classificat
     try:
         import pandas as pd
 
-        shared_tmp_dir = os.path.join(settings.BASE_DIR, 'tmp')
+        shared_tmp_dir = get_local_tmp()
         features_export_filename = f"classification_run_{classification_run.id}_features.csv"
         combined_features_path = os.path.join(shared_tmp_dir, features_export_filename)
 
@@ -257,14 +258,8 @@ def run_call_classification(self, classification_run_id):
             model_path_for_r_server = None
             if classifier.model_file:
                 model_file_path = classifier.model_file
-
-                if model_file_path.startswith('/app/'):
-                    local_model_path = model_file_path[5:]
-                    model_path = os.path.join(settings.BASE_DIR, local_model_path)
-                    model_path_for_r_server = model_file_path
-                else:
-                    model_path = os.path.join(settings.BASE_DIR, model_file_path)
-                    model_path_for_r_server = f"/app/{model_file_path}"
+                model_path = os.path.join(settings.BASE_DIR, model_file_path)
+                model_path_for_r_server = get_r_server_path(model_path)
 
                 if not os.path.exists(model_path):
                     raise ValueError(f"Model file not found: {model_path}")

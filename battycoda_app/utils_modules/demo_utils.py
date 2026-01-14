@@ -103,10 +103,12 @@ def _check_demo_prerequisites(user, group):
         return None, None, None
 
     # Define the paths to the sample files
+    from django.conf import settings
+    sample_audio_dir = os.path.join(settings.BASE_DIR, "data", "sample_audio")
     sample_paths = {
-        "wav": ["/app/data/sample_audio/bat1_angie_19.wav"],
+        "wav": [os.path.join(sample_audio_dir, "bat1_angie_19.wav")],
         "pickle": [
-            "/app/data/sample_audio/bat1_angie_19.wav.pickle",
+            os.path.join(sample_audio_dir, "bat1_angie_19.wav.pickle"),
         ],
     }
 

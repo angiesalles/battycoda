@@ -300,6 +300,12 @@ SERVER_EMAIL = DEFAULT_FROM_EMAIL  # Email address for error notifications
 DATABASE_BACKUP_BUCKET = os.environ.get("DATABASE_BACKUP_BUCKET", "backup-battycoda")
 DATABASE_BACKUP_PREFIX = os.environ.get("DATABASE_BACKUP_PREFIX", "database-backups/")
 
+# R Server path mapping (for Docker or local development)
+# R_SERVER_BASE_PATH: The base path the R server sees for this project (e.g., '/app' in Docker)
+# R_SERVER_TMP_DIR: The temp directory the R server uses (e.g., '/app/tmp' in Docker)
+R_SERVER_BASE_PATH = os.environ.get('R_SERVER_BASE_PATH', str(BASE_DIR))
+R_SERVER_TMP_DIR = os.environ.get('R_SERVER_TMP_DIR', os.path.join(str(BASE_DIR), 'tmp'))
+
 # Django REST Framework Configuration
 REST_FRAMEWORK = {
     'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',

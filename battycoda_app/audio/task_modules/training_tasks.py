@@ -18,6 +18,7 @@ from django.conf import settings
 from .base import extract_audio_segment
 from .classification_utils import (R_SERVER_URL, check_r_server_connection,
                                    update_detection_run_status)
+from ...utils_modules.path_utils import get_local_tmp, get_r_server_path
 
 
 @shared_task(bind=True, name="battycoda_app.audio.task_modules.training_tasks.train_classifier")
@@ -65,8 +66,7 @@ def train_classifier(self, training_job_id):
         update_detection_run_status(training_job, "in_progress", progress=10)
         
         # Create a temporary directory in a location both containers can access
-        # Since both containers mount the /app directory, we'll create it there
-        temp_dir = os.path.join("/app/tmp", f"training_{model_hash}")
+        temp_dir = os.path.join(get_local_tmp(), f"training_{model_hash}")
         os.makedirs(temp_dir, exist_ok=True)
         
         # Extract and save labeled segments
@@ -392,9 +392,9 @@ def train_classifier_from_folder(self, training_job_id, species_id):
             if training_job.parameters and 'algorithm_type' in training_job.parameters:
                 algorithm_type = training_job.parameters['algorithm_type']
 
-            # Convert local path to R server Docker path
-            folder_path_for_r_server = folder_path.replace(str(settings.BASE_DIR), '/app')
-            model_path_for_r_server = model_path.replace(str(settings.BASE_DIR), '/app')
+            # Convert local path to R server path
+            folder_path_for_r_server = get_r_server_path(folder_path)
+            model_path_for_r_server = get_r_server_path(model_path)
 
             # Calculate appropriate k value for KNN based on dataset size
             # Use smaller k for small datasets (rule of thumb: k = sqrt(n) but max k = n-1)
