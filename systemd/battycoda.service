@@ -9,7 +9,13 @@ Type=exec
 User=ubuntu
 Group=ubuntu
 WorkingDirectory=/home/ubuntu/battycoda
-Environment=PATH=/home/ubuntu/battycoda/venv/bin
+Environment=PATH=/home/ubuntu/battycoda/venv/bin:/usr/local/bin:/usr/bin:/bin
+
+# Pre-start: collect static files (quick, idempotent)
+# Note: Run ./scripts/deploy.sh before first start or after code changes
+# to build Vite assets (npm run build)
+ExecStartPre=/home/ubuntu/battycoda/venv/bin/python manage.py collectstatic --noinput
+
 ExecStart=/home/ubuntu/battycoda/venv/bin/gunicorn --workers 3 --bind 0.0.0.0:8000 config.wsgi:application
 Restart=always
 RestartSec=3

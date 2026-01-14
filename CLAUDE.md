@@ -170,6 +170,60 @@ source venv/bin/activate && celery -A config beat --loglevel=info
 - **Django**: http://localhost:8000
 - **Vite HMR**: http://localhost:5173 (proxied through Django in dev mode)
 
+## Production Deployment
+
+### Deployment Script
+Use the deployment script to prepare the application for production:
+
+```bash
+# Standard deployment (build assets + collect static)
+./scripts/deploy.sh
+
+# With database migrations
+./scripts/deploy.sh --migrate
+
+# Skip npm install (if node_modules already up to date)
+./scripts/deploy.sh --skip-npm
+```
+
+The deploy script performs:
+1. `npm ci` - Install npm dependencies (reproducible builds)
+2. `npm run build` - Build Vite frontend assets to `static/dist/`
+3. `python manage.py collectstatic` - Collect all static files
+4. Optionally run database migrations
+
+### Deployment Workflow
+
+After pulling code changes:
+
+```bash
+# 1. Pull latest code
+git pull
+
+# 2. Install Python dependencies (if requirements.txt changed)
+source venv/bin/activate
+pip install -r requirements.txt
+
+# 3. Build and deploy assets
+./scripts/deploy.sh --migrate
+
+# 4. Restart services
+sudo systemctl restart battycoda battycoda-celery battycoda-celery-beat
+
+# 5. Verify services are running
+sudo systemctl status battycoda
+```
+
+### Systemd Integration
+
+The battycoda.service runs `collectstatic --noinput` on startup via ExecStartPre. However, you must run `./scripts/deploy.sh` manually after code changes to rebuild Vite assets.
+
+After modifying systemd service files:
+```bash
+sudo ./systemd/install_services.sh
+sudo systemctl restart battycoda
+```
+
 ## Running Tests
 ```bash
 source venv/bin/activate
