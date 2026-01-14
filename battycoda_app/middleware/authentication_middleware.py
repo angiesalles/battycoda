@@ -6,9 +6,8 @@ This middleware ensures users are authenticated and handles redirects to login p
 
 from django.http import HttpResponseRedirect
 from django.urls import reverse
+from django.urls.exceptions import NoReverseMatch
 from django.utils import timezone
-
-# Set up logging
 
 class AuthenticationMiddleware:
     """
@@ -56,13 +55,13 @@ class AuthenticationMiddleware:
                 try:
                     landing_url = reverse("battycoda_app:landing")
                     return HttpResponseRedirect(landing_url)
-                except:
+                except NoReverseMatch:
                     pass
-                    
+
             # Otherwise redirect to login page
             try:
                 login_url = reverse("battycoda_app:login")
-            except:
+            except NoReverseMatch:
                 # Fallback to absolute URL if reverse fails
                 login_url = "/accounts/login/"
 

@@ -103,23 +103,19 @@ def jobs_dashboard_view(request):
         
         context['training_jobs'] = training_jobs
         
-        # Get clustering jobs (if clustering is available)
-        try:
-            if profile.is_current_group_admin:
-                clustering_runs = ClusteringRun.objects.filter(
-                    group=profile.group,
-                    status__in=['pending', 'running', 'completed', 'failed']
-                ).order_by('-created_at')[:20]
-            else:
-                clustering_runs = ClusteringRun.objects.filter(
-                    created_by=request.user,
-                    status__in=['pending', 'running', 'completed', 'failed']
-                ).order_by('-created_at')[:20]
-            
-            context['clustering_jobs'] = clustering_runs
-        except:
-            # Clustering module not available
-            context['clustering_jobs'] = []
+        # Get clustering jobs
+        if profile.is_current_group_admin:
+            clustering_runs = ClusteringRun.objects.filter(
+                group=profile.group,
+                status__in=['pending', 'running', 'completed', 'failed']
+            ).order_by('-created_at')[:20]
+        else:
+            clustering_runs = ClusteringRun.objects.filter(
+                created_by=request.user,
+                status__in=['pending', 'running', 'completed', 'failed']
+            ).order_by('-created_at')[:20]
+
+        context['clustering_jobs'] = clustering_runs
         
         # Get spectrogram jobs
         if profile.is_current_group_admin:

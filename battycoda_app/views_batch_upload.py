@@ -2,9 +2,9 @@
 Views for handling batch uploads of recordings.
 """
 
+import logging
 import os
 import tempfile
-import traceback
 import zipfile
 from pathlib import Path
 
@@ -15,12 +15,13 @@ from django.db import transaction
 from django.shortcuts import redirect, render
 from django.utils import timezone
 
-from .audio.utils import process_pickle_file, get_audio_duration, split_audio_file
+from .audio.utils import get_audio_duration, process_pickle_file, split_audio_file
 from .forms import RecordingForm
 from .models import Recording, Segment, Segmentation
 from .models.user import UserProfile
+from .utils_modules.cleanup import safe_remove_file
 
-# Set up logging
+logger = logging.getLogger(__name__)
 
 # Placeholder for future upload progress functionality
 
@@ -187,10 +188,7 @@ def batch_upload_recordings_view(request):
 
                                     # Clean up chunk files
                                     for chunk_path in chunk_paths:
-                                        try:
-                                            os.remove(chunk_path)
-                                        except:
-                                            pass
+                                        safe_remove_file(chunk_path, "audio chunk file")
 
                                     # Skip normal processing
                                     continue

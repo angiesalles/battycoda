@@ -48,8 +48,13 @@ def upload_recording(request):
                 'success': False,
                 'error': 'Missing required fields: name, species_id, wav_file'
             }, status=400)
-        
-        species_id = int(species_id)
+
+        species_id = safe_int(species_id)
+        if species_id is None:
+            return JsonResponse({
+                'success': False,
+                'error': 'species_id must be a valid integer'
+            }, status=400)
         
         # Get optional fields
         description = request.POST.get('description', '')

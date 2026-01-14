@@ -47,14 +47,11 @@ def job_status_api_view(request):
                 group=profile.group,
                 status__in=['pending', 'running']
             )
-            try:
-                clustering_runs = ClusteringRun.objects.filter(
-                    group=profile.group,
-                    status__in=['pending', 'running']
-                )
-            except:
-                clustering_runs = []
-            
+            clustering_runs = ClusteringRun.objects.filter(
+                group=profile.group,
+                status__in=['pending', 'running']
+            )
+
             spectrogram_jobs = SpectrogramJob.objects.filter(
                 recording__group=profile.group,
                 status__in=['pending', 'in_progress']
@@ -74,13 +71,10 @@ def job_status_api_view(request):
                 created_by=request.user,
                 status__in=['pending', 'running']
             )
-            try:
-                clustering_runs = ClusteringRun.objects.filter(
-                    created_by=request.user,
-                    status__in=['pending', 'running']
-                )
-            except:
-                clustering_runs = []
+            clustering_runs = ClusteringRun.objects.filter(
+                created_by=request.user,
+                status__in=['pending', 'running']
+            )
             
             spectrogram_jobs = SpectrogramJob.objects.filter(
                 created_by=request.user,
@@ -198,21 +192,18 @@ def cancel_job_view(request, job_type, job_id):
                 return JsonResponse({'success': True, 'message': 'Training job cancelled'})
         
         elif job_type == 'clustering':
-            try:
-                job = ClusteringRun.objects.get(id=job_id)
-                # Check permissions
-                if job.created_by != request.user and not (
-                    profile.is_current_group_admin and job.group == profile.group
-                ):
-                    return JsonResponse({'success': False, 'error': 'Permission denied'})
-                
-                # Cancel the job if possible
-                if job.status in ['pending', 'running']:
-                    job.status = 'cancelled'
-                    job.save()
-                    return JsonResponse({'success': True, 'message': 'Clustering job cancelled'})
-            except:
-                return JsonResponse({'success': False, 'error': 'Clustering not available'})
+            job = ClusteringRun.objects.get(id=job_id)
+            # Check permissions
+            if job.created_by != request.user and not (
+                profile.is_current_group_admin and job.group == profile.group
+            ):
+                return JsonResponse({'success': False, 'error': 'Permission denied'})
+
+            # Cancel the job if possible
+            if job.status in ['pending', 'running']:
+                job.status = 'cancelled'
+                job.save()
+                return JsonResponse({'success': True, 'message': 'Clustering job cancelled'})
         
         elif job_type == 'spectrogram':
             job = SpectrogramJob.objects.get(id=job_id)

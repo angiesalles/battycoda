@@ -1,13 +1,16 @@
 """
 HDF5 spectrogram generation for full recordings.
 """
+import logging
 import os
 import uuid
 
-from django.conf import settings
-
 import numpy as np
 from celery import shared_task
+from django.conf import settings
+from django.db import DatabaseError
+
+logger = logging.getLogger(__name__)
 
 
 def generate_hdf5_spectrogram(recording_id, celery_task_id=None):
@@ -38,8 +41,8 @@ def generate_hdf5_spectrogram(recording_id, celery_task_id=None):
                 recording_id=recording_id,
                 status__in=['pending', 'in_progress']
             ).first()
-    except:
-        pass
+    except DatabaseError as e:
+        logger.warning(f"Could not fetch SpectrogramJob for recording {recording_id}: {e}")
 
     def update_job_progress(progress, status=None):
         """Helper function to update job progress"""
@@ -49,8 +52,8 @@ def generate_hdf5_spectrogram(recording_id, celery_task_id=None):
                 if status:
                     job.status = status
                 job.save()
-            except:
-                pass
+            except DatabaseError as e:
+                logger.debug(f"Could not update job progress: {e}")
 
     try:
         recording = Recording.all_objects.get(id=recording_id)

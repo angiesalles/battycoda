@@ -3,9 +3,8 @@ Main classification task for BattyCoda.
 
 Runs automated call classification on segments using configured classifiers.
 """
-import json
+import logging
 import os
-import tempfile
 from pathlib import Path
 
 import requests
@@ -18,6 +17,9 @@ from ..base import extract_audio_segment
 from ..classification_utils import (R_SERVER_URL, check_r_server_connection,
                                     get_call_types, get_segments,
                                     update_classification_run_status)
+from ....utils_modules.cleanup import safe_cleanup_dir, safe_remove_file
+
+logger = logging.getLogger(__name__)
 
 
 def process_classification_batch(batch_index, batch_segments, classification_run, recording, classifier,
@@ -44,11 +46,8 @@ def process_classification_batch(batch_index, batch_segments, classification_run
             sf.write(segment_path, segment_data, samplerate=sample_rate)
 
             task_id = None
-            try:
-                if hasattr(segment, 'task') and segment.task:
-                    task_id = segment.task.id
-            except:
-                pass
+            if hasattr(segment, 'task') and segment.task:
+                task_id = segment.task.id
 
             segment_metadata = {
                 'segment_id': segment.id,
@@ -72,7 +71,7 @@ def process_classification_batch(batch_index, batch_segments, classification_run
             "export_features_path": features_path_r_server
         }
 
-        print(f"Calling classifier service for batch {batch_index+1} at {endpoint}...")
+        logger.debug(f"Calling classifier service for batch {batch_index+1} at {endpoint}")
 
         response = requests.post(endpoint, data=params, timeout=60)
 
@@ -114,11 +113,7 @@ def process_classification_batch(batch_index, batch_segments, classification_run
         return batch_results, segment_map, features_file
 
     finally:
-        try:
-            import shutil
-            shutil.rmtree(batch_dir, ignore_errors=True)
-        except Exception as cleanup_error:
-            print(f"Warning: Could not clean up temporary directory {batch_dir}: {str(cleanup_error)}")
+        safe_cleanup_dir(batch_dir, f"classification batch {batch_index}")
 
 
 def combine_features_files(all_features_files, all_segment_metadata, classification_run):
@@ -138,8 +133,8 @@ def combine_features_files(all_features_files, all_segment_metadata, classificat
             try:
                 df = pd.read_csv(features_file)
                 all_features_data.append(df)
-            except Exception as read_error:
-                print(f"Warning: Could not read features file {features_file}: {str(read_error)}")
+            except (IOError, ValueError) as read_error:
+                logger.warning(f"Could not read features file {features_file}: {read_error}")
 
         if all_features_data:
             combined_features = pd.concat(all_features_data, ignore_index=True)
@@ -184,18 +179,15 @@ def combine_features_files(all_features_files, all_segment_metadata, classificat
             final_features = final_features[final_cols]
 
             final_features.to_csv(combined_features_path, index=False)
-            print(f"🎯 ENHANCED FEATURES EXPORTED: {combined_features_path}")
+            logger.info(f"Enhanced features exported: {combined_features_path}")
 
         for features_file in all_features_files:
-            try:
-                os.remove(features_file)
-            except Exception:
-                pass
+            safe_remove_file(features_file, "batch features file")
 
         return combined_features_path
 
-    except Exception as features_error:
-        print(f"Warning: Error combining features files: {str(features_error)}")
+    except (IOError, ValueError, KeyError) as features_error:
+        logger.warning(f"Error combining features files: {features_error}")
         return None
 
 
@@ -280,7 +272,7 @@ def run_call_classification(self, classification_run_id):
             batch_size = max(5, min(50, total_segments // 100 + 1))
             num_batches = (total_segments + batch_size - 1) // batch_size
 
-            print(f"Processing {total_segments} segments in {num_batches} batches (batch size: {batch_size})")
+            logger.info(f"Processing {total_segments} segments in {num_batches} batches (batch size: {batch_size})")
 
             for batch_index in range(num_batches):
                 start_idx = batch_index * batch_size
@@ -334,7 +326,7 @@ def run_call_classification(self, classification_run_id):
                 # Update progress after each batch is saved
                 batch_progress = 100 * ((batch_index + 1) / num_batches)
                 update_classification_run_status(classification_run, status="in_progress", progress=batch_progress)
-                print(f"Batch {batch_index + 1}/{num_batches} complete: {total_saved}/{total_segments} results saved")
+                logger.debug(f"Batch {batch_index + 1}/{num_batches} complete: {total_saved}/{total_segments} results saved")
 
             combined_features_path = combine_features_files(all_features_files, all_segment_metadata, classification_run)
 

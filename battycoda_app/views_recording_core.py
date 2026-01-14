@@ -1,17 +1,20 @@
 """
 Core views for handling recording CRUD operations.
 """
+import logging
 import os
 import tempfile
 
-from .views_common import *
-from .tasks import calculate_audio_duration
-from .forms_edit import RecordingEditForm
-from .models.organization import Project
-from .audio.utils import get_audio_duration, split_audio_file
 from django.core.files.uploadedfile import SimpleUploadedFile
 
-# Set up logging
+from .audio.utils import get_audio_duration, split_audio_file
+from .forms_edit import RecordingEditForm
+from .models.organization import Project
+from .tasks import calculate_audio_duration
+from .utils_modules.cleanup import safe_remove_file
+from .views_common import *
+
+logger = logging.getLogger(__name__)
 
 from .views_recordings_duplicates import has_duplicate_recordings
 
@@ -182,16 +185,10 @@ def create_recording_view(request):
 
                         # Clean up chunk files
                         for chunk_path in chunk_paths:
-                            try:
-                                os.remove(chunk_path)
-                            except:
-                                pass
+                            safe_remove_file(chunk_path, "audio chunk file")
 
                         # Clean up temp file
-                        try:
-                            os.remove(temp_file_path)
-                        except:
-                            pass
+                        safe_remove_file(temp_file_path, "temporary upload file")
 
                         # Return success message
                         messages.success(
@@ -200,15 +197,12 @@ def create_recording_view(request):
                         )
                         return redirect("battycoda_app:recording_list")
 
-                except Exception as e:
+                except (IOError, OSError) as e:
                     # If we can't check duration or split, fall back to normal processing
-                    pass
+                    logger.debug(f"File splitting not possible, falling back to normal processing: {e}")
                 finally:
                     # Clean up temp file
-                    try:
-                        os.remove(temp_file_path)
-                    except:
-                        pass
+                    safe_remove_file(temp_file_path, "temporary upload file")
 
             # Normal processing (file ≤ 60s or splitting disabled or splitting failed)
             recording = form.save(commit=False)
