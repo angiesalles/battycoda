@@ -4,7 +4,7 @@ Main URL configuration for BattyCoda.
 URL patterns are organized into feature-specific modules for better maintainability.
 """
 from django.urls import path, include
-from . import views_audio, views_chess, views_dashboard, views_debug, views_landing
+from . import views_audio, views_chess, views_dashboard, views_landing
 
 app_name = "battycoda_app"
 
@@ -17,9 +17,6 @@ urlpatterns = [
     path("audio/task/<int:task_id>/snippet/", views_audio.task_audio_snippet_view, name="task_audio_snippet"),
     path("audio/task/<int:task_id>/spectrogram/", views_audio.task_spectrogram_view, name="task_spectrogram"),
     path("audio/bit/", views_audio.simple_audio_bit_view, name="simple_audio_bit"),
-
-    # Debug routes
-    path("debug/env/", views_debug.debug_env_view, name="debug_env"),
 
     # Chess proxy routes (authenticated users only)
     path("chess/", views_chess.chess_home_view, name="chess_home"),
