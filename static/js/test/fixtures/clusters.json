@@ -1,0 +1,22 @@
+{
+  "clusters": [
+    {
+      "id": 1,
+      "label": "Cluster A",
+      "size": 15,
+      "coherence_score": 0.85
+    },
+    {
+      "id": 2,
+      "label": "Cluster B",
+      "size": 22,
+      "coherence_score": 0.92
+    },
+    {
+      "id": 3,
+      "label": null,
+      "size": 8,
+      "coherence_score": 0.78
+    }
+  ]
+}

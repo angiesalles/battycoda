@@ -13,6 +13,41 @@ themeFiles.forEach((file) => {
 });
 
 export default defineConfig({
+  // Test configuration (Vitest)
+  test: {
+    // Enable globals like describe, it, expect without imports
+    globals: true,
+
+    // Use jsdom for DOM testing
+    environment: 'jsdom',
+
+    // Test file patterns - place tests next to source files
+    include: ['static/js/**/*.test.js', 'static/js/**/*.spec.js'],
+
+    // Coverage settings
+    coverage: {
+      provider: 'v8',
+      reporter: ['text', 'json', 'html'],
+      reportsDirectory: 'coverage',
+      include: ['static/js/**/*.js'],
+      exclude: [
+        'static/js/**/*.test.js',
+        'static/js/**/*.spec.js',
+        'static/js/app.js', // Third-party Maisonnette
+        'static/js/test/**',
+        'node_modules/**',
+        // Legacy non-ES6 files - exclude until migrated
+        'static/js/file_upload/dropzone.js',
+        'static/js/file_upload/initialization.js',
+        'static/js/file_upload/progress.js',
+        'static/js/file_upload/validation.js',
+      ],
+    },
+
+    // Setup files for mocks and global config
+    setupFiles: ['static/js/test/setup.js'],
+  },
+
   // Build output goes to static/dist/
   build: {
     outDir: 'static/dist',

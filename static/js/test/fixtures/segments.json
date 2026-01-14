@@ -1,0 +1,22 @@
+{
+  "segments": [
+    {
+      "id": 101,
+      "onset": 0.5,
+      "offset": 1.2,
+      "recording_id": 42
+    },
+    {
+      "id": 102,
+      "onset": 2.1,
+      "offset": 2.8,
+      "recording_id": 42
+    },
+    {
+      "id": 103,
+      "onset": 4.0,
+      "offset": 4.5,
+      "recording_id": 42
+    }
+  ]
+}
