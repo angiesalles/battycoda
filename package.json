@@ -3,6 +3,10 @@
   "version": "1.0.0",
   "description": "Django application for annotating and classifying bat call recordings",
   "type": "module",
+  "engines": {
+    "node": ">=22.0.0",
+    "npm": ">=10.0.0"
+  },
   "scripts": {
     "dev": "vite",
     "build": "vite build",

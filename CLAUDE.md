@@ -99,6 +99,35 @@ source venv/bin/activate
 python manage.py [command]
 ```
 
+## Node.js Environment
+
+This project requires Node.js 22.x or later for Vite and frontend tooling.
+
+**Using nvm (recommended):**
+```bash
+# Install nvm if not already installed
+curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.0/install.sh | bash
+
+# Install and use correct Node version (reads from .nvmrc)
+nvm install
+nvm use
+```
+
+**Using system package manager:**
+```bash
+# Ubuntu/Debian
+curl -fsSL https://deb.nodesource.com/setup_22.x | sudo -E bash -
+sudo apt-get install -y nodejs
+```
+
+**Verify installation:**
+```bash
+node --version  # Should be v22.x.x
+npm --version   # Should be v10.x.x
+```
+
+**Note:** The `.npmrc` file enforces strict engine checking. `npm install` will fail if your Node version doesn't match the requirements in `package.json`.
+
 ## Running Tests
 ```bash
 source venv/bin/activate
