@@ -10,3 +10,7 @@
 /static/lib
 /tmp
 celerybeat-schedule
+
+# Node.js / Vite
+node_modules/
+static/dist/
