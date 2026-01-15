@@ -2,7 +2,13 @@
  * Cluster Explorer Visualization Module
  *
  * Implements interactive visualization of audio clusters using D3.js.
+ * D3 is now bundled via npm for tree-shaking benefits.
  */
+
+import { select, selectAll } from 'd3-selection';
+import { scaleLinear, scaleOrdinal, schemeCategory10 } from 'd3';
+import { zoom } from 'd3-zoom';
+import { min, max } from 'd3-array';
 
 import { colorScale } from './state.js';
 import { selectCluster } from './interactions.js';
@@ -14,8 +20,7 @@ import { selectCluster } from './interactions.js';
  */
 export function initializeVisualization(clusters) {
   const $ = window.jQuery;
-  const d3 = window.d3;
-  if (!$ || !d3 || !clusters) return null;
+  if (!$ || !clusters) return null;
 
   // If there are no clusters, show a message
   if (clusters.length === 0) {
@@ -34,40 +39,35 @@ export function initializeVisualization(clusters) {
   $('#cluster-visualization').empty();
 
   // Create the SVG container
-  const svg = d3
-    .select('#cluster-visualization')
-    .append('svg')
-    .attr('width', width)
-    .attr('height', height);
+  const svg = select('#cluster-visualization').append('svg').attr('width', width).attr('height', height);
 
   // Create a container group for zooming
   const container = svg.append('g').attr('class', 'container');
 
   // Add zoom behavior
-  const zoom = d3
-    .zoom()
+  const zoomBehavior = zoom()
     .scaleExtent([0.5, 5])
     .on('zoom', (event) => {
       container.attr('transform', event.transform);
     });
 
-  svg.call(zoom);
+  svg.call(zoomBehavior);
 
   // Get initial control values
   const pointSize = parseInt($('#point-size').val()) || 8;
   const opacity = parseFloat($('#cluster-opacity').val()) || 0.7;
 
   // Assign colors to clusters
-  const scale = colorScale || d3.scaleOrdinal(d3.schemeCategory10);
+  const scale = colorScale || scaleOrdinal(schemeCategory10);
   clusters.forEach((cluster, i) => {
     cluster.color = scale(i);
   });
 
   // Find the data range for x and y coordinates
-  let xMin = d3.min(clusters, (d) => d.vis_x);
-  let xMax = d3.max(clusters, (d) => d.vis_x);
-  let yMin = d3.min(clusters, (d) => d.vis_y);
-  let yMax = d3.max(clusters, (d) => d.vis_y);
+  let xMin = min(clusters, (d) => d.vis_x);
+  let xMax = max(clusters, (d) => d.vis_x);
+  let yMin = min(clusters, (d) => d.vis_y);
+  let yMax = max(clusters, (d) => d.vis_y);
 
   // Add some padding
   const padding = 0.1;
@@ -79,13 +79,11 @@ export function initializeVisualization(clusters) {
   yMax += yRange * padding;
 
   // Create scales
-  const xScale = d3
-    .scaleLinear()
+  const xScale = scaleLinear()
     .domain([xMin, xMax])
     .range([margin.left, width - margin.right]);
 
-  const yScale = d3
-    .scaleLinear()
+  const yScale = scaleLinear()
     .domain([yMin, yMax])
     .range([height - margin.bottom, margin.top]);
 
@@ -105,7 +103,7 @@ export function initializeVisualization(clusters) {
     .attr('stroke-width', 1)
     .attr('cursor', 'pointer')
     .on('mouseover', function (event, d) {
-      d3.select(this).attr('stroke-width', 2).attr('stroke', '#000');
+      select(this).attr('stroke-width', 2).attr('stroke', '#000');
 
       container
         .append('text')
@@ -117,7 +115,7 @@ export function initializeVisualization(clusters) {
         .attr('font-weight', 'bold');
     })
     .on('mouseout', function () {
-      d3.select(this).attr('stroke-width', 1);
+      select(this).attr('stroke-width', 1);
       container.selectAll('.tooltip').remove();
     })
     .on('click', function (event, d) {
@@ -182,11 +180,10 @@ export function createLegend(clusters) {
  */
 export function updateVisualization() {
   const $ = window.jQuery;
-  const d3 = window.d3;
-  if (!$ || !d3) return;
+  if (!$) return;
 
   const pointSize = parseInt($('#point-size').val());
   const opacity = parseFloat($('#cluster-opacity').val());
 
-  d3.selectAll('.cluster-point').attr('r', pointSize).attr('opacity', opacity);
+  selectAll('.cluster-point').attr('r', pointSize).attr('opacity', opacity);
 }

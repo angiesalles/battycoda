@@ -238,8 +238,7 @@
 {% endblock %}
 
 {% block extra_js %}
-<!-- D3.js from CDN -->
-<script src="https://d3js.org/d3.v6.min.js"></script>
+<!-- D3.js is now bundled via npm in the cluster_explorer module -->
 <script>
 // Store clustering run ID for API calls
 const clusteringRunId = {{ clustering_run.id }};

@@ -4,6 +4,8 @@
  * Manages shared state for the cluster explorer.
  */
 
+import { scaleOrdinal, schemeCategory10 } from 'd3';
+
 // Currently selected cluster ID
 let selectedClusterId = null;
 
@@ -23,5 +25,5 @@ export function setSelectedClusterId(id) {
   selectedClusterId = id;
 }
 
-// D3 color scale for clusters
-export const colorScale = window.d3 ? window.d3.scaleOrdinal(window.d3.schemeCategory10) : null;
+// D3 color scale for clusters (now imported from npm module)
+export const colorScale = scaleOrdinal(schemeCategory10);

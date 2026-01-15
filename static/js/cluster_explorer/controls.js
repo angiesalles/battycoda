@@ -2,8 +2,10 @@
  * Cluster Explorer Controls Module
  *
  * Handles UI controls and segment detail loading.
+ * D3 is now bundled via npm for tree-shaking benefits.
  */
 
+import { selectAll } from 'd3-selection';
 import { getSelectedClusterId } from './state.js';
 
 /**
@@ -56,19 +58,18 @@ export function loadSegmentDetails(segmentId) {
  */
 export function initializeControls(onPointSizeChange, onOpacityChange) {
   const $ = window.jQuery;
-  const d3 = window.d3;
-  if (!$ || !d3) return;
+  if (!$) return;
 
   $('#point-size').on('input', function () {
     const size = parseInt($(this).val());
     const selectedId = getSelectedClusterId();
-    d3.selectAll('.cluster-point').attr('r', (d) => (d.id === selectedId ? size * 1.5 : size));
+    selectAll('.cluster-point').attr('r', (d) => (d.id === selectedId ? size * 1.5 : size));
     if (onPointSizeChange) onPointSizeChange(size);
   });
 
   $('#cluster-opacity').on('input', function () {
     const opacity = parseFloat($(this).val());
-    d3.selectAll('.cluster-point').attr('opacity', opacity);
+    selectAll('.cluster-point').attr('opacity', opacity);
     if (onOpacityChange) onOpacityChange(opacity);
   });
 }

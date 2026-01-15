@@ -2,9 +2,11 @@
  * Cluster Explorer Interactions Module
  *
  * Handles cluster selection and detail loading.
+ * D3 is now bundled via npm for tree-shaking benefits.
  */
 
-import { getSelectedClusterId, setSelectedClusterId } from './state.js';
+import { selectAll } from 'd3-selection';
+import { setSelectedClusterId } from './state.js';
 
 /**
  * Select a cluster and display its details
@@ -12,15 +14,14 @@ import { getSelectedClusterId, setSelectedClusterId } from './state.js';
  */
 export function selectCluster(clusterId) {
   const $ = window.jQuery;
-  const d3 = window.d3;
-  if (!$ || !d3) return;
+  if (!$) return;
 
   // Update the selection
   setSelectedClusterId(clusterId);
 
   // Highlight the selected cluster in the visualization
   const pointSize = parseInt($('#point-size').val());
-  d3.selectAll('.cluster-point')
+  selectAll('.cluster-point')
     .attr('stroke-width', (d) => (d.id === clusterId ? 3 : 1))
     .attr('stroke', (d) => (d.id === clusterId ? '#fff' : '#000'))
     .attr('r', (d) => (d.id === clusterId ? pointSize * 1.5 : pointSize));

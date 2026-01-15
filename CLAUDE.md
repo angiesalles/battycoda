@@ -674,14 +674,25 @@ import { getPageData } from './utils/page-data.js';
 const { recordingId, apiUrl } = getPageData();
 ```
 
-### External Dependencies (CDN)
-These libraries are loaded via CDN, not bundled:
-- jQuery 3.3.1
-- Bootstrap 5.3
-- Toastr
-- Select2
+### External Dependencies (CDN vs Bundled)
 
-D3.js is bundled via npm for tree-shaking benefits.
+BattyCoda uses a hybrid approach for JavaScript dependencies:
+
+**CDN (External)** - Loaded via CDN in Django templates, marked as external in Vite config:
+| Library | Version | Reason |
+|---------|---------|--------|
+| jQuery | 3.3.1 | Deep integration, plugin ecosystem |
+| Bootstrap JS | 5.3.3 | Tied to jQuery, used for modals/dropdowns |
+| Toastr | latest | Simple toast notifications |
+| Select2 | 4.1.0 | jQuery-based select dropdowns |
+| Perfect Scrollbar | 1.5.0 | Minimal usage in Maisonnette theme |
+
+**Bundled (npm)** - Installed via npm, bundled by Vite with tree-shaking:
+| Library | Reason |
+|---------|--------|
+| D3.js | Heavy usage in cluster visualization, tree-shaking removes unused modules |
+
+The Vite config marks jQuery as external so modules can reference `window.jQuery` without bundling it. D3 is imported as ES6 modules (e.g., `import { scaleLinear } from 'd3'`).
 
 ## JavaScript Testing
 

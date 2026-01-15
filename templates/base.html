@@ -242,14 +242,18 @@
 
 <script id="appScript" src="{% static 'js/app.js' %}" type="text/javascript"></script>
 
-<!-- Page data for JavaScript modules (notification URLs, etc.) -->
-{% if user.is_authenticated %}
+<!-- Page data for JavaScript modules (CSRF, notification URLs, etc.) -->
 <div id="page-data"
+     data-csrf-token="{{ csrf_token }}"
+     {% if user.is_authenticated %}
      data-navbar-notifications-url="{% url 'battycoda_app:get_navbar_notifications' %}"
      data-mark-notification-read-url="{% url 'battycoda_app:mark_notification_read' notification_id=0 %}"
+     data-user-authenticated="true"
+     {% else %}
+     data-user-authenticated="false"
+     {% endif %}
      hidden>
 </div>
-{% endif %}
 
 <!-- Theme URLs for dynamic theme loading (used by theme-switcher.js) -->
 {% vite_theme_urls %}

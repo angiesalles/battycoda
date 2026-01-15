@@ -56,6 +56,11 @@ export default defineConfig({
     // Keep CSS files separate per entry point for dynamic theme loading
     cssCodeSplit: true,
     rollupOptions: {
+      // External CDN dependencies - these are loaded via CDN in Django templates
+      // and should not be bundled by Vite. They are available as globals on window.
+      // See CLAUDE.md "External Dependencies (CDN)" section for the full list.
+      external: ['jquery'],
+
       // Entry points for code splitting
       // Each entry point produces a separate bundle
       input: {
@@ -76,6 +81,10 @@ export default defineConfig({
         ...themeInputs,
       },
       output: {
+        // Map external modules to their global variable names
+        globals: {
+          jquery: 'jQuery',
+        },
         // Ensure consistent chunk naming
         entryFileNames: '[name]-[hash].js',
         chunkFileNames: 'chunks/[name]-[hash].js',

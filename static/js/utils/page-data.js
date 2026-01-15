@@ -146,14 +146,21 @@ export function hasPageData(containerId = 'page-data') {
 
 /**
  * Get CSRF token from the page
- * Looks for it in multiple locations:
- * 1. Hidden input with name 'csrfmiddlewaretoken'
- * 2. Meta tag with name 'csrf-token'
- * 3. Page data container with data-csrf-token attribute
+ * Looks for it in multiple locations (in order of preference):
+ * 1. Page data container with data-csrf-token attribute (recommended)
+ * 2. Hidden input with name 'csrfmiddlewaretoken'
+ * 3. Meta tag with name 'csrf-token'
+ * 4. Cookie named 'csrftoken'
  * @returns {string|null} The CSRF token or null if not found
  */
 export function getCsrfToken() {
-  // Try hidden input first (most common in Django forms)
+  // Try page data container first (most reliable, always present in base.html)
+  const container = document.getElementById('page-data');
+  if (container && container.dataset.csrfToken) {
+    return container.dataset.csrfToken;
+  }
+
+  // Try hidden input (common in Django forms)
   const input = document.querySelector('input[name="csrfmiddlewaretoken"]');
   if (input) {
     return input.value;
@@ -165,10 +172,10 @@ export function getCsrfToken() {
     return meta.getAttribute('content');
   }
 
-  // Try page data container
-  const container = document.getElementById('page-data');
-  if (container && container.dataset.csrfToken) {
-    return container.dataset.csrfToken;
+  // Try cookie as last resort
+  const cookie = document.cookie.split('; ').find((row) => row.startsWith('csrftoken='));
+  if (cookie) {
+    return cookie.split('=')[1];
   }
 
   return null;
@@ -198,5 +205,66 @@ export function setupJQueryCsrf() {
         xhr.setRequestHeader('X-CSRFToken', csrfToken);
       }
     },
+  });
+}
+
+/**
+ * Get headers object for fetch requests with CSRF token
+ * @param {Object} [additionalHeaders={}] - Additional headers to include
+ * @returns {Object} Headers object with CSRF token and Content-Type
+ */
+export function getCsrfHeaders(additionalHeaders = {}) {
+  return {
+    'X-CSRFToken': getCsrfToken(),
+    'Content-Type': 'application/json',
+    ...additionalHeaders,
+  };
+}
+
+/**
+ * Wrapper for fetch with CSRF token automatically included
+ * Handles JSON responses and includes credentials for same-origin requests
+ *
+ * @param {string} url - The URL to fetch
+ * @param {Object} [options={}] - Fetch options (method, body, headers, etc.)
+ * @returns {Promise<Response>} The fetch response
+ *
+ * @example
+ * // Simple GET request
+ * const response = await fetchWithCsrf('/api/data/');
+ *
+ * @example
+ * // POST request with JSON body
+ * const response = await fetchWithCsrf('/api/update/', {
+ *   method: 'POST',
+ *   body: JSON.stringify({ key: 'value' })
+ * });
+ */
+export async function fetchWithCsrf(url, options = {}) {
+  const headers = getCsrfHeaders(options.headers);
+
+  return fetch(url, {
+    ...options,
+    headers,
+    credentials: 'same-origin', // Include cookies for same-origin requests
+  });
+}
+
+/**
+ * Convenience function to POST JSON data with CSRF token
+ * @param {string} url - The URL to post to
+ * @param {Object} data - The data to send (will be JSON.stringify'd)
+ * @returns {Promise<Response>} The fetch response
+ *
+ * @example
+ * const response = await postJson('/api/create/', { name: 'Test' });
+ * if (response.ok) {
+ *   const result = await response.json();
+ * }
+ */
+export async function postJson(url, data) {
+  return fetchWithCsrf(url, {
+    method: 'POST',
+    body: JSON.stringify(data),
   });
 }

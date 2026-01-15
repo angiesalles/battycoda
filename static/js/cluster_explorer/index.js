@@ -5,7 +5,7 @@
  * Allows users to explore clustering results, view segment details, and update labels.
  *
  * Dependencies:
- * - D3.js (loaded via CDN as window.d3)
+ * - D3.js (bundled via npm for tree-shaking benefits)
  * - jQuery (loaded via CDN as window.jQuery)
  *
  * Global data expected from Django template:
