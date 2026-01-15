@@ -12,6 +12,7 @@ from .views_batch_export import export_completed_batches
 from .views_task_batch_management import delete_task_batch_view
 
 urlpatterns = [
+    path("tasks/", views_task_listing.task_list_view, name="task_list"),
     path("tasks/<int:task_id>/", views_task_listing.task_detail_view, name="task_detail"),
     path("tasks/batches/", views_task_batch.task_batch_list_view, name="task_batch_list"),
     path("tasks/batches/<int:batch_id>/", views_task_batch.task_batch_detail_view, name="task_batch_detail"),
