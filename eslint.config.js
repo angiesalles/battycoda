@@ -23,6 +23,9 @@ export default [
         requestAnimationFrame: 'readonly',
         cancelAnimationFrame: 'readonly',
         FormData: 'readonly',
+        Headers: 'readonly',
+        Request: 'readonly',
+        Response: 'readonly',
         URLSearchParams: 'readonly',
         URL: 'readonly',
         Event: 'readonly',
@@ -96,6 +99,26 @@ export default [
       'no-var': 'error',
       eqeqeq: ['error', 'always', { null: 'ignore' }],
       'no-undef': 'error',
+    },
+  },
+  // Test file configuration - add Vitest/Node.js globals
+  {
+    files: ['**/*.test.js', '**/*.spec.js', '**/test/**/*.js'],
+    languageOptions: {
+      globals: {
+        // Vitest globals (enabled via globals: true in vite.config.js)
+        describe: 'readonly',
+        it: 'readonly',
+        test: 'readonly',
+        expect: 'readonly',
+        beforeEach: 'readonly',
+        afterEach: 'readonly',
+        beforeAll: 'readonly',
+        afterAll: 'readonly',
+        vi: 'readonly',
+        // Node.js global object (for mocking fetch, Audio, etc.)
+        global: 'writable',
+      },
     },
   },
   {
