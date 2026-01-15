@@ -2,21 +2,96 @@
   "clusters": [
     {
       "id": 1,
-      "label": "Cluster A",
+      "cluster_id": 1,
+      "label": "Echolocation",
+      "description": "High frequency echolocation calls",
       "size": 15,
-      "coherence_score": 0.85
+      "coherence": 0.85,
+      "coherence_score": 0.85,
+      "is_labeled": true,
+      "vis_x": 0.5,
+      "vis_y": 0.3,
+      "representative_spectrogram_url": "/media/spectrograms/seg_1.png",
+      "representative_audio_url": "/media/audio/seg_1.wav"
     },
     {
       "id": 2,
-      "label": "Cluster B",
+      "cluster_id": 2,
+      "label": "Social Call",
+      "description": "Social communication calls",
       "size": 22,
-      "coherence_score": 0.92
+      "coherence": 0.92,
+      "coherence_score": 0.92,
+      "is_labeled": true,
+      "vis_x": -0.3,
+      "vis_y": 0.8,
+      "representative_spectrogram_url": "/media/spectrograms/seg_2.png",
+      "representative_audio_url": "/media/audio/seg_2.wav"
     },
     {
       "id": 3,
+      "cluster_id": 3,
       "label": null,
+      "description": null,
       "size": 8,
-      "coherence_score": 0.78
+      "coherence": 0.78,
+      "coherence_score": 0.78,
+      "is_labeled": false,
+      "vis_x": 0.1,
+      "vis_y": -0.5,
+      "representative_spectrogram_url": null,
+      "representative_audio_url": null
     }
-  ]
+  ],
+  "clusterDetails": {
+    "status": "success",
+    "cluster_id": 1,
+    "label": "Echolocation",
+    "description": "High frequency echolocation calls",
+    "size": 15,
+    "coherence": 0.85,
+    "representative_spectrogram_url": "/media/spectrograms/seg_1.png",
+    "representative_audio_url": "/media/audio/seg_1.wav",
+    "mappings": [
+      {
+        "species_name": "Eptesicus fuscus",
+        "call_name": "Echolocation",
+        "confidence": 0.95
+      }
+    ]
+  },
+  "clusterMembers": {
+    "status": "success",
+    "members": [
+      {
+        "segment_id": 101,
+        "onset": 0.5,
+        "offset": 1.2,
+        "duration": 0.7,
+        "confidence": 0.92,
+        "recording_name": "Recording 1"
+      },
+      {
+        "segment_id": 102,
+        "onset": 2.1,
+        "offset": 2.8,
+        "duration": 0.7,
+        "confidence": 0.88,
+        "recording_name": "Recording 1"
+      }
+    ],
+    "total_size": 15,
+    "has_more": true,
+    "is_project_scope": false
+  },
+  "segmentDetails": {
+    "status": "success",
+    "segment_id": 101,
+    "recording_name": "Recording 1",
+    "onset": 0.5,
+    "offset": 1.2,
+    "duration": 0.7,
+    "spectrogram_url": "/media/spectrograms/seg_101.png",
+    "audio_url": "/media/audio/seg_101.wav"
+  }
 }
