@@ -73,23 +73,22 @@
                             </div>
                         </div>
                     </form>
-        
-                        <script>
-                            // Script to pass username to the login code page
-                            document.addEventListener('DOMContentLoaded', function() {
-                                const codeLoginBtn = document.getElementById('codeLoginBtn');
-                                const usernameField = document.getElementById('id_username');
-                                
-                                codeLoginBtn.addEventListener('click', function(e) {
-                                    if (usernameField && usernameField.value) {
-                                        e.preventDefault();
-                                        const username = encodeURIComponent(usernameField.value);
-                                        window.location.href = "{% url 'battycoda_app:request_login_code' %}?username=" + username;
-                                    }
-                                });
+
+                    <script>
+                        // Script to pass username to the login code page
+                        document.addEventListener('DOMContentLoaded', function() {
+                            const codeLoginBtn = document.getElementById('codeLoginBtn');
+                            const usernameField = document.getElementById('id_username');
+
+                            codeLoginBtn.addEventListener('click', function(e) {
+                                if (usernameField && usernameField.value) {
+                                    e.preventDefault();
+                                    const username = encodeURIComponent(usernameField.value);
+                                    window.location.href = "{% url 'battycoda_app:request_login_code' %}?username=" + username;
+                                }
                             });
-                        </script>
-                    </form>
+                        });
+                    </script>
                     
                     <div class="mt-5 text-center">
                         <div class="row">
