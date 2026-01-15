@@ -137,8 +137,8 @@ class TaskViewsTest(BattycodaTestCase):
         # Login
         self.client.login(username="testuser", password="password123")
 
-        # Update task
-        update_data = {"status": "completed", "is_done": True, "label": "Test Label", "notes": "Test notes"}
+        # Update task - status must be a valid choice: pending, in_progress, or done
+        update_data = {"status": "done", "is_done": True, "label": "Test Label", "notes": "Test notes"}
 
         response = self.client.post(self.task_detail_url, update_data)
         self.assertEqual(response.status_code, 302)  # Redirects to task detail
@@ -146,20 +146,20 @@ class TaskViewsTest(BattycodaTestCase):
 
         # Check that task was updated
         self.task.refresh_from_db()
-        self.assertEqual(self.task.status, "done")  # should be set to 'done' when is_done is True
+        self.assertEqual(self.task.status, "done")
         self.assertTrue(self.task.is_done)
         self.assertEqual(self.task.label, "Test Label")
         self.assertEqual(self.task.notes, "Test notes")
 
-    # Note: Individual task creation was removed; tasks are now created through batches
-    # Adding test for batch creation instead
-    def test_create_batch_view_get(self):
+    # Note: Direct task batch creation was removed - users now create batches from classification results
+    def test_create_batch_view_redirects(self):
         # Login
         self.client.login(username="testuser", password="password123")
 
+        # This view now redirects to batch list with an informational message
         response = self.client.get(self.create_batch_url)
-        self.assertEqual(response.status_code, 200)
-        self.assertTemplateUsed(response, "tasks/create_batch.html")
+        self.assertEqual(response.status_code, 302)
+        self.assertRedirects(response, self.batch_list_url)
 
     def test_batch_list_view(self):
         # Login
