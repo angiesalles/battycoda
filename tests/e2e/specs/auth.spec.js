@@ -88,9 +88,7 @@ test.describe('Authentication', () => {
   });
 
   test.describe('Registration', () => {
-    // Skip registration tests due to RecursionError bug in registration page
-    // See: battycoda-2mv
-    test.skip('registration page is accessible', async ({ page }) => {
+    test('registration page is accessible', async ({ page }) => {
       await page.goto('/accounts/register/');
 
       // Check form elements are present
@@ -101,14 +99,14 @@ test.describe('Authentication', () => {
       await expect(page.locator('input#id_captcha_answer')).toBeVisible();
     });
 
-    test.skip('registration page shows password requirements', async ({ page }) => {
+    test('registration page shows password requirements', async ({ page }) => {
       await page.goto('/accounts/register/');
 
       // Should display password requirements
       await expect(page.locator('text=at least 8 characters')).toBeVisible();
     });
 
-    test.skip('registration validates password mismatch', async ({ page }) => {
+    test('registration validates password mismatch', async ({ page }) => {
       const uniqueUsername = `testuser_${Date.now()}`;
       const uniqueEmail = `test_${Date.now()}@example.com`;
 
@@ -136,7 +134,7 @@ test.describe('Authentication', () => {
       await expect(page).toHaveURL(/\/accounts\/register/);
     });
 
-    test.skip('registration validates short password', async ({ page }) => {
+    test('registration validates short password', async ({ page }) => {
       const uniqueUsername = `testuser_${Date.now()}`;
       const uniqueEmail = `test_${Date.now()}@example.com`;
 
@@ -164,7 +162,7 @@ test.describe('Authentication', () => {
       await expect(page).toHaveURL(/\/accounts\/register/);
     });
 
-    test.skip('registration validates invalid captcha', async ({ page }) => {
+    test('registration validates invalid captcha', async ({ page }) => {
       const uniqueUsername = `testuser_${Date.now()}`;
       const uniqueEmail = `test_${Date.now()}@example.com`;
 
@@ -185,7 +183,7 @@ test.describe('Authentication', () => {
       await expect(page).toHaveURL(/\/accounts\/register/);
     });
 
-    test.skip('successful registration auto-logs in user', async ({ page }) => {
+    test('successful registration auto-logs in user', async ({ page }) => {
       const uniqueUsername = `e2e_new_${Date.now()}`;
       const uniqueEmail = `e2e_new_${Date.now()}@example.com`;
 
