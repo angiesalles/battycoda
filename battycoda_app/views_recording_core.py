@@ -6,14 +6,21 @@ import logging
 import os
 import tempfile
 
+from django.contrib import messages
+from django.contrib.auth.decorators import login_required
 from django.core.files.uploadedfile import SimpleUploadedFile
+from django.http import JsonResponse
+from django.shortcuts import get_object_or_404, redirect, render
+from django.urls import reverse
 
 from .audio.utils import get_audio_duration, split_audio_file
+from .forms import RecordingForm
 from .forms_edit import RecordingEditForm
+from .models import Recording, Segment
 from .models.organization import Project
+from .models.user import UserProfile
 from .tasks import calculate_audio_duration
 from .utils_modules.cleanup import safe_remove_file
-from .views_common import *
 
 logger = logging.getLogger(__name__)
 

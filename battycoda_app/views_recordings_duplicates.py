@@ -8,7 +8,6 @@ from django.db.models import Count
 from django.shortcuts import redirect, render
 
 from .models.recording import Recording
-from .views_common import *
 
 
 @login_required
