@@ -76,8 +76,7 @@ test.describe('Authentication', () => {
       await expect(page.locator('h2')).toContainText('One-Time Code');
     });
 
-    // Skip: enter-login-code page has a 500 error (see battycoda-2mv)
-    test.skip('request login code shows confirmation message', async ({ page }) => {
+    test('request login code shows confirmation message', async ({ page }) => {
       await page.goto('/accounts/request-login-code/');
       await page.fill('input[name="username"]', users.testUser.email);
       await page.click('button[type="submit"]');
