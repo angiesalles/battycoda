@@ -56,6 +56,21 @@ export default defineConfig({
     // Keep CSS files separate per entry point for dynamic theme loading
     cssCodeSplit: true,
     rollupOptions: {
+      // Suppress warnings for missing font files in third-party Maisonnette CSS.
+      // The fonts are loaded via Google Fonts CDN, so these local references are dead.
+      // TODO: Remove this suppression when app.css is cleaned up (see battycoda-6nn.6)
+      onwarn(warning, warn) {
+        if (
+          warning.message &&
+          (warning.message.includes('lib/open-sans') ||
+            warning.message.includes('lib/raleway') ||
+            warning.message.includes("didn't resolve at build time"))
+        ) {
+          return; // Suppress font resolution warnings
+        }
+        warn(warning);
+      },
+
       // External CDN dependencies - these are loaded via CDN in Django templates
       // and should not be bundled by Vite. They are available as globals on window.
       // See CLAUDE.md "External Dependencies (CDN)" section for the full list.
