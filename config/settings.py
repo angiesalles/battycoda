@@ -316,7 +316,11 @@ LOGGING = {
 }
 
 # AWS SES Email Configuration
-EMAIL_BACKEND = "django_ses.SESBackend"
+# Use dummy backend in test mode to avoid sending real emails and suppress warnings
+if DJANGO_TEST_MODE:
+    EMAIL_BACKEND = "django.core.mail.backends.locmem.EmailBackend"
+else:
+    EMAIL_BACKEND = "django_ses.SESBackend"
 AWS_SES_REGION_NAME = os.environ.get("AWS_SES_REGION_NAME", "us-east-1")
 AWS_SES_ACCESS_KEY_ID = os.environ.get("AWS_SES_ACCESS_KEY_ID")
 AWS_SES_SECRET_ACCESS_KEY = os.environ.get("AWS_SES_SECRET_ACCESS_KEY")
