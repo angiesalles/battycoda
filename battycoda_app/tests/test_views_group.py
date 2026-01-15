@@ -25,7 +25,6 @@ class GroupViewsTest(BattycodaTestCase):
 
         # Set as active group for user1
         self.profile.group = self.group
-        self.profile.is_current_group_admin = True
         self.profile.save()
 
         # URL paths

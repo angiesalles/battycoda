@@ -2,7 +2,7 @@ from django.contrib.auth.models import User
 from django.test import Client
 from django.urls import reverse
 
-from battycoda_app.models import Group, Project, Species, Task, TaskBatch, UserProfile
+from battycoda_app.models import Group, GroupMembership, Project, Species, Task, TaskBatch, UserProfile
 from battycoda_app.tests.test_base import BattycodaTestCase
 
 
@@ -21,9 +21,13 @@ class TaskViewsTest(BattycodaTestCase):
         # Create a test group
         self.group = Group.objects.create(name="Test Group", description="A test group")
 
+        # Add user1 to the group as admin
+        self.membership = GroupMembership.objects.create(
+            user=self.user, group=self.group, is_admin=True
+        )
+
         # Set as active group for user1
         self.profile.group = self.group
-        self.profile.is_current_group_admin = True
         self.profile.save()
 
         # Create test species
@@ -92,9 +96,9 @@ class TaskViewsTest(BattycodaTestCase):
         self.assertEqual(len(response.context["tasks"]), 2)
 
     def test_task_list_view_non_admin(self):
-        # Make user not an admin
-        self.profile.is_current_group_admin = False
-        self.profile.save()
+        # Make user not an admin by updating the membership
+        self.membership.is_admin = False
+        self.membership.save()
 
         # Create a task for user2
         Task.objects.create(
