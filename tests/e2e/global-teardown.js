@@ -2,13 +2,19 @@
  * Playwright global teardown script.
  *
  * This script runs once after all tests to clean up the test environment.
- * It removes test users, groups, species, and projects from the database.
+ * With the separate test database, cleanup is optional but helps keep things tidy.
  */
 
 import { exec } from 'child_process';
 import { promisify } from 'util';
 
 const execAsync = promisify(exec);
+
+// Environment for all Django commands - use test database
+const testEnv = {
+  ...process.env,
+  DJANGO_TEST_MODE: 'true',
+};
 
 /**
  * Global teardown function called by Playwright after all tests.
@@ -25,6 +31,7 @@ async function globalTeardown() {
         cwd: process.cwd(),
         shell: '/bin/bash',
         timeout: 30000, // 30 second timeout
+        env: testEnv,
       }
     );
 
@@ -48,7 +55,8 @@ async function globalTeardown() {
     if (error.stderr) console.error('stderr:', error.stderr);
 
     // Don't throw - we don't want to fail the test run just because cleanup failed
-    console.log('Note: You may need to manually run "python manage.py cleanup_e2e_tests --force"');
+    console.log('Note: You may need to manually run:');
+    console.log('  DJANGO_TEST_MODE=true python manage.py cleanup_e2e_tests --force');
   }
 }
 

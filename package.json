@@ -20,11 +20,13 @@
     "test:run": "vitest run",
     "test:coverage": "vitest run --coverage",
     "test:ui": "vitest --ui",
-    "e2e": "playwright test",
-    "e2e:headed": "playwright test --headed",
-    "e2e:ui": "playwright test --ui",
+    "e2e": "DJANGO_TEST_MODE=true playwright test",
+    "e2e:headed": "DJANGO_TEST_MODE=true playwright test --headed",
+    "e2e:ui": "DJANGO_TEST_MODE=true playwright test --ui",
     "e2e:report": "playwright show-report",
-    "e2e:chromium": "playwright test --project=chromium"
+    "e2e:chromium": "DJANGO_TEST_MODE=true playwright test --project=chromium",
+    "e2e:setup-db": "DJANGO_TEST_MODE=true python manage.py migrate --run-syncdb && DJANGO_TEST_MODE=true python manage.py initialize_defaults && DJANGO_TEST_MODE=true python manage.py setup_e2e_tests",
+    "e2e:reset-db": "DJANGO_TEST_MODE=true python manage.py flush --no-input && npm run e2e:setup-db"
   },
   "repository": {
     "type": "git",

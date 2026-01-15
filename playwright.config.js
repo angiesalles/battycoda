@@ -60,12 +60,15 @@ export default defineConfig({
     },
   ],
 
-  // Start Django dev server before tests
+  // Start Django dev server before tests with test database
   webServer: {
-    command: 'python manage.py runserver 8000',
+    command: 'DJANGO_TEST_MODE=true python manage.py runserver 8000',
     url: 'http://localhost:8000',
     reuseExistingServer: !process.env.CI,
     timeout: 120000,
+    env: {
+      DJANGO_TEST_MODE: 'true',
+    },
   },
 
   // Output directory for test artifacts

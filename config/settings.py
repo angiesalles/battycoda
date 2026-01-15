@@ -134,17 +134,36 @@ TEMPLATES = [
 WSGI_APPLICATION = "config.wsgi.application"
 
 import os
+import sys
 
 # Database
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases
 import dj_database_url
 
-# Use PostgreSQL exclusively - no fallbacks
-DATABASES = {
-    "default": dj_database_url.config(
-        default="postgres://battycoda:battycoda@localhost:5432/battycoda", conn_max_age=600
-    )
-}
+# Detect test mode: DJANGO_TEST_MODE env var or Django's built-in test runner
+DJANGO_TEST_MODE = os.environ.get("DJANGO_TEST_MODE", "false").lower() == "true" or "test" in sys.argv
+
+# Parse the production database URL to extract credentials
+_prod_db_config = dj_database_url.config(
+    default="postgres://battycoda:battycoda@localhost:5432/battycoda", conn_max_age=600
+)
+
+# Use separate test database for E2E tests to avoid polluting development data
+if DJANGO_TEST_MODE:
+    # Test database configuration - use same credentials as production, just different database name
+    DATABASES = {
+        "default": {
+            "ENGINE": "django.db.backends.postgresql",
+            "NAME": os.environ.get("DB_TEST_NAME", "battycoda_test"),
+            "USER": _prod_db_config.get("USER", "battycoda"),
+            "PASSWORD": _prod_db_config.get("PASSWORD", "battycoda"),
+            "HOST": _prod_db_config.get("HOST", "localhost"),
+            "PORT": _prod_db_config.get("PORT", "5432"),
+        }
+    }
+else:
+    # Use PostgreSQL exclusively - no fallbacks
+    DATABASES = {"default": _prod_db_config}
 
 # Password validation
 # https://docs.djangoproject.com/en/5.1/ref/settings/#auth-password-validators
