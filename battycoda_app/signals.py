@@ -13,16 +13,6 @@ from .models import (
 )
 from .tasks import calculate_audio_duration
 
-# NOTE: These signals are commented out because they duplicate functionality in models.py
-# @receiver(post_save, sender=User)
-# def create_profile(sender, instance, created, **kwargs):
-#     if created:
-#         UserProfile.objects.create(user=instance)
-
-# @receiver(post_save, sender=User)
-# def save_profile(sender, instance, **kwargs):
-#     instance.profile.save()
-
 
 @receiver(post_save, sender=Recording)
 def trigger_audio_info_calculation(sender, instance, **kwargs):

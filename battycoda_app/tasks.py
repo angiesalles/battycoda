@@ -7,18 +7,6 @@ from django.core.management import call_command
 logger = logging.getLogger(__name__)
 
 
-@shared_task
-def process_audio_file(file_path):
-    """
-    Process an uploaded audio file
-
-    This is a placeholder task that can be expanded for audio processing
-    """
-
-    # TODO: Implement actual audio processing
-    return True
-
-
 @shared_task(bind=True)
 def calculate_audio_duration(self, recording_id, retry_count=0):
     """

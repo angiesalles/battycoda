@@ -50,9 +50,7 @@ class Command(BaseCommand):
             recordings_count = self._count_test_recordings()
             if recordings_count > 0:
                 if force:
-                    self.stdout.write(
-                        self.style.WARNING(f"  Found {recordings_count} recordings - will delete")
-                    )
+                    self.stdout.write(self.style.WARNING(f"  Found {recordings_count} recordings - will delete"))
                 else:
                     self.stdout.write(
                         self.style.ERROR(
@@ -143,10 +141,7 @@ class Command(BaseCommand):
             if dry_run:
                 # Count calls too
                 call_count = sum(s.calls.count() for s in species)
-                self.stdout.write(
-                    f"  Would delete {count} species: {E2E_SPECIES_NAME} "
-                    f"(with {call_count} call types)"
-                )
+                self.stdout.write(f"  Would delete {count} species: {E2E_SPECIES_NAME} (with {call_count} call types)")
             else:
                 species.delete()
                 self.stdout.write(f"  Deleted {count} species: {E2E_SPECIES_NAME}")

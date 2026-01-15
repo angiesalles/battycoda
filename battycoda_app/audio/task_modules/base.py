@@ -2,17 +2,6 @@
 Base utilities for BattyCoda audio processing tasks.
 """
 
-import time
-
-# Configure logging
-
-
-def log_performance(start_time, message):
-    """Log performance with elapsed time - only for total task time"""
-    # Only log total task completions to reduce log volume
-    if "TOTAL" in message:
-        elapsed = time.time() - start_time
-
 
 def extract_audio_segment(wav_path, onset, offset=None):
     """

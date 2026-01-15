@@ -9,8 +9,7 @@ from django.contrib.auth.models import User
 from django.core.management.base import BaseCommand
 from django.db import transaction
 
-from battycoda_app.models import Group, GroupMembership, Project, Species, Call
-
+from battycoda_app.models import Call, Group, GroupMembership, Project, Species
 
 # Test data constants - these match tests/e2e/fixtures/users.json
 E2E_TEST_USER = {
@@ -113,7 +112,7 @@ class Command(BaseCommand):
                 GroupMembership.objects.filter(user=user, group=personal_group).delete()
 
                 # Update profile to point to our test group
-                if hasattr(user, 'profile'):
+                if hasattr(user, "profile"):
                     user.profile.group = group
                     user.profile.save()
                 else:
@@ -214,9 +213,9 @@ class Command(BaseCommand):
         # Delete in reverse order of dependencies
         # 1. Delete projects (both test project and demo projects)
         Project.objects.filter(name=E2E_PROJECT_NAME).delete()
-        Project.objects.filter(name="Demo Project", created_by__username__in=[
-            E2E_TEST_USER["username"], E2E_ADMIN_USER["username"]
-        ]).delete()
+        Project.objects.filter(
+            name="Demo Project", created_by__username__in=[E2E_TEST_USER["username"], E2E_ADMIN_USER["username"]]
+        ).delete()
 
         # 2. Delete species (and their calls via cascade)
         Species.objects.filter(name=E2E_SPECIES_NAME).delete()
