@@ -1,5 +1,3 @@
-from unittest.mock import MagicMock
-
 from django.contrib.auth.models import User
 
 from battycoda_app.forms import (
@@ -21,13 +19,17 @@ class UserFormsTest(BattycodaTestCase):
         self.profile = UserProfile.objects.get(user=self.user)
 
     def test_user_register_form_valid(self):
+        # Form requires captcha_num1, captcha_num2 kwargs and captcha_answer in data
         form = UserRegisterForm(
             data={
                 "username": "newuser",
                 "email": "new@example.com",
                 "password1": "Password123!",
                 "password2": "Password123!",
-            }
+                "captcha_answer": 8,  # 5 + 3 = 8
+            },
+            captcha_num1=5,
+            captcha_num2=3,
         )
         self.assertTrue(form.is_valid())
 
@@ -38,7 +40,10 @@ class UserFormsTest(BattycodaTestCase):
                 "email": "new@example.com",
                 "password1": "Password123!",
                 "password2": "DifferentPassword123!",
-            }
+                "captcha_answer": 8,
+            },
+            captcha_num1=5,
+            captcha_num2=3,
         )
         self.assertFalse(form.is_valid())
         self.assertIn("password2", form.errors)
@@ -51,28 +56,17 @@ class UserFormsTest(BattycodaTestCase):
         self.assertEqual(form.fields["username"].label, "Username")
         self.assertEqual(form.fields["password"].label, "Password")
 
-    def test_user_profile_form_regular_user(self):
-        # Create a mock user that's not an admin
-        mock_user = MagicMock()
-        mock_user.profile.is_current_group_admin = False
+    def test_user_profile_form_fields(self):
+        # UserProfileForm should have theme, profile_image, and management_features_enabled fields
+        form = UserProfileForm(instance=self.profile, user=self.user)
 
-        form = UserProfileForm(instance=self.profile, user=mock_user)
+        self.assertIn("theme", form.fields)
+        self.assertIn("profile_image", form.fields)
+        self.assertIn("management_features_enabled", form.fields)
 
-        # Regular user shouldn't see is_admin field
+        # Should not have is_admin or group fields (these were removed)
         self.assertNotIn("is_admin", form.fields)
-
-        # Group field should be disabled
-        self.assertTrue(form.fields["group"].disabled)
-
-    def test_user_profile_form_admin_user(self):
-        # Create a mock user that is an admin
-        mock_user = MagicMock()
-        mock_user.profile.is_current_group_admin = True
-
-        form = UserProfileForm(instance=self.profile, user=mock_user)
-
-        # Admin should see is_admin field
-        self.assertIn("is_admin", form.fields)
+        self.assertNotIn("group", form.fields)
 
 
 class TaskFormsTest(BattycodaTestCase):
@@ -117,8 +111,9 @@ class TaskFormsTest(BattycodaTestCase):
         self.assertTrue(form.is_valid())
 
     def test_task_update_form_valid(self):
+        # Task.STATUS_CHOICES are: pending, in_progress, done
         form = TaskUpdateForm(
-            data={"status": "completed", "is_done": True, "label": "Test Label", "notes": "Test notes"}
+            data={"status": "done", "is_done": True, "label": "Test Label", "notes": "Test notes"}
         )
         self.assertTrue(form.is_valid())
 

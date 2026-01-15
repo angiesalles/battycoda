@@ -12,24 +12,7 @@ from django.shortcuts import get_object_or_404, redirect, render
 from django.views.decorators.http import require_POST
 
 from ..forms import UserProfileForm
-from ..models.user import GroupMembership, UserProfile
-
-
-@login_required
-def profile_view(request):
-    """Display user profile"""
-    profile, created = UserProfile.objects.get_or_create(user=request.user)
-
-    group_memberships = GroupMembership.objects.filter(user=request.user).select_related("group")
-
-    context = {
-        "user": request.user,
-        "profile": profile,
-        "group_memberships": group_memberships,
-        "active_group": profile.group,
-    }
-
-    return render(request, "auth/profile.html", context)
+from ..models.user import UserProfile
 
 
 @login_required
