@@ -149,7 +149,9 @@ describe('page-data utility', () => {
       const result = getJsonData('non-existent');
 
       expect(result).toBe(null);
-      expect(console.warn).toHaveBeenCalledWith('JSON data script with id "non-existent" not found');
+      expect(console.warn).toHaveBeenCalledWith(
+        'JSON data script with id "non-existent" not found'
+      );
     });
 
     it('should parse valid JSON from script tag', () => {
