@@ -1,12 +1,21 @@
 {
   "testUser": {
-    "username": "testuser",
-    "email": "test@example.com",
-    "password": "testpass123"
+    "username": "e2e_testuser",
+    "email": "e2e_test@example.com",
+    "password": "e2e_testpass123"
   },
   "adminUser": {
-    "username": "admin",
-    "email": "admin@example.com",
-    "password": "adminpass123"
+    "username": "e2e_adminuser",
+    "email": "e2e_admin@example.com",
+    "password": "e2e_adminpass123"
+  },
+  "testGroup": {
+    "name": "E2E Test Group"
+  },
+  "testSpecies": {
+    "name": "E2E Test Species"
+  },
+  "testProject": {
+    "name": "E2E Test Project"
   }
 }
