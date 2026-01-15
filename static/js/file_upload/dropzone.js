@@ -1,151 +1,131 @@
-// Dropzone configuration
-        
-        // Handle file selection for either file input
-        wavFileInput.addEventListener('change', updateFilesInfo);
-        pickleFileInput.addEventListener('change', updateFilesInfo);
+/**
+ * Dropzone - Drag and drop file selection
+ *
+ * Creates enhanced dropzone UI for file inputs with drag-and-drop support.
+ */
+
+/**
+ * Create a dropzone wrapper around a file input
+ * @param {HTMLInputElement} fileInput - The file input element to wrap
+ */
+export function setupDropzone(fileInput) {
+  if (!fileInput) return;
+
+  const dropArea = document.createElement('div');
+  dropArea.className =
+    'file-dropzone p-4 mb-3 text-center border border-secondary rounded';
+
+  // Change wording for multiple files
+  const isMultiple = fileInput.multiple;
+  const uploadText = isMultiple
+    ? 'Drag & drop your files here or click to browse'
+    : 'Drag & drop your file here or click to browse';
+  const selectedText = isMultiple ? 'Selected files:' : 'Selected file:';
+
+  dropArea.innerHTML = `
+    <div class="file-icon mb-2"><i class="fas fa-file-upload fa-2x"></i></div>
+    <p>${uploadText}</p>
+    <small class="text-muted">${selectedText} <span class="selected-filename">None</span></small>
+  `;
+
+  // Insert dropzone before fileInput
+  fileInput.parentNode.insertBefore(dropArea, fileInput);
+
+  // Hide the original input
+  fileInput.style.display = 'none';
+
+  // Click on dropzone should trigger file input
+  dropArea.addEventListener('click', () => {
+    fileInput.click();
+  });
+
+  // Update dropzone when file is selected
+  fileInput.addEventListener('change', () => {
+    updateDropzoneDisplay(dropArea, fileInput, isMultiple);
+  });
+
+  // Setup drag and drop handlers
+  setupDragAndDrop(dropArea, fileInput);
+}
+
+/**
+ * Update the dropzone display when files are selected
+ * @param {HTMLElement} dropArea - The dropzone element
+ * @param {HTMLInputElement} fileInput - The file input
+ * @param {boolean} isMultiple - Whether multiple files are allowed
+ */
+function updateDropzoneDisplay(dropArea, fileInput, isMultiple) {
+  const filenameSpan = dropArea.querySelector('.selected-filename');
+  if (fileInput.files.length > 0) {
+    if (isMultiple && fileInput.files.length > 1) {
+      const totalSize = Array.from(fileInput.files).reduce(
+        (sum, file) => sum + file.size,
+        0,
+      );
+      const totalSizeMB = (totalSize / (1024 * 1024)).toFixed(2);
+      filenameSpan.textContent = `${fileInput.files.length} files selected (${totalSizeMB} MB)`;
+    } else {
+      const fileName = fileInput.files[0].name;
+      const fileSize = (fileInput.files[0].size / (1024 * 1024)).toFixed(2);
+      filenameSpan.textContent = `${fileName} (${fileSize} MB)`;
     }
-    
-    function setupDropzone(fileInput) {
-        const container = fileInput.parentElement;
-        const dropArea = document.createElement('div');
-        dropArea.className = 'file-dropzone p-4 mb-3 text-center border border-secondary rounded';
-        
-        // Change wording for multiple files
-        const isMultiple = fileInput.multiple;
-        const uploadText = isMultiple ? 'Drag & drop your files here or click to browse' : 'Drag & drop your file here or click to browse';
-        const selectedText = isMultiple ? 'Selected files:' : 'Selected file:';
-        
-        dropArea.innerHTML = `
-            <div class="file-icon mb-2"><i class="fas fa-file-upload fa-2x"></i></div>
-            <p>${uploadText}</p>
-            <small class="text-muted">${selectedText} <span class="selected-filename">None</span></small>
-        `;
-        
-        // Insert dropzone before fileInput
-        fileInput.parentNode.insertBefore(dropArea, fileInput);
-        
-        // Hide the original input
-        fileInput.style.display = 'none';
-        
-        // Click on dropzone should trigger file input
-        dropArea.addEventListener('click', function() {
-            fileInput.click();
-        });
-        
-        // Update dropzone when file is selected
-        fileInput.addEventListener('change', function() {
-            const filenameSpan = dropArea.querySelector('.selected-filename');
-            if (this.files.length > 0) {
-                if (isMultiple && this.files.length > 1) {
-                    // Show multiple file count for multiple file inputs
-                    const totalSize = Array.from(this.files).reduce((sum, file) => sum + file.size, 0);
-                    const totalSizeMB = (totalSize / (1024 * 1024)).toFixed(2);
-                    filenameSpan.textContent = `${this.files.length} files selected (${totalSizeMB} MB)`;
-                } else {
-                    // Show single filename for single file input or when only one file is selected
-                    const fileName = this.files[0].name;
-                    const fileSize = (this.files[0].size / (1024 * 1024)).toFixed(2);
-                    filenameSpan.textContent = `${fileName} (${fileSize} MB)`;
-                }
-                dropArea.classList.add('border-success');
-                dropArea.classList.remove('border-secondary');
-            } else {
-                filenameSpan.textContent = 'None';
-                dropArea.classList.remove('border-success');
-                dropArea.classList.add('border-secondary');
-            }
-        });
-        
-        // Handle drag and drop
-        ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
-            dropArea.addEventListener(eventName, preventDefaults, false);
-        });
-        
-        function preventDefaults(e) {
-            e.preventDefault();
-            e.stopPropagation();
+    dropArea.classList.add('border-success');
+    dropArea.classList.remove('border-secondary');
+  } else {
+    filenameSpan.textContent = 'None';
+    dropArea.classList.remove('border-success');
+    dropArea.classList.add('border-secondary');
+  }
+}
+
+/**
+ * Setup drag and drop event handlers
+ * @param {HTMLElement} dropArea - The dropzone element
+ * @param {HTMLInputElement} fileInput - The file input
+ */
+function setupDragAndDrop(dropArea, fileInput) {
+  // Prevent default drag behaviors
+  ['dragenter', 'dragover', 'dragleave', 'drop'].forEach((eventName) => {
+    dropArea.addEventListener(eventName, (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+    });
+  });
+
+  // Visual feedback during drag
+  ['dragenter', 'dragover'].forEach((eventName) => {
+    dropArea.addEventListener(eventName, () => {
+      dropArea.classList.add('border-primary', 'bg-dark');
+    });
+  });
+
+  ['dragleave', 'drop'].forEach((eventName) => {
+    dropArea.addEventListener(eventName, () => {
+      dropArea.classList.remove('border-primary', 'bg-dark');
+    });
+  });
+
+  // Handle the actual drop
+  dropArea.addEventListener('drop', (e) => {
+    const files = e.dataTransfer.files;
+
+    if (files.length > 0) {
+      const dataTransfer = new DataTransfer();
+
+      if (fileInput.multiple) {
+        // Add all dropped files for multiple inputs
+        for (let i = 0; i < files.length; i++) {
+          dataTransfer.items.add(files[i]);
         }
-        
-        // Handle visual feedback during drag
-        ['dragenter', 'dragover'].forEach(eventName => {
-            dropArea.addEventListener(eventName, highlight, false);
-        });
-        
-        ['dragleave', 'drop'].forEach(eventName => {
-            dropArea.addEventListener(eventName, unhighlight, false);
-        });
-        
-        function highlight() {
-            dropArea.classList.add('border-primary');
-            dropArea.classList.add('bg-dark');
-        }
-        
-        function unhighlight() {
-            dropArea.classList.remove('border-primary');
-            dropArea.classList.remove('bg-dark');
-        }
-        
-        // Handle the actual drop
-        dropArea.addEventListener('drop', function(e) {
-            const dt = e.dataTransfer;
-            const files = dt.files;
-            
-            if (files.length > 0) {
-                // Handle multiple files for multiple inputs
-                if (fileInput.multiple) {
-                    // Create a new DataTransfer object to build the file list
-                    const dataTransfer = new DataTransfer();
-                    
-                    // Add each dropped file to the DataTransfer
-                    for (let i = 0; i < files.length; i++) {
-                        dataTransfer.items.add(files[i]);
-                    }
-                    
-                    // Assign the files to the input
-                    fileInput.files = dataTransfer.files;
-                } else {
-                    // For single file inputs, just use the first file
-                    const singleFileTransfer = new DataTransfer();
-                    singleFileTransfer.items.add(files[0]);
-                    fileInput.files = singleFileTransfer.files;
-                }
-                
-                // Trigger change event manually
-                const event = new Event('change');
-                fileInput.dispatchEvent(event);
-            }
-        });
+      } else {
+        // Only use first file for single inputs
+        dataTransfer.items.add(files[0]);
+      }
+
+      fileInput.files = dataTransfer.files;
+
+      // Trigger change event
+      fileInput.dispatchEvent(new Event('change'));
     }
-    
-    function updateFilesInfo() {
-        // Reset counts
-        totalFileSize = 0;
-        fileCount = 0;
-        filenames = [];
-        
-        if (isBatchUpload) {
-            // Batch upload form - handle multiple files
-            // Check WAV files
-            if (wavFilesInput && wavFilesInput.files.length > 0) {
-                for (let i = 0; i < wavFilesInput.files.length; i++) {
-                    totalFileSize += wavFilesInput.files[i].size;
-                    fileCount++;
-                    filenames.push(wavFilesInput.files[i].name);
-                }
-            }
-            
-            // Check pickle files
-            if (pickleFilesInput && pickleFilesInput.files.length > 0) {
-                for (let i = 0; i < pickleFilesInput.files.length; i++) {
-                    totalFileSize += pickleFilesInput.files[i].size;
-                    fileCount++;
-                    filenames.push(pickleFilesInput.files[i].name);
-                }
-            }
-        } else {
-            // Single file upload form
-            // Check WAV file
-            if (wavFileInput && wavFileInput.files.length > 0) {
-                totalFileSize += wavFileInput.files[0].size;
-                fileCount++;
-                filenames.push(wavFileInput.files[0].name);
+  });
+}

@@ -1,121 +1,161 @@
-// File upload initialization
-document.addEventListener('DOMContentLoaded', function() {
-    // Set a flag to let other scripts know we've initialized
-    window.advancedUploadInitialized = true;
-    
-    // Setup persistent logging
-    const debugLogs = localStorage.getItem('debugLogs') || '';
-    if (debugLogs) {
-        console.log('PREVIOUS SESSION LOGS:');
-        console.log(debugLogs);
-        
-        // Create debug panel if not exists
-        if (!document.getElementById('debug-panel')) {
-            const debugPanel = document.createElement('div');
-            debugPanel.id = 'debug-panel';
-            debugPanel.style.position = 'fixed';
-            debugPanel.style.bottom = '10px';
-            debugPanel.style.right = '10px';
-            debugPanel.style.width = '300px';
-            debugPanel.style.maxHeight = '200px';
-            debugPanel.style.overflow = 'auto';
-            debugPanel.style.backgroundColor = 'rgba(0,0,0,0.8)';
-            debugPanel.style.color = '#0f0';
-            debugPanel.style.padding = '10px';
-            debugPanel.style.borderRadius = '5px';
-            debugPanel.style.zIndex = '10000';
-            debugPanel.style.fontFamily = 'monospace';
-            debugPanel.style.fontSize = '10px';
-            debugPanel.innerHTML = `
-                <div style="display:flex;justify-content:space-between;margin-bottom:5px;">
-                    <strong>Debug Log</strong>
-                    <button id="clear-logs" style="background:none;border:none;color:red;cursor:pointer;font-size:10px;">Clear</button>
-                </div>
-                <div id="debug-log-content">${debugLogs.replace(/\n/g, '<br>')}</div>
-            `;
-            document.body.appendChild(debugPanel);
-            
-            // Add clear logs handler
-            document.getElementById('clear-logs').addEventListener('click', function() {
-                localStorage.removeItem('debugLogs');
-                document.getElementById('debug-log-content').innerHTML = '';
-            });
-        }
+/**
+ * Initialization - File upload setup and coordination
+ *
+ * Sets up file upload forms with dropzone, progress tracking,
+ * and XHR-based uploads.
+ */
+
+import { setupDropzone } from './dropzone.js';
+import { getFileInfo, updateFileInfoDisplay } from './progress.js';
+import { createUploadHandler, hasRequiredFiles } from './upload-handler.js';
+
+/**
+ * @typedef {Object} FileUploadElements
+ * @property {HTMLFormElement} form - The form element
+ * @property {HTMLElement} progressBar - Progress bar element
+ * @property {HTMLElement} progressContainer - Progress container
+ * @property {HTMLElement} statusText - Status text element
+ * @property {HTMLButtonElement|null} cancelButton - Cancel button
+ * @property {HTMLInputElement|null} wavFileInput - Single WAV input
+ * @property {HTMLInputElement|null} pickleFileInput - Single pickle input
+ * @property {HTMLInputElement|null} wavFilesInput - Batch WAV input
+ * @property {HTMLInputElement|null} pickleFilesInput - Batch pickle input
+ */
+
+/**
+ * Get DOM elements for file upload
+ * @returns {FileUploadElements|null} Elements or null if not found
+ */
+function getElements() {
+  const form = document.querySelector('form[enctype="multipart/form-data"]');
+  const progressBar = document.getElementById('upload-progress-bar');
+  const progressContainer = document.getElementById('upload-progress-container');
+  const statusText = document.getElementById('upload-status');
+
+  if (!form || !progressBar) {
+    return null;
+  }
+
+  return {
+    form,
+    progressBar,
+    progressContainer,
+    statusText,
+    cancelButton: document.getElementById('cancel-upload'),
+    // Single file inputs
+    wavFileInput: document.querySelector('input[type="file"][name="wav_file"]'),
+    pickleFileInput: document.querySelector(
+      'input[type="file"][name="pickle_file"]',
+    ),
+    // Batch file inputs
+    wavFilesInput: document.querySelector(
+      'input[type="file"][name="wav_files"]',
+    ),
+    pickleFilesInput: document.querySelector(
+      'input[type="file"][name="pickle_files"]',
+    ),
+  };
+}
+
+/**
+ * Initialize file upload functionality
+ * @returns {boolean} True if initialization succeeded
+ */
+export function initFileUpload() {
+  const elements = getElements();
+
+  if (!elements) {
+    return false;
+  }
+
+  // Determine form type
+  const isBatchUpload = elements.wavFilesInput !== null;
+
+  // Get file inputs based on form type
+  const inputs = {
+    wavFileInput: elements.wavFileInput,
+    pickleFileInput: elements.pickleFileInput,
+    wavFilesInput: elements.wavFilesInput,
+    pickleFilesInput: elements.pickleFilesInput,
+  };
+
+  // Setup dropzones for all available file inputs
+  if (isBatchUpload) {
+    setupDropzone(elements.wavFilesInput);
+    setupDropzone(elements.pickleFilesInput);
+  } else {
+    setupDropzone(elements.wavFileInput);
+    setupDropzone(elements.pickleFileInput);
+  }
+
+  // Update file info display when files change
+  const updateDisplay = () => {
+    const fileInfo = getFileInfo(inputs, isBatchUpload);
+    updateFileInfoDisplay(
+      {
+        progressBar: elements.progressBar,
+        progressContainer: elements.progressContainer,
+        statusText: elements.statusText,
+      },
+      fileInfo,
+    );
+  };
+
+  // Attach change listeners
+  if (isBatchUpload) {
+    elements.wavFilesInput?.addEventListener('change', updateDisplay);
+    elements.pickleFilesInput?.addEventListener('change', updateDisplay);
+  } else {
+    elements.wavFileInput?.addEventListener('change', updateDisplay);
+    elements.pickleFileInput?.addEventListener('change', updateDisplay);
+  }
+
+  // Create upload handler
+  let uploadHandler = null;
+
+  // Setup cancel button
+  if (elements.cancelButton) {
+    elements.cancelButton.addEventListener('click', () => {
+      if (uploadHandler) {
+        uploadHandler.abort();
+      }
+    });
+  }
+
+  // Handle form submission
+  elements.form.addEventListener('submit', (e) => {
+    // Check if required files are present
+    if (!hasRequiredFiles(inputs, isBatchUpload)) {
+      // Let normal form submission handle validation errors
+      return;
     }
-    
-    // Override console.log
-    const originalLog = console.log;
-    console.log = function() {
-        // Call original console.log
-        originalLog.apply(console, arguments);
-        
-        // Format the log message
-        const msg = Array.from(arguments).map(arg => {
-            if (typeof arg === 'object') {
-                try {
-                    return JSON.stringify(arg);
-                } catch (e) {
-                    return String(arg);
-                }
-            }
-            return String(arg);
-        }).join(' ');
-        
-        // Add to localStorage
-        const logs = localStorage.getItem('debugLogs') || '';
-        localStorage.setItem('debugLogs', logs + '\n' + msg);
-        
-        // Update debug panel if exists
-        const logContent = document.getElementById('debug-log-content');
-        if (logContent) {
-            logContent.innerHTML += '<br>' + msg;
-            logContent.scrollTop = logContent.scrollHeight;
-        }
-    };
-    
-    console.log('File upload script initialized');
-    
-    const form = document.querySelector('form[enctype="multipart/form-data"]');
-    const progressBar = document.getElementById('upload-progress-bar');
-    const progressContainer = document.getElementById('upload-progress-container');
-    const statusText = document.getElementById('upload-status');
-    
-    // Support both single file and multiple files upload forms
-    // For single file uploads (task batch form)
-    const wavFileInput = document.querySelector('input[type="file"][name="wav_file"]');
-    const pickleFileInput = document.querySelector('input[type="file"][name="pickle_file"]');
-    
-    // For batch uploads (recordings batch upload)
-    const wavFilesInput = document.querySelector('input[type="file"][name="wav_files"]');
-    const pickleFilesInput = document.querySelector('input[type="file"][name="pickle_files"]');
-    
-    const cancelButton = document.getElementById('cancel-upload');
-    let xhr;
-    
-    // If we don't have the necessary elements, skip initialization
-    if (!form || !progressBar) {
-        console.log("File upload initialization skipped - missing elements");
-        return;
-    }
-    
-    // Determine which form we're on - batch or single
-    const isBatchUpload = wavFilesInput !== null;
-    
-    // Track total file size for both files
-    let totalFileSize = 0;
-    let fileCount = 0;
-    let filenames = [];
-    
-    // Initialize dropzone styling for file inputs based on which form we're on
-    if (isBatchUpload) {
-        // For batch upload form
-        setupDropzone(wavFilesInput);
-        setupDropzone(pickleFilesInput);
-        
-        // Handle file selection for either file input
-        wavFilesInput.addEventListener('change', updateFilesInfo);
-        pickleFilesInput.addEventListener('change', updateFilesInfo);
-    } else if (wavFileInput && pickleFileInput) {
-        // For single file upload form
-        setupDropzone(wavFileInput);
-        setupDropzone(pickleFileInput);
+
+    // Prevent default form submission
+    e.preventDefault();
+
+    // Create and start upload
+    uploadHandler = createUploadHandler({
+      form: elements.form,
+      progressBar: elements.progressBar,
+      statusText: elements.statusText,
+    });
+
+    uploadHandler.start();
+  });
+
+  // Set global flag for other scripts
+  window.advancedUploadInitialized = true;
+
+  return true;
+}
+
+/**
+ * Auto-initialize when DOM is ready
+ */
+export function autoInit() {
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initFileUpload);
+  } else {
+    initFileUpload();
+  }
+}

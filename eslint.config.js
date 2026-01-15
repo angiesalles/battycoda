@@ -131,11 +131,6 @@ export default [
       'staticfiles/**',
       'venv/**',
       '*.min.js',
-      // Incomplete ES6 module fragments (to be fixed in separate task)
-      'static/js/file_upload/dropzone.js',
-      'static/js/file_upload/progress.js',
-      'static/js/file_upload/validation.js',
-      'static/js/file_upload/initialization.js',
     ],
   },
 ];

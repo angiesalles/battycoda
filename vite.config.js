@@ -36,11 +36,6 @@ export default defineConfig({
         'static/js/app.js', // Third-party Maisonnette
         'static/js/test/**',
         'node_modules/**',
-        // Legacy non-ES6 files - exclude until migrated
-        'static/js/file_upload/dropzone.js',
-        'static/js/file_upload/initialization.js',
-        'static/js/file_upload/progress.js',
-        'static/js/file_upload/validation.js',
       ],
     },
 
