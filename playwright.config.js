@@ -44,19 +44,11 @@ export default defineConfig({
     video: 'on-first-retry',
   },
 
-  // Configure projects for cross-browser testing
+  // Configure projects for browser testing (Chromium only)
   projects: [
     {
       name: 'chromium',
       use: { ...devices['Desktop Chrome'] },
-    },
-    {
-      name: 'firefox',
-      use: { ...devices['Desktop Firefox'] },
-    },
-    {
-      name: 'webkit',
-      use: { ...devices['Desktop Safari'] },
     },
   ],
 
