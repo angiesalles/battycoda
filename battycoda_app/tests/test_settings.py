@@ -43,11 +43,11 @@ MEDIA_ROOT = tempfile.mkdtemp()
 CELERY_TASK_ALWAYS_EAGER = True
 
 # All patches to be applied
+# Note: Only include patches that are safe for global use. Avoid patching builtins.open
+# or other low-level functions as they can corrupt database connections and SSL.
+# The import_default_species_patch is sufficient to prevent problematic file operations
+# during user creation signals.
 all_patches = [
     import_default_species_patch,
     file_operations_patch,
-    makedirs_patch,
-    path_exists_patch,
-    open_file_patch,
-    file_class_patch,
 ]

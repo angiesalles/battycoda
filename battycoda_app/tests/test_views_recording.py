@@ -145,13 +145,14 @@ class RecordingDetailViewTest(BattycodaTestCase):
             created_by=self.user,
         )
 
-        # Create a recording
+        # Create a recording with a mock wav file
         self.recording = Recording.objects.create(
             name="Test Recording",
             project=self.project,
             species=self.species,
             group=self.group,
             created_by=self.user,
+            wav_file=create_mock_wav_file("test_recording.wav"),
         )
 
         # URL paths
