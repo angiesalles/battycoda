@@ -55,6 +55,13 @@ bd dep tree <id>      # View dependency tree
 ### Current Epics
 - `battycoda-yf0`: Clustering Visualization Overhaul (see CLUSTERING_VISUALIZATION_OVERHAUL.md)
 
+### Project Terminology
+
+**puntomatic** - When the user says "puntomatic", it means:
+1. Yes, it's OK to suppress/defer the warning or issue for now
+2. BUT you MUST add a reminder to the relevant bead (the "proper-fix-it" task) to remove the suppression when the real fix is implemented
+3. When you hear "puntomatic", read back this definition to acknowledge you remember it
+
 ## Architecture Overview
 
 BattyCoda is a Django application for annotating and classifying bat call recordings. Key components:
