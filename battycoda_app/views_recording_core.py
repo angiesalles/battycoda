@@ -21,10 +21,9 @@ from .models.organization import Project
 from .models.user import UserProfile
 from .tasks import calculate_audio_duration
 from .utils_modules.cleanup import safe_remove_file
+from .views_recordings_duplicates import has_duplicate_recordings
 
 logger = logging.getLogger(__name__)
-
-from .views_recordings_duplicates import has_duplicate_recordings
 
 
 @login_required

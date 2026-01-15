@@ -11,7 +11,9 @@ from django.http import Http404, JsonResponse, StreamingHttpResponse
 from django.shortcuts import get_object_or_404
 
 from .models import Recording
-from .views_common import CHUNK_SIZE
+
+# Default chunk size for streaming (1MB)
+CHUNK_SIZE = 1024 * 1024
 
 
 @login_required
