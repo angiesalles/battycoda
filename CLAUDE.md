@@ -590,10 +590,214 @@ Before enabling a feature in production:
 - **Formatting**: PEP 8, 4-space indentation, ~120 char line limit
 - **Naming**: CamelCase for classes, snake_case for functions/variables
 - **Error Handling**: Don't use bare `except: pass` - remove the try block or handle properly
-- **Frontend**: Prefer Django server-side rendering; Bootstrap 4
+- **Frontend**: Prefer Django server-side rendering; Bootstrap 5
 - **Comments**: Be sparse, especially when removing code
 
-## Linting
+## JavaScript Build System (Vite)
+
+BattyCoda uses Vite for JavaScript bundling and development.
+
+### Directory Structure
+```
+static/
+├── js/
+│   ├── main.js              # Main entry point
+│   ├── utils/               # Shared utilities
+│   │   ├── page-data.js     # Django template data access
+│   │   └── colormaps.js     # Color utilities
+│   ├── player/              # Waveform player module
+│   ├── cluster_explorer/    # Clustering visualization
+│   ├── cluster_mapping/     # Cluster-to-call mapping
+│   ├── file_upload/         # File upload handling
+│   ├── segmentation/        # Segmentation module
+│   └── test/                # Test setup, fixtures, mocks
+├── css/
+│   ├── main.css             # CSS entry point
+│   └── themes/              # Theme CSS files
+└── dist/                    # Built output (gitignored)
+```
+
+### Build Commands
+```bash
+# Start Vite dev server (port 5173)
+npm run dev
+
+# Build for production
+npm run build
+
+# Build with watch mode
+npm run build:watch
+
+# Preview production build
+npm run preview
+```
+
+### Adding New JavaScript Modules
+
+1. Create module in appropriate directory:
+   ```javascript
+   // static/js/feature/mymodule.js
+   export function myFunction() { ... }
+   ```
+
+2. Add entry point in `vite.config.js` if needed:
+   ```javascript
+   rollupOptions: {
+     input: {
+       myFeature: resolve(__dirname, 'static/js/feature/index.js'),
+     }
+   }
+   ```
+
+3. Load in Django template:
+   ```html
+   {% load vite %}
+   {% vite_asset 'myFeature.js' %}
+   ```
+
+### Accessing Django Data in JavaScript
+
+Use data attributes pattern (not inline scripts):
+
+```html
+<!-- In template -->
+<div id="app-data"
+     data-recording-id="{{ recording.id }}"
+     data-api-url="{% url 'api:endpoint' %}"
+     style="display: none;">
+</div>
+```
+
+```javascript
+// In JavaScript
+import { getPageData } from './utils/page-data.js';
+const { recordingId, apiUrl } = getPageData();
+```
+
+### External Dependencies (CDN)
+These libraries are loaded via CDN, not bundled:
+- jQuery 3.3.1
+- Bootstrap 5.3
+- Toastr
+- Select2
+
+D3.js is bundled via npm for tree-shaking benefits.
+
+## JavaScript Testing
+
+### Unit Tests (Vitest)
+
+Unit tests use Vitest with jsdom for DOM testing.
+
+```bash
+# Run tests in watch mode
+npm test
+
+# Run tests once
+npm run test:run
+
+# Run with coverage
+npm run test:coverage
+
+# Open Vitest UI
+npm run test:ui
+```
+
+**Test file location:** Place `.test.js` files next to the module they test:
+```
+static/js/
+├── utils/
+│   ├── page-data.js
+│   └── page-data.test.js    # Tests for page-data.js
+├── player/
+│   ├── data_manager.js
+│   └── data_manager.test.js
+```
+
+**Test setup files:** `static/js/test/` contains:
+- `setup.js` - Global test configuration
+- `fixtures/` - Test data fixtures
+- `mocks/` - Mock implementations
+
+**Writing tests:**
+```javascript
+import { describe, it, expect, vi } from 'vitest';
+import { myFunction } from './mymodule.js';
+
+describe('myFunction', () => {
+  it('should return expected value', () => {
+    expect(myFunction(input)).toBe(expected);
+  });
+});
+```
+
+### E2E Tests (Playwright)
+
+End-to-end tests for full user workflows.
+
+```bash
+# Run E2E tests
+npm run e2e
+
+# Run with browser visible
+npm run e2e:headed
+
+# Open Playwright UI
+npm run e2e:ui
+
+# View test report
+npm run e2e:report
+
+# Run specific browser
+npm run e2e:chromium
+```
+
+**Test file location:** `tests/e2e/`
+```
+tests/e2e/
+├── playwright.config.js     # Note: config is at project root
+├── global-setup.js          # Database setup before tests
+├── global-teardown.js       # Cleanup after tests
+├── fixtures/                # Test data and state
+├── helpers/                 # Shared test utilities
+│   └── auth.js              # Login helpers
+└── specs/                   # Test files
+    └── smoke.spec.js        # Basic smoke tests
+```
+
+**Writing E2E tests:**
+```javascript
+import { test, expect } from '@playwright/test';
+import { login } from '../helpers/auth.js';
+
+test('user can view dashboard', async ({ page }) => {
+  await login(page, 'test@example.com', 'password');
+  await page.goto('/dashboard/');
+  await expect(page.locator('h1')).toContainText('Dashboard');
+});
+```
+
+**Configuration:** Playwright config is at `playwright.config.js` in project root. Tests run against `http://localhost:8000` by default.
+
+## JavaScript Linting
+
+```bash
+# Lint JavaScript
+npm run lint
+
+# Auto-fix lint issues
+npm run lint:fix
+
+# Format with Prettier
+npm run format
+
+# Check formatting
+npm run format:check
+```
+
+ESLint config is in `eslint.config.js` (flat config format).
+
+## Python Linting
 
 ```bash
 ./lint.sh         # Check code quality
