@@ -32,7 +32,7 @@ export default defineConfig({
   // Shared settings for all projects
   use: {
     // Base URL for Django
-    baseURL: process.env.BASE_URL || 'http://localhost:8000',
+    baseURL: process.env.BASE_URL || `http://localhost:${process.env.TEST_PORT || 8000}`,
 
     // Collect trace on failure
     trace: 'on-first-retry',
@@ -62,8 +62,8 @@ export default defineConfig({
 
   // Start Django dev server before tests with test database
   webServer: {
-    command: 'DJANGO_TEST_MODE=true python manage.py runserver 8000',
-    url: 'http://localhost:8000',
+    command: `bash -c "source venv/bin/activate && DJANGO_TEST_MODE=true python manage.py runserver ${process.env.TEST_PORT || 8000}"`,
+    url: `http://localhost:${process.env.TEST_PORT || 8000}`,
     reuseExistingServer: !process.env.CI,
     timeout: 120000,
     env: {
