@@ -62,18 +62,23 @@ class AuthViewsTest(BattycodaTestCase):
         self.assertTemplateUsed(response, "auth/register.html")
 
     def test_register_view_post_success(self):
+        # Use unique email that doesn't match any existing user or invitation
         response = self.client.post(
             self.register_url,
             {
                 "username": "newuser",
-                "email": "new@example.com",
+                "email": "newuser@example.com",
                 "password1": "Password123!",
                 "password2": "Password123!",
+                "captcha_num1": 5,
+                "captcha_num2": 3,
+                "captcha_answer": 8,  # 5 + 3 = 8
             },
         )
 
-        self.assertEqual(response.status_code, 302)  # Redirects to login
-        self.assertRedirects(response, self.login_url)
+        # On successful registration, user is auto-logged in and redirected to index
+        self.assertEqual(response.status_code, 302)
+        self.assertRedirects(response, reverse("battycoda_app:index"))
 
         # Check that the user was created
         self.assertTrue(User.objects.filter(username="newuser").exists())
@@ -100,10 +105,14 @@ class AuthViewsTest(BattycodaTestCase):
                 "email": "new@example.com",  # Must match invitation email
                 "password1": "Password123!",
                 "password2": "Password123!",
+                "captcha_num1": 5,
+                "captcha_num2": 3,
+                "captcha_answer": 8,  # 5 + 3 = 8
             },
         )
 
-        self.assertEqual(response.status_code, 302)  # Redirects to login
+        # On successful registration, user is auto-logged in and redirected to index
+        self.assertEqual(response.status_code, 302)
 
         # Check that the user was created
         user = User.objects.get(username="inviteduser")
@@ -129,7 +138,8 @@ class AuthViewsTest(BattycodaTestCase):
 
         response = self.client.get(self.profile_url)
         self.assertEqual(response.status_code, 200)
-        self.assertTemplateUsed(response, "auth/profile.html")
+        # The 'profile' URL maps to edit_profile_view which uses edit_profile.html
+        self.assertTemplateUsed(response, "auth/edit_profile.html")
 
     def test_profile_view_unauthenticated(self):
         response = self.client.get(self.profile_url)
