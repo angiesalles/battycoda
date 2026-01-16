@@ -797,6 +797,28 @@ test('user can view dashboard', async ({ page }) => {
 
 **Configuration:** Playwright config is at `playwright.config.js` in project root. Tests run against `http://localhost:8000` by default.
 
+### Test Database Setup
+
+E2E tests use a separate test database (`battycoda_test`) to avoid polluting development data.
+
+**Initial Setup (one-time):**
+```bash
+# Create the test database
+sudo -u postgres psql -c "CREATE DATABASE battycoda_test OWNER battycoda;"
+```
+
+**Database Management Scripts:**
+```bash
+# Set up test database with initial data (run before first test)
+npm run e2e:setup-db
+
+# Reset test database (clears all data and re-initializes)
+npm run e2e:reset-db
+```
+
+**Environment Variable:**
+- `DJANGO_TEST_MODE=true` - Set automatically by E2E test scripts. Tells Django to use the test database instead of the main database.
+
 ## JavaScript Linting
 
 ```bash
