@@ -1,16 +1,12 @@
 {% extends 'base.html' %}
 {% load static %}
+{% load vite %}
 
 {% block extra_css %}
 <link rel="stylesheet" href="{% static 'css/audio.css' %}">
 {% endblock %}
 
 {% block title %}BattyCoda - Batch Upload Recordings{% endblock %}
-
-{% block extra_head %}
-<!-- Include upload progress script -->
-<script src="{% static 'js/upload_progress.js' %}"></script>
-{% endblock %}
 
 {% block content %}
 <div class="container py-4">
@@ -157,6 +153,23 @@
                     </div>
                 </div>
                 
+                <!-- Upload Progress (shown when Vite file_upload module is active) -->
+                <div id="upload-progress-container" class="mb-4 d-none">
+                    <div class="progress mb-2" style="height: 25px;">
+                        <div id="upload-progress-bar"
+                             class="progress-bar progress-bar-striped progress-bar-animated"
+                             role="progressbar"
+                             style="width: 0%"
+                             aria-valuenow="0"
+                             aria-valuemin="0"
+                             aria-valuemax="100">0%</div>
+                    </div>
+                    <div id="upload-status" class="text-muted small"></div>
+                    <button type="button" id="cancel-upload" class="btn btn-sm btn-outline-danger mt-2 d-none">
+                        <i class="fas fa-times"></i> Cancel Upload
+                    </button>
+                </div>
+
                 <div class="d-grid gap-2 d-md-flex justify-content-md-end">
                     <a href="{% url 'battycoda_app:recording_list' %}" class="btn btn-outline-secondary me-md-2">Cancel</a>
                     <button type="submit" class="btn btn-primary">
@@ -167,4 +180,10 @@
         </div>
     </div>
 </div>
+
+{% block extra_scripts %}
+{% if VITE_FEATURES.file_upload %}
+{% vite_asset 'static/js/file_upload/index.js' %}
+{% endif %}
+{% endblock %}
 {% endblock %}

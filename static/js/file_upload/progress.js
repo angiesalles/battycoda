@@ -37,6 +37,16 @@ export function getFileInfo(inputs, isBatchUpload) {
   let count = 0;
   const filenames = [];
 
+  // Handle pickle-only form type
+  if (inputs.formType === 'pickle_only') {
+    if (inputs.pickleFileInput?.files.length > 0) {
+      totalSize += inputs.pickleFileInput.files[0].size;
+      count++;
+      filenames.push(inputs.pickleFileInput.files[0].name);
+    }
+    return { totalSize, count, filenames };
+  }
+
   if (isBatchUpload) {
     // Batch upload form - handle multiple files
     if (inputs.wavFilesInput?.files.length > 0) {

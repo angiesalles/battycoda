@@ -47,14 +47,32 @@ function getElements() {
     pickleFileInput: document.querySelector(
       'input[type="file"][name="pickle_file"]',
     ),
-    // Batch file inputs
-    wavFilesInput: document.querySelector(
-      'input[type="file"][name="wav_files"]',
-    ),
-    pickleFilesInput: document.querySelector(
-      'input[type="file"][name="pickle_files"]',
-    ),
+    // Batch file inputs (support both wav_files and wav_zip naming conventions)
+    wavFilesInput:
+      document.querySelector('input[type="file"][name="wav_files"]') ||
+      document.querySelector('input[type="file"][name="wav_zip"]'),
+    pickleFilesInput:
+      document.querySelector('input[type="file"][name="pickle_files"]') ||
+      document.querySelector('input[type="file"][name="pickle_zip"]'),
   };
+}
+
+/**
+ * Determine the upload form type based on available inputs
+ * @param {FileUploadElements} elements - DOM elements
+ * @returns {'batch'|'single'|'pickle_only'} Form type
+ */
+function getFormType(elements) {
+  if (elements.wavFilesInput) {
+    return 'batch';
+  }
+  if (elements.wavFileInput) {
+    return 'single';
+  }
+  if (elements.pickleFileInput) {
+    return 'pickle_only';
+  }
+  return 'single'; // default fallback
 }
 
 /**
@@ -69,7 +87,8 @@ export function initFileUpload() {
   }
 
   // Determine form type
-  const isBatchUpload = elements.wavFilesInput !== null;
+  const formType = getFormType(elements);
+  const isBatchUpload = formType === 'batch';
 
   // Get file inputs based on form type
   const inputs = {
@@ -77,12 +96,15 @@ export function initFileUpload() {
     pickleFileInput: elements.pickleFileInput,
     wavFilesInput: elements.wavFilesInput,
     pickleFilesInput: elements.pickleFilesInput,
+    formType: formType,
   };
 
   // Setup dropzones for all available file inputs
-  if (isBatchUpload) {
+  if (formType === 'batch') {
     setupDropzone(elements.wavFilesInput);
     setupDropzone(elements.pickleFilesInput);
+  } else if (formType === 'pickle_only') {
+    setupDropzone(elements.pickleFileInput);
   } else {
     setupDropzone(elements.wavFileInput);
     setupDropzone(elements.pickleFileInput);
