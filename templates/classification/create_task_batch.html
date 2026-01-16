@@ -145,6 +145,8 @@
 {% endblock %}
 
 {% block extra_js %}
-{% load static %}
-<script src="{% static 'js/taskbatch/name_validator.js' %}"></script>
+<script type="module">
+  import { initialize } from '{% static "js/taskbatch/name_validator.js" %}';
+  initialize();
+</script>
 {% endblock %}

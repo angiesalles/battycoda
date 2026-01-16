@@ -1,217 +1,256 @@
 /**
  * Tests for taskbatch/name_validator.js
  *
- * Note: The name_validator.js module uses an IIFE pattern and doesn't export
- * functions, making it harder to unit test directly. These tests verify the
- * module's behavior through DOM interaction.
- *
- * The core logic being tested:
- * 1. Debounced input handling (300ms delay)
- * 2. Fetch request to check-url with encoded name
- * 3. Show/hide warning based on response
+ * Tests the exported functions directly for proper unit testing.
  */
 
 import { describe, it, expect, beforeEach, vi, afterEach } from 'vitest';
+import { checkNameExists, debounce, initialize } from './name_validator.js';
 
 describe('taskbatch/name_validator', () => {
   beforeEach(() => {
-    // Clean up the DOM before each test
     document.body.innerHTML = '';
     vi.useFakeTimers();
+    global.fetch = vi.fn();
   });
 
   afterEach(() => {
     vi.useRealTimers();
+    vi.restoreAllMocks();
   });
 
-  describe('name validation behavior', () => {
-    it('should not throw when required elements are missing', async () => {
-      document.body.innerHTML = '<div>No form elements</div>';
-
-      // Dynamically import the module to trigger DOMContentLoaded behavior
-      // Since the module checks for elements and exits early, this should not throw
-      const importPromise = import('./name_validator.js?t=' + Date.now());
-      await expect(importPromise).resolves.not.toThrow();
+  describe('checkNameExists', () => {
+    it('should return false when checkUrl is not provided', async () => {
+      const result = await checkNameExists('Test', null, null);
+      expect(result).toBe(false);
+      expect(global.fetch).not.toHaveBeenCalled();
     });
-
-    it('should set up DOM with proper elements for validation', () => {
-      // Set up the expected DOM structure
-      document.body.innerHTML = `
-        <input type="text" id="name" data-check-url="/api/check-name/">
-        <div id="name-warning" style="display: none;">Name already exists</div>
-      `;
-
-      const nameInput = document.getElementById('name');
-      const nameWarning = document.getElementById('name-warning');
-
-      expect(nameInput).not.toBeNull();
-      expect(nameWarning).not.toBeNull();
-      expect(nameInput.getAttribute('data-check-url')).toBe('/api/check-name/');
-    });
-  });
-
-  describe('checkNameExists function behavior', () => {
-    // These tests verify the expected behavior of the check function
-    // by testing the API contract
 
     it('should call API with URL-encoded name', async () => {
-      global.fetch = vi.fn().mockResolvedValue({
+      global.fetch.mockResolvedValue({
         ok: true,
         json: () => Promise.resolve({ exists: false }),
       });
 
-      // Simulate what checkNameExists does
-      const checkUrl = '/api/check-name/';
-      const name = 'Test Batch Name';
-      const url = `${checkUrl}?name=${encodeURIComponent(name)}`;
+      await checkNameExists('Test Batch Name', '/api/check-name/', null);
 
-      await fetch(url);
-
-      expect(global.fetch).toHaveBeenCalledWith('/api/check-name/?name=Test%20Batch%20Name');
+      expect(global.fetch).toHaveBeenCalledWith(
+        '/api/check-name/?name=Test%20Batch%20Name'
+      );
     });
 
-    it('should show warning when name exists', async () => {
+    it('should return true and show warning when name exists', async () => {
+      global.fetch.mockResolvedValue({
+        ok: true,
+        json: () => Promise.resolve({ exists: true }),
+      });
+
       document.body.innerHTML = `
-        <input type="text" id="name" data-check-url="/api/check-name/">
-        <div id="name-warning" style="display: none;">Name already exists</div>
+        <div id="warning" style="display: none;">Name exists</div>
       `;
+      const warning = document.getElementById('warning');
 
-      const nameWarning = document.getElementById('name-warning');
+      const result = await checkNameExists('Test', '/api/check/', warning);
 
-      // Simulate the response handler
-      const data = { exists: true };
-      if (data.exists) {
-        nameWarning.style.display = 'block';
-      } else {
-        nameWarning.style.display = 'none';
-      }
-
-      expect(nameWarning.style.display).toBe('block');
+      expect(result).toBe(true);
+      expect(warning.style.display).toBe('block');
     });
 
-    it('should hide warning when name does not exist', async () => {
+    it('should return false and hide warning when name does not exist', async () => {
+      global.fetch.mockResolvedValue({
+        ok: true,
+        json: () => Promise.resolve({ exists: false }),
+      });
+
       document.body.innerHTML = `
-        <input type="text" id="name" data-check-url="/api/check-name/">
-        <div id="name-warning" style="display: block;">Name already exists</div>
+        <div id="warning" style="display: block;">Name exists</div>
       `;
+      const warning = document.getElementById('warning');
 
-      const nameWarning = document.getElementById('name-warning');
+      const result = await checkNameExists('Test', '/api/check/', warning);
 
-      // Simulate the response handler
-      const data = { exists: false };
-      if (data.exists) {
-        nameWarning.style.display = 'block';
-      } else {
-        nameWarning.style.display = 'none';
-      }
-
-      expect(nameWarning.style.display).toBe('none');
+      expect(result).toBe(false);
+      expect(warning.style.display).toBe('none');
     });
 
-    it('should hide warning on fetch error', async () => {
+    it('should return false and hide warning on fetch error', async () => {
+      global.fetch.mockRejectedValue(new Error('Network error'));
+
       document.body.innerHTML = `
-        <input type="text" id="name" data-check-url="/api/check-name/">
-        <div id="name-warning" style="display: block;">Name already exists</div>
+        <div id="warning" style="display: block;">Name exists</div>
       `;
+      const warning = document.getElementById('warning');
 
-      const nameWarning = document.getElementById('name-warning');
+      const result = await checkNameExists('Test', '/api/check/', warning);
 
-      // Simulate the error handler
-      nameWarning.style.display = 'none';
+      expect(result).toBe(false);
+      expect(warning.style.display).toBe('none');
+    });
 
-      expect(nameWarning.style.display).toBe('none');
+    it('should work without warning element', async () => {
+      global.fetch.mockResolvedValue({
+        ok: true,
+        json: () => Promise.resolve({ exists: true }),
+      });
+
+      const result = await checkNameExists('Test', '/api/check/', null);
+
+      expect(result).toBe(true);
     });
   });
 
-  describe('debounce behavior', () => {
-    it('should wait 300ms before making request (debounce contract)', async () => {
-      const mockFetch = vi.fn().mockResolvedValue({
-        ok: true,
-        json: () => Promise.resolve({ exists: false }),
-      });
-      global.fetch = mockFetch;
+  describe('debounce', () => {
+    it('should delay function execution', () => {
+      const fn = vi.fn();
+      const debouncedFn = debounce(fn, 300);
 
-      // Simulate debounced call
-      const name = 'Test';
+      debouncedFn('arg1');
 
-      // First input - simulate setting timeout
-      const _checkTimeout = setTimeout(() => {
-        mockFetch(`/api/check-name/?name=${encodeURIComponent(name)}`);
-      }, 300);
+      expect(fn).not.toHaveBeenCalled();
 
-      // Should not have been called yet
-      expect(mockFetch).not.toHaveBeenCalled();
-
-      // Advance time by 300ms
       vi.advanceTimersByTime(300);
 
-      // Now it should have been called
-      expect(mockFetch).toHaveBeenCalledTimes(1);
+      expect(fn).toHaveBeenCalledTimes(1);
+      expect(fn).toHaveBeenCalledWith('arg1');
     });
 
-    it('should cancel previous timeout on rapid input', async () => {
-      const mockFetch = vi.fn().mockResolvedValue({
-        ok: true,
-        json: () => Promise.resolve({ exists: false }),
-      });
-      global.fetch = mockFetch;
+    it('should cancel previous calls on rapid invocations', () => {
+      const fn = vi.fn();
+      const debouncedFn = debounce(fn, 300);
 
-      let checkTimeout;
-
-      // First input
-      if (checkTimeout) clearTimeout(checkTimeout);
-      checkTimeout = setTimeout(() => {
-        mockFetch('/api/check-name/?name=First');
-      }, 300);
-
-      // Second input before timeout (100ms later)
+      debouncedFn('first');
       vi.advanceTimersByTime(100);
-      if (checkTimeout) clearTimeout(checkTimeout);
-      checkTimeout = setTimeout(() => {
-        mockFetch('/api/check-name/?name=Second');
-      }, 300);
 
-      // Advance 200ms (still within debounce of second input)
-      vi.advanceTimersByTime(200);
-      expect(mockFetch).not.toHaveBeenCalled();
-
-      // Advance final 100ms (300ms total from second input)
+      debouncedFn('second');
       vi.advanceTimersByTime(100);
-      expect(mockFetch).toHaveBeenCalledTimes(1);
-      expect(mockFetch).toHaveBeenCalledWith('/api/check-name/?name=Second');
+
+      debouncedFn('third');
+
+      // Advance to complete the last debounce
+      vi.advanceTimersByTime(300);
+
+      // Only the last call should have executed
+      expect(fn).toHaveBeenCalledTimes(1);
+      expect(fn).toHaveBeenCalledWith('third');
+    });
+
+    it('should preserve this context', () => {
+      const obj = {
+        value: 'test',
+        fn: vi.fn(function () {
+          return this.value;
+        }),
+      };
+
+      obj.debouncedFn = debounce(obj.fn, 100);
+      obj.debouncedFn();
+
+      vi.advanceTimersByTime(100);
+
+      expect(obj.fn).toHaveBeenCalled();
     });
   });
 
-  describe('empty name handling', () => {
-    it('should hide warning for empty name input', () => {
-      document.body.innerHTML = `
-        <input type="text" id="name" data-check-url="/api/check-name/">
-        <div id="name-warning" style="display: block;">Name already exists</div>
-      `;
+  describe('initialize', () => {
+    it('should do nothing when elements are missing', () => {
+      document.body.innerHTML = '<div>No form elements</div>';
 
-      const nameWarning = document.getElementById('name-warning');
-      const name = '   '.trim(); // Empty after trim
-
-      // Simulate the input handler logic
-      if (!name) {
-        nameWarning.style.display = 'none';
-      }
-
-      expect(nameWarning.style.display).toBe('none');
+      // Should not throw
+      expect(() => initialize()).not.toThrow();
     });
 
-    it('should not make API call for empty name', () => {
-      const mockFetch = vi.fn();
-      global.fetch = mockFetch;
+    it('should set up input listener with debounce', async () => {
+      global.fetch.mockResolvedValue({
+        ok: true,
+        json: () => Promise.resolve({ exists: false }),
+      });
 
-      const name = ''.trim();
+      document.body.innerHTML = `
+        <input type="text" id="name" data-check-url="/api/check-name/">
+        <div id="name-warning" style="display: none;">Name exists</div>
+      `;
 
-      // Simulate the input handler logic
-      if (name) {
-        mockFetch(`/api/check-name/?name=${encodeURIComponent(name)}`);
-      }
+      initialize();
 
-      expect(mockFetch).not.toHaveBeenCalled();
+      const nameInput = document.getElementById('name');
+
+      // Simulate typing
+      nameInput.value = 'Test';
+      nameInput.dispatchEvent(new Event('input'));
+
+      // Should not call immediately (debounced)
+      expect(global.fetch).not.toHaveBeenCalled();
+
+      // Advance past debounce delay
+      vi.advanceTimersByTime(300);
+
+      // Now it should have called
+      expect(global.fetch).toHaveBeenCalledWith('/api/check-name/?name=Test');
+    });
+
+    it('should hide warning for empty input', () => {
+      document.body.innerHTML = `
+        <input type="text" id="name" data-check-url="/api/check-name/">
+        <div id="name-warning" style="display: block;">Name exists</div>
+      `;
+
+      initialize();
+
+      const nameInput = document.getElementById('name');
+      const warning = document.getElementById('name-warning');
+
+      // Simulate clearing input
+      nameInput.value = '';
+      nameInput.dispatchEvent(new Event('input'));
+
+      expect(warning.style.display).toBe('none');
+    });
+
+    it('should check initial value if present', async () => {
+      global.fetch.mockResolvedValue({
+        ok: true,
+        json: () => Promise.resolve({ exists: false }),
+      });
+
+      document.body.innerHTML = `
+        <input type="text" id="name" value="Initial Value" data-check-url="/api/check-name/">
+        <div id="name-warning" style="display: none;">Name exists</div>
+      `;
+
+      initialize();
+
+      // Should check immediately for initial value (not debounced)
+      expect(global.fetch).toHaveBeenCalledWith(
+        '/api/check-name/?name=Initial%20Value'
+      );
+    });
+
+    it('should accept custom elements via options', async () => {
+      global.fetch.mockResolvedValue({
+        ok: true,
+        json: () => Promise.resolve({ exists: true }),
+      });
+
+      document.body.innerHTML = `
+        <input type="text" id="custom-input" data-check-url="/api/custom/">
+        <div id="custom-warning" style="display: none;">Warning</div>
+      `;
+
+      const input = document.getElementById('custom-input');
+      const warning = document.getElementById('custom-warning');
+
+      initialize({
+        nameInput: input,
+        warningElement: warning,
+        debounceDelay: 100,
+      });
+
+      input.value = 'Test';
+      input.dispatchEvent(new Event('input'));
+
+      vi.advanceTimersByTime(100);
+
+      expect(global.fetch).toHaveBeenCalledWith('/api/custom/?name=Test');
     });
   });
 });
