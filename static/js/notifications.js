@@ -117,6 +117,9 @@ export function initialize() {
   // Refresh notifications every 60 seconds
   setInterval(loadNavbarNotifications, 60000);
 
+  // Clean up existing handler to prevent duplicates on re-initialization
+  $('#notificationsDropdown').off('click');
+
   // Reload notifications when the dropdown is opened
   $('#notificationsDropdown').on('click', function () {
     loadNavbarNotifications();

@@ -14,6 +14,10 @@ export function initializeClusterPreviewModal(createMappingFn) {
   const $ = window.jQuery;
   if (!$) return;
 
+  // Clean up existing handlers to prevent duplicates on re-initialization
+  $('#clusterPreviewModal').off('show.bs.modal');
+  $('#create-mapping-btn').off('click');
+
   $('#clusterPreviewModal').on('show.bs.modal', function () {
     $('.cluster-preview-id').text('Loading...');
     $('.cluster-preview-description').text('');

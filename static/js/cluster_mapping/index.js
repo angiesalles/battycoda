@@ -67,6 +67,11 @@ export function initClusterMapping(existingMappings) {
     );
   }
 
+  // Clean up existing handlers to prevent duplicates on re-initialization
+  $('#cluster-search').off('input');
+  $('#cluster-sort').off('change');
+  $('#species-filter').off('change');
+
   // Set up search input
   $('#cluster-search').on('input', function () {
     filterClusters($(this).val());

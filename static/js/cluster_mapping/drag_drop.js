@@ -19,6 +19,10 @@ export function initializeDragAndDrop(loadClusterDetails, createMappingFn) {
 
   console.log('Initializing drag and drop functionality');
 
+  // Clean up existing handlers to prevent duplicates on re-initialization
+  $('.cluster-box').off('click dragstart dragend');
+  $('.mapping-container').off('dragover dragleave drop');
+
   // Initialize draggable for cluster boxes
   $('.cluster-box').each(function () {
     $(this).attr('draggable', 'true');
