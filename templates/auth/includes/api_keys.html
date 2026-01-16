@@ -1,11 +1,5 @@
 document.addEventListener('DOMContentLoaded', function() {
-    // Helper function to escape HTML and prevent XSS
-    function escapeHtml(str) {
-        if (str == null) return '';
-        const div = document.createElement('div');
-        div.textContent = str;
-        return div.innerHTML;
-    }
+    // escapeHtml is provided globally by base.html
 
     const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
     const profileImageUpload = document.getElementById('profile_image_upload');
