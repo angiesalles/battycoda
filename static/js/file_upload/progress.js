@@ -4,6 +4,8 @@
  * Manages progress bar updates and file info display during uploads.
  */
 
+import { escapeHtml } from '../utils/html.js';
+
 /**
  * @typedef {Object} FileInputs
  * @property {HTMLInputElement|null} wavFileInput - Single WAV file input
@@ -100,7 +102,10 @@ export function updateFileInfoDisplay(elements, fileInfo) {
 
     if (filenames.length <= maxDisplayFiles) {
       fileListHtml = filenames
-        .map((name) => `<span class="badge bg-info me-2 mb-1">${name}</span>`)
+        .map(
+          (name) =>
+            `<span class="badge bg-info me-2 mb-1">${escapeHtml(name)}</span>`,
+        )
         .join('');
     } else {
       const displayedFiles = filenames.slice(0, maxDisplayFiles);
@@ -108,7 +113,8 @@ export function updateFileInfoDisplay(elements, fileInfo) {
       fileListHtml =
         displayedFiles
           .map(
-            (name) => `<span class="badge bg-info me-2 mb-1">${name}</span>`,
+            (name) =>
+              `<span class="badge bg-info me-2 mb-1">${escapeHtml(name)}</span>`,
           )
           .join('') +
         `<span class="badge bg-secondary">+${remainingCount} more file${remainingCount > 1 ? 's' : ''}</span>`;
@@ -177,7 +183,7 @@ export function showSuccess(progressBar, statusText, message) {
   statusText.innerHTML = `
     <div class="alert alert-success">
       <i class="fas fa-check-circle me-2"></i>
-      ${displayMessage}
+      ${escapeHtml(displayMessage)}
     </div>
   `;
   progressBar.classList.remove('progress-bar-striped', 'progress-bar-animated');
@@ -194,7 +200,7 @@ export function showError(progressBar, statusText, errorMessage) {
   statusText.innerHTML = `
     <div class="alert alert-danger">
       <i class="fas fa-exclamation-circle me-2"></i>
-      ${errorMessage}
+      ${escapeHtml(errorMessage)}
     </div>
   `;
   progressBar.classList.remove('progress-bar-striped', 'progress-bar-animated');
