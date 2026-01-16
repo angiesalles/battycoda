@@ -1,5 +1,5 @@
 document.addEventListener('DOMContentLoaded', function() {
-    // escapeHtml is provided globally by base.html
+    // escapeHtml and validateUrl are provided globally by base.html
 
     const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
     const profileImageUpload = document.getElementById('profile_image_upload');
@@ -62,7 +62,10 @@ document.addEventListener('DOMContentLoaded', function() {
                 
                 // Update the profile image on the page
                 const imageDisplay = document.getElementById('profile-image-display');
-                imageDisplay.innerHTML = `<img src="${escapeHtml(data.image_url)}?v=${new Date().getTime()}" alt="Profile Image" class="img-fluid rounded-circle" style="width: 150px; height: 150px; object-fit: cover;">`;
+                const validatedImageUrl = validateUrl(data.image_url);
+                if (validatedImageUrl) {
+                    imageDisplay.innerHTML = `<img src="${escapeHtml(validatedImageUrl)}?v=${new Date().getTime()}" alt="Profile Image" class="img-fluid rounded-circle" style="width: 150px; height: 150px; object-fit: cover;">`;
+                }
                 
                 // Add remove button if it doesn't exist
                 if (!removeImageBtn && data.has_image) {
@@ -78,8 +81,8 @@ document.addEventListener('DOMContentLoaded', function() {
                 
                 // Update navbar profile image if it exists
                 const navbarProfileImage = document.querySelector('.nav.navbar-nav a.dropdown-toggle img');
-                if (navbarProfileImage) {
-                    navbarProfileImage.src = data.image_url + '?v=' + new Date().getTime();
+                if (navbarProfileImage && validatedImageUrl) {
+                    navbarProfileImage.src = validatedImageUrl + '?v=' + new Date().getTime();
                 }
                 
                 // Clear the file input

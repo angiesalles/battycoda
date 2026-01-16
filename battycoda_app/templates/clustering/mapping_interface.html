@@ -485,8 +485,15 @@
             }
             
             if (data.representative_spectrogram_url) {
-              document.getElementById('representative-spectrogram').src = data.representative_spectrogram_url;
-              document.getElementById('play-representative-audio').dataset.audioUrl = data.representative_audio_url;
+              // Validate URLs before assigning (defense-in-depth via validateUrl from base.html)
+              const validSpectrogramUrl = validateUrl(data.representative_spectrogram_url);
+              const validAudioUrl = validateUrl(data.representative_audio_url);
+              if (validSpectrogramUrl) {
+                document.getElementById('representative-spectrogram').src = validSpectrogramUrl;
+              }
+              if (validAudioUrl) {
+                document.getElementById('play-representative-audio').dataset.audioUrl = validAudioUrl;
+              }
               document.getElementById('representative-spectrogram-container').style.display = 'block';
             } else {
               document.getElementById('representative-spectrogram-container').style.display = 'none';

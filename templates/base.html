@@ -244,6 +244,29 @@ window.escapeHtml = function(str) {
 };
 </script>
 
+<!-- Global URL validation utility for dynamically loaded resources (defense-in-depth) -->
+<script id="validateUrlScript">
+window.validateUrl = function(url) {
+    // Returns the URL if safe, or empty string if potentially dangerous
+    if (url == null || typeof url !== 'string') return '';
+    url = url.trim();
+    if (url === '') return '';
+
+    // Allow relative URLs starting with /
+    if (url.startsWith('/')) return url;
+
+    // Allow HTTPS URLs
+    if (url.startsWith('https://')) return url;
+
+    // Allow HTTP only for localhost (development)
+    if (url.startsWith('http://localhost') || url.startsWith('http://127.0.0.1')) return url;
+
+    // Reject everything else (javascript:, data:, vbscript:, ftp:, etc.)
+    console.warn('validateUrl rejected potentially unsafe URL:', url);
+    return '';
+};
+</script>
+
 <script id="perfectScrollbarScript" src="https://cdn.jsdelivr.net/npm/perfect-scrollbar@1.5.0/dist/perfect-scrollbar.min.js"></script>
 <script id="toastrScript" src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
 <script id="select2Script" src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>

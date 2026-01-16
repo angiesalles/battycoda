@@ -287,15 +287,22 @@
                     document.querySelectorAll('.viz-badge').forEach(function(badge) {
                         badge.addEventListener('click', function(e) {
                             e.preventDefault();
-                            
+
                             // Get the visualization URL from the data attribute
                             const vizUrl = this.getAttribute('data-viz-url');
-                            
+
+                            // Validate URL before use (defense-in-depth via validateUrl from base.html)
+                            const validVizUrl = validateUrl(vizUrl);
+                            if (!validVizUrl) {
+                                console.warn('Invalid visualization URL');
+                                return;
+                            }
+
                             // Set the image source in the modal
-                            document.getElementById('vizImage').src = vizUrl;
-                            
+                            document.getElementById('vizImage').src = validVizUrl;
+
                             // Set the download link
-                            document.getElementById('vizDownloadLink').href = vizUrl;
+                            document.getElementById('vizDownloadLink').href = validVizUrl;
                             
                             // Show the modal using Bootstrap 5 API
                             var vizModal = new bootstrap.Modal(document.getElementById('vizModal'));
