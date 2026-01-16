@@ -204,11 +204,26 @@ class SpeciesForm(forms.ModelForm):
             "overview_padding_end_ms": forms.NumberInput(attrs={"class": "form-control", "min": "0"}),
         }
         help_texts = {
-            "detail_padding_start_ms": "Padding in milliseconds before the call in detail view (default: 8ms)",
-            "detail_padding_end_ms": "Padding in milliseconds after the call in detail view (default: 8ms)",
-            "overview_padding_start_ms": "Padding in milliseconds before the call in overview (default: 500ms)",
-            "overview_padding_end_ms": "Padding in milliseconds after the call in overview (default: 500ms)",
+            "detail_padding_start_ms": "Padding in milliseconds before the call in detail view",
+            "detail_padding_end_ms": "Padding in milliseconds after the call in detail view",
+            "overview_padding_start_ms": "Padding in milliseconds before the call in overview",
+            "overview_padding_end_ms": "Padding in milliseconds after the call in overview",
         }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # Set initial values from model defaults for new instances
+        if not self.instance.pk:
+            self.fields["detail_padding_start_ms"].initial = Species._meta.get_field(
+                "detail_padding_start_ms"
+            ).default
+            self.fields["detail_padding_end_ms"].initial = Species._meta.get_field("detail_padding_end_ms").default
+            self.fields["overview_padding_start_ms"].initial = Species._meta.get_field(
+                "overview_padding_start_ms"
+            ).default
+            self.fields["overview_padding_end_ms"].initial = Species._meta.get_field(
+                "overview_padding_end_ms"
+            ).default
 
 
 class SpeciesEditForm(forms.ModelForm):
@@ -235,11 +250,26 @@ class SpeciesEditForm(forms.ModelForm):
             "overview_padding_end_ms": forms.NumberInput(attrs={"class": "form-control", "min": "0"}),
         }
         help_texts = {
-            "detail_padding_start_ms": "Padding in milliseconds before the call in detail view (default: 8ms)",
-            "detail_padding_end_ms": "Padding in milliseconds after the call in detail view (default: 8ms)",
-            "overview_padding_start_ms": "Padding in milliseconds before the call in overview (default: 500ms)",
-            "overview_padding_end_ms": "Padding in milliseconds after the call in overview (default: 500ms)",
+            "detail_padding_start_ms": "Padding in milliseconds before the call in detail view",
+            "detail_padding_end_ms": "Padding in milliseconds after the call in detail view",
+            "overview_padding_start_ms": "Padding in milliseconds before the call in overview",
+            "overview_padding_end_ms": "Padding in milliseconds after the call in overview",
         }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # Set initial values from model defaults for new instances
+        if not self.instance.pk:
+            self.fields["detail_padding_start_ms"].initial = Species._meta.get_field(
+                "detail_padding_start_ms"
+            ).default
+            self.fields["detail_padding_end_ms"].initial = Species._meta.get_field("detail_padding_end_ms").default
+            self.fields["overview_padding_start_ms"].initial = Species._meta.get_field(
+                "overview_padding_start_ms"
+            ).default
+            self.fields["overview_padding_end_ms"].initial = Species._meta.get_field(
+                "overview_padding_end_ms"
+            ).default
 
 
 class CallForm(forms.ModelForm):
