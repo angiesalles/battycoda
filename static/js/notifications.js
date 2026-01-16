@@ -2,12 +2,12 @@
  * Notifications Module
  *
  * Handles navbar notification loading, display, and polling.
- * Requires jQuery and page data from templates:
+ * Requires page data from templates:
  * - data-navbar-notifications-url: URL to fetch notifications
  * - data-mark-notification-read-url: URL pattern to mark notification as read
  */
 
-import { getPageData } from './utils/page-data.js';
+import { getPageData, fetchWithCsrf } from './utils/page-data.js';
 
 /**
  * Format time as "X minutes ago", "X hours ago", etc.
@@ -31,9 +31,98 @@ export function formatTimeAgo(date) {
 }
 
 /**
- * Load notifications from server and update the navbar dropdown
+ * Create notification HTML element
+ * @param {Object} notification - Notification data
+ * @param {string} markNotificationReadUrl - URL pattern for marking as read
+ * @returns {HTMLElement} The notification list item element
  */
-export function loadNavbarNotifications() {
+function createNotificationElement(notification, markNotificationReadUrl) {
+  const li = document.createElement('li');
+  li.id = `notification-${notification.id}`;
+
+  const notificationUrl = markNotificationReadUrl.replace('0', notification.id);
+  const link = document.createElement('a');
+  link.href = notification.link ? notificationUrl : '#';
+
+  const iconDiv = document.createElement('div');
+  iconDiv.className = 'icon';
+  const iconSpan = document.createElement('span');
+  iconSpan.className = notification.icon;
+  iconDiv.appendChild(iconSpan);
+
+  const contentDiv = document.createElement('div');
+  contentDiv.className = 'content';
+  const descSpan = document.createElement('span');
+  descSpan.className = 'desc';
+  descSpan.textContent = notification.title;
+  const dateSpan = document.createElement('span');
+  dateSpan.className = 'date';
+  dateSpan.textContent = formatTimeAgo(new Date(notification.created_at));
+  contentDiv.appendChild(descSpan);
+  contentDiv.appendChild(dateSpan);
+
+  link.appendChild(iconDiv);
+  link.appendChild(contentDiv);
+  li.appendChild(link);
+
+  return li;
+}
+
+/**
+ * Create empty state notification element
+ * @param {string} icon - Icon class name
+ * @param {string} message - Message to display
+ * @returns {HTMLElement} The notification list item element
+ */
+function createEmptyStateElement(icon, message) {
+  const li = document.createElement('li');
+  const link = document.createElement('a');
+  link.href = '#';
+
+  const iconDiv = document.createElement('div');
+  iconDiv.className = 'icon';
+  const iconSpan = document.createElement('span');
+  iconSpan.className = icon;
+  iconDiv.appendChild(iconSpan);
+
+  const contentDiv = document.createElement('div');
+  contentDiv.className = 'content';
+  const descSpan = document.createElement('span');
+  descSpan.className = 'desc';
+  descSpan.textContent = message;
+  contentDiv.appendChild(descSpan);
+
+  link.appendChild(iconDiv);
+  link.appendChild(contentDiv);
+  li.appendChild(link);
+
+  return li;
+}
+
+/**
+ * Update the notification indicator with unread count
+ * @param {number} unreadCount - Number of unread notifications
+ */
+function updateNotificationIndicator(unreadCount) {
+  const indicator = document.getElementById('notificationIndicator');
+  if (!indicator) return;
+
+  if (unreadCount > 0) {
+    indicator.classList.add('indicator-new');
+    indicator.style.display = '';
+    indicator.textContent = unreadCount;
+  } else {
+    indicator.classList.remove('indicator-new');
+    indicator.style.display = 'none';
+    indicator.textContent = '';
+  }
+}
+
+/**
+ * Load notifications from server and update the navbar dropdown
+ * @returns {Promise<void>}
+ */
+export async function loadNavbarNotifications() {
   // Get URLs from page data
   const pageData = getPageData();
   const navbarNotificationsUrl = pageData.navbarNotificationsUrl;
@@ -44,67 +133,37 @@ export function loadNavbarNotifications() {
     return;
   }
 
-  $.ajax({
-    url: navbarNotificationsUrl,
-    type: 'GET',
-    dataType: 'json',
-    success: function (data) {
-      if (data.success) {
-        // Update notification count indicator
-        if (data.unread_count > 0) {
-          $('#notificationIndicator').addClass('indicator-new').show().text(data.unread_count);
-        } else {
-          $('#notificationIndicator').removeClass('indicator-new').hide().text('');
-        }
+  const notificationsList = document.getElementById('notificationsList');
 
-        // Update notification list
-        const $notificationsList = $('#notificationsList');
-        $notificationsList.empty();
+  try {
+    const response = await fetchWithCsrf(navbarNotificationsUrl);
+    const data = await response.json();
+
+    if (data.success) {
+      // Update notification count indicator
+      updateNotificationIndicator(data.unread_count);
+
+      // Update notification list
+      if (notificationsList) {
+        notificationsList.innerHTML = '';
 
         if (data.notifications.length > 0) {
-          $.each(data.notifications, function (i, notification) {
-            const notificationUrl = markNotificationReadUrl.replace('0', notification.id);
-            const notificationHtml =
-              '<li id="notification-' +
-              notification.id +
-              '"><a href="' +
-              (notification.link ? notificationUrl : '#') +
-              '">' +
-              '<div class="icon"><span class="' +
-              notification.icon +
-              '"></span></div>' +
-              '<div class="content">' +
-              '<span class="desc">' +
-              notification.title +
-              '</span>' +
-              '<span class="date">' +
-              formatTimeAgo(new Date(notification.created_at)) +
-              '</span>' +
-              '</div></a></li>';
-
-            $notificationsList.append(notificationHtml);
+          data.notifications.forEach((notification) => {
+            const element = createNotificationElement(notification, markNotificationReadUrl);
+            notificationsList.appendChild(element);
           });
         } else {
-          $notificationsList.append(
-            '<li><a href="#">' +
-              '<div class="icon"><span class="s7-bell"></span></div>' +
-              '<div class="content"><span class="desc">No notifications</span></div>' +
-              '</a></li>'
-          );
+          notificationsList.appendChild(createEmptyStateElement('s7-bell', 'No notifications'));
         }
       }
-    },
-    error: function () {
-      const $notificationsList = $('#notificationsList');
-      $notificationsList.empty();
-      $notificationsList.append(
-        '<li><a href="#">' +
-          '<div class="icon"><span class="s7-close"></span></div>' +
-          '<div class="content"><span class="desc">Failed to load notifications</span></div>' +
-          '</a></li>'
-      );
-    },
-  });
+    }
+  } catch {
+    // Handle fetch errors
+    if (notificationsList) {
+      notificationsList.innerHTML = '';
+      notificationsList.appendChild(createEmptyStateElement('s7-close', 'Failed to load notifications'));
+    }
+  }
 }
 
 /**
@@ -117,27 +176,20 @@ export function initialize() {
   // Refresh notifications every 60 seconds
   setInterval(loadNavbarNotifications, 60000);
 
-  // Clean up existing handler to prevent duplicates on re-initialization
-  $('#notificationsDropdown').off('click');
-
   // Reload notifications when the dropdown is opened
-  $('#notificationsDropdown').on('click', function () {
-    loadNavbarNotifications();
-  });
+  const dropdown = document.getElementById('notificationsDropdown');
+  if (dropdown) {
+    dropdown.addEventListener('click', function () {
+      loadNavbarNotifications();
+    });
+  }
 }
 
 // Auto-initialize on DOMContentLoaded
 if (document.readyState === 'loading') {
-  document.addEventListener('DOMContentLoaded', function () {
-    // Wait for jQuery to be available
-    if (typeof $ !== 'undefined') {
-      initialize();
-    }
-  });
+  document.addEventListener('DOMContentLoaded', initialize);
 } else {
-  if (typeof $ !== 'undefined') {
-    $(document).ready(initialize);
-  }
+  initialize();
 }
 
 // Expose globally for external use

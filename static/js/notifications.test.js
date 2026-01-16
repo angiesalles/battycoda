@@ -3,7 +3,15 @@
  */
 
 import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { formatTimeAgo, loadNavbarNotifications } from './notifications.js';
+import { formatTimeAgo, loadNavbarNotifications, initialize } from './notifications.js';
+
+// Mock the page-data module
+vi.mock('./utils/page-data.js', () => ({
+  getPageData: vi.fn(() => ({})),
+  fetchWithCsrf: vi.fn(),
+}));
+
+import { getPageData, fetchWithCsrf } from './utils/page-data.js';
 
 describe('notifications', () => {
   beforeEach(() => {
@@ -89,38 +97,282 @@ describe('notifications', () => {
   });
 
   describe('loadNavbarNotifications', () => {
-    it('should return early if navbarNotificationsUrl is not available', () => {
-      // Set up page-data without the URL
-      document.body.innerHTML = '<div id="page-data" hidden></div>';
+    it('should return early if navbarNotificationsUrl is not available', async () => {
+      getPageData.mockReturnValue({});
 
-      // Should not throw and should not make any AJAX calls
-      expect(() => loadNavbarNotifications()).not.toThrow();
+      await loadNavbarNotifications();
+
+      expect(fetchWithCsrf).not.toHaveBeenCalled();
     });
 
-    it('should make AJAX call when URL is available', () => {
+    it('should make fetch call when URL is available', async () => {
+      // Set up page data
+      getPageData.mockReturnValue({
+        navbarNotificationsUrl: '/api/notifications/',
+        markNotificationReadUrl: '/api/notifications/0/read/',
+      });
+
+      // Set up DOM
       document.body.innerHTML = `
-        <div id="page-data"
-             data-navbar-notifications-url="/api/notifications/"
-             data-mark-notification-read-url="/api/notifications/0/read/"
-             hidden>
-        </div>
         <span id="notificationIndicator"></span>
         <ul id="notificationsList"></ul>
       `;
 
-      // Mock jQuery ajax
-      const mockAjax = vi.fn();
-      global.$.ajax = mockAjax;
+      // Mock successful fetch response
+      fetchWithCsrf.mockResolvedValue({
+        json: () =>
+          Promise.resolve({
+            success: true,
+            unread_count: 0,
+            notifications: [],
+          }),
+      });
 
-      loadNavbarNotifications();
+      await loadNavbarNotifications();
 
-      expect(mockAjax).toHaveBeenCalledWith(
-        expect.objectContaining({
-          url: '/api/notifications/',
-          type: 'GET',
-          dataType: 'json',
-        })
-      );
+      expect(fetchWithCsrf).toHaveBeenCalledWith('/api/notifications/');
+    });
+
+    it('should update indicator when there are unread notifications', async () => {
+      getPageData.mockReturnValue({
+        navbarNotificationsUrl: '/api/notifications/',
+        markNotificationReadUrl: '/api/notifications/0/read/',
+      });
+
+      document.body.innerHTML = `
+        <span id="notificationIndicator"></span>
+        <ul id="notificationsList"></ul>
+      `;
+
+      fetchWithCsrf.mockResolvedValue({
+        json: () =>
+          Promise.resolve({
+            success: true,
+            unread_count: 5,
+            notifications: [],
+          }),
+      });
+
+      await loadNavbarNotifications();
+
+      const indicator = document.getElementById('notificationIndicator');
+      expect(indicator.classList.contains('indicator-new')).toBe(true);
+      expect(indicator.textContent).toBe('5');
+    });
+
+    it('should hide indicator when there are no unread notifications', async () => {
+      getPageData.mockReturnValue({
+        navbarNotificationsUrl: '/api/notifications/',
+        markNotificationReadUrl: '/api/notifications/0/read/',
+      });
+
+      document.body.innerHTML = `
+        <span id="notificationIndicator" class="indicator-new"></span>
+        <ul id="notificationsList"></ul>
+      `;
+
+      fetchWithCsrf.mockResolvedValue({
+        json: () =>
+          Promise.resolve({
+            success: true,
+            unread_count: 0,
+            notifications: [],
+          }),
+      });
+
+      await loadNavbarNotifications();
+
+      const indicator = document.getElementById('notificationIndicator');
+      expect(indicator.classList.contains('indicator-new')).toBe(false);
+      expect(indicator.style.display).toBe('none');
+    });
+
+    it('should render notifications list', async () => {
+      getPageData.mockReturnValue({
+        navbarNotificationsUrl: '/api/notifications/',
+        markNotificationReadUrl: '/api/notifications/0/read/',
+      });
+
+      document.body.innerHTML = `
+        <span id="notificationIndicator"></span>
+        <ul id="notificationsList"></ul>
+      `;
+
+      const testDate = new Date().toISOString();
+      fetchWithCsrf.mockResolvedValue({
+        json: () =>
+          Promise.resolve({
+            success: true,
+            unread_count: 2,
+            notifications: [
+              {
+                id: 1,
+                title: 'Test notification',
+                icon: 's7-bell',
+                link: '/some/link/',
+                created_at: testDate,
+              },
+              {
+                id: 2,
+                title: 'Another notification',
+                icon: 's7-info',
+                link: null,
+                created_at: testDate,
+              },
+            ],
+          }),
+      });
+
+      await loadNavbarNotifications();
+
+      const notificationsList = document.getElementById('notificationsList');
+      expect(notificationsList.children.length).toBe(2);
+      expect(notificationsList.querySelector('#notification-1')).toBeTruthy();
+      expect(notificationsList.querySelector('#notification-2')).toBeTruthy();
+    });
+
+    it('should show empty state when no notifications', async () => {
+      getPageData.mockReturnValue({
+        navbarNotificationsUrl: '/api/notifications/',
+        markNotificationReadUrl: '/api/notifications/0/read/',
+      });
+
+      document.body.innerHTML = `
+        <span id="notificationIndicator"></span>
+        <ul id="notificationsList"></ul>
+      `;
+
+      fetchWithCsrf.mockResolvedValue({
+        json: () =>
+          Promise.resolve({
+            success: true,
+            unread_count: 0,
+            notifications: [],
+          }),
+      });
+
+      await loadNavbarNotifications();
+
+      const notificationsList = document.getElementById('notificationsList');
+      expect(notificationsList.textContent).toContain('No notifications');
+    });
+
+    it('should show error state on fetch failure', async () => {
+      getPageData.mockReturnValue({
+        navbarNotificationsUrl: '/api/notifications/',
+        markNotificationReadUrl: '/api/notifications/0/read/',
+      });
+
+      document.body.innerHTML = `
+        <span id="notificationIndicator"></span>
+        <ul id="notificationsList"></ul>
+      `;
+
+      fetchWithCsrf.mockRejectedValue(new Error('Network error'));
+
+      await loadNavbarNotifications();
+
+      const notificationsList = document.getElementById('notificationsList');
+      expect(notificationsList.textContent).toContain('Failed to load notifications');
+    });
+
+    it('should handle notification with link', async () => {
+      getPageData.mockReturnValue({
+        navbarNotificationsUrl: '/api/notifications/',
+        markNotificationReadUrl: '/api/notifications/0/read/',
+      });
+
+      document.body.innerHTML = `
+        <span id="notificationIndicator"></span>
+        <ul id="notificationsList"></ul>
+      `;
+
+      fetchWithCsrf.mockResolvedValue({
+        json: () =>
+          Promise.resolve({
+            success: true,
+            unread_count: 1,
+            notifications: [
+              {
+                id: 42,
+                title: 'Click me',
+                icon: 's7-bell',
+                link: '/task/123/',
+                created_at: new Date().toISOString(),
+              },
+            ],
+          }),
+      });
+
+      await loadNavbarNotifications();
+
+      const link = document.querySelector('#notification-42 a');
+      expect(link.href).toContain('/api/notifications/42/read/');
+    });
+
+    it('should handle notification without link', async () => {
+      getPageData.mockReturnValue({
+        navbarNotificationsUrl: '/api/notifications/',
+        markNotificationReadUrl: '/api/notifications/0/read/',
+      });
+
+      document.body.innerHTML = `
+        <span id="notificationIndicator"></span>
+        <ul id="notificationsList"></ul>
+      `;
+
+      fetchWithCsrf.mockResolvedValue({
+        json: () =>
+          Promise.resolve({
+            success: true,
+            unread_count: 1,
+            notifications: [
+              {
+                id: 42,
+                title: 'No link',
+                icon: 's7-bell',
+                link: null,
+                created_at: new Date().toISOString(),
+              },
+            ],
+          }),
+      });
+
+      await loadNavbarNotifications();
+
+      const link = document.querySelector('#notification-42 a');
+      expect(link.getAttribute('href')).toBe('#');
+    });
+  });
+
+  describe('initialize', () => {
+    it('should set up click handler on dropdown', () => {
+      getPageData.mockReturnValue({});
+
+      document.body.innerHTML = `
+        <div id="notificationsDropdown"></div>
+        <span id="notificationIndicator"></span>
+        <ul id="notificationsList"></ul>
+      `;
+
+      const dropdown = document.getElementById('notificationsDropdown');
+      const addEventListenerSpy = vi.spyOn(dropdown, 'addEventListener');
+
+      initialize();
+
+      expect(addEventListenerSpy).toHaveBeenCalledWith('click', expect.any(Function));
+    });
+
+    it('should handle missing dropdown gracefully', () => {
+      getPageData.mockReturnValue({});
+
+      document.body.innerHTML = `
+        <span id="notificationIndicator"></span>
+        <ul id="notificationsList"></ul>
+      `;
+
+      // Should not throw
+      expect(() => initialize()).not.toThrow();
     });
   });
 });
