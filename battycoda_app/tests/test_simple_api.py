@@ -13,6 +13,11 @@ from battycoda_app.models.organization import Species
 from battycoda_app.models.user import UserProfile
 from battycoda_app.tests.test_settings import PASSWORD_HASHERS
 
+# Suppress noisy logs during tests
+import logging
+
+logging.disable(logging.ERROR)
+
 
 @override_settings(PASSWORD_HASHERS=PASSWORD_HASHERS)
 class SimpleAPITestCase(TestCase):
