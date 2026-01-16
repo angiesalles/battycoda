@@ -61,14 +61,16 @@ export class TimelineRenderer {
     );
 
     // Draw segments if available
-    this.segmentRenderer.draw(
-      player.timelineContainer,
-      player.segments,
-      width,
-      startTime,
-      visibleDuration,
-      player.waveformContainer
-    );
+    if (player.segments) {
+      this.segmentRenderer.draw(
+        player.timelineContainer,
+        player.segments,
+        width,
+        startTime,
+        visibleDuration,
+        player.waveformContainer
+      );
+    }
   }
 
   /**
