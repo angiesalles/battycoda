@@ -3,6 +3,7 @@
  * Handles filtering and relabeling tasks in the batch review interface
  */
 import { getPageData, getCsrfToken } from './utils/page-data.js';
+import { escapeHtml } from './utils/html.js';
 
 // Get page data
 const pageData = getPageData();
@@ -69,7 +70,7 @@ function showToast(message, type) {
   toast.className = `alert alert-${type === 'success' ? 'success' : 'danger'} alert-dismissible fade show position-fixed`;
   toast.style.cssText = 'top: 20px; right: 20px; z-index: 10000; min-width: 300px;';
   toast.innerHTML = `
-        ${message}
+        ${escapeHtml(message)}
         <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
     `;
 

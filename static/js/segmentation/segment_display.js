@@ -2,6 +2,8 @@
  * Segment Display Manager - Handles UI display of segments
  */
 
+import { escapeHtml } from '../utils/html.js';
+
 export class SegmentDisplay {
   constructor(playerId, readOnly = false) {
     this.playerId = playerId;
@@ -74,8 +76,8 @@ export class SegmentDisplay {
                 <td>
                     <div class="segment-actions" data-segment-id="${segment.id}"
                          data-onset="${segment.onset}" data-offset="${segment.offset}"
-                         data-name="${segment.name || ''}"
-                         data-notes="${segment.notes || ''}"></div>
+                         data-name="${escapeHtml(segment.name || '')}"
+                         data-notes="${escapeHtml(segment.notes || '')}"></div>
                 </td>
             `;
 

@@ -7,6 +7,7 @@
 import { SegmentCRUD } from './segment_crud.js';
 import { SegmentDisplay } from './segment_display.js';
 import { SegmentSearchPagination } from './segment_search_pagination.js';
+import { escapeHtml } from '../utils/html.js';
 
 export class SegmentManager {
   constructor(options) {
@@ -254,7 +255,7 @@ export class SegmentManager {
       const alertDiv = document.createElement('div');
       alertDiv.className = `alert alert-${type} alert-dismissible fade show`;
       alertDiv.innerHTML = `
-                ${message}
+                ${escapeHtml(message)}
                 <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
             `;
       messagesContainer.appendChild(alertDiv);
