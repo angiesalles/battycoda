@@ -5,10 +5,6 @@ Re-exports all model classes from the models package for backward compatibility.
 """
 
 from battycoda_app.models.classification import CallProbability, ClassificationResult, ClassificationRun, Classifier
-
-# Backwards compatibility aliases
-ClassificationRun = ClassificationRun
-ClassificationResult = ClassificationResult
 from battycoda_app.models.organization import Call, Project, Species
 from battycoda_app.models.recording import Recording, Segment, Segmentation, SegmentationAlgorithm
 from battycoda_app.models.task import Task, TaskBatch
@@ -41,7 +37,4 @@ __all__ = [
     "ClassificationRun",
     "ClassificationResult",
     "CallProbability",
-    # Backwards compatibility aliases
-    "ClassificationRun",
-    "ClassificationResult",
 ]
