@@ -5,6 +5,7 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { saveClusterLabel } from './data_loader.js';
 import { setSelectedClusterId } from './state.js';
+import { API_ENDPOINTS } from './api.js';
 
 // Mock getCsrfToken
 vi.mock('../utils/page-data.js', () => ({
@@ -85,7 +86,7 @@ describe('cluster_explorer/data_loader', () => {
       saveClusterLabel();
 
       expect(mockAjax).toHaveBeenCalledTimes(1);
-      expect(mockAjax.lastOptions.url).toBe('/clustering/update-cluster-label/');
+      expect(mockAjax.lastOptions.url).toBe(API_ENDPOINTS.UPDATE_CLUSTER_LABEL);
       expect(mockAjax.lastOptions.type).toBe('POST');
       expect(mockAjax.lastOptions.headers['X-CSRFToken']).toBe('test-csrf-token');
       expect(mockAjax.lastOptions.data.cluster_id).toBe(42);

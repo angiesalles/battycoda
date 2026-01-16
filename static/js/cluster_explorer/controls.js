@@ -8,6 +8,7 @@
 import { selectAll } from 'd3-selection';
 import { getSelectedClusterId } from './state.js';
 import { escapeHtml } from '../utils/html.js';
+import { API_ENDPOINTS, buildUrl } from './api.js';
 
 /**
  * Load segment details into the modal
@@ -27,7 +28,7 @@ export function loadSegmentDetails(segmentId) {
   $('.segment-duration').text('Loading...');
 
   // Load the segment details from the API
-  $.getJSON(`/clustering/get-segment-data/?segment_id=${segmentId}`, function (data) {
+  $.getJSON(buildUrl(API_ENDPOINTS.GET_SEGMENT_DATA, { segment_id: segmentId }), function (data) {
     if (data.status === 'success') {
       $('.segment-id').text(data.segment_id);
       $('.segment-recording').text(data.recording_name);

@@ -5,6 +5,7 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { loadSegmentDetails, initializeControls } from './controls.js';
 import { setSelectedClusterId } from './state.js';
+import { API_ENDPOINTS, buildUrl } from './api.js';
 
 // Mock d3-selection
 vi.mock('d3-selection', () => ({
@@ -70,7 +71,7 @@ describe('cluster_explorer/controls', () => {
       loadSegmentDetails(456);
 
       expect(mockGetJSON).toHaveBeenCalledWith(
-        '/clustering/get-segment-data/?segment_id=456',
+        buildUrl(API_ENDPOINTS.GET_SEGMENT_DATA, { segment_id: 456 }),
         expect.any(Function)
       );
     });

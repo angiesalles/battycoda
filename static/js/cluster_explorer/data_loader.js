@@ -6,6 +6,7 @@
 
 import { getSelectedClusterId } from './state.js';
 import { getCsrfToken } from '../utils/page-data.js';
+import { API_ENDPOINTS } from './api.js';
 
 /**
  * Save the cluster label and description
@@ -29,7 +30,7 @@ export function saveClusterLabel(onSuccess) {
 
   // Make an AJAX request to update the label
   $.ajax({
-    url: '/clustering/update-cluster-label/',
+    url: API_ENDPOINTS.UPDATE_CLUSTER_LABEL,
     type: 'POST',
     headers: { 'X-CSRFToken': getCsrfToken() },
     data: {

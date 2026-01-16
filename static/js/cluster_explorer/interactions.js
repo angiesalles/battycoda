@@ -8,6 +8,7 @@
 import { selectAll } from 'd3-selection';
 import { setSelectedClusterId } from './state.js';
 import { escapeHtml } from '../utils/html.js';
+import { API_ENDPOINTS, buildUrl } from './api.js';
 
 /**
  * Select a cluster and display its details
@@ -52,7 +53,7 @@ export function loadClusterDetails(clusterId) {
   );
 
   // Load the details from the API
-  $.getJSON(`/clustering/get-cluster-data/?cluster_id=${clusterId}`, function (data) {
+  $.getJSON(buildUrl(API_ENDPOINTS.GET_CLUSTER_DATA, { cluster_id: clusterId }), function (data) {
     if (data.status === 'success') {
       $('.cluster-id-display').text(`Cluster ${data.cluster_id}`);
       $('#cluster-label').val(data.label || '');
@@ -127,7 +128,7 @@ export function loadClusterMembers(clusterId) {
   );
 
   // Load members from the API
-  $.getJSON(`/clustering/get-cluster-members/?cluster_id=${clusterId}&limit=50`, function (data) {
+  $.getJSON(buildUrl(API_ENDPOINTS.GET_CLUSTER_MEMBERS, { cluster_id: clusterId, limit: 50 }), function (data) {
     if (data.status === 'success') {
       const members = data.members;
       const isProject = data.is_project_scope;

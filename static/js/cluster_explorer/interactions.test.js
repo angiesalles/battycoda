@@ -5,6 +5,7 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { selectCluster, loadClusterDetails, loadClusterMembers } from './interactions.js';
 import { setSelectedClusterId, getSelectedClusterId } from './state.js';
+import { API_ENDPOINTS, buildUrl } from './api.js';
 
 // Mock d3-selection
 vi.mock('d3-selection', () => ({
@@ -67,7 +68,7 @@ describe('cluster_explorer/interactions', () => {
 
       // Check that getJSON was called for cluster details
       expect(mockGetJSON).toHaveBeenCalledWith(
-        '/clustering/get-cluster-data/?cluster_id=1',
+        buildUrl(API_ENDPOINTS.GET_CLUSTER_DATA, { cluster_id: 1 }),
         expect.any(Function)
       );
     });
@@ -77,7 +78,7 @@ describe('cluster_explorer/interactions', () => {
 
       // Check that getJSON was called for cluster members
       expect(mockGetJSON).toHaveBeenCalledWith(
-        '/clustering/get-cluster-members/?cluster_id=1&limit=50',
+        buildUrl(API_ENDPOINTS.GET_CLUSTER_MEMBERS, { cluster_id: 1, limit: 50 }),
         expect.any(Function)
       );
     });
@@ -113,7 +114,7 @@ describe('cluster_explorer/interactions', () => {
       loadClusterDetails(456);
 
       expect(mockGetJSON).toHaveBeenCalledWith(
-        '/clustering/get-cluster-data/?cluster_id=456',
+        buildUrl(API_ENDPOINTS.GET_CLUSTER_DATA, { cluster_id: 456 }),
         expect.any(Function)
       );
     });
@@ -264,7 +265,7 @@ describe('cluster_explorer/interactions', () => {
       loadClusterMembers(456);
 
       expect(mockGetJSON).toHaveBeenCalledWith(
-        '/clustering/get-cluster-members/?cluster_id=456&limit=50',
+        buildUrl(API_ENDPOINTS.GET_CLUSTER_MEMBERS, { cluster_id: 456, limit: 50 }),
         expect.any(Function)
       );
     });
