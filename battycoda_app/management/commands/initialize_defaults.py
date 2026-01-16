@@ -1,9 +1,19 @@
+import os
+import secrets
+import string
+
 from django.contrib.auth.models import User
 from django.core.management.base import BaseCommand
 from django.db.utils import IntegrityError
 
 from battycoda_app.models.organization import Call, Species
 from battycoda_app.models.task import Project
+
+
+def generate_secure_password(length=16):
+    """Generate a cryptographically secure random password."""
+    alphabet = string.ascii_letters + string.digits + "!@#$%^&*"
+    return "".join(secrets.choice(alphabet) for _ in range(length))
 
 
 class Command(BaseCommand):
@@ -19,11 +29,20 @@ class Command(BaseCommand):
             admin_user = User.objects.first()
 
             if not admin_user:
-                self.stdout.write('No users found. Creating a superuser "admin" with password "battycoda"')
+                # Use environment variable or generate a secure random password
+                password = os.environ.get("TEST_ADMIN_PASSWORD")
+                if password:
+                    self.stdout.write('No users found. Creating superuser "admin" with password from TEST_ADMIN_PASSWORD')
+                else:
+                    password = generate_secure_password()
+                    self.stdout.write('No users found. Creating superuser "admin" with generated password')
+
                 try:
                     admin_user = User.objects.create_superuser(
-                        username="admin", email="admin@example.com", password="battycoda"
+                        username="admin", email="admin@example.com", password=password
                     )
+                    self.stdout.write(self.style.SUCCESS(f'Admin password: {password}'))
+                    self.stdout.write(self.style.WARNING('Save this password - it will not be shown again!'))
                 except Exception as e:
                     self.stdout.write(self.style.ERROR(f"Error creating admin user: {e}"))
                     return
