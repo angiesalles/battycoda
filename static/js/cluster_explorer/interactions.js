@@ -7,6 +7,7 @@
 
 import { selectAll } from 'd3-selection';
 import { setSelectedClusterId } from './state.js';
+import { escapeHtml } from '../utils/html.js';
 
 /**
  * Select a cluster and display its details
@@ -84,7 +85,7 @@ export function loadClusterDetails(clusterId) {
           mappingList.append(`
                         <li class="list-group-item d-flex justify-content-between align-items-center">
                             <div>
-                                <strong>${mapping.species_name}</strong>: ${mapping.call_name}
+                                <strong>${escapeHtml(mapping.species_name)}</strong>: ${escapeHtml(mapping.call_name)}
                             </div>
                             <span class="badge badge-primary badge-pill">${(mapping.confidence * 100).toFixed(0)}%</span>
                         </li>
@@ -95,7 +96,7 @@ export function loadClusterDetails(clusterId) {
       }
     } else {
       $('.cluster-details').html(
-        `<div class="alert alert-danger">Failed to load cluster details: ${data.message}</div>`
+        `<div class="alert alert-danger">Failed to load cluster details: ${escapeHtml(data.message)}</div>`
       );
     }
   }).fail(function () {
@@ -144,7 +145,7 @@ export function loadClusterMembers(clusterId) {
           html += `<td>${member.segment_id}</td>`;
 
           if (isProject) {
-            html += `<td>${member.recording_name || ''}</td>`;
+            html += `<td>${escapeHtml(member.recording_name || '')}</td>`;
           }
 
           html += `<td>${onset}</td>`;
@@ -178,7 +179,7 @@ export function loadClusterMembers(clusterId) {
       }
     } else {
       $('#members-table-body').html(
-        `<tr><td colspan="${colCount}" class="text-center text-danger">Failed to load members: ${data.message}</td></tr>`
+        `<tr><td colspan="${colCount}" class="text-center text-danger">Failed to load members: ${escapeHtml(data.message)}</td></tr>`
       );
     }
   }).fail(function () {

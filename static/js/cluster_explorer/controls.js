@@ -7,6 +7,7 @@
 
 import { selectAll } from 'd3-selection';
 import { getSelectedClusterId } from './state.js';
+import { escapeHtml } from '../utils/html.js';
 
 /**
  * Load segment details into the modal
@@ -41,7 +42,7 @@ export function loadSegmentDetails(segmentId) {
       $('.segment-audio-player').attr('src', data.audio_url);
     } else {
       $('.segment-spectrogram').html(
-        `<div class="alert alert-danger">Failed to load segment: ${data.message}</div>`
+        `<div class="alert alert-danger">Failed to load segment: ${escapeHtml(data.message)}</div>`
       );
     }
   }).fail(function () {

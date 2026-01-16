@@ -5,6 +5,7 @@
  */
 
 import { getSelectedClusterId } from './state.js';
+import { escapeHtml } from '../utils/html.js';
 
 /**
  * Initialize the cluster preview modal
@@ -35,7 +36,7 @@ export function initializeClusterPreviewModal(createMappingFn) {
       const callName = $(this).find('h6').text().trim();
       const speciesName = $(this).closest('.species-section').find('h5').text().trim();
 
-      selectElement.append(`<option value="${callId}">${speciesName}: ${callName}</option>`);
+      selectElement.append(`<option value="${escapeHtml(String(callId))}">${escapeHtml(speciesName)}: ${escapeHtml(callName)}</option>`);
     });
   });
 
@@ -110,7 +111,7 @@ export function loadClusterDetails(clusterId) {
       }
     } else {
       $('.representative-spectrogram').html(
-        `<div class="alert alert-danger">Failed to load cluster details: ${data.message}</div>`
+        `<div class="alert alert-danger">Failed to load cluster details: ${escapeHtml(data.message)}</div>`
       );
     }
   }).fail(function () {

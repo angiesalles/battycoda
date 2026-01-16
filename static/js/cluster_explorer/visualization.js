@@ -12,6 +12,7 @@ import { min, max } from 'd3-array';
 
 import { colorScale } from './state.js';
 import { selectCluster } from './interactions.js';
+import { escapeHtml } from '../utils/html.js';
 
 /**
  * Initialize the cluster visualization
@@ -159,8 +160,8 @@ export function createLegend(clusters) {
     const legendItem = $(`
             <div class="col-md-3 mb-2">
                 <div class="d-flex align-items-center" style="cursor: pointer;">
-                    <div style="width: 15px; height: 15px; background-color: ${cluster.color}; margin-right: 5px;"></div>
-                    <small>${clusterLabel} (${cluster.size})</small>
+                    <div style="width: 15px; height: 15px; background-color: ${escapeHtml(cluster.color)}; margin-right: 5px;"></div>
+                    <small>${escapeHtml(clusterLabel)} (${cluster.size})</small>
                 </div>
             </div>
         `);
