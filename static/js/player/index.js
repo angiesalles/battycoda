@@ -47,7 +47,7 @@ export function initWaveformPlayer(
 
   // Try to initialize spectrogram data from HDF5
   console.log('Attempting to load spectrogram data from HDF5');
-  player.viewManager.initializeSpectrogramData(recordingId).then((success) => {
+  player.viewManager.initializeSpectrogramData().then((success) => {
     if (success) {
       console.log('Spectrogram data initialized successfully');
     } else {

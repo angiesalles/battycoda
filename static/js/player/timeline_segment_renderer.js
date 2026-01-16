@@ -186,7 +186,7 @@ export class SegmentRenderer {
         const segmentMarker = this.createSegmentMarker(segment, positions);
 
         // Add click handler to scroll to segment in list
-        segmentMarker.addEventListener('click', (e) => {
+        segmentMarker.addEventListener('click', () => {
           console.log('Timeline segment clicked:', segment.id);
           this.scrollToSegmentInList(segment.id);
         });

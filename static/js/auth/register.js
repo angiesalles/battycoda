@@ -24,7 +24,7 @@ document.addEventListener('DOMContentLoaded', function () {
     const usernameWarningElement = document.getElementById('username-warning');
 
     // On input event, validate characters and remove @ symbols
-    usernameField.addEventListener('input', function (e) {
+    usernameField.addEventListener('input', function () {
       // Clear any typing timer
       clearTimeout(usernameTypingTimer);
 
@@ -68,7 +68,7 @@ document.addEventListener('DOMContentLoaded', function () {
     const emailWarningElement = document.getElementById('email-warning');
 
     // On input event for email
-    emailField.addEventListener('input', function (e) {
+    emailField.addEventListener('input', function () {
       // Clear any typing timer
       clearTimeout(emailTypingTimer);
 

@@ -17,9 +17,8 @@ export class ViewManager {
 
   /**
    * Initialize spectrogram data rendering (HDF5-based)
-   * @param {number} recordingId - ID of the recording
    */
-  async initializeSpectrogramData(recordingId) {
+  async initializeSpectrogramData() {
     try {
       const success = await this.player.spectrogramDataRenderer.initialize();
       if (success) {

@@ -84,7 +84,7 @@ describe('ViewManager', () => {
 
   describe('initializeSpectrogramData', () => {
     it('should initialize spectrogram successfully', async () => {
-      const success = await viewManager.initializeSpectrogramData(123);
+      const success = await viewManager.initializeSpectrogramData();
 
       expect(success).toBe(true);
       expect(viewManager.spectrogramInitialized).toBe(true);
@@ -94,7 +94,7 @@ describe('ViewManager', () => {
     it('should handle initialization failure', async () => {
       mockPlayer.spectrogramDataRenderer.initialize.mockResolvedValue(false);
 
-      const success = await viewManager.initializeSpectrogramData(123);
+      const success = await viewManager.initializeSpectrogramData();
 
       expect(success).toBe(false);
       expect(viewManager.spectrogramInitialized).toBe(false);
@@ -103,7 +103,7 @@ describe('ViewManager', () => {
     it('should handle initialization error', async () => {
       mockPlayer.spectrogramDataRenderer.initialize.mockRejectedValue(new Error('Init failed'));
 
-      const success = await viewManager.initializeSpectrogramData(123);
+      const success = await viewManager.initializeSpectrogramData();
 
       expect(success).toBe(false);
       expect(viewManager.spectrogramInitialized).toBe(false);
