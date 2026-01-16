@@ -12,6 +12,7 @@ markupsafe>=2.1.1,<3.0.0
 
 # Django extensions
 django-hijack>=3.4.0,<4.0.0  # For user impersonation
+django-csp>=4.0,<5.0  # Content Security Policy headers
 djangorestframework>=3.14.0,<4.0.0  # Django REST Framework
 drf-spectacular>=0.27.0,<1.0.0  # API schema generation
 

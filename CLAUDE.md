@@ -444,6 +444,49 @@ Uses AWS SES for email. Key notifications:
 
 Key file: `battycoda_app/utils/email_utils.py`
 
+## Content Security Policy (CSP)
+
+BattyCoda uses Content Security Policy headers as defense-in-depth against XSS attacks.
+
+### Configuration
+
+CSP is implemented via `django-csp` middleware. Configuration is in `config/settings.py`.
+
+**Modes:**
+- **Report-Only (default)**: Violations are logged but not blocked. Safe for testing.
+- **Enforcement**: Violations are blocked. Enable with `CSP_ENFORCE=true` in `.env`.
+
+**Current Policy:**
+- Scripts allowed from: `'self'`, `'unsafe-inline'`, CDNs (jsdelivr, cloudflare, jquery, sentry)
+- Styles allowed from: `'self'`, `'unsafe-inline'`, CDNs (jsdelivr, cloudflare, googleapis)
+- Images: `'self'`, `data:` (for inline images/spectrograms)
+- Fonts: `'self'`, CDNs (cloudflare, gstatic)
+- Connections: `'self'`, Sentry endpoints
+
+**Development Mode:**
+When `DEBUG=true` and `VITE_DEV_MODE=true`, the Vite dev server (localhost:5173) is automatically allowed.
+
+### Future Improvements
+
+The policy currently uses `'unsafe-inline'` for scripts and styles because the codebase has many inline scripts and styles. Future work should:
+1. Migrate inline scripts to external files or use nonces
+2. Remove `'unsafe-inline'` directives for stronger security
+
+### Checking CSP Headers
+
+```bash
+# Check if CSP header is being sent
+curl -sI http://localhost:8000/ | grep -i "content-security-policy"
+
+# In report-only mode, you'll see:
+# Content-Security-Policy-Report-Only: ...
+
+# In enforcement mode, you'll see:
+# Content-Security-Policy: ...
+```
+
+Key file: `config/settings.py` (search for "Content Security Policy")
+
 ## Environment Configuration
 
 Configuration in `.env` file:
@@ -472,6 +515,11 @@ Configuration in `.env` file:
 ### Backups
 - `DATABASE_BACKUP_BUCKET` - S3 bucket for backups (default: backup-battycoda)
 - `DATABASE_BACKUP_PREFIX` - S3 prefix for backups (default: database-backups/)
+
+### Security (Content Security Policy)
+- `CSP_ENFORCE` - Enable CSP enforcement mode (default: false = report-only)
+  - When `false`: CSP violations are logged but not blocked (safe for testing)
+  - When `true`: CSP violations are blocked (production enforcement)
 
 ### Vite Frontend Build (Feature Flags)
 - `VITE_ENABLED` - Master switch for Vite bundles (default: false)

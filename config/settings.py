@@ -96,6 +96,7 @@ HIJACK_INSERT_BEFORE = "</body>"  # Insert notification before closing body tag
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
+    "csp.middleware.CSPMiddleware",  # Content Security Policy
     "whitenoise.middleware.WhiteNoiseMiddleware",  # Add whitenoise for static files in production
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
@@ -426,3 +427,94 @@ VITE_FEATURES = {
     "task_annotation": os.environ.get("VITE_FEATURE_TASK_ANNOTATION", "false").lower() == "true",
     "segmentation": os.environ.get("VITE_FEATURE_SEGMENTATION", "false").lower() == "true",
 }
+
+# =============================================================================
+# Content Security Policy (CSP) Configuration
+# =============================================================================
+# django-csp docs: https://django-csp.readthedocs.io/
+#
+# CSP provides defense-in-depth against XSS attacks by restricting what
+# resources can be loaded and executed on pages.
+#
+# IMPORTANT: Currently using 'unsafe-inline' for scripts and styles because
+# the codebase has many inline scripts and styles. Future work should migrate
+# to nonces or hashes to remove 'unsafe-inline'.
+#
+# CSP_ENFORCE: Controls whether CSP is enforced or report-only.
+#   - false (default): Report-only mode - violations logged but not blocked
+#   - true: Enforcement mode - violations are blocked
+# =============================================================================
+
+# By default, start in report-only mode to test without breaking functionality
+# Set CSP_ENFORCE=true in .env when ready to enforce
+CSP_ENFORCE = os.environ.get("CSP_ENFORCE", "false").lower() == "true"
+
+# Define the CSP directives
+_CSP_DIRECTIVES = {
+    # Default fallback - restrict to same origin
+    "default-src": ["'self'"],
+    # Scripts: self + CDNs + unsafe-inline (needed for inline scripts)
+    # TODO: Migrate to nonces to remove 'unsafe-inline' (see battycoda-xxx)
+    "script-src": [
+        "'self'",
+        "'unsafe-inline'",  # Required for inline scripts - should be removed eventually
+        "cdn.jsdelivr.net",  # Bootstrap, Perfect Scrollbar, Select2, Sortable.js
+        "cdnjs.cloudflare.com",  # Font Awesome, Toastr
+        "code.jquery.com",  # jQuery
+        "js.sentry-cdn.com",  # Sentry error tracking
+    ],
+    # Styles: self + CDNs + unsafe-inline (needed for inline styles)
+    "style-src": [
+        "'self'",
+        "'unsafe-inline'",  # Required for inline styles and some libraries
+        "cdn.jsdelivr.net",  # Bootstrap CSS, Perfect Scrollbar CSS, Select2 CSS
+        "cdnjs.cloudflare.com",  # Font Awesome CSS, Toastr CSS
+        "fonts.googleapis.com",  # Google Fonts CSS
+    ],
+    # Images: self + data URIs (for inline images, spectrograms)
+    "img-src": [
+        "'self'",
+        "data:",  # Data URIs for inline images
+    ],
+    # Fonts: self + CDNs
+    "font-src": [
+        "'self'",
+        "cdnjs.cloudflare.com",  # Font Awesome fonts
+        "fonts.gstatic.com",  # Google Fonts
+    ],
+    # AJAX/fetch/WebSocket connections
+    "connect-src": [
+        "'self'",
+        "*.sentry.io",  # Sentry error reporting
+        "*.ingest.sentry.io",  # Sentry ingest endpoint
+    ],
+    # Frames: restrict to same origin (or 'none' if no iframes needed)
+    "frame-src": ["'self'"],
+    # Frame ancestors: who can embed this site in an iframe
+    "frame-ancestors": ["'self'"],
+    # Form submissions: restrict to same origin
+    "form-action": ["'self'"],
+    # Base URI: restrict base tag to same origin
+    "base-uri": ["'self'"],
+    # Object/embed: disable plugins (Flash, etc.)
+    "object-src": ["'none'"],
+}
+
+# Development mode: allow Vite dev server
+if DEBUG and VITE_DEV_MODE:
+    # Add Vite dev server to allowed sources
+    _CSP_DIRECTIVES["script-src"].append("localhost:5173")
+    _CSP_DIRECTIVES["connect-src"].append("localhost:5173")
+    _CSP_DIRECTIVES["connect-src"].append("ws://localhost:5173")  # WebSocket for HMR
+
+# Apply the policy based on enforcement mode
+# django-csp v4 uses CONTENT_SECURITY_POLICY for enforcement
+# and CONTENT_SECURITY_POLICY_REPORT_ONLY for report-only mode
+if CSP_ENFORCE:
+    CONTENT_SECURITY_POLICY = {"DIRECTIVES": _CSP_DIRECTIVES}
+    # No report-only policy when enforcing
+    CONTENT_SECURITY_POLICY_REPORT_ONLY = None
+else:
+    # Report-only mode: violations are logged but not blocked
+    CONTENT_SECURITY_POLICY = None
+    CONTENT_SECURITY_POLICY_REPORT_ONLY = {"DIRECTIVES": _CSP_DIRECTIVES}
