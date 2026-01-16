@@ -146,10 +146,36 @@ export class ControlEvents {
    * Set up speed control event listeners
    */
   setupSpeedControls() {
-    // Delegate to the player's method
-    if (this.player.setupSpeedEventListeners) {
-      this.player.setupSpeedEventListeners();
+    const player = this.player;
+
+    // Re-query DOM elements if they weren't found during initialization
+    if (!player.speed1xBtn) {
+      player.speed1xBtn = document.getElementById(`${player.containerId}-speed-1x`);
     }
+    if (!player.speedSlowBtn) {
+      player.speedSlowBtn = document.getElementById(`${player.containerId}-speed-slow`);
+    }
+
+    if (!player.speed1xBtn || !player.speedSlowBtn || !player.audioPlayer) {
+      return;
+    }
+
+    const updateActive = (activeBtn, inactiveBtn) => {
+      if (activeBtn) activeBtn.classList.add('active');
+      if (inactiveBtn) inactiveBtn.classList.remove('active');
+    };
+
+    // Normal speed (1x)
+    player.speed1xBtn.addEventListener('click', () => {
+      player.audioPlayer.playbackRate = 1.0;
+      updateActive(player.speed1xBtn, player.speedSlowBtn);
+    });
+
+    // Slow speed (1/8x)
+    player.speedSlowBtn.addEventListener('click', () => {
+      player.audioPlayer.playbackRate = 0.125;
+      updateActive(player.speedSlowBtn, player.speed1xBtn);
+    });
   }
 
   /**

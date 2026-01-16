@@ -14,11 +14,6 @@ import { UIState } from './ui_state.js';
 import { DataManager } from './data_manager.js';
 import { SeekHandler } from './seek_handler.js';
 
-import { setupAudioEventListeners } from './player_audio_events_setup.js';
-import { setupControlEventListeners } from './player_control_events_setup.js';
-import { setupSpeedEventListeners } from './player_speed_events_setup.js';
-import { setupSelectionEventListeners } from './player_selection_events_setup.js';
-import { setupWindowEventListeners } from './player_window_events_setup.js';
 
 /**
  * WaveformPlayer class - encapsulates waveform player functionality
@@ -280,18 +275,6 @@ export class WaveformPlayer {
    */
   seek(time) {
     return this.seekHandler.seek(time);
-  }
-
-  /**
-   * Set up all event listeners
-   */
-  setupEventListeners() {
-    setupAudioEventListeners(this);
-    setupControlEventListeners(this);
-    setupSpeedEventListeners(this);
-    setupSelectionEventListeners(this);
-    setupWindowEventListeners(this);
-    // EventHandlers class handles zoom events
   }
 
   /**

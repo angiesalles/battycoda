@@ -16,6 +16,7 @@ export class AudioEvents {
     if (!this.player.audioPlayer) return;
 
     let lastScrollUpdateTime = 0;
+    let lastSeekTime = 0; // Track when user manually seeks
 
     this.player.audioPlayer.addEventListener('timeupdate', () => {
       this.player.currentTime = this.player.audioPlayer.currentTime;
@@ -45,8 +46,12 @@ export class AudioEvents {
         }
       }
 
-      // Smooth scrolling when zoomed in during playback
-      if (this.player.zoomLevel > 1 && this.player.isPlaying) {
+      // Skip auto-scrolling if user recently seeked manually (let them see where they jumped to)
+      const timeSinceSeek = now - lastSeekTime;
+      const isAfterManualSeek = timeSinceSeek < 500;
+
+      // Smooth scrolling when zoomed in during playback (but not right after manual seek)
+      if (this.player.zoomLevel > 1 && this.player.isPlaying && !isAfterManualSeek) {
         const currentRatio = this.player.currentTime / this.player.duration;
         const visibleDuration = 1 / this.player.zoomLevel;
         const currentCenter = this.player.zoomOffset + visibleDuration / 2;
@@ -72,6 +77,11 @@ export class AudioEvents {
           }
         }
       }
+    });
+
+    // Track manual seeks to avoid auto-scrolling immediately after
+    this.player.audioPlayer.addEventListener('seeking', () => {
+      lastSeekTime = performance.now();
     });
 
     this.player.audioPlayer.addEventListener('play', () => {
