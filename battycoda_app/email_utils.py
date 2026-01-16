@@ -21,6 +21,14 @@ def send_mail(subject, message, recipient_list, html_message=None, from_email=No
     Returns:
         bool: True if email was sent successfully, False otherwise
     """
+    # Skip sending emails in test mode (defense-in-depth alongside locmem backend)
+    if getattr(settings, "DJANGO_TEST_MODE", False):
+        import logging
+
+        logger = logging.getLogger(__name__)
+        logger.debug(f"Test mode: skipping email to {recipient_list} with subject '{subject}'")
+        return True
+
     if from_email is None:
         from_email = settings.DEFAULT_FROM_EMAIL
 
