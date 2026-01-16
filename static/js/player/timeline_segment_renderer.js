@@ -79,14 +79,9 @@ export class SegmentRenderer {
    * Scroll to a segment in the segment list
    */
   scrollToSegmentInList(segmentId) {
-    console.log('scrollToSegmentInList called with ID:', segmentId);
-    console.log('Looking for element with ID:', `segment-row-${segmentId}`);
-
     const segmentRow = document.getElementById(`segment-row-${segmentId}`);
-    console.log('Found segment row:', segmentRow);
 
     if (segmentRow) {
-      console.log('Scrolling to segment row');
       segmentRow.scrollIntoView({ behavior: 'smooth', block: 'center' });
 
       // Briefly highlight the row
@@ -96,25 +91,12 @@ export class SegmentRenderer {
       }, 1000);
     } else {
       // Segment not visible in current page/filter - try to navigate to it
-      console.log(
-        'Segment row not found in list, might be on different page or filtered out:',
-        segmentId
-      );
-      console.log('window.battycoda:', window.battycoda);
-      console.log('window.battycoda?.segmentation:', window.battycoda?.segmentation);
-
-      // Try to find the segment manager and navigate to the segment
       const segmentManager = window.battycoda?.segmentation;
       if (segmentManager) {
-        console.log('Found segmentManager:', segmentManager);
-        // Get the first available segment manager instance
         const managerInstance = Object.values(segmentManager)[0];
-        console.log('Manager instance:', managerInstance);
         if (managerInstance) {
           this.navigateToSegmentInList(managerInstance, segmentId);
         }
-      } else {
-        console.log('No segment manager found in window.battycoda.segmentation');
       }
     }
   }
@@ -126,7 +108,6 @@ export class SegmentRenderer {
     // Find the segment in the full segments array
     const segment = segmentManager.segments.find((s) => s.id === segmentId);
     if (!segment) {
-      console.log('Segment not found in manager:', segmentId);
       return;
     }
 
@@ -187,7 +168,6 @@ export class SegmentRenderer {
 
         // Add click handler to scroll to segment in list
         segmentMarker.addEventListener('click', () => {
-          console.log('Timeline segment clicked:', segment.id);
           this.scrollToSegmentInList(segment.id);
         });
 

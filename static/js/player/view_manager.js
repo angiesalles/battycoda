@@ -23,7 +23,6 @@ export class ViewManager {
       const success = await this.player.spectrogramDataRenderer.initialize();
       if (success) {
         this.spectrogramInitialized = true;
-        console.log('Spectrogram data initialized successfully');
       } else {
         console.warn('Failed to initialize spectrogram data');
       }
@@ -39,15 +38,6 @@ export class ViewManager {
    * @param {string} mode - 'waveform' or 'spectrogram'
    */
   setViewMode(mode) {
-    console.log(
-      'ViewManager.setViewMode called with:',
-      mode,
-      'Current mode:',
-      this.viewMode,
-      'Spectrogram initialized:',
-      this.spectrogramInitialized
-    );
-
     if (mode === this.viewMode) return;
 
     // Don't switch to spectrogram if it's not available
@@ -57,16 +47,11 @@ export class ViewManager {
     }
 
     this.viewMode = mode;
-    console.log('Switching to view mode:', mode);
 
     if (mode === 'spectrogram') {
-      // Show spectrogram, hide waveform
-      console.log('Hiding waveform, showing spectrogram');
       this.hideWaveform();
       this.showSpectrogram();
     } else {
-      // Show waveform, hide spectrogram
-      console.log('Hiding spectrogram, showing waveform');
       this.hideSpectrogram();
       this.showWaveform();
     }
