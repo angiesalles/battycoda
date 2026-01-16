@@ -169,13 +169,15 @@ export function resetProgress(progressBar, statusText) {
  * Show success state on progress bar
  * @param {HTMLElement} progressBar - The progress bar element
  * @param {HTMLElement} statusText - Status text element
- * @param {number} recordingsCreated - Number of recordings created
+ * @param {string} [message] - Custom success message (optional)
  */
-export function showSuccess(progressBar, statusText, recordingsCreated) {
+export function showSuccess(progressBar, statusText, message) {
+  const displayMessage =
+    message || 'Upload complete! Successfully created batch.';
   statusText.innerHTML = `
     <div class="alert alert-success">
       <i class="fas fa-check-circle me-2"></i>
-      Upload complete! Successfully created batch with ${recordingsCreated || 'multiple'} recordings.
+      ${displayMessage}
     </div>
   `;
   progressBar.classList.remove('progress-bar-striped', 'progress-bar-animated');

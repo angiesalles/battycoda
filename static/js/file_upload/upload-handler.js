@@ -45,7 +45,13 @@ export function createUploadHandler(config) {
    * @param {Object} response - Parsed JSON response
    */
   function handleSuccess(response) {
-    showSuccess(progressBar, statusText, response.recordings_created);
+    // Use server message if provided (e.g., pickle uploads),
+    // otherwise construct message from recordings_created
+    let message = response.message;
+    if (!message && response.recordings_created !== undefined) {
+      message = `Upload complete! Successfully created batch with ${response.recordings_created} recordings.`;
+    }
+    showSuccess(progressBar, statusText, message);
 
     // Redirect after short delay
     setTimeout(() => {
