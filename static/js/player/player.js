@@ -13,6 +13,7 @@ import { EventHandlers } from './event_handlers.js';
 import { UIState } from './ui_state.js';
 import { DataManager } from './data_manager.js';
 import { SeekHandler } from './seek_handler.js';
+import { PlayRegionHandler } from './play_region_handler.js';
 
 
 /**
@@ -64,6 +65,7 @@ export class WaveformPlayer {
     this.uiState = new UIState(this);
     this.dataManager = new DataManager(this);
     this.seekHandler = new SeekHandler(this);
+    this.playRegionHandler = new PlayRegionHandler(this);
   }
 
   /**
@@ -275,6 +277,15 @@ export class WaveformPlayer {
    */
   seek(time) {
     return this.seekHandler.seek(time);
+  }
+
+  /**
+   * Play a region of audio from start to end time
+   * @param {number} start - Start time in seconds
+   * @param {number} end - End time in seconds
+   */
+  playRegion(start, end) {
+    return this.playRegionHandler.playRegion(start, end);
   }
 
   /**
