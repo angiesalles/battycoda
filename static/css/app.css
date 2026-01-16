@@ -5,7 +5,7 @@
  * Copyright (c) 2019 Foxy Themes
  */
 
-@charset "UTF-8";
+/* Note: @charset removed - UTF-8 is default and declaration must precede all statements */
 @media print {
   *,
   *::before,
