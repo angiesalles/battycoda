@@ -4,6 +4,12 @@ Test settings for the Battycoda project.
 
 from unittest.mock import MagicMock, patch
 
+# Use a fast password hasher for tests (MD5 is ~100x faster than PBKDF2)
+# This dramatically speeds up User.objects.create_user() calls
+PASSWORD_HASHERS = [
+    "django.contrib.auth.hashers.MD5PasswordHasher",
+]
+
 # Patch import_default_species to return empty list
 import_default_species_patch = patch(
     "battycoda_app.utils_modules.species_utils.import_default_species", MagicMock(return_value=[])

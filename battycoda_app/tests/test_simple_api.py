@@ -5,14 +5,16 @@ Tests for the Simple API endpoints.
 import secrets
 
 from django.contrib.auth.models import User
-from django.test import Client, TestCase
+from django.test import Client, TestCase, override_settings
 from django.urls import reverse
 
 from battycoda_app.models import Group, Project
 from battycoda_app.models.organization import Species
 from battycoda_app.models.user import UserProfile
+from battycoda_app.tests.test_settings import PASSWORD_HASHERS
 
 
+@override_settings(PASSWORD_HASHERS=PASSWORD_HASHERS)
 class SimpleAPITestCase(TestCase):
     """Base test case for Simple API tests with common setup."""
 

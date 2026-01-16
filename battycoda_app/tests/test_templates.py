@@ -15,13 +15,15 @@ from django.conf import settings
 from django.contrib.auth.models import User
 from django.template import TemplateDoesNotExist, TemplateSyntaxError
 from django.template.loader import get_template
-from django.test import RequestFactory, TestCase
+from django.test import RequestFactory, TestCase, override_settings
 
 from battycoda_app.forms import SpeciesForm
 from battycoda_app.models.organization import Species
 from battycoda_app.models.user import Group
+from battycoda_app.tests.test_settings import PASSWORD_HASHERS
 
 
+@override_settings(PASSWORD_HASHERS=PASSWORD_HASHERS)
 class TemplateValidationTestCase(TestCase):
     """Test that all templates are syntactically valid."""
 
@@ -204,6 +206,7 @@ class TemplateBlockStructureTestCase(TestCase):
             self.fail("Invalid block structures:\n" + "\n".join(errors))
 
 
+@override_settings(PASSWORD_HASHERS=PASSWORD_HASHERS)
 class TemplateCriticalPathTestCase(TestCase):
     """Test critical user-facing templates render correctly."""
 
