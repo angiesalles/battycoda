@@ -60,6 +60,10 @@ export function initializeControls(onPointSizeChange, onOpacityChange) {
   const $ = window.jQuery;
   if (!$) return;
 
+  // Clean up existing handlers to prevent duplicates on re-initialization
+  $('#point-size').off('input');
+  $('#cluster-opacity').off('input');
+
   $('#point-size').on('input', function () {
     const size = parseInt($(this).val());
     const selectedId = getSelectedClusterId();

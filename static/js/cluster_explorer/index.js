@@ -37,6 +37,10 @@ export function initClusterExplorer(clusters) {
   // Set up control event handlers
   initializeControls();
 
+  // Clean up any existing event handlers to prevent duplicates on re-initialization
+  $('#save-cluster-label').off('click');
+  $(document).off('click', '.view-segment-btn');
+
   // Set up save button
   $('#save-cluster-label').on('click', function () {
     saveClusterLabel(function (clusterId) {
@@ -45,10 +49,6 @@ export function initClusterExplorer(clusters) {
       selectCluster(clusterId);
     });
   });
-
-  // Set up controls
-  $('#point-size').on('input', updateVisualization);
-  $('#cluster-opacity').on('input', updateVisualization);
 
   // Load segment details when a segment is clicked
   $(document).on('click', '.view-segment-btn', function () {

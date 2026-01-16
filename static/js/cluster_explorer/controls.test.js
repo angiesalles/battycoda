@@ -30,6 +30,7 @@ describe('cluster_explorer/controls', () => {
       text: vi.fn().mockReturnThis(),
       attr: vi.fn().mockReturnThis(),
       val: vi.fn(() => '8'),
+      off: vi.fn().mockReturnThis(),
       on: vi.fn((event, handler) => {
         eventHandlers[event] = handler;
         return mockElement;
