@@ -53,10 +53,13 @@ export default defineConfig({
   ],
 
   // Start Django dev server before tests with test database (port 8088 to avoid conflicts)
+  // IMPORTANT: reuseExistingServer is false to ensure we always use a test-mode server.
+  // If we reused an existing server, it might not have DJANGO_TEST_MODE set, which would
+  // cause real emails to be sent via SES instead of being captured by locmem backend.
   webServer: {
     command: `bash -c "source venv/bin/activate && DJANGO_TEST_MODE=true python manage.py runserver ${process.env.TEST_PORT || 8088}"`,
     url: `http://localhost:${process.env.TEST_PORT || 8088}`,
-    reuseExistingServer: !process.env.CI,
+    reuseExistingServer: false,
     timeout: 120000,
     env: {
       DJANGO_TEST_MODE: 'true',

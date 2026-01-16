@@ -7,6 +7,10 @@ def send_mail(subject, message, recipient_list, html_message=None, from_email=No
     """
     Send an email using AWS SES with better error handling and logging.
 
+    In test mode (DJANGO_TEST_MODE=true), Django uses locmem.EmailBackend which
+    stores emails in django.core.mail.outbox instead of sending them. This allows
+    tests to verify email content without actually sending emails.
+
     Args:
         subject (str): Email subject
         message (str): Plain text message
