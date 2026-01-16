@@ -281,11 +281,13 @@ describe('updateProgress', () => {
     expect(progressBar.classList.contains('progress-bar-animated')).toBe(false);
   });
 
-  it('should handle zero total gracefully', () => {
-    // When total is 0, (0/0)*100 = NaN, Math.round(NaN) = NaN
-    // The function doesn't explicitly handle this edge case
-    // We just verify it doesn't throw
-    expect(() => updateProgress(progressBar, statusText, 0, 0)).not.toThrow();
+  it('should handle zero total gracefully by showing 0%', () => {
+    updateProgress(progressBar, statusText, 0, 0);
+
+    // Should show 0% instead of NaN% when total is 0
+    expect(progressBar.style.width).toBe('0%');
+    expect(progressBar.textContent).toBe('0%');
+    expect(progressBar.getAttribute('aria-valuenow')).toBe('0');
   });
 
   it('should calculate MB values correctly in status', () => {

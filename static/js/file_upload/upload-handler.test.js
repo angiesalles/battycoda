@@ -41,14 +41,13 @@ describe('hasRequiredFiles', () => {
       expect(hasRequiredFiles(inputs, false)).toBe(false);
     });
 
-    it('should return falsy when WAV input is null', () => {
+    it('should return false when WAV input is null', () => {
       const inputs = {
         wavFileInput: null,
         pickleFileInput: createMockFileInput(1),
       };
 
-      // Function returns null (falsy) when input is null due to short-circuit evaluation
-      expect(hasRequiredFiles(inputs, false)).toBeFalsy();
+      expect(hasRequiredFiles(inputs, false)).toBe(false);
     });
   });
 
@@ -71,14 +70,14 @@ describe('hasRequiredFiles', () => {
       expect(hasRequiredFiles(inputs, true)).toBe(false);
     });
 
-    it('should return falsy when WAV files input is null', () => {
+    it('should return false when WAV files input is null', () => {
       const inputs = {
         wavFilesInput: null,
         pickleFilesInput: createMockFileInput(1),
       };
 
-      // Function returns null (falsy) when input is null due to short-circuit evaluation
-      expect(hasRequiredFiles(inputs, true)).toBeFalsy();
+      // Function uses Boolean() wrapper to ensure false is returned (not null)
+      expect(hasRequiredFiles(inputs, true)).toBe(false);
     });
   });
 
@@ -101,14 +100,14 @@ describe('hasRequiredFiles', () => {
       expect(hasRequiredFiles(inputs, false)).toBe(false);
     });
 
-    it('should return falsy when pickle input is null', () => {
+    it('should return false when pickle input is null', () => {
       const inputs = {
         formType: 'pickle_only',
         pickleFileInput: null,
       };
 
-      // Function returns null (falsy) when input is null due to short-circuit evaluation
-      expect(hasRequiredFiles(inputs, false)).toBeFalsy();
+      // Function uses Boolean() wrapper to ensure false is returned (not null)
+      expect(hasRequiredFiles(inputs, false)).toBe(false);
     });
   });
 });

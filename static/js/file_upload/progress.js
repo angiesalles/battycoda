@@ -138,7 +138,8 @@ export function updateFileInfoDisplay(elements, fileInfo) {
  * @param {number} total - Total bytes
  */
 export function updateProgress(progressBar, statusText, loaded, total) {
-  const percentComplete = Math.round((loaded / total) * 100);
+  // Guard against division by zero - show 0% if total is 0
+  const percentComplete = total > 0 ? Math.round((loaded / total) * 100) : 0;
 
   progressBar.style.width = percentComplete + '%';
   progressBar.textContent = percentComplete + '%';

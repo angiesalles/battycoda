@@ -137,14 +137,14 @@ export function createUploadHandler(config) {
 export function hasRequiredFiles(inputs, isBatchUpload) {
   // Check form type for pickle-only uploads
   if (inputs.formType === 'pickle_only') {
-    return inputs.pickleFileInput && inputs.pickleFileInput.files.length > 0;
+    return Boolean(inputs.pickleFileInput && inputs.pickleFileInput.files.length > 0);
   }
 
   if (isBatchUpload) {
     // Batch upload form - just need WAV/ZIP files
-    return inputs.wavFilesInput && inputs.wavFilesInput.files.length > 0;
+    return Boolean(inputs.wavFilesInput && inputs.wavFilesInput.files.length > 0);
   } else {
     // Single upload form - need WAV file (pickle is optional)
-    return inputs.wavFileInput && inputs.wavFileInput.files.length > 0;
+    return Boolean(inputs.wavFileInput && inputs.wavFileInput.files.length > 0);
   }
 }
