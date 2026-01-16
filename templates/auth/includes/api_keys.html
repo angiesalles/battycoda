@@ -1,4 +1,12 @@
 document.addEventListener('DOMContentLoaded', function() {
+    // Helper function to escape HTML and prevent XSS
+    function escapeHtml(str) {
+        if (str == null) return '';
+        const div = document.createElement('div');
+        div.textContent = str;
+        return div.innerHTML;
+    }
+
     const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
     const profileImageUpload = document.getElementById('profile_image_upload');
     const uploadImageBtn = document.getElementById('upload-image-btn');
@@ -13,7 +21,7 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Function to show status messages
     function showStatus(element, message, isSuccess) {
-        element.innerHTML = `<div class="alert alert-${isSuccess ? 'success' : 'danger'} py-2">${message}</div>`;
+        element.innerHTML = `<div class="alert alert-${isSuccess ? 'success' : 'danger'} py-2">${escapeHtml(message)}</div>`;
         
         // Clear message after 5 seconds
         setTimeout(() => {
@@ -60,7 +68,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 
                 // Update the profile image on the page
                 const imageDisplay = document.getElementById('profile-image-display');
-                imageDisplay.innerHTML = `<img src="${data.image_url}?v=${new Date().getTime()}" alt="Profile Image" class="img-fluid rounded-circle" style="width: 150px; height: 150px; object-fit: cover;">`;
+                imageDisplay.innerHTML = `<img src="${escapeHtml(data.image_url)}?v=${new Date().getTime()}" alt="Profile Image" class="img-fluid rounded-circle" style="width: 150px; height: 150px; object-fit: cover;">`;
                 
                 // Add remove button if it doesn't exist
                 if (!removeImageBtn && data.has_image) {

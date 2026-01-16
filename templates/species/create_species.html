@@ -32,6 +32,14 @@
 {% block extra_js %}
 <script>
 document.addEventListener('DOMContentLoaded', function() {
+    // Helper function to escape HTML and prevent XSS
+    function escapeHtml(str) {
+        if (str == null) return '';
+        const div = document.createElement('div');
+        div.textContent = str;
+        return div.innerHTML;
+    }
+
     // Identify our elements
     const addCallButton = document.getElementById('add-call-btn');
     const parseFileButton = document.getElementById('parse_file_btn');
@@ -56,7 +64,7 @@ document.addEventListener('DOMContentLoaded', function() {
     function showMessage(element, message, type = 'success') {
         element.innerHTML = `
             <div style="margin-top: 8px; margin-bottom: 8px; padding: 8px 12px; border-radius: 4px; background-color: ${type === 'success' ? '#2e7d32' : '#c62828'}; color: white;">
-                ${message}
+                ${escapeHtml(message)}
             </div>
         `;
         
@@ -92,8 +100,8 @@ document.addEventListener('DOMContentLoaded', function() {
         callTypes.forEach((call, index) => {
             tableHtml += `
                 <tr data-index="${index}">
-                    <td style="padding: 8px; border-bottom: 1px solid #333;">${call.short_name}</td>
-                    <td style="padding: 8px; border-bottom: 1px solid #333;">${call.long_name || ''}</td>
+                    <td style="padding: 8px; border-bottom: 1px solid #333;">${escapeHtml(call.short_name)}</td>
+                    <td style="padding: 8px; border-bottom: 1px solid #333;">${escapeHtml(call.long_name || '')}</td>
                     <td style="padding: 8px; border-bottom: 1px solid #333; text-align: center;">
                         <button type="button" class="button button-small button-danger delete-call-btn" data-index="${index}">Delete</button>
                     </td>
