@@ -6,7 +6,7 @@ from django.urls import reverse
 from battycoda_app.models import Group, GroupMembership, Recording, Segmentation, UserProfile
 from battycoda_app.models.clustering import Cluster, ClusteringAlgorithm, ClusteringRun
 from battycoda_app.models.organization import Project, Species
-from battycoda_app.models.segmentation import Segment, SegmentationAlgorithm
+from battycoda_app.models.segmentation import SegmentationAlgorithm
 from battycoda_app.tests.test_base import BattycodaTestCase
 
 

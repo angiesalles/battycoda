@@ -1,9 +1,4 @@
 """Tests for recording views"""
-import io
-import os
-import tempfile
-from unittest.mock import MagicMock, patch
-
 from django.contrib.auth.models import User
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.test import Client

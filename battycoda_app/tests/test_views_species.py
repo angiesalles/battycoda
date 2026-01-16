@@ -6,7 +6,7 @@ from django.test import Client
 from django.urls import reverse
 
 from battycoda_app.models import Group, GroupMembership, UserProfile
-from battycoda_app.models.organization import Call, Project, Species
+from battycoda_app.models.organization import Call, Species
 from battycoda_app.tests.test_base import BattycodaTestCase
 
 
