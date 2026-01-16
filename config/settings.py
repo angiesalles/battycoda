@@ -11,6 +11,7 @@ https://docs.djangoproject.com/en/5.1/ref/settings/
 """
 
 import os
+import sys
 from pathlib import Path
 
 import dotenv
@@ -33,6 +34,10 @@ SECRET_KEY = os.environ.get("SECRET_KEY")
 # SECURITY WARNING: don't run with debug turned on in production!
 # Debug mode should be False in production
 DEBUG = os.environ.get("DEBUG", "False").lower() == "true"
+
+# Detect test mode early (needed for security settings below)
+# DJANGO_TEST_MODE env var or Django's built-in test runner
+DJANGO_TEST_MODE = os.environ.get("DJANGO_TEST_MODE", "false").lower() == "true" or "test" in sys.argv
 
 # Admin email notifications for 500 errors
 ADMINS = [
@@ -64,14 +69,26 @@ CSRF_TRUSTED_ORIGINS = [
     "http://127.0.0.1",
 ]
 
-# Security settings for HTTPS - temporarily disabled until HTTPS is fully set up
+# Security settings for HTTPS
+# SECURE_PROXY_SSL_HEADER tells Django to trust X-Forwarded-Proto header from nginx
 SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
-SECURE_SSL_REDIRECT = False  # Disabled until HTTPS is fully set up
-SESSION_COOKIE_SECURE = False  # Disabled until HTTPS is fully set up
-CSRF_COOKIE_SECURE = False  # Disabled until HTTPS is fully set up
-SECURE_HSTS_SECONDS = 31536000  # Commented out until HTTPS is fully configured
-SECURE_HSTS_INCLUDE_SUBDOMAINS = True
-SECURE_HSTS_PRELOAD = True
+
+# In production (DEBUG=False and not in test mode), enable all HTTPS security features
+# In development (DEBUG=True) or test mode, disable to allow HTTP
+_enable_https_security = not DEBUG and not DJANGO_TEST_MODE
+if _enable_https_security:
+    SECURE_SSL_REDIRECT = True  # Redirect HTTP to HTTPS (nginx also does this)
+    SESSION_COOKIE_SECURE = True  # Only send session cookie over HTTPS
+    CSRF_COOKIE_SECURE = True  # Only send CSRF cookie over HTTPS
+    SECURE_HSTS_SECONDS = 31536000  # 1 year HSTS (nginx also sends this)
+    SECURE_HSTS_INCLUDE_SUBDOMAINS = True
+    SECURE_HSTS_PRELOAD = True
+else:
+    # Development/test mode - allow HTTP
+    SECURE_SSL_REDIRECT = False
+    SESSION_COOKIE_SECURE = False
+    CSRF_COOKIE_SECURE = False
+    SECURE_HSTS_SECONDS = 0
 
 # Application definition
 
@@ -134,15 +151,9 @@ TEMPLATES = [
 
 WSGI_APPLICATION = "config.wsgi.application"
 
-import os
-import sys
-
 # Database
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases
 import dj_database_url
-
-# Detect test mode: DJANGO_TEST_MODE env var or Django's built-in test runner
-DJANGO_TEST_MODE = os.environ.get("DJANGO_TEST_MODE", "false").lower() == "true" or "test" in sys.argv
 
 # Parse the production database URL to extract credentials
 _prod_db_config = dj_database_url.config(
