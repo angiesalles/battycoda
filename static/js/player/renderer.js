@@ -32,7 +32,6 @@ export class WaveformRenderer {
     // Calculate visible duration for consistency
     const visibleDuration = player.duration / player.zoomLevel;
     const visibleStartTime = player.zoomOffset * player.duration;
-    const visibleEndTime = Math.min(visibleStartTime + visibleDuration, player.duration);
 
     // Get or create persistent waveform canvas
     let canvas = player.waveformContainer.querySelector('canvas.waveform-canvas');

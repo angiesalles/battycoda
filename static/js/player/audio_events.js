@@ -17,10 +17,6 @@ export class AudioEvents {
 
     let lastScrollUpdateTime = 0;
 
-    // Flag to track if this is the first timeupdate after a manual seek
-    const isFirstUpdate = true;
-    const lastClickTime = 0;
-
     this.player.audioPlayer.addEventListener('timeupdate', () => {
       this.player.currentTime = this.player.audioPlayer.currentTime;
       this.player.updateTimeDisplay();
@@ -29,8 +25,6 @@ export class AudioEvents {
       this.player.redrawCurrentView();
 
       const now = performance.now();
-      const timeSinceLastClick = now - lastClickTime;
-      const isAfterManualSeek = timeSinceLastClick < 500; // Within 0.5 seconds of a click
 
       // Check if we're in a recording selection process
       if (
@@ -51,7 +45,7 @@ export class AudioEvents {
         }
       }
 
-      // Smooth scrolling when zoomed in during playback (but not right after manual seeks)
+      // Smooth scrolling when zoomed in during playback
       if (this.player.zoomLevel > 1 && this.player.isPlaying) {
         const currentRatio = this.player.currentTime / this.player.duration;
         const visibleDuration = 1 / this.player.zoomLevel;
@@ -61,7 +55,7 @@ export class AudioEvents {
         // Only scroll if the playhead is getting close to the edge of the visible area
         const scrollThreshold = visibleDuration * 0.3; // Start scrolling when 30% from edge
 
-        if (distanceFromCenter > scrollThreshold && !isAfterManualSeek) {
+        if (distanceFromCenter > scrollThreshold) {
           // Smoothly update the target zoom offset
           this.player.targetZoomOffset = Math.max(
             0,

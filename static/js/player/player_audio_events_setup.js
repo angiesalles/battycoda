@@ -8,17 +8,11 @@ export function setupAudioEventListeners(player) {
 
   let lastScrollUpdateTime = 0;
 
-  // Flag to track if this is the first timeupdate after a manual seek
-  const isFirstUpdate = true;
-  let lastClickTime = 0;
-
   player.audioPlayer.addEventListener('timeupdate', () => {
     player.currentTime = player.audioPlayer.currentTime;
     player.updateTimeDisplay();
 
     const now = performance.now();
-    const timeSinceLastClick = now - lastClickTime;
-    const isAfterManualSeek = timeSinceLastClick < 500; // Within 0.5 seconds of a click
 
     // Check if we're in a recording selection process
     if (player.allowSelection && player.selectionStart !== null && player.selectionEnd === null) {
@@ -73,11 +67,6 @@ export function setupAudioEventListeners(player) {
 
     // Just update waveform (for cursor) if we didn't do a full redraw above
     player.drawWaveform();
-  });
-
-  // Track clicks to avoid recentering right after a manual seek
-  player.audioPlayer.addEventListener('seeking', () => {
-    lastClickTime = performance.now();
   });
 
   player.audioPlayer.addEventListener('play', () => {

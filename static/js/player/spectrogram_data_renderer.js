@@ -180,9 +180,7 @@ export class SpectrogramDataRenderer {
 
   async createSpectrogramImage() {
     // Don't pre-render - we'll render on-demand to match canvas size
-    // Calculate 1st and 99th percentiles for normalization (1% saturation on each end)
-    const freqBins = this.metadata.n_freq_bins;
-    const frames = this.metadata.n_frames;
+    // Calculate 1st percentile and max for normalization
 
     // Store helper function for decoding float16
     this.decodeFloat16 = (bits) => {
