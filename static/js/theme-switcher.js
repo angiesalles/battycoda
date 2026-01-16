@@ -10,6 +10,19 @@ import { getCsrfToken } from './utils/page-data.js';
 const LOCAL_STORAGE_THEME_KEY = 'battycoda_theme';
 
 /**
+ * Save theme to localStorage (works for all users as fallback)
+ * @param {string} themeName - Theme name to save
+ */
+function saveThemeToLocalStorage(themeName) {
+  try {
+    localStorage.setItem(LOCAL_STORAGE_THEME_KEY, themeName);
+  } catch {
+    // localStorage might be unavailable (private browsing, storage quota, etc.)
+    // Silently ignore - theme will still work for current session
+  }
+}
+
+/**
  * Update theme preference on server for authenticated users
  * @param {string} themeName - Theme name to save
  */
@@ -24,11 +37,13 @@ function updateThemePreference(themeName) {
   })
     .then((response) => {
       if (!response.ok) {
-        console.error('Failed to update theme preference');
+        // Server save failed - localStorage fallback is already saved
+        console.warn('Failed to save theme to server, using localStorage fallback');
       }
     })
     .catch((error) => {
-      console.error('Error updating theme preference:', error);
+      // Network error - localStorage fallback is already saved
+      console.warn('Error saving theme to server, using localStorage fallback:', error);
     });
 }
 
@@ -118,10 +133,12 @@ export function initialize() {
 
       const themeName = this.dataset.theme;
 
+      // Always save to localStorage first (immediate persistence/fallback)
+      saveThemeToLocalStorage(themeName);
+
+      // For authenticated users, also sync to server (for cross-device sync)
       if (isAuthenticated) {
         updateThemePreference(themeName);
-      } else {
-        localStorage.setItem(LOCAL_STORAGE_THEME_KEY, themeName);
       }
 
       applyTheme(themeName);
@@ -142,3 +159,6 @@ if (document.readyState === 'loading') {
 
 // Expose globally for potential external use
 window.applyTheme = applyTheme;
+
+// Export for testing
+export { saveThemeToLocalStorage };

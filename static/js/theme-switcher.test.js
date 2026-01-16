@@ -2,8 +2,8 @@
  * Tests for theme-switcher.js utility module
  */
 
-import { describe, it, expect, beforeEach } from 'vitest';
-import { applyTheme } from './theme-switcher.js';
+import { describe, it, expect, beforeEach, vi, afterEach } from 'vitest';
+import { applyTheme, saveThemeToLocalStorage } from './theme-switcher.js';
 
 describe('theme-switcher', () => {
   beforeEach(() => {
@@ -129,6 +129,52 @@ describe('theme-switcher', () => {
 
       const themeLink = document.getElementById('theme-css-default');
       expect(themeLink).toBeNull();
+    });
+  });
+
+  describe('saveThemeToLocalStorage', () => {
+    const LOCAL_STORAGE_KEY = 'battycoda_theme';
+
+    beforeEach(() => {
+      vi.clearAllMocks();
+    });
+
+    afterEach(() => {
+      vi.restoreAllMocks();
+    });
+
+    it('should call localStorage.setItem with correct key and value', () => {
+      saveThemeToLocalStorage('ocean');
+
+      expect(localStorage.setItem).toHaveBeenCalledWith(LOCAL_STORAGE_KEY, 'ocean');
+    });
+
+    it('should call localStorage.setItem when saving different themes', () => {
+      saveThemeToLocalStorage('blue-sky');
+
+      expect(localStorage.setItem).toHaveBeenCalledWith(LOCAL_STORAGE_KEY, 'blue-sky');
+    });
+
+    it('should handle localStorage errors gracefully', () => {
+      // Mock localStorage.setItem to throw (e.g., quota exceeded or private mode)
+      localStorage.setItem.mockImplementation(() => {
+        throw new Error('QuotaExceededError');
+      });
+
+      // Should not throw even when localStorage fails
+      expect(() => saveThemeToLocalStorage('ocean')).not.toThrow();
+    });
+
+    it('should handle localStorage being unavailable', () => {
+      // Mock localStorage.setItem to throw SecurityError (common in some iframe scenarios)
+      const securityError = new Error('Access denied');
+      securityError.name = 'SecurityError';
+      localStorage.setItem.mockImplementation(() => {
+        throw securityError;
+      });
+
+      // Should not throw
+      expect(() => saveThemeToLocalStorage('ocean')).not.toThrow();
     });
   });
 });
