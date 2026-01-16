@@ -43,7 +43,7 @@ describe('cluster_explorer/controls', () => {
     });
 
     // Create mock jQuery function
-    mockJQuery = vi.fn((selector) => mockElement);
+    mockJQuery = vi.fn(() => mockElement);
     mockJQuery.getJSON = mockGetJSON;
 
     window.jQuery = mockJQuery;

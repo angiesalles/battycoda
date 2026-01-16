@@ -74,7 +74,7 @@ describe('cluster_explorer/visualization', () => {
     };
 
     // Create mock jQuery function
-    mockJQuery = vi.fn((selector) => mockElement);
+    mockJQuery = vi.fn(() => mockElement);
 
     window.jQuery = mockJQuery;
   });
@@ -236,20 +236,13 @@ describe('cluster_explorer/visualization', () => {
         { id: 1, cluster_id: 1, label: 'Test', size: 10, color: '#ff0000' },
       ];
 
-      let clickHandler;
-      mockElement.on.mockImplementation((event, handler) => {
-        if (event === 'click') {
-          clickHandler = handler;
-        }
+      mockElement.on.mockImplementation(() => {
         return mockElement;
       });
 
       // Mock the jQuery constructor to return an element with on() for legend items
       const legendItem = {
-        on: vi.fn((event, handler) => {
-          if (event === 'click') {
-            clickHandler = handler;
-          }
+        on: vi.fn(() => {
           return legendItem;
         }),
       };

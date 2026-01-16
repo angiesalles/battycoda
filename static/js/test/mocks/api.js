@@ -2,8 +2,6 @@
  * API mock helpers for testing
  */
 
-import { vi } from 'vitest';
-
 /**
  * Mock a successful API response
  */
