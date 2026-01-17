@@ -18,9 +18,11 @@ vi.mock('d3-selection', () => ({
     filter: vi.fn().mockReturnThis(),
     text: vi.fn().mockReturnThis(),
     on: vi.fn().mockReturnThis(),
+    empty: vi.fn(() => false),
   })),
   selectAll: vi.fn(() => ({
     attr: vi.fn().mockReturnThis(),
+    empty: vi.fn(() => false),
   })),
 }));
 
@@ -64,6 +66,7 @@ describe('cluster_explorer/visualization', () => {
   beforeEach(() => {
     // Create mock element
     mockElement = {
+      length: 1, // Mock element exists in DOM
       width: vi.fn(() => 800),
       height: vi.fn(() => 500),
       html: vi.fn().mockReturnThis(),
@@ -289,6 +292,7 @@ describe('cluster_explorer/visualization', () => {
 describe('visualization data transformations', () => {
   it('should handle clusters with negative coordinates', () => {
     const mockElement = {
+      length: 1,
       width: vi.fn(() => 800),
       height: vi.fn(() => 500),
       html: vi.fn().mockReturnThis(),
@@ -312,6 +316,7 @@ describe('visualization data transformations', () => {
 
   it('should handle clusters with zero coordinates', () => {
     const mockElement = {
+      length: 1,
       width: vi.fn(() => 800),
       height: vi.fn(() => 500),
       html: vi.fn().mockReturnThis(),
@@ -335,6 +340,7 @@ describe('visualization data transformations', () => {
 
   it('should handle single cluster', () => {
     const mockElement = {
+      length: 1,
       width: vi.fn(() => 800),
       height: vi.fn(() => 500),
       html: vi.fn().mockReturnThis(),
@@ -351,5 +357,124 @@ describe('visualization data transformations', () => {
     const result = initializeVisualization(clusters);
 
     expect(result).not.toBe(null);
+  });
+});
+
+describe('visualization error handling', () => {
+  it('should filter out clusters with invalid coordinates (NaN)', () => {
+    const mockElement = {
+      length: 1,
+      width: vi.fn(() => 800),
+      height: vi.fn(() => 500),
+      html: vi.fn().mockReturnThis(),
+      empty: vi.fn().mockReturnThis(),
+      val: vi.fn(() => '8'),
+      append: vi.fn().mockReturnThis(),
+      on: vi.fn().mockReturnThis(),
+    };
+
+    window.jQuery = vi.fn(() => mockElement);
+
+    const clusters = [
+      { id: 1, vis_x: NaN, vis_y: 0.5, size: 10 },
+      { id: 2, vis_x: 1.0, vis_y: 1.0, size: 5 },
+    ];
+
+    const result = initializeVisualization(clusters);
+
+    // Should still succeed with the valid cluster
+    expect(result).not.toBe(null);
+  });
+
+  it('should filter out clusters with undefined coordinates', () => {
+    const mockElement = {
+      length: 1,
+      width: vi.fn(() => 800),
+      height: vi.fn(() => 500),
+      html: vi.fn().mockReturnThis(),
+      empty: vi.fn().mockReturnThis(),
+      val: vi.fn(() => '8'),
+      append: vi.fn().mockReturnThis(),
+      on: vi.fn().mockReturnThis(),
+    };
+
+    window.jQuery = vi.fn(() => mockElement);
+
+    const clusters = [
+      { id: 1, vis_x: undefined, vis_y: 0.5, size: 10 },
+      { id: 2, vis_x: 1.0, vis_y: 1.0, size: 5 },
+    ];
+
+    const result = initializeVisualization(clusters);
+
+    // Should still succeed with the valid cluster
+    expect(result).not.toBe(null);
+  });
+
+  it('should return null when all clusters have invalid coordinates', () => {
+    const mockElement = {
+      length: 1,
+      width: vi.fn(() => 800),
+      height: vi.fn(() => 500),
+      html: vi.fn().mockReturnThis(),
+      empty: vi.fn().mockReturnThis(),
+      val: vi.fn(() => '8'),
+      append: vi.fn().mockReturnThis(),
+      on: vi.fn().mockReturnThis(),
+    };
+
+    window.jQuery = vi.fn(() => mockElement);
+
+    const clusters = [
+      { id: 1, vis_x: NaN, vis_y: 0.5, size: 10 },
+      { id: 2, vis_x: Infinity, vis_y: 1.0, size: 5 },
+    ];
+
+    const result = initializeVisualization(clusters);
+
+    expect(result).toBe(null);
+    expect(mockElement.html).toHaveBeenCalledWith(expect.stringContaining('Unable to visualize'));
+  });
+
+  it('should return null when container has zero width', () => {
+    const mockElement = {
+      length: 1,
+      width: vi.fn(() => 0),
+      height: vi.fn(() => 500),
+      html: vi.fn().mockReturnThis(),
+      empty: vi.fn().mockReturnThis(),
+      val: vi.fn(() => '8'),
+      append: vi.fn().mockReturnThis(),
+      on: vi.fn().mockReturnThis(),
+    };
+
+    window.jQuery = vi.fn(() => mockElement);
+
+    const clusters = [{ id: 1, vis_x: 0.5, vis_y: 0.5, size: 10 }];
+
+    const result = initializeVisualization(clusters);
+
+    expect(result).toBe(null);
+  });
+
+  it('should return null when container does not exist', () => {
+    const mockElement = {
+      length: 0, // Element not found
+      width: vi.fn(() => 800),
+      height: vi.fn(() => 500),
+      html: vi.fn().mockReturnThis(),
+      empty: vi.fn().mockReturnThis(),
+      val: vi.fn(() => '8'),
+      append: vi.fn().mockReturnThis(),
+      on: vi.fn().mockReturnThis(),
+    };
+
+    window.jQuery = vi.fn(() => mockElement);
+
+    const clusters = [{ id: 1, vis_x: 0.5, vis_y: 0.5, size: 10 }];
+
+    const result = initializeVisualization(clusters);
+
+    expect(result).toBe(null);
   });
 });

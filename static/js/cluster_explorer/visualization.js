@@ -38,44 +38,122 @@ export function initializeVisualization(clusters) {
     return null;
   }
 
+  // Validate cluster data has required visualization coordinates
+  const validClusters = clusters.filter((cluster) => {
+    const hasValidCoords =
+      typeof cluster.vis_x === 'number' &&
+      typeof cluster.vis_y === 'number' &&
+      !isNaN(cluster.vis_x) &&
+      !isNaN(cluster.vis_y) &&
+      isFinite(cluster.vis_x) &&
+      isFinite(cluster.vis_y);
+    if (!hasValidCoords) {
+      console.warn(
+        `[ClusterExplorer] Cluster ${cluster.id || cluster.cluster_id} has invalid coordinates (vis_x: ${cluster.vis_x}, vis_y: ${cluster.vis_y}). Skipping.`
+      );
+    }
+    return hasValidCoords;
+  });
+
+  if (validClusters.length === 0) {
+    console.error('[ClusterExplorer] No clusters with valid visualization coordinates found.');
+    $('#cluster-visualization').html(
+      '<div class="alert alert-danger">Unable to visualize clusters: No valid coordinate data available.</div>'
+    );
+    return null;
+  }
+
+  if (validClusters.length < clusters.length) {
+    console.warn(
+      `[ClusterExplorer] ${clusters.length - validClusters.length} clusters with invalid coordinates were excluded from visualization.`
+    );
+  }
+
+  // Check if visualization container exists
+  const vizContainer = $('#cluster-visualization');
+  if (vizContainer.length === 0) {
+    console.error('[ClusterExplorer] Visualization container #cluster-visualization not found in DOM.');
+    return null;
+  }
+
   // Configure the visualization
-  const width = $('#cluster-visualization').width();
+  const width = vizContainer.width();
+  if (!width || width <= 0) {
+    console.error('[ClusterExplorer] Visualization container has zero or invalid width.');
+    return null;
+  }
   const height = 500;
   const margin = { top: 20, right: 20, bottom: 20, left: 20 };
 
   // Clear any existing content
-  $('#cluster-visualization').empty();
+  vizContainer.empty();
 
-  // Create the SVG container
-  const svg = select('#cluster-visualization').append('svg').attr('width', width).attr('height', height);
+  // Create the SVG container with error handling
+  let svg;
+  try {
+    const selection = select('#cluster-visualization');
+    if (selection.empty()) {
+      console.error('[ClusterExplorer] D3 selection for #cluster-visualization is empty.');
+      return null;
+    }
+    svg = selection.append('svg').attr('width', width).attr('height', height);
+  } catch (error) {
+    console.error('[ClusterExplorer] Failed to create SVG container:', error);
+    vizContainer.html('<div class="alert alert-danger">Failed to initialize visualization.</div>');
+    return null;
+  }
 
   // Create a container group for zooming
   const container = svg.append('g').attr('class', 'container');
 
-  // Add zoom behavior
-  const zoomBehavior = zoom()
-    .scaleExtent([0.5, 5])
-    .on('zoom', (event) => {
-      container.attr('transform', event.transform);
-    });
+  // Add zoom behavior with error handling
+  try {
+    const zoomBehavior = zoom()
+      .scaleExtent([0.5, 5])
+      .on('zoom', (event) => {
+        container.attr('transform', event.transform);
+      });
 
-  svg.call(zoomBehavior);
+    svg.call(zoomBehavior);
+  } catch (error) {
+    console.error('[ClusterExplorer] Failed to set up zoom behavior:', error);
+    // Continue without zoom - visualization is still usable
+  }
 
   // Get initial control values
   const pointSize = parseInt($('#point-size').val()) || 8;
   const opacity = parseFloat($('#cluster-opacity').val()) || 0.7;
 
-  // Assign colors to clusters
+  // Assign colors to clusters (use validClusters from now on)
   const scale = colorScale || scaleOrdinal(schemeCategory10);
-  clusters.forEach((cluster, i) => {
+  validClusters.forEach((cluster, i) => {
     cluster.color = scale(i);
   });
 
   // Find the data range for x and y coordinates
-  let xMin = min(clusters, (d) => d.vis_x);
-  let xMax = max(clusters, (d) => d.vis_x);
-  let yMin = min(clusters, (d) => d.vis_y);
-  let yMax = max(clusters, (d) => d.vis_y);
+  let xMin = min(validClusters, (d) => d.vis_x);
+  let xMax = max(validClusters, (d) => d.vis_x);
+  let yMin = min(validClusters, (d) => d.vis_y);
+  let yMax = max(validClusters, (d) => d.vis_y);
+
+  // Validate that we have valid min/max values
+  if (xMin === undefined || xMax === undefined || yMin === undefined || yMax === undefined) {
+    console.error('[ClusterExplorer] Failed to calculate data range from cluster coordinates.');
+    vizContainer.html(
+      '<div class="alert alert-danger">Failed to calculate visualization bounds.</div>'
+    );
+    return null;
+  }
+
+  // Handle edge case where all points have the same coordinates
+  if (xMin === xMax) {
+    xMin -= 1;
+    xMax += 1;
+  }
+  if (yMin === yMax) {
+    yMin -= 1;
+    yMax += 1;
+  }
 
   // Add some padding
   const padding = 0.1;
@@ -95,56 +173,62 @@ export function initializeVisualization(clusters) {
     .domain([yMin, yMax])
     .range([height - margin.bottom, margin.top]);
 
-  // Draw the cluster points
-  container
-    .selectAll('.cluster-point')
-    .data(clusters)
-    .enter()
-    .append('circle')
-    .attr('class', 'cluster-point')
-    .attr('cx', (d) => xScale(d.vis_x))
-    .attr('cy', (d) => yScale(d.vis_y))
-    .attr('r', pointSize)
-    .attr('fill', (d) => d.color)
-    .attr('opacity', opacity)
-    .attr('stroke', '#000')
-    .attr('stroke-width', 1)
-    .attr('cursor', 'pointer')
-    .on('mouseover', function (event, d) {
-      select(this).attr('stroke-width', 2).attr('stroke', '#000');
+  // Draw the cluster points with error handling
+  try {
+    container
+      .selectAll('.cluster-point')
+      .data(validClusters)
+      .enter()
+      .append('circle')
+      .attr('class', 'cluster-point')
+      .attr('cx', (d) => xScale(d.vis_x))
+      .attr('cy', (d) => yScale(d.vis_y))
+      .attr('r', pointSize)
+      .attr('fill', (d) => d.color)
+      .attr('opacity', opacity)
+      .attr('stroke', '#000')
+      .attr('stroke-width', 1)
+      .attr('cursor', 'pointer')
+      .on('mouseover', function (event, d) {
+        select(this).attr('stroke-width', 2).attr('stroke', '#000');
 
-      container
-        .append('text')
-        .attr('class', 'tooltip')
-        .attr('x', xScale(d.vis_x) + 10)
-        .attr('y', yScale(d.vis_y) - 10)
-        .text(d.label || `Cluster ${d.cluster_id}`)
-        .attr('fill', '#000')
-        .attr('font-weight', 'bold');
-    })
-    .on('mouseout', function () {
-      select(this).attr('stroke-width', 1);
-      container.selectAll('.tooltip').remove();
-    })
-    .on('click', function (event, d) {
-      selectCluster(d.id);
-    });
+        container
+          .append('text')
+          .attr('class', 'tooltip')
+          .attr('x', xScale(d.vis_x) + 10)
+          .attr('y', yScale(d.vis_y) - 10)
+          .text(d.label || `Cluster ${d.cluster_id}`)
+          .attr('fill', '#000')
+          .attr('font-weight', 'bold');
+      })
+      .on('mouseout', function () {
+        select(this).attr('stroke-width', 1);
+        container.selectAll('.tooltip').remove();
+      })
+      .on('click', function (event, d) {
+        selectCluster(d.id);
+      });
 
-  // Add cluster labels for labeled clusters
-  container
-    .selectAll('.cluster-label')
-    .data(clusters.filter((c) => c.is_labeled))
-    .enter()
-    .append('text')
-    .attr('class', 'cluster-label')
-    .attr('x', (d) => xScale(d.vis_x) + 10)
-    .attr('y', (d) => yScale(d.vis_y) + 3)
-    .text((d) => d.label)
-    .attr('fill', '#000')
-    .attr('font-size', '10px');
+    // Add cluster labels for labeled clusters
+    container
+      .selectAll('.cluster-label')
+      .data(validClusters.filter((c) => c.is_labeled))
+      .enter()
+      .append('text')
+      .attr('class', 'cluster-label')
+      .attr('x', (d) => xScale(d.vis_x) + 10)
+      .attr('y', (d) => yScale(d.vis_y) + 3)
+      .text((d) => d.label)
+      .attr('fill', '#000')
+      .attr('font-size', '10px');
+  } catch (error) {
+    console.error('[ClusterExplorer] Failed to draw cluster points:', error);
+    vizContainer.html('<div class="alert alert-danger">Failed to render cluster visualization.</div>');
+    return null;
+  }
 
   // Create the legend
-  createLegend(clusters);
+  createLegend(validClusters);
 
   return { svg, container, xScale, yScale };
 }
@@ -196,8 +280,18 @@ export function updateVisualization() {
     return;
   }
 
-  const pointSize = parseInt($('#point-size').val());
-  const opacity = parseFloat($('#cluster-opacity').val());
+  const pointSize = parseInt($('#point-size').val()) || 8;
+  const opacity = parseFloat($('#cluster-opacity').val()) || 0.7;
 
-  selectAll('.cluster-point').attr('r', pointSize).attr('opacity', opacity);
+  const points = selectAll('.cluster-point');
+  if (points.empty()) {
+    console.warn('[ClusterExplorer] No cluster points found to update.');
+    return;
+  }
+
+  try {
+    points.attr('r', pointSize).attr('opacity', opacity);
+  } catch (error) {
+    console.error('[ClusterExplorer] Failed to update cluster point attributes:', error);
+  }
 }

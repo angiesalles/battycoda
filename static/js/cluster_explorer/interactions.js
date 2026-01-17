@@ -21,15 +21,30 @@ export function selectCluster(clusterId) {
     return;
   }
 
+  if (clusterId === null || clusterId === undefined) {
+    console.warn('[ClusterExplorer] Invalid cluster ID provided to selectCluster.');
+    return;
+  }
+
   // Update the selection
   setSelectedClusterId(clusterId);
 
   // Highlight the selected cluster in the visualization
-  const pointSize = parseInt($('#point-size').val());
-  selectAll('.cluster-point')
-    .attr('stroke-width', (d) => (d.id === clusterId ? 3 : 1))
-    .attr('stroke', (d) => (d.id === clusterId ? '#fff' : '#000'))
-    .attr('r', (d) => (d.id === clusterId ? pointSize * 1.5 : pointSize));
+  const pointSize = parseInt($('#point-size').val()) || 8;
+  const points = selectAll('.cluster-point');
+
+  if (!points.empty()) {
+    try {
+      points
+        .attr('stroke-width', (d) => (d.id === clusterId ? 3 : 1))
+        .attr('stroke', (d) => (d.id === clusterId ? '#fff' : '#000'))
+        .attr('r', (d) => (d.id === clusterId ? pointSize * 1.5 : pointSize));
+    } catch (error) {
+      console.error('[ClusterExplorer] Failed to update cluster point highlighting:', error);
+    }
+  } else {
+    console.warn('[ClusterExplorer] No cluster points found to highlight.');
+  }
 
   // Load the cluster details
   loadClusterDetails(clusterId);

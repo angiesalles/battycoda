@@ -11,6 +11,7 @@ import { API_ENDPOINTS, buildUrl } from './api.js';
 vi.mock('d3-selection', () => ({
   selectAll: vi.fn(() => ({
     attr: vi.fn().mockReturnThis(),
+    empty: vi.fn(() => false),
   })),
 }));
 

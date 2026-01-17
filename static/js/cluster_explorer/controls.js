@@ -73,15 +73,33 @@ export function initializeControls(onPointSizeChange, onOpacityChange) {
   $('#cluster-opacity').off('input');
 
   $('#point-size').on('input', function () {
-    const size = parseInt($(this).val());
+    const size = parseInt($(this).val()) || 8;
     const selectedId = getSelectedClusterId();
-    selectAll('.cluster-point').attr('r', (d) => (d.id === selectedId ? size * 1.5 : size));
+    const points = selectAll('.cluster-point');
+
+    if (!points.empty()) {
+      try {
+        points.attr('r', (d) => (d.id === selectedId ? size * 1.5 : size));
+      } catch (error) {
+        console.error('[ClusterExplorer] Failed to update point sizes:', error);
+      }
+    }
+
     if (onPointSizeChange) onPointSizeChange(size);
   });
 
   $('#cluster-opacity').on('input', function () {
-    const opacity = parseFloat($(this).val());
-    selectAll('.cluster-point').attr('opacity', opacity);
+    const opacity = parseFloat($(this).val()) || 0.7;
+    const points = selectAll('.cluster-point');
+
+    if (!points.empty()) {
+      try {
+        points.attr('opacity', opacity);
+      } catch (error) {
+        console.error('[ClusterExplorer] Failed to update point opacity:', error);
+      }
+    }
+
     if (onOpacityChange) onOpacityChange(opacity);
   });
 }
