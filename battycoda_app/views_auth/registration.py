@@ -62,7 +62,7 @@ def register_view(request):
             else:
                 messages.success(request, "Registration successful!")
 
-            from ..email_utils import send_welcome_email
+            from ..user_emails import send_welcome_email
 
             send_welcome_email(user)
 

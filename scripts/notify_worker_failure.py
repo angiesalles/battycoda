@@ -50,7 +50,7 @@ import django
 
 django.setup()
 
-from battycoda_app.email_utils import send_worker_failure_email
+from battycoda_app.admin_alerts import send_worker_failure_email
 
 
 def main():

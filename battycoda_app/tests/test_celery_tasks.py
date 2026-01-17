@@ -464,7 +464,7 @@ class DiskUsageTaskTests(CeleryTaskTestCase):
 
         battycoda_app.tasks._last_disk_alert_time = None
 
-    @patch("battycoda_app.email_utils.send_disk_usage_warning_email")
+    @patch("battycoda_app.admin_alerts.send_disk_usage_warning_email")
     @patch("shutil.disk_usage")
     def test_check_disk_usage_ok(self, mock_disk_usage, mock_send_email):
         """Test that disk usage check returns ok when usage is below threshold."""
@@ -482,7 +482,7 @@ class DiskUsageTaskTests(CeleryTaskTestCase):
         self.assertEqual(result["status"], "ok")
         mock_send_email.assert_not_called()
 
-    @patch("battycoda_app.email_utils.send_disk_usage_warning_email")
+    @patch("battycoda_app.admin_alerts.send_disk_usage_warning_email")
     @patch("shutil.disk_usage")
     def test_check_disk_usage_sends_alert(self, mock_disk_usage, mock_send_email):
         """Test that disk usage check sends alert when usage exceeds threshold."""
@@ -502,7 +502,7 @@ class DiskUsageTaskTests(CeleryTaskTestCase):
         self.assertEqual(len(result["disks_over_threshold"]), 2)  # / and /home
         mock_send_email.assert_called_once()
 
-    @patch("battycoda_app.email_utils.send_disk_usage_warning_email")
+    @patch("battycoda_app.admin_alerts.send_disk_usage_warning_email")
     @patch("shutil.disk_usage")
     def test_check_disk_usage_respects_cooldown(self, mock_disk_usage, mock_send_email):
         """Test that disk usage check respects alert cooldown."""
@@ -540,7 +540,7 @@ class BackupDatabaseTaskTests(CeleryTaskTestCase):
         self.assertEqual(result, "Database backup completed successfully")
         mock_call_command.assert_called_once_with("backup_database", bucket="test-bucket", prefix="test-prefix/")
 
-    @patch("battycoda_app.email_utils.send_backup_failure_email")
+    @patch("battycoda_app.admin_alerts.send_backup_failure_email")
     @patch("battycoda_app.tasks.call_command")
     def test_backup_database_failure_retries(self, mock_call_command, mock_send_email):
         """Test that backup failure triggers retry."""

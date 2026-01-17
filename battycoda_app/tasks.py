@@ -135,7 +135,7 @@ def backup_database_to_s3(self, bucket_name=None, prefix=None):
     Celery task to backup the database to S3.
     Sends email notification to admins if all retries are exhausted.
     """
-    from .email_utils import send_backup_failure_email
+    from .admin_alerts import send_backup_failure_email
 
     # Use settings defaults if not provided
     bucket_name = bucket_name or getattr(settings, "DATABASE_BACKUP_BUCKET", "backup-battycoda")
@@ -185,7 +185,7 @@ def check_disk_usage(threshold=90, cooldown_hours=4):
 
     global _last_disk_alert_time
 
-    from .email_utils import send_disk_usage_warning_email
+    from .admin_alerts import send_disk_usage_warning_email
 
     def format_bytes(bytes_val):
         """Format bytes to human readable string."""

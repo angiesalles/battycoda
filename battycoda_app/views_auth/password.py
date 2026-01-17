@@ -32,8 +32,8 @@ def password_reset_request(request):
             )
             return redirect("battycoda_app:login")
 
-        from ..email_utils import send_password_reset_email
         from ..models.user import PasswordResetToken
+        from ..user_emails import send_password_reset_email
 
         token_obj = PasswordResetToken.generate_token(user)
 
@@ -103,8 +103,8 @@ def request_login_code(request):
             user = User.objects.filter(username=identifier).first()
 
         if user and user.email:
-            from ..email_utils import send_login_code_email
             from ..models import LoginCode
+            from ..user_emails import send_login_code_email
 
             login_code = LoginCode.generate_code(user)
 

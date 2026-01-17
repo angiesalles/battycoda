@@ -8,9 +8,9 @@ from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
 from django.utils import timezone
 
-from .email_utils import send_invitation_email
 from .forms import GroupInvitationForm
 from .models.user import GroupInvitation, GroupMembership
+from .user_emails import send_invitation_email
 
 
 @login_required
