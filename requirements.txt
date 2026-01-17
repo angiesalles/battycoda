@@ -56,3 +56,4 @@ sentry-sdk[django,celery]>=2.0.0,<3.0.0
 # Linting and code quality tools
 ruff>=0.14.0  # Replaces flake8, black, isort - much faster and Python 3.14 compatible
 h5py
+psutil
