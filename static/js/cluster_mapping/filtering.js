@@ -10,7 +10,10 @@
  */
 export function filterClusters(searchText) {
   const $ = window.jQuery;
-  if (!$) return;
+  if (!$) {
+    console.error('[ClusterMapping] jQuery is not available. Cannot filter clusters.');
+    return;
+  }
 
   searchText = searchText.toLowerCase();
 
@@ -30,7 +33,10 @@ export function filterClusters(searchText) {
  */
 export function sortClusters(sortBy) {
   const $ = window.jQuery;
-  if (!$) return;
+  if (!$) {
+    console.error('[ClusterMapping] jQuery is not available. Cannot sort clusters.');
+    return;
+  }
 
   const clusters = $('.cluster-box').toArray();
 
@@ -75,7 +81,10 @@ export function sortClusters(sortBy) {
  */
 export function filterSpecies(speciesId) {
   const $ = window.jQuery;
-  if (!$) return;
+  if (!$) {
+    console.error('[ClusterMapping] jQuery is not available. Cannot filter species.');
+    return;
+  }
 
   if (speciesId === 'all') {
     $('.species-section').show();

@@ -35,7 +35,10 @@ import { initializeClusterPreviewModal, loadClusterDetails } from './modal_handl
  */
 export function initClusterMapping(existingMappings) {
   const $ = window.jQuery;
-  if (!$) return;
+  if (!$) {
+    console.error('[ClusterMapping] jQuery is not available. Cannot initialize cluster mapping.');
+    return;
+  }
 
   console.log('Initializing cluster mapping interface');
 
@@ -95,7 +98,10 @@ export function initClusterMapping(existingMappings) {
  */
 function autoInitialize() {
   const $ = window.jQuery;
-  if (!$) return;
+  if (!$) {
+    console.warn('[ClusterMapping] jQuery not available during auto-initialization. Skipping.');
+    return;
+  }
 
   // Check if existingMappings data is available
   if (typeof window.existingMappings !== 'undefined') {

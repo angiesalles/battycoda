@@ -13,7 +13,10 @@ import { escapeHtml } from '../utils/html.js';
  */
 export function initializeClusterPreviewModal(createMappingFn) {
   const $ = window.jQuery;
-  if (!$) return;
+  if (!$) {
+    console.error('[ClusterMapping] jQuery is not available. Cannot initialize cluster preview modal.');
+    return;
+  }
 
   // Clean up existing handlers to prevent duplicates on re-initialization
   $('#clusterPreviewModal').off('show.bs.modal');
@@ -66,7 +69,10 @@ export function initializeClusterPreviewModal(createMappingFn) {
  */
 export function loadClusterDetails(clusterId) {
   const $ = window.jQuery;
-  if (!$) return;
+  if (!$) {
+    console.error('[ClusterMapping] jQuery is not available. Cannot load cluster details.');
+    return;
+  }
 
   const clusterBox = $(`.cluster-box[data-cluster-id="${clusterId}"]`);
   if (clusterBox.length === 0) return;

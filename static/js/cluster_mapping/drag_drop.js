@@ -15,7 +15,10 @@ import { getCsrfToken } from '../utils/page-data.js';
  */
 export function initializeDragAndDrop(loadClusterDetails, createMappingFn) {
   const $ = window.jQuery;
-  if (!$) return;
+  if (!$) {
+    console.error('[ClusterMapping] jQuery is not available. Cannot initialize drag and drop.');
+    return;
+  }
 
   console.log('Initializing drag and drop functionality');
 
@@ -94,7 +97,10 @@ export function initializeDragAndDrop(loadClusterDetails, createMappingFn) {
  */
 export function createMapping(clusterId, callId) {
   const $ = window.jQuery;
-  if (!$) return;
+  if (!$) {
+    console.error('[ClusterMapping] jQuery is not available. Cannot create mapping.');
+    return;
+  }
 
   console.log('Creating mapping between cluster ' + clusterId + ' and call ' + callId);
 
@@ -177,7 +183,14 @@ export function createMapping(clusterId, callId) {
  */
 export function updateMappingConfidence(mappingId, confidence) {
   const $ = window.jQuery;
-  if (!$ || !mappingId) return;
+  if (!$) {
+    console.error('[ClusterMapping] jQuery is not available. Cannot update mapping confidence.');
+    return;
+  }
+  if (!mappingId) {
+    console.warn('[ClusterMapping] No mapping ID provided. Cannot update mapping confidence.');
+    return;
+  }
 
   $.ajax({
     url: '/clustering/update-mapping-confidence/',
@@ -206,7 +219,14 @@ export function updateMappingConfidence(mappingId, confidence) {
  */
 export function deleteMapping(mappingId) {
   const $ = window.jQuery;
-  if (!$ || !mappingId) return;
+  if (!$) {
+    console.error('[ClusterMapping] jQuery is not available. Cannot delete mapping.');
+    return;
+  }
+  if (!mappingId) {
+    console.warn('[ClusterMapping] No mapping ID provided. Cannot delete mapping.');
+    return;
+  }
 
   $.ajax({
     url: '/clustering/delete-mapping/',

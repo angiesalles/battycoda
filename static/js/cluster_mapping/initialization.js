@@ -18,7 +18,10 @@ export function initializeExistingMappings(
   updateCallBadgeCount
 ) {
   const $ = window.jQuery;
-  if (!$) return;
+  if (!$) {
+    console.error('[ClusterMapping] jQuery is not available. Cannot initialize existing mappings.');
+    return;
+  }
 
   existingMappings.forEach(function (mapping) {
     const clusterBox = $(`.cluster-box[data-cluster-id="${mapping.cluster_id}"]`);
@@ -68,7 +71,10 @@ export function addMappingToContainer(
   updateCallBadgeCount
 ) {
   const $ = window.jQuery;
-  if (!$) return;
+  if (!$) {
+    console.error('[ClusterMapping] jQuery is not available. Cannot add mapping to container.');
+    return;
+  }
 
   const container = $(`.mapping-container[data-call-id="${callId}"]`);
   if (container.length === 0) return;
@@ -133,7 +139,10 @@ export function addMappingToContainer(
  */
 export function updateCallBadgeCount(callId, count) {
   const $ = window.jQuery;
-  if (!$) return;
+  if (!$) {
+    console.error('[ClusterMapping] jQuery is not available. Cannot update call badge count.');
+    return;
+  }
 
   const badge = $(`.cluster-count-badge[data-call-id="${callId}"]`);
   if (badge.length === 0) return;
