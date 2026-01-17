@@ -153,14 +153,10 @@ export function createMapping(clusterId, callId) {
 
         updateCallBadgeCount(callId, data.new_count);
 
-        if (window.toastr) {
-          window.toastr.success('Mapping created successfully');
-        }
+        window.toastr.success('Mapping created successfully');
       } else {
         console.error('API returned error: ', data.message);
-        if (window.toastr) {
-          window.toastr.error('Failed to create mapping: ' + data.message);
-        }
+        window.toastr.error('Failed to create mapping: ' + data.message);
       }
     },
     error: function (xhr, status, error) {
@@ -169,9 +165,7 @@ export function createMapping(clusterId, callId) {
         error: error,
         response: xhr.responseText,
       });
-      if (window.toastr) {
-        window.toastr.error('Failed to create mapping. Please try again.');
-      }
+      window.toastr.error('Failed to create mapping. Please try again.');
     },
   });
 }
@@ -201,14 +195,12 @@ export function updateMappingConfidence(mappingId, confidence) {
       confidence: confidence,
     },
     success: function (data) {
-      if (data.status !== 'success' && window.toastr) {
+      if (data.status !== 'success') {
         window.toastr.error('Failed to update confidence: ' + data.message);
       }
     },
     error: function () {
-      if (window.toastr) {
-        window.toastr.error('Failed to update confidence. Please try again.');
-      }
+      window.toastr.error('Failed to update confidence. Please try again.');
     },
   });
 }
@@ -238,14 +230,12 @@ export function deleteMapping(mappingId) {
     success: function (data) {
       if (data.status === 'success') {
         updateCallBadgeCount(data.call_id, data.new_count);
-      } else if (window.toastr) {
+      } else {
         window.toastr.error('Failed to delete mapping: ' + data.message);
       }
     },
     error: function () {
-      if (window.toastr) {
-        window.toastr.error('Failed to delete mapping. Please try again.');
-      }
+      window.toastr.error('Failed to delete mapping. Please try again.');
     },
   });
 }

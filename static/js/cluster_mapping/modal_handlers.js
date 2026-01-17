@@ -48,9 +48,7 @@ export function initializeClusterPreviewModal(createMappingFn) {
     const selectedClusterId = getSelectedClusterId();
 
     if (!callId || !selectedClusterId) {
-      if (window.toastr) {
-        window.toastr.error('Please select a call type');
-      }
+      window.toastr.error('Please select a call type');
       return;
     }
 
