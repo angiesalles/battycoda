@@ -4,6 +4,7 @@
 
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { initializeVisualization, createLegend, updateVisualization } from './visualization.js';
+import { setJQuery, resetState } from './state.js';
 import clusterFixtures from '../test/fixtures/clusters.json';
 
 // Mock d3 modules
@@ -64,6 +65,9 @@ describe('cluster_explorer/visualization', () => {
   let mockElement;
 
   beforeEach(() => {
+    // Reset all state
+    resetState();
+
     // Create mock element
     mockElement = {
       length: 1, // Mock element exists in DOM
@@ -79,12 +83,15 @@ describe('cluster_explorer/visualization', () => {
     // Create mock jQuery function
     mockJQuery = vi.fn(() => mockElement);
 
-    window.jQuery = mockJQuery;
+    // Inject mock jQuery via state (instead of window.jQuery)
+    setJQuery(mockJQuery);
   });
 
   describe('initializeVisualization', () => {
     it('should return null if jQuery is not available', () => {
-      window.jQuery = undefined;
+      // Clear both injected jQuery and window.jQuery to simulate unavailable
+      setJQuery(null);
+      delete window.jQuery;
 
       const result = initializeVisualization([]);
 
@@ -187,7 +194,9 @@ describe('cluster_explorer/visualization', () => {
 
   describe('createLegend', () => {
     it('should return early if jQuery is not available', () => {
-      window.jQuery = undefined;
+      // Clear both injected jQuery and window.jQuery to simulate unavailable
+      setJQuery(null);
+      delete window.jQuery;
 
       createLegend([]);
 
@@ -266,7 +275,9 @@ describe('cluster_explorer/visualization', () => {
 
   describe('updateVisualization', () => {
     it('should return early if jQuery is not available', () => {
-      window.jQuery = undefined;
+      // Clear both injected jQuery and window.jQuery to simulate unavailable
+      setJQuery(null);
+      delete window.jQuery;
 
       updateVisualization();
 
@@ -302,7 +313,7 @@ describe('visualization data transformations', () => {
       on: vi.fn().mockReturnThis(),
     };
 
-    window.jQuery = vi.fn(() => mockElement);
+    setJQuery(vi.fn(() => mockElement));
 
     const clusters = [
       { id: 1, vis_x: -1.5, vis_y: -0.5, size: 10 },
@@ -326,7 +337,7 @@ describe('visualization data transformations', () => {
       on: vi.fn().mockReturnThis(),
     };
 
-    window.jQuery = vi.fn(() => mockElement);
+    setJQuery(vi.fn(() => mockElement));
 
     const clusters = [
       { id: 1, vis_x: 0, vis_y: 0, size: 10 },
@@ -350,7 +361,7 @@ describe('visualization data transformations', () => {
       on: vi.fn().mockReturnThis(),
     };
 
-    window.jQuery = vi.fn(() => mockElement);
+    setJQuery(vi.fn(() => mockElement));
 
     const clusters = [{ id: 1, vis_x: 0.5, vis_y: 0.5, size: 10 }];
 
@@ -373,7 +384,7 @@ describe('visualization error handling', () => {
       on: vi.fn().mockReturnThis(),
     };
 
-    window.jQuery = vi.fn(() => mockElement);
+    setJQuery(vi.fn(() => mockElement));
 
     const clusters = [
       { id: 1, vis_x: NaN, vis_y: 0.5, size: 10 },
@@ -398,7 +409,7 @@ describe('visualization error handling', () => {
       on: vi.fn().mockReturnThis(),
     };
 
-    window.jQuery = vi.fn(() => mockElement);
+    setJQuery(vi.fn(() => mockElement));
 
     const clusters = [
       { id: 1, vis_x: undefined, vis_y: 0.5, size: 10 },
@@ -423,7 +434,7 @@ describe('visualization error handling', () => {
       on: vi.fn().mockReturnThis(),
     };
 
-    window.jQuery = vi.fn(() => mockElement);
+    setJQuery(vi.fn(() => mockElement));
 
     const clusters = [
       { id: 1, vis_x: NaN, vis_y: 0.5, size: 10 },
@@ -448,7 +459,7 @@ describe('visualization error handling', () => {
       on: vi.fn().mockReturnThis(),
     };
 
-    window.jQuery = vi.fn(() => mockElement);
+    setJQuery(vi.fn(() => mockElement));
 
     const clusters = [{ id: 1, vis_x: 0.5, vis_y: 0.5, size: 10 }];
 
@@ -469,7 +480,7 @@ describe('visualization error handling', () => {
       on: vi.fn().mockReturnThis(),
     };
 
-    window.jQuery = vi.fn(() => mockElement);
+    setJQuery(vi.fn(() => mockElement));
 
     const clusters = [{ id: 1, vis_x: 0.5, vis_y: 0.5, size: 10 }];
 

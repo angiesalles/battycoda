@@ -6,7 +6,7 @@
  */
 
 import { selectAll } from 'd3-selection';
-import { setSelectedClusterId, getIsProjectScope } from './state.js';
+import { setSelectedClusterId, getIsProjectScope, getJQuery } from './state.js';
 import { escapeHtml } from '../utils/html.js';
 import { API_ENDPOINTS, buildUrl } from './api.js';
 
@@ -15,7 +15,7 @@ import { API_ENDPOINTS, buildUrl } from './api.js';
  * @param {number} clusterId - Cluster ID to select
  */
 export function selectCluster(clusterId) {
-  const $ = window.jQuery;
+  const $ = getJQuery();
   if (!$) {
     console.error('[ClusterExplorer] jQuery is not available. Cannot select cluster.');
     return;
@@ -58,7 +58,7 @@ export function selectCluster(clusterId) {
  * @param {number} clusterId - Cluster ID to load
  */
 export function loadClusterDetails(clusterId) {
-  const $ = window.jQuery;
+  const $ = getJQuery();
   if (!$) {
     console.error('[ClusterExplorer] jQuery is not available. Cannot load cluster details.');
     return;
@@ -133,7 +133,7 @@ export function loadClusterDetails(clusterId) {
  * @param {number} clusterId - Cluster ID to load members for
  */
 export function loadClusterMembers(clusterId) {
-  const $ = window.jQuery;
+  const $ = getJQuery();
   if (!$) {
     console.error('[ClusterExplorer] jQuery is not available. Cannot load cluster members.');
     return;

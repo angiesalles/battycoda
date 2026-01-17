@@ -16,6 +16,9 @@ let clusters = null;
 // Whether this is a project-scoped clustering run
 let isProjectScope = false;
 
+// jQuery instance (injected for testability)
+let jQueryInstance = null;
+
 /**
  * Get the currently selected cluster ID
  * @returns {number|null} Selected cluster ID
@@ -65,12 +68,30 @@ export function setIsProjectScope(value) {
 }
 
 /**
+ * Get the jQuery instance
+ * Falls back to window.jQuery if not explicitly set (for backward compatibility)
+ * @returns {Function|null} jQuery function
+ */
+export function getJQuery() {
+  return jQueryInstance || (typeof window !== 'undefined' ? window.jQuery : null);
+}
+
+/**
+ * Set the jQuery instance (for dependency injection in tests)
+ * @param {Function} $ - jQuery function
+ */
+export function setJQuery($) {
+  jQueryInstance = $;
+}
+
+/**
  * Reset all state (useful for testing and re-initialization)
  */
 export function resetState() {
   selectedClusterId = null;
   clusters = null;
   isProjectScope = false;
+  jQueryInstance = null;
 }
 
 // D3 color scale for clusters (now imported from npm module)

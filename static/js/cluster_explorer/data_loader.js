@@ -4,7 +4,7 @@
  * Handles saving cluster labels and descriptions.
  */
 
-import { getSelectedClusterId, getClusters } from './state.js';
+import { getSelectedClusterId, getClusters, getJQuery } from './state.js';
 import { getCsrfToken } from '../utils/page-data.js';
 import { API_ENDPOINTS } from './api.js';
 
@@ -13,7 +13,7 @@ import { API_ENDPOINTS } from './api.js';
  * @param {Function} onSuccess - Callback on successful save
  */
 export function saveClusterLabel(onSuccess) {
-  const $ = window.jQuery;
+  const $ = getJQuery();
   if (!$) {
     console.error('[ClusterExplorer] jQuery is not available. Cannot save cluster label.');
     return;

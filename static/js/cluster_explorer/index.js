@@ -21,6 +21,8 @@ import {
   setClusters,
   getIsProjectScope,
   setIsProjectScope,
+  getJQuery,
+  setJQuery,
 } from './state.js';
 import { initializeVisualization, createLegend, updateVisualization } from './visualization.js';
 import { selectCluster, loadClusterDetails, loadClusterMembers } from './interactions.js';
@@ -32,9 +34,15 @@ import { saveClusterLabel } from './data_loader.js';
  * @param {Array} clusters - Cluster data from Django template
  * @param {Object} options - Optional configuration
  * @param {boolean} options.isProjectScope - Whether this is a project-scoped clustering run
+ * @param {Function} options.jQuery - jQuery instance (for dependency injection in tests)
  */
 export function initClusterExplorer(clusters, options = {}) {
-  const $ = window.jQuery;
+  // Store jQuery if provided via options (for dependency injection)
+  if (options.jQuery) {
+    setJQuery(options.jQuery);
+  }
+
+  const $ = getJQuery();
   if (!$) {
     console.error('[ClusterExplorer] jQuery is not available. Cannot initialize cluster explorer.');
     return;
@@ -119,6 +127,8 @@ export {
   setClusters,
   getIsProjectScope,
   setIsProjectScope,
+  getJQuery,
+  setJQuery,
   initializeVisualization,
   createLegend,
   updateVisualization,

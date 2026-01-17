@@ -6,7 +6,7 @@
  */
 
 import { selectAll } from 'd3-selection';
-import { getSelectedClusterId } from './state.js';
+import { getSelectedClusterId, getJQuery } from './state.js';
 import { escapeHtml } from '../utils/html.js';
 import { API_ENDPOINTS, buildUrl } from './api.js';
 
@@ -15,7 +15,7 @@ import { API_ENDPOINTS, buildUrl } from './api.js';
  * @param {number} segmentId - Segment ID to load
  */
 export function loadSegmentDetails(segmentId) {
-  const $ = window.jQuery;
+  const $ = getJQuery();
   if (!$) {
     console.error('[ClusterExplorer] jQuery is not available. Cannot load segment details.');
     return;
@@ -62,7 +62,7 @@ export function loadSegmentDetails(segmentId) {
  * @param {Function} onOpacityChange - Callback when opacity changes
  */
 export function initializeControls(onPointSizeChange, onOpacityChange) {
-  const $ = window.jQuery;
+  const $ = getJQuery();
   if (!$) {
     console.error('[ClusterExplorer] jQuery is not available. Cannot initialize controls.');
     return;

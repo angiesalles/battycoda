@@ -4,7 +4,7 @@
 
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { saveClusterLabel } from './data_loader.js';
-import { setSelectedClusterId, setClusters, getClusters, resetState } from './state.js';
+import { setSelectedClusterId, setClusters, getClusters, setJQuery, resetState } from './state.js';
 import { API_ENDPOINTS } from './api.js';
 
 // Mock getCsrfToken
@@ -54,17 +54,19 @@ describe('cluster_explorer/data_loader', () => {
     });
     mockJQuery.ajax = mockAjax;
 
-    window.jQuery = mockJQuery;
+    // Inject mock jQuery via state (instead of window.jQuery)
+    setJQuery(mockJQuery);
     window.toastr = {
       success: vi.fn(),
       error: vi.fn(),
     };
-    window.clusters = [];
   });
 
   describe('saveClusterLabel', () => {
     it('should return early if jQuery is not available', () => {
-      window.jQuery = undefined;
+      // Clear both injected jQuery and window.jQuery to simulate unavailable
+      setJQuery(null);
+      delete window.jQuery;
 
       saveClusterLabel();
 

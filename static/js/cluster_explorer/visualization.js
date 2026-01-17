@@ -10,7 +10,7 @@ import { scaleLinear, scaleOrdinal, schemeCategory10 } from 'd3';
 import { zoom } from 'd3-zoom';
 import { min, max } from 'd3-array';
 
-import { colorScale } from './state.js';
+import { colorScale, getJQuery } from './state.js';
 import { selectCluster } from './interactions.js';
 import { escapeHtml } from '../utils/html.js';
 
@@ -20,7 +20,7 @@ import { escapeHtml } from '../utils/html.js';
  * @returns {Object|null} Visualization state or null if no clusters
  */
 export function initializeVisualization(clusters) {
-  const $ = window.jQuery;
+  const $ = getJQuery();
   if (!$) {
     console.error('[ClusterExplorer] jQuery is not available. Cannot initialize visualization.');
     return null;
@@ -238,7 +238,7 @@ export function initializeVisualization(clusters) {
  * @param {Array} clusters - Array of cluster data
  */
 export function createLegend(clusters) {
-  const $ = window.jQuery;
+  const $ = getJQuery();
   if (!$) {
     console.error('[ClusterExplorer] jQuery is not available. Cannot create legend.');
     return;
@@ -274,7 +274,7 @@ export function createLegend(clusters) {
  * Update the visualization based on control settings
  */
 export function updateVisualization() {
-  const $ = window.jQuery;
+  const $ = getJQuery();
   if (!$) {
     console.error('[ClusterExplorer] jQuery is not available. Cannot update visualization.');
     return;

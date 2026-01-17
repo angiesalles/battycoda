@@ -10,6 +10,8 @@ import {
   setClusters,
   getIsProjectScope,
   setIsProjectScope,
+  getJQuery,
+  setJQuery,
   resetState,
   colorScale,
 } from './state.js';
@@ -139,25 +141,76 @@ describe('cluster_explorer/state', () => {
     });
   });
 
+  describe('jQuery', () => {
+    it('should return null by default when window.jQuery is not available', () => {
+      // In test environment, window.jQuery is undefined
+      const originalJQuery = window.jQuery;
+      delete window.jQuery;
+
+      expect(getJQuery()).toBe(undefined);
+
+      // Restore if it was set
+      if (originalJQuery) {
+        window.jQuery = originalJQuery;
+      }
+    });
+
+    it('should return window.jQuery as fallback when not explicitly set', () => {
+      const mockJQuery = () => {};
+      window.jQuery = mockJQuery;
+
+      expect(getJQuery()).toBe(mockJQuery);
+
+      delete window.jQuery;
+    });
+
+    it('should return injected jQuery over window.jQuery', () => {
+      const windowJQuery = () => 'window';
+      const injectedJQuery = () => 'injected';
+
+      window.jQuery = windowJQuery;
+      setJQuery(injectedJQuery);
+
+      expect(getJQuery()).toBe(injectedJQuery);
+
+      delete window.jQuery;
+    });
+
+    it('should allow setting jQuery to null', () => {
+      const mockJQuery = () => {};
+      setJQuery(mockJQuery);
+      expect(getJQuery()).toBe(mockJQuery);
+
+      setJQuery(null);
+      // Should fall back to window.jQuery (undefined in test env)
+      expect(getJQuery()).toBe(undefined);
+    });
+  });
+
   describe('resetState', () => {
     it('should reset all state to defaults', () => {
+      const mockJQuery = () => {};
+
       // Set various state values
       setSelectedClusterId(42);
       setClusters([{ id: 1 }]);
       setIsProjectScope(true);
+      setJQuery(mockJQuery);
 
       // Verify they are set
       expect(getSelectedClusterId()).toBe(42);
       expect(getClusters()).not.toBe(null);
       expect(getIsProjectScope()).toBe(true);
+      expect(getJQuery()).toBe(mockJQuery);
 
       // Reset
       resetState();
 
-      // Verify all are reset
+      // Verify all are reset (jQuery falls back to window.jQuery which is undefined)
       expect(getSelectedClusterId()).toBe(null);
       expect(getClusters()).toBe(null);
       expect(getIsProjectScope()).toBe(false);
+      expect(getJQuery()).toBe(undefined);
     });
   });
 });
