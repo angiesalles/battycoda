@@ -41,7 +41,7 @@ class Project(models.Model):
     """Project model for research projects."""
 
     name = models.CharField(max_length=255)
-    description = models.TextField(blank=True, null=True)
+    description = models.TextField(blank=True, default="")
     created_at = models.DateTimeField(auto_now_add=True)
     created_by = models.ForeignKey(User, on_delete=models.CASCADE, related_name="projects")
     group = models.ForeignKey(Group, on_delete=models.CASCADE, related_name="projects", null=True)
@@ -58,7 +58,7 @@ class Species(models.Model):
     """Species model for bat species."""
 
     name = models.CharField(max_length=100)
-    description = models.TextField(blank=True, null=True)
+    description = models.TextField(blank=True, default="")
     image = models.ImageField(upload_to=get_species_image_path, blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
     created_by = models.ForeignKey(User, on_delete=models.CASCADE, related_name="species", null=True, blank=True)
@@ -127,7 +127,7 @@ class Call(models.Model):
 
     species = models.ForeignKey(Species, on_delete=models.CASCADE, related_name="calls")
     short_name = models.CharField(max_length=50)
-    long_name = models.CharField(max_length=255, blank=True, null=True)
+    long_name = models.CharField(max_length=255, blank=True, default="")
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:

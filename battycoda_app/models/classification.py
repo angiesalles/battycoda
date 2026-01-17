@@ -12,7 +12,7 @@ class Classifier(models.Model):
     """Classifier model for storing algorithm information."""
 
     name = models.CharField(max_length=255, help_text="Name of the classification algorithm")
-    description = models.TextField(blank=True, null=True, help_text="Description of how the algorithm works")
+    description = models.TextField(blank=True, default="", help_text="Description of how the algorithm works")
 
     # Response format choices
     RESPONSE_FORMAT_CHOICES = (
@@ -32,9 +32,9 @@ class Classifier(models.Model):
 
     # External service parameters
     service_url = models.CharField(
-        max_length=255, blank=True, null=True, help_text="URL of the external service, if applicable"
+        max_length=255, blank=True, default="", help_text="URL of the external service, if applicable"
     )
-    endpoint = models.CharField(max_length=255, blank=True, null=True, help_text="Endpoint path for the service")
+    endpoint = models.CharField(max_length=255, blank=True, default="", help_text="Endpoint path for the service")
 
     # Source task batch (if this classifier was created from a task batch)
     source_task_batch = models.ForeignKey(
@@ -48,7 +48,7 @@ class Classifier(models.Model):
 
     # Model file path if this is a custom trained classifier
     model_file = models.CharField(
-        max_length=512, blank=True, null=True, help_text="Path to the model file for custom trained classifiers"
+        max_length=512, blank=True, default="", help_text="Path to the model file for custom trained classifiers"
     )
 
     # Species this classifier is trained for
@@ -149,9 +149,9 @@ class ClassificationRun(models.Model):
     )
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default="pending")
     progress = models.FloatField(default=0.0, help_text="Progress percentage from 0-100")
-    error_message = models.TextField(blank=True, null=True)
+    error_message = models.TextField(blank=True, default="")
     features_file = models.CharField(
-        max_length=512, blank=True, null=True, help_text="Path to the exported features CSV file"
+        max_length=512, blank=True, default="", help_text="Path to the exported features CSV file"
     )
 
     class Meta:
@@ -197,7 +197,7 @@ class ClassifierTrainingJob(models.Model):
     """Model for tracking the training of custom classifiers from task batches."""
 
     name = models.CharField(max_length=255, help_text="Name for this training job")
-    description = models.TextField(blank=True, null=True, help_text="Description of the training job")
+    description = models.TextField(blank=True, default="", help_text="Description of the training job")
     task_batch = models.ForeignKey(
         "battycoda_app.TaskBatch",
         on_delete=models.CASCADE,
@@ -240,7 +240,7 @@ class ClassifierTrainingJob(models.Model):
     )
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default="pending")
     progress = models.FloatField(default=0.0, help_text="Progress percentage from 0-100")
-    error_message = models.TextField(blank=True, null=True)
+    error_message = models.TextField(blank=True, default="")
 
     class Meta:
         ordering = ["-created_at"]

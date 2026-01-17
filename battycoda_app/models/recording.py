@@ -25,7 +25,7 @@ class Recording(models.Model):
 
     # Recording file
     name = models.CharField(max_length=255, help_text="Name of the recording")
-    description = models.TextField(blank=True, null=True, help_text="Description of the recording")
+    description = models.TextField(blank=True, default="", help_text="Description of the recording")
     wav_file = models.FileField(upload_to="recordings/", help_text="WAV file for the recording")
     duration = models.FloatField(blank=True, null=True, help_text="Duration of the recording in seconds")
     sample_rate = models.IntegerField(blank=True, null=True, help_text="Sample rate of the recording in Hz")
@@ -33,7 +33,7 @@ class Recording(models.Model):
         default=False, help_text="Flag indicating if the file is fully uploaded and ready for processing"
     )
     spectrogram_file = models.CharField(
-        max_length=255, blank=True, null=True, help_text="Filename of the generated spectrogram PNG"
+        max_length=255, blank=True, default="", help_text="Filename of the generated spectrogram PNG"
     )
     hidden = models.BooleanField(
         default=False, help_text="Hidden recordings are temporary previews that don't appear in normal lists"
@@ -42,11 +42,11 @@ class Recording(models.Model):
     # Recording metadata
     recorded_date = models.DateField(blank=True, null=True, help_text="Date when the recording was made")
     location = models.CharField(
-        max_length=255, blank=True, null=True, help_text="Location where the recording was made"
+        max_length=255, blank=True, default="", help_text="Location where the recording was made"
     )
-    equipment = models.CharField(max_length=255, blank=True, null=True, help_text="Equipment used for recording")
+    equipment = models.CharField(max_length=255, blank=True, default="", help_text="Equipment used for recording")
     environmental_conditions = models.TextField(
-        blank=True, null=True, help_text="Environmental conditions during recording"
+        blank=True, default="", help_text="Environmental conditions during recording"
     )
 
     # Organization and permissions

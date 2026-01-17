@@ -44,7 +44,7 @@ class UserNotification(models.Model):
     )
 
     # Optional link to related item
-    link = models.CharField(max_length=512, blank=True, null=True, help_text="Optional link to view related content")
+    link = models.CharField(max_length=512, blank=True, default="", help_text="Optional link to view related content")
 
     # Tracking
     created_at = models.DateTimeField(auto_now_add=True)

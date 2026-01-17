@@ -8,7 +8,7 @@ class Group(models.Model):
     """Group model for user grouping and permissions."""
 
     name = models.CharField(max_length=255, unique=True)
-    description = models.TextField(blank=True, null=True)
+    description = models.TextField(blank=True, default="")
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):

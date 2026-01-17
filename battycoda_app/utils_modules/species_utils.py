@@ -85,7 +85,7 @@ def import_default_species(user):
         ]
 
         for call_name in saccopteryx_calls:
-            Call.objects.create(species=species, short_name=call_name.strip(), long_name=None)
+            Call.objects.create(species=species, short_name=call_name.strip())
 
         _add_species_image_by_name(species, "Saccopteryx.png")
 

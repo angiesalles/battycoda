@@ -13,7 +13,7 @@ class ClusteringAlgorithm(models.Model):
     """Model for unsupervised clustering algorithms."""
 
     name = models.CharField(max_length=255, help_text="Name of the clustering algorithm")
-    description = models.TextField(blank=True, null=True, help_text="Description of how the algorithm works")
+    description = models.TextField(blank=True, default="", help_text="Description of how the algorithm works")
 
     # Algorithm type choices
     ALGORITHM_TYPE_CHOICES = (
@@ -42,9 +42,9 @@ class ClusteringAlgorithm(models.Model):
 
     # External service parameters (for custom algorithms)
     service_url = models.CharField(
-        max_length=255, blank=True, null=True, help_text="URL of the external service, if applicable"
+        max_length=255, blank=True, default="", help_text="URL of the external service, if applicable"
     )
-    endpoint = models.CharField(max_length=255, blank=True, null=True, help_text="Endpoint path for the service")
+    endpoint = models.CharField(max_length=255, blank=True, default="", help_text="Endpoint path for the service")
 
     # Organization and permissions
     created_at = models.DateTimeField(auto_now_add=True)
@@ -77,7 +77,7 @@ class ClusteringRun(models.Model):
     """Tracks a clustering job on segments."""
 
     name = models.CharField(max_length=255, help_text="Name for this clustering run")
-    description = models.TextField(blank=True, null=True, help_text="Description of this clustering run")
+    description = models.TextField(blank=True, default="", help_text="Description of this clustering run")
 
     # Link to segmentation containing segments to cluster (for single-file mode)
     segmentation = models.ForeignKey(
@@ -166,11 +166,11 @@ class ClusteringRun(models.Model):
     progress_message = models.CharField(
         max_length=255, blank=True, default="", help_text="Detailed progress message for UI feedback"
     )
-    error_message = models.TextField(blank=True, null=True, help_text="Error message if the run failed")
+    error_message = models.TextField(blank=True, default="", help_text="Error message if the run failed")
 
     # Celery task ID for tracking
     task_id = models.CharField(
-        max_length=100, blank=True, null=True, help_text="Celery task ID for this clustering run"
+        max_length=100, blank=True, default="", help_text="Celery task ID for this clustering run"
     )
 
     # Results summary
@@ -284,9 +284,9 @@ class Cluster(models.Model):
     cluster_id = models.IntegerField(help_text="Internal numeric ID of the cluster (0, 1, 2...)")
 
     # Expert annotations
-    label = models.CharField(max_length=255, blank=True, null=True, help_text="Expert-assigned label for this cluster")
+    label = models.CharField(max_length=255, blank=True, default="", help_text="Expert-assigned label for this cluster")
     description = models.TextField(
-        blank=True, null=True, help_text="Description of the acoustic pattern in this cluster"
+        blank=True, default="", help_text="Description of the acoustic pattern in this cluster"
     )
     is_labeled = models.BooleanField(default=False, help_text="Whether an expert has assigned a label to this cluster")
 
@@ -379,7 +379,7 @@ class ClusterCallMapping(models.Model):
         help_text="The call type this cluster is mapped to",
     )
     confidence = models.FloatField(help_text="Confidence score (0-1) for the mapping between cluster and call type")
-    notes = models.TextField(blank=True, null=True, help_text="Notes about this mapping")
+    notes = models.TextField(blank=True, default="", help_text="Notes about this mapping")
 
     # Creation metadata
     created_at = models.DateTimeField(auto_now_add=True)

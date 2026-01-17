@@ -14,7 +14,7 @@ class TaskBatch(models.Model):
     """Task Batch for grouping tasks that were created together."""
 
     name = models.CharField(max_length=255)
-    description = models.TextField(blank=True, null=True)
+    description = models.TextField(blank=True, default="")
     created_at = models.DateTimeField(auto_now_add=True)
     created_by = models.ForeignKey(User, on_delete=models.CASCADE, related_name="task_batches")
     wav_file_name = models.CharField(max_length=255)
@@ -79,14 +79,14 @@ class Task(models.Model):
     )
 
     # Classification and labeling
-    classification_result = models.CharField(max_length=100, blank=True, null=True)
+    classification_result = models.CharField(max_length=100, blank=True, default="")
     confidence = models.FloatField(blank=True, null=True)
     label = models.CharField(
-        max_length=255, blank=True, null=True, help_text="Final expert label assigned to this task"
+        max_length=255, blank=True, default="", help_text="Final expert label assigned to this task"
     )
 
     # Notes and comments
-    notes = models.TextField(blank=True, null=True, help_text="Additional notes or observations about this task")
+    notes = models.TextField(blank=True, default="", help_text="Additional notes or observations about this task")
 
     # Annotation tracking
     annotated_by = models.ForeignKey(

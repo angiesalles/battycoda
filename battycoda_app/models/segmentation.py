@@ -8,7 +8,7 @@ class SegmentationAlgorithm(models.Model):
     """Model for storing different segmentation algorithms."""
 
     name = models.CharField(max_length=255, help_text="Name of the segmentation algorithm")
-    description = models.TextField(blank=True, null=True, help_text="Description of how the algorithm works")
+    description = models.TextField(blank=True, default="", help_text="Description of how the algorithm works")
 
     # Algorithm type choices
     ALGORITHM_TYPE_CHOICES = (
@@ -30,9 +30,9 @@ class SegmentationAlgorithm(models.Model):
 
     # External service parameters (for external algorithms)
     service_url = models.CharField(
-        max_length=255, blank=True, null=True, help_text="URL of the external service, if applicable"
+        max_length=255, blank=True, default="", help_text="URL of the external service, if applicable"
     )
-    endpoint = models.CharField(max_length=255, blank=True, null=True, help_text="Endpoint path for the service")
+    endpoint = models.CharField(max_length=255, blank=True, default="", help_text="Endpoint path for the service")
 
     # Default parameters
     default_min_duration_ms = models.IntegerField(default=10, help_text="Default minimum duration in milliseconds")
@@ -86,14 +86,14 @@ class Segmentation(models.Model):
         help_text="The algorithm used for this segmentation, if any",
     )
     task_id = models.CharField(
-        max_length=100, blank=True, null=True, help_text="Celery task ID for automated segmentation"
+        max_length=100, blank=True, default="", help_text="Celery task ID for automated segmentation"
     )
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default="completed")
     progress = models.FloatField(default=100, help_text="Progress percentage (0-100)")
     created_by = models.ForeignKey(User, on_delete=models.CASCADE)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
-    error_message = models.TextField(blank=True, null=True)
+    error_message = models.TextField(blank=True, default="")
 
     # Store segmentation parameters
     min_duration_ms = models.IntegerField(default=10)
@@ -141,7 +141,7 @@ class Segment(models.Model):
     )
 
     # Segment information
-    name = models.CharField(max_length=255, blank=True, null=True, help_text="Optional name for this segment")
+    name = models.CharField(max_length=255, blank=True, default="", help_text="Optional name for this segment")
     onset = models.FloatField(help_text="Start time of the segment in seconds")
     offset = models.FloatField(help_text="End time of the segment in seconds")
 
@@ -151,7 +151,7 @@ class Segment(models.Model):
     created_by = models.ForeignKey(User, on_delete=models.CASCADE, related_name="segments")
 
     # Notes
-    notes = models.TextField(blank=True, null=True, help_text="Notes about this segment")
+    notes = models.TextField(blank=True, default="", help_text="Notes about this segment")
 
     class Meta:
         ordering = ["onset"]

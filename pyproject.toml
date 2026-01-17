@@ -47,7 +47,6 @@ ignore = [
     "B905",   # zip without strict (battycoda-1lc)
     "C401",   # unnecessary list comprehension (battycoda-afs)
     "E741",   # ambiguous variable name (battycoda-uvm)
-    "DJ001",  # null=True on string fields (battycoda-usx)
     "DJ012",  # model class ordering (battycoda-5xa)
     "DJ008",  # models missing __str__ (battycoda-c2i)
 ]

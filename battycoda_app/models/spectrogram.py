@@ -38,7 +38,7 @@ class SpectrogramJob(models.Model):
         help_text="Current status of the spectrogram generation job",
     )
     celery_task_id = models.CharField(
-        max_length=255, blank=True, null=True, help_text="Celery task ID for tracking the background job"
+        max_length=255, blank=True, default="", help_text="Celery task ID for tracking the background job"
     )
     progress = models.IntegerField(default=0, help_text="Progress percentage (0-100)")
 
@@ -54,12 +54,12 @@ class SpectrogramJob(models.Model):
 
     # Job results
     output_file_path = models.CharField(
-        max_length=500, blank=True, null=True, help_text="Path to the generated spectrogram file"
+        max_length=500, blank=True, default="", help_text="Path to the generated spectrogram file"
     )
     output_file_url = models.CharField(
-        max_length=500, blank=True, null=True, help_text="URL to access the generated spectrogram"
+        max_length=500, blank=True, default="", help_text="URL to access the generated spectrogram"
     )
-    error_message = models.TextField(blank=True, null=True, help_text="Error message if the job failed")
+    error_message = models.TextField(blank=True, default="", help_text="Error message if the job failed")
 
     # Job configuration
     parameters = models.JSONField(

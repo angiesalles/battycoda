@@ -47,10 +47,10 @@ class UserProfile(models.Model):
 
     # Authentication fields (previously Cloudflare fields, kept for data compatibility)
     cloudflare_id = models.CharField(
-        max_length=255, blank=True, null=True, help_text="Deprecated - kept for data compatibility"
+        max_length=255, blank=True, default="", help_text="Deprecated - kept for data compatibility"
     )
     is_cloudflare_user = models.BooleanField(default=False, help_text="Deprecated - kept for data compatibility")
-    cloudflare_email = models.EmailField(blank=True, null=True, help_text="Deprecated - kept for data compatibility")
+    cloudflare_email = models.EmailField(blank=True, default="", help_text="Deprecated - kept for data compatibility")
     last_cloudflare_login = models.DateTimeField(
         blank=True, null=True, help_text="Deprecated - kept for data compatibility"
     )
