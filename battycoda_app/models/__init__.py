@@ -26,7 +26,7 @@ from .spectrogram import SpectrogramJob
 from .task import Task, TaskBatch
 
 # Import all models for Django model registration
-from .user import Group, GroupInvitation, GroupMembership, UserProfile
+from .user import Group, GroupInvitation, GroupMembership, LoginCode, PasswordResetToken, UserProfile
 
 # Optional import for clustering models - will not fail if module doesn't exist yet
 try:
