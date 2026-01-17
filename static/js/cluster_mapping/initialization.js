@@ -4,6 +4,8 @@
  * Functions for initializing mappings and managing mapping containers.
  */
 
+import { escapeHtml } from '../utils/html.js';
+
 /**
  * Initialize existing mappings on page load
  * @param {Array} existingMappings - Array of existing mapping data
@@ -85,8 +87,8 @@ export function addMappingToContainer(
     `<div id="${mappingElementId}" class="mapping-item" data-cluster-id="${clusterId}" data-call-id="${callId}" data-mapping-id="${mappingId || ''}">
             <div class="d-flex align-items-center">
                 <span class="drag-handle"><i class="fa fa-grip-lines"></i></span>
-                <span class="color-indicator" style="background-color: ${clusterColor};"></span>
-                <span class="cluster-name">${clusterLabel || 'Cluster ' + clusterNum}</span>
+                <span class="color-indicator" style="background-color: ${escapeHtml(clusterColor)};"></span>
+                <span class="cluster-name">${escapeHtml(clusterLabel) || 'Cluster ' + clusterNum}</span>
             </div>
             <div class="mapping-controls d-flex align-items-center">
                 <span class="confidence-value mr-2">${Math.round(confidence * 100)}%</span>

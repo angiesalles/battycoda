@@ -507,8 +507,8 @@
               data.mappings.forEach(mapping => {
                 const row = document.createElement('tr');
                 row.innerHTML = `
-                  <td>${mapping.species_name}</td>
-                  <td>${mapping.call_name}</td>
+                  <td>${escapeHtml(mapping.species_name)}</td>
+                  <td>${escapeHtml(mapping.call_name)}</td>
                   <td>${parseFloat(mapping.confidence).toFixed(2)}</td>
                 `;
                 mappingsTableBody.appendChild(row);

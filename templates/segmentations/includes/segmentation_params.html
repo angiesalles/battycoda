@@ -209,9 +209,9 @@
                         // Add algorithm badge if available and it's not "Manual Import"
                         if (job.algorithm_name && job.algorithm_name !== "Manual Import") {
                             statusBadge += `
-                                <br><span class="badge badge-secondary mt-1" data-bs-toggle="tooltip" 
-                                title="${job.algorithm_type}">
-                                    <span class="fas fa-cog"></span> ${job.algorithm_name}
+                                <br><span class="badge badge-secondary mt-1" data-bs-toggle="tooltip"
+                                title="${escapeHtml(job.algorithm_type)}">
+                                    <span class="fas fa-cog"></span> ${escapeHtml(job.algorithm_name)}
                                 </span>
                             `;
                         }
@@ -261,8 +261,8 @@
                         
                         // Populate row cells
                         row.innerHTML = `
-                            <td><a href="${job.view_url}" class="text-decoration-none">${job.recording_name}</a></td>
-                            <td>${job.name || "Unnamed Segmentation"}</td>
+                            <td><a href="${job.view_url}" class="text-decoration-none">${escapeHtml(job.recording_name)}</a></td>
+                            <td>${escapeHtml(job.name) || "Unnamed Segmentation"}</td>
                             <td><span data-utc-date="${job.start_time}" data-date-format="datetime">${new Date(job.start_time).toLocaleString()}</span></td>
                             <td>${statusBadge}</td>
                             <td><span class="badge badge-info">${job.segments_created || 0}</span></td>
