@@ -41,7 +41,6 @@ ignore = [
     "E203",   # whitespace before ':' (conflicts with formatter)
     "E501",   # line too long (handled by formatter)
     # Temporarily ignored - tracked in beads for incremental fixes:
-    "F405",   # undefined name from star import (battycoda-1b8)
     "F841",   # unused variable (battycoda-lrf)
     "E402",   # import not at top (battycoda-27d)
     "B007",   # unused loop variable (battycoda-aoj)
@@ -61,7 +60,7 @@ unfixable = []
 [tool.ruff.lint.per-file-ignores]
 "__init__.py" = ["F401", "F403"]
 "*/models.py" = ["E501"]
-"*/settings.py" = ["E501", "F401", "F403", "F405", "E402"]
+"*/settings.py" = ["E501", "F401", "F403", "E402"]
 "scripts/*.py" = ["E402"]  # Scripts need django.setup() before imports
 "manage.py" = ["E402"]
 "*/management/commands/*.py" = ["E402"]
