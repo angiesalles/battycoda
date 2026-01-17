@@ -79,7 +79,7 @@ def create_preview_recording_view(request, recording_id):
         try:
             algorithm = SegmentationAlgorithm.objects.get(id=int(algorithm_id), is_active=True)
         except SegmentationAlgorithm.DoesNotExist:
-            raise ValueError(f"Algorithm with ID {algorithm_id} not found")
+            raise ValueError(f"Algorithm with ID {algorithm_id} not found") from None
 
         # Check algorithm access permission
         if algorithm.group and (not profile.group or algorithm.group != profile.group):
@@ -189,7 +189,7 @@ def create_preview_recording_view(request, recording_id):
                 # If segmentation fails, mark as failed
                 preview_segmentation.status = "failed"
                 preview_segmentation.save()
-                raise ValueError(f"Failed to complete segmentation task: {str(e)}")
+                raise ValueError(f"Failed to complete segmentation task: {str(e)}") from e
 
         # Run both tasks in parallel using ThreadPoolExecutor
         with concurrent.futures.ThreadPoolExecutor(max_workers=2) as executor:

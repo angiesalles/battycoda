@@ -161,7 +161,7 @@ def backup_database_to_s3(self, bucket_name=None, prefix=None):
 
         # Retry the task with exponential backoff
         retry_delay = 60 * (2**self.request.retries)  # 60s, 120s, 240s
-        raise self.retry(exc=exc, countdown=retry_delay)
+        raise self.retry(exc=exc, countdown=retry_delay) from exc
 
 
 # Cache for tracking last alert time to avoid spamming

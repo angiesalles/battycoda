@@ -96,7 +96,7 @@ class Command(BaseCommand):
             )
 
         except Exception as e:
-            raise CommandError(f"Backup failed: {str(e)}")
+            raise CommandError(f"Backup failed: {str(e)}") from e
 
         finally:
             # Clean up temporary file

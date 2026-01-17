@@ -96,7 +96,7 @@ class Command(BaseCommand):
                 with open(message_file, "r") as f:
                     message = f.read()
             except FileNotFoundError:
-                raise CommandError(f"Message file not found: {message_file}")
+                raise CommandError(f"Message file not found: {message_file}") from None
 
         # Load HTML from file if specified
         html_message = None
@@ -105,7 +105,7 @@ class Command(BaseCommand):
                 with open(html_file, "r") as f:
                     html_message = f.read()
             except FileNotFoundError:
-                raise CommandError(f"HTML file not found: {html_file}")
+                raise CommandError(f"HTML file not found: {html_file}") from None
 
             # If no plain text message provided, generate from HTML
             if not message:
@@ -122,7 +122,7 @@ class Command(BaseCommand):
                 group = Group.objects.get(name=group_name)
                 users = users.filter(group_memberships__group=group)
             except Group.DoesNotExist:
-                raise CommandError(f"Group not found: {group_name}")
+                raise CommandError(f"Group not found: {group_name}") from None
 
         users = users.distinct()
         user_list = list(users)

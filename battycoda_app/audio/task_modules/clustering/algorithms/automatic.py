@@ -21,7 +21,7 @@ class HDBSCANRunner(BaseClusteringRunner):
 
                 HDBSCAN = hdbscan.HDBSCAN
             except ImportError:
-                raise ImportError("HDBSCAN is not available. Install with: pip install hdbscan")
+                raise ImportError("HDBSCAN is not available. Install with: pip install hdbscan") from None
 
         params = self._get_parameters()
 
