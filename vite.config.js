@@ -65,7 +65,7 @@ export default defineConfig({
     coverage: {
       provider: 'v8',
       reporter: ['text', 'json', 'html'],
-      reportsDirectory: 'coverage',
+      reportsDirectory: '.coverage-js',
       include: ['static/js/**/*.js'],
       exclude: [
         'static/js/**/*.test.js',

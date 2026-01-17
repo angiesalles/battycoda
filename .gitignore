@@ -13,7 +13,7 @@ celerybeat-schedule*
 # Node.js / Vite
 node_modules/
 static/dist/
-coverage/
+.coverage-js/
 
 # Playwright
 playwright-report/
