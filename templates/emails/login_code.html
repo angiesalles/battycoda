@@ -1,0 +1,28 @@
+{% extends "emails/base_email.html" %}
+
+{% block title %}Your BattyCoda Login Code{% endblock %}
+
+{% block header_title %}BattyCoda Login Code{% endblock %}
+
+{% block content %}
+<p>Hello {{ username }},</p>
+
+<p>Your login code is:</p>
+
+<div class="code-box">{{ code }}</div>
+
+<p>Or click the following button to log in directly:</p>
+
+<p class="center">
+    <a href="{{ login_link }}" class="btn">Login Now</a>
+</p>
+
+<p>This code and link will expire on {{ expires_at }}.</p>
+
+<p>If you did not request this code, please ignore this email.</p>
+{% endblock %}
+
+{% block footer %}
+<p>If the button above doesn't work, copy and paste this URL into your browser:</p>
+<p>{{ login_link }}</p>
+{% endblock %}

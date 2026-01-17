@@ -1,0 +1,28 @@
+{% extends "emails/base_email.html" %}
+
+{% block title %}Welcome to BattyCoda!{% endblock %}
+
+{% block header_title %}Welcome to BattyCoda!{% endblock %}
+
+{% block content %}
+<p>Hello {{ username }},</p>
+
+<p>Your account has been successfully created.</p>
+
+<p>You can now log in to your account using your username and password.</p>
+
+<p class="center">
+    <a href="{{ login_url }}" class="btn">Login Now</a>
+</p>
+
+<p>BattyCoda is a platform for annotating bat call recordings. If you have any questions, please contact the administrator.</p>
+
+<p>Thank you for joining!</p>
+
+<p>The BattyCoda Team</p>
+{% endblock %}
+
+{% block footer %}
+<p>If the button above doesn't work, copy and paste this URL into your browser:</p>
+<p>{{ login_url }}</p>
+{% endblock %}

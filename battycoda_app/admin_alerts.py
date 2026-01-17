@@ -13,6 +13,7 @@ import datetime
 import socket
 
 from django.conf import settings
+from django.template.loader import render_to_string
 
 from .email_utils import send_mail
 
@@ -66,34 +67,15 @@ def send_worker_failure_email(service_name, failure_reason=None, hostname=None):
         f"  sudo journalctl -u {service_name} -n 100\n"
     )
 
-    html_message = f"""
-    <html>
-    <body>
-        <h2 style="color: #dc3545;">BattyCoda Worker Failure Alert</h2>
-        <table style="border-collapse: collapse; margin: 20px 0;">
-            <tr>
-                <td style="padding: 8px; border: 1px solid #ddd; font-weight: bold;">Service</td>
-                <td style="padding: 8px; border: 1px solid #ddd;">{service_name}</td>
-            </tr>
-            <tr>
-                <td style="padding: 8px; border: 1px solid #ddd; font-weight: bold;">Server</td>
-                <td style="padding: 8px; border: 1px solid #ddd;">{hostname}</td>
-            </tr>
-            <tr>
-                <td style="padding: 8px; border: 1px solid #ddd; font-weight: bold;">Time</td>
-                <td style="padding: 8px; border: 1px solid #ddd;">{timestamp}</td>
-            </tr>
-            <tr>
-                <td style="padding: 8px; border: 1px solid #ddd; font-weight: bold;">Failure Reason</td>
-                <td style="padding: 8px; border: 1px solid #ddd; color: #dc3545;">{reason_text}</td>
-            </tr>
-        </table>
-        <p>The service has been configured to auto-restart.</p>
-        <p>Please check server logs for more details:</p>
-        <pre style="background: #f5f5f5; padding: 10px; border-radius: 4px;">sudo journalctl -u {service_name} -n 100</pre>
-    </body>
-    </html>
-    """
+    html_message = render_to_string(
+        "emails/worker_failure.html",
+        {
+            "service_name": service_name,
+            "hostname": hostname,
+            "timestamp": timestamp,
+            "failure_reason": reason_text,
+        },
+    )
 
     return send_mail(subject=subject, message=message, recipient_list=admin_emails, html_message=html_message)
 
@@ -138,51 +120,15 @@ def send_disk_usage_warning_email(disk_info, threshold=90, hostname=None):
         f"Please free up disk space to avoid service disruption.\n"
     )
 
-    # Build HTML message
-    disk_rows = ""
-    for disk in disk_info:
-        color = "#dc3545" if disk["percent"] >= 95 else "#ffc107"
-        disk_rows += f"""
-            <tr>
-                <td style="padding: 8px; border: 1px solid #ddd;">{disk["mount"]}</td>
-                <td style="padding: 8px; border: 1px solid #ddd; color: {color}; font-weight: bold;">{disk["percent"]}%</td>
-                <td style="padding: 8px; border: 1px solid #ddd;">{disk["used"]} / {disk["total"]}</td>
-                <td style="padding: 8px; border: 1px solid #ddd;">{disk["free"]}</td>
-            </tr>
-        """
-
-    html_message = f"""
-    <html>
-    <body>
-        <h2 style="color: #ffc107;">BattyCoda Disk Usage Warning</h2>
-        <table style="border-collapse: collapse; margin: 20px 0;">
-            <tr>
-                <td style="padding: 8px; border: 1px solid #ddd; font-weight: bold;">Server</td>
-                <td style="padding: 8px; border: 1px solid #ddd;">{hostname}</td>
-            </tr>
-            <tr>
-                <td style="padding: 8px; border: 1px solid #ddd; font-weight: bold;">Time</td>
-                <td style="padding: 8px; border: 1px solid #ddd;">{timestamp}</td>
-            </tr>
-            <tr>
-                <td style="padding: 8px; border: 1px solid #ddd; font-weight: bold;">Threshold</td>
-                <td style="padding: 8px; border: 1px solid #ddd;">{threshold}%</td>
-            </tr>
-        </table>
-        <h3>Disks Exceeding Threshold</h3>
-        <table style="border-collapse: collapse; margin: 20px 0;">
-            <tr style="background: #f5f5f5;">
-                <th style="padding: 8px; border: 1px solid #ddd;">Mount Point</th>
-                <th style="padding: 8px; border: 1px solid #ddd;">Usage</th>
-                <th style="padding: 8px; border: 1px solid #ddd;">Used / Total</th>
-                <th style="padding: 8px; border: 1px solid #ddd;">Free</th>
-            </tr>
-            {disk_rows}
-        </table>
-        <p style="color: #dc3545; font-weight: bold;">Please free up disk space to avoid service disruption.</p>
-    </body>
-    </html>
-    """
+    html_message = render_to_string(
+        "emails/disk_usage_warning.html",
+        {
+            "hostname": hostname,
+            "timestamp": timestamp,
+            "threshold": threshold,
+            "disks": disk_info,
+        },
+    )
 
     return send_mail(subject=subject, message=message, recipient_list=admin_emails, html_message=html_message)
 
@@ -221,31 +167,14 @@ def send_backup_failure_email(error_message, bucket_name=None, hostname=None):
         f"  python manage.py backup_database\n"
     )
 
-    html_message = f"""
-    <html>
-    <body>
-        <h2 style="color: #dc3545;">BattyCoda Database Backup Failure</h2>
-        <table style="border-collapse: collapse; margin: 20px 0;">
-            <tr>
-                <td style="padding: 8px; border: 1px solid #ddd; font-weight: bold;">Server</td>
-                <td style="padding: 8px; border: 1px solid #ddd;">{hostname}</td>
-            </tr>
-            <tr>
-                <td style="padding: 8px; border: 1px solid #ddd; font-weight: bold;">Time</td>
-                <td style="padding: 8px; border: 1px solid #ddd;">{timestamp}</td>
-            </tr>
-            <tr>
-                <td style="padding: 8px; border: 1px solid #ddd; font-weight: bold;">Target Bucket</td>
-                <td style="padding: 8px; border: 1px solid #ddd;">{bucket_text}</td>
-            </tr>
-        </table>
-        <h3>Error Details</h3>
-        <pre style="background: #f5f5f5; padding: 10px; border-radius: 4px; color: #dc3545;">{error_message}</pre>
-        <p>The backup task has exhausted all retries.</p>
-        <p>Please investigate and run a manual backup if needed:</p>
-        <pre style="background: #f5f5f5; padding: 10px; border-radius: 4px;">python manage.py backup_database</pre>
-    </body>
-    </html>
-    """
+    html_message = render_to_string(
+        "emails/backup_failure.html",
+        {
+            "hostname": hostname,
+            "timestamp": timestamp,
+            "bucket_name": bucket_text,
+            "error_message": error_message,
+        },
+    )
 
     return send_mail(subject=subject, message=message, recipient_list=admin_emails, html_message=html_message)

@@ -1,0 +1,74 @@
+{% extends "emails/base_email.html" %}
+
+{% block title %}Disk Usage Warning{% endblock %}
+
+{% block header_color %}#ffc107{% endblock %}
+
+{% block header_title %}Disk Usage Warning{% endblock %}
+
+{% block extra_styles %}
+<style>
+    .disk-table {
+        border-collapse: collapse;
+        margin: 20px 0;
+        width: 100%;
+    }
+    .disk-table th, .disk-table td {
+        padding: 8px;
+        border: 1px solid #ddd;
+    }
+    .disk-table th {
+        background: #f5f5f5;
+    }
+    .usage-critical {
+        color: #dc3545;
+        font-weight: bold;
+    }
+    .usage-warning {
+        color: #ffc107;
+        font-weight: bold;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<table class="info-table">
+    <tr>
+        <td>Server</td>
+        <td>{{ hostname }}</td>
+    </tr>
+    <tr>
+        <td>Time</td>
+        <td>{{ timestamp }}</td>
+    </tr>
+    <tr>
+        <td>Threshold</td>
+        <td>{{ threshold }}%</td>
+    </tr>
+</table>
+
+<h3>Disks Exceeding Threshold</h3>
+
+<table class="disk-table">
+    <tr>
+        <th>Mount Point</th>
+        <th>Usage</th>
+        <th>Used / Total</th>
+        <th>Free</th>
+    </tr>
+    {% for disk in disks %}
+    <tr>
+        <td>{{ disk.mount }}</td>
+        <td class="{% if disk.percent >= 95 %}usage-critical{% else %}usage-warning{% endif %}">{{ disk.percent }}%</td>
+        <td>{{ disk.used }} / {{ disk.total }}</td>
+        <td>{{ disk.free }}</td>
+    </tr>
+    {% endfor %}
+</table>
+
+<p class="alert-text">Please free up disk space to avoid service disruption.</p>
+{% endblock %}
+
+{% block footer %}
+<p>This is an automated alert from BattyCoda system monitoring.</p>
+{% endblock %}

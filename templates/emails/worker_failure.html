@@ -1,0 +1,38 @@
+{% extends "emails/base_email.html" %}
+
+{% block title %}Worker Failure Alert{% endblock %}
+
+{% block header_color %}#dc3545{% endblock %}
+
+{% block header_title %}Worker Failure Alert{% endblock %}
+
+{% block content %}
+<table class="info-table">
+    <tr>
+        <td>Service</td>
+        <td>{{ service_name }}</td>
+    </tr>
+    <tr>
+        <td>Server</td>
+        <td>{{ hostname }}</td>
+    </tr>
+    <tr>
+        <td>Time</td>
+        <td>{{ timestamp }}</td>
+    </tr>
+    <tr>
+        <td>Failure Reason</td>
+        <td class="alert-text">{{ failure_reason }}</td>
+    </tr>
+</table>
+
+<p>The service has been configured to auto-restart.</p>
+
+<p>Please check server logs for more details:</p>
+
+<pre>sudo journalctl -u {{ service_name }} -n 100</pre>
+{% endblock %}
+
+{% block footer %}
+<p>This is an automated alert from BattyCoda system monitoring.</p>
+{% endblock %}

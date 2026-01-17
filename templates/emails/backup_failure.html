@@ -1,0 +1,38 @@
+{% extends "emails/base_email.html" %}
+
+{% block title %}Database Backup Failure{% endblock %}
+
+{% block header_color %}#dc3545{% endblock %}
+
+{% block header_title %}Database Backup Failure{% endblock %}
+
+{% block content %}
+<table class="info-table">
+    <tr>
+        <td>Server</td>
+        <td>{{ hostname }}</td>
+    </tr>
+    <tr>
+        <td>Time</td>
+        <td>{{ timestamp }}</td>
+    </tr>
+    <tr>
+        <td>Target Bucket</td>
+        <td>{{ bucket_name }}</td>
+    </tr>
+</table>
+
+<h3>Error Details</h3>
+
+<pre class="alert-text">{{ error_message }}</pre>
+
+<p>The backup task has exhausted all retries.</p>
+
+<p>Please investigate and run a manual backup if needed:</p>
+
+<pre>python manage.py backup_database</pre>
+{% endblock %}
+
+{% block footer %}
+<p>This is an automated alert from BattyCoda system monitoring.</p>
+{% endblock %}

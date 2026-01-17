@@ -35,14 +35,12 @@ def send_invitation_email(group_name, inviter_name, recipient_email, invitation_
     """
     subject = f"Invitation to join {group_name} on BattyCoda"
 
-    # Create plain text message
     message = (
         f"You have been invited to join {group_name} on BattyCoda by {inviter_name}. "
         f"Visit {invitation_link} to accept. "
         f"This invitation will expire on {expires_at.strftime('%Y-%m-%d %H:%M')}."
     )
 
-    # Create HTML message
     html_message = render_to_string(
         "emails/invitation_email.html",
         {
@@ -84,22 +82,15 @@ def send_login_code_email(user, code, token, expires_at):
         f"If you did not request this code, please ignore this email."
     )
 
-    html_message = f"""
-    <html>
-    <body>
-        <h2>BattyCoda Login Code</h2>
-        <p>Hello {user.username},</p>
-        <p>Your login code is:</p>
-        <h1 style="font-size: 24px; font-weight: bold; background-color: #f0f0f0; padding: 10px; text-align: center;">{code}</h1>
-        <p>Or click the following button to log in directly:</p>
-        <p style="text-align: center; margin: 20px 0;">
-            <a href="{login_link}" style="background-color: #4CAF50; color: white; padding: 10px 20px; text-decoration: none; border-radius: 4px; display: inline-block;">Login Now</a>
-        </p>
-        <p>This code and link will expire on {expiry_str}.</p>
-        <p>If you did not request this code, please ignore this email.</p>
-    </body>
-    </html>
-    """
+    html_message = render_to_string(
+        "emails/login_code.html",
+        {
+            "username": user.username,
+            "code": code,
+            "login_link": login_link,
+            "expires_at": expiry_str,
+        },
+    )
 
     return send_mail(subject=subject, message=message, recipient_list=[user.email], html_message=html_message)
 
@@ -130,22 +121,13 @@ def send_welcome_email(user):
         f"The BattyCoda Team"
     )
 
-    html_message = f"""
-    <html>
-    <body>
-        <h2>Welcome to BattyCoda!</h2>
-        <p>Hello {user.username},</p>
-        <p>Your account has been successfully created.</p>
-        <p>You can now log in to your account using your username and password.</p>
-        <p style="text-align: center; margin: 20px 0;">
-            <a href="{login_url}" style="background-color: #4CAF50; color: white; padding: 10px 20px; text-decoration: none; border-radius: 4px; display: inline-block;">Login Now</a>
-        </p>
-        <p>BattyCoda is a platform for annotating bat call recordings. If you have any questions, please contact the administrator.</p>
-        <p>Thank you for joining!</p>
-        <p>The BattyCoda Team</p>
-    </body>
-    </html>
-    """
+    html_message = render_to_string(
+        "emails/welcome.html",
+        {
+            "username": user.username,
+            "login_url": login_url,
+        },
+    )
 
     return send_mail(subject=subject, message=message, recipient_list=[user.email], html_message=html_message)
 
@@ -177,20 +159,13 @@ def send_password_reset_email(user, token, expires_at):
         f"If you did not request this password reset, please ignore this email."
     )
 
-    html_message = f"""
-    <html>
-    <body>
-        <h2>BattyCoda Password Reset</h2>
-        <p>Hello {user.username},</p>
-        <p>You have requested to reset your password for your BattyCoda account.</p>
-        <p>Click the following button to reset your password:</p>
-        <p style="text-align: center; margin: 20px 0;">
-            <a href="{reset_link}" style="background-color: #4CAF50; color: white; padding: 10px 20px; text-decoration: none; border-radius: 4px; display: inline-block;">Reset Password</a>
-        </p>
-        <p>This link will expire on {expiry_str}.</p>
-        <p>If you did not request this password reset, please ignore this email.</p>
-    </body>
-    </html>
-    """
+    html_message = render_to_string(
+        "emails/password_reset.html",
+        {
+            "username": user.username,
+            "reset_link": reset_link,
+            "expires_at": expiry_str,
+        },
+    )
 
     return send_mail(subject=subject, message=message, recipient_list=[user.email], html_message=html_message)

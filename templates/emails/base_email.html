@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>{% block title %}BattyCoda{% endblock %}</title>
+    <style type="text/css">
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        .container {
+            padding: 20px;
+            border: 1px solid #e1e1e1;
+            border-radius: 5px;
+        }
+        .header {
+            background-color: {% block header_color %}#4CAF50{% endblock %};
+            color: white;
+            padding: 10px 20px;
+            margin: -20px -20px 20px;
+            border-top-left-radius: 5px;
+            border-top-right-radius: 5px;
+        }
+        .header h1 {
+            margin: 0;
+            font-size: 24px;
+        }
+        .btn {
+            display: inline-block;
+            background-color: #4CAF50;
+            color: white;
+            text-decoration: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            margin: 15px 0;
+            font-weight: bold;
+        }
+        .btn-danger {
+            background-color: #dc3545;
+        }
+        .btn-warning {
+            background-color: #ffc107;
+            color: #333;
+        }
+        .code-box {
+            font-size: 24px;
+            font-weight: bold;
+            background-color: #f0f0f0;
+            padding: 10px;
+            text-align: center;
+            border-radius: 4px;
+            letter-spacing: 2px;
+        }
+        .info-table {
+            border-collapse: collapse;
+            margin: 20px 0;
+            width: 100%;
+        }
+        .info-table td {
+            padding: 8px;
+            border: 1px solid #ddd;
+        }
+        .info-table td:first-child {
+            font-weight: bold;
+            width: 150px;
+        }
+        .alert-text {
+            color: #dc3545;
+            font-weight: bold;
+        }
+        .warning-text {
+            color: #ffc107;
+        }
+        pre {
+            background: #f5f5f5;
+            padding: 10px;
+            border-radius: 4px;
+            overflow-x: auto;
+        }
+        .footer {
+            margin-top: 30px;
+            font-size: 12px;
+            color: #777;
+            border-top: 1px solid #e1e1e1;
+            padding-top: 15px;
+        }
+        .center {
+            text-align: center;
+        }
+    </style>
+    {% block extra_styles %}{% endblock %}
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>{% block header_title %}BattyCoda{% endblock %}</h1>
+        </div>
+
+        {% block content %}{% endblock %}
+
+        <div class="footer">
+            {% block footer %}
+            <p>This is an automated message from BattyCoda.</p>
+            {% endblock %}
+        </div>
+    </div>
+</body>
+</html>
