@@ -1,24 +1,31 @@
 """
 Training tasks for BattyCoda.
 
-This module contains tasks for training custom classifiers.
+This module contains Celery tasks for training custom classifiers.
 """
 
-import hashlib
 import logging
 import os
-import time
 
-import requests
 import soundfile as sf
 from celery import shared_task
-from django.conf import settings
 
+from ...utils_modules.path_utils import get_local_tmp, get_r_server_path
 from .base import extract_audio_segment
+from .classification_utils import update_detection_run_status
+from .training_utils import (
+    build_model_path,
+    check_r_server_and_update_status,
+    cleanup_temp_dir,
+    create_classifier_from_training,
+    finalize_training_job,
+    get_algorithm_description,
+    get_algorithm_type,
+    process_training_response,
+    send_training_request,
+)
 
 logger = logging.getLogger(__name__)
-from ...utils_modules.path_utils import get_local_tmp, get_r_server_path
-from .classification_utils import R_SERVER_URL, check_r_server_connection, update_detection_run_status
 
 
 @shared_task(bind=True, name="battycoda_app.audio.task_modules.training_tasks.train_classifier")
@@ -33,17 +40,16 @@ def train_classifier(self, training_job_id):
     Returns:
         dict: Result of the training process
     """
-    from ...models.classification import Classifier, ClassifierTrainingJob
+    from ...models.classification import ClassifierTrainingJob
     from ...models.task import Task
 
-    try:
-        # Get the training job
-        training_job = ClassifierTrainingJob.objects.get(id=training_job_id)
+    temp_dir = None
 
-        # Update status to in progress
+    try:
+        training_job = ClassifierTrainingJob.objects.get(id=training_job_id)
         update_detection_run_status(training_job, "in_progress", progress=5)
 
-        # Get the task batch and verify it has labeled tasks
+        # Get labeled tasks from batch
         task_batch = training_job.task_batch
         tasks = Task.objects.filter(batch=task_batch, is_done=True, label__isnull=False)
         total_tasks = tasks.count()
@@ -53,286 +59,94 @@ def train_classifier(self, training_job_id):
             update_detection_run_status(training_job, "failed", error_msg)
             return {"status": "error", "message": error_msg}
 
-        # Create directory for model storage
-        model_dir = os.path.join(settings.MEDIA_ROOT, "models", "classifiers")
-        os.makedirs(model_dir, exist_ok=True)
-
-        # Generate a unique filename for the model
-        timestamp = int(time.time())
-        model_hash = hashlib.md5(f"{task_batch.id}_{timestamp}".encode()).hexdigest()[:10]
-        model_filename = f"classifier_{model_hash}_{task_batch.id}.RData"
-        model_path = os.path.join(model_dir, model_filename)
-
+        # Set up model path
+        model_path, model_filename = build_model_path(str(task_batch.id))
         update_detection_run_status(training_job, "in_progress", progress=10)
 
-        # Create a temporary directory in a location both containers can access
-        temp_dir = os.path.join(get_local_tmp(), f"training_{model_hash}")
+        # Extract audio segments to temp directory
+        temp_dir = os.path.join(get_local_tmp(), f"training_{os.path.basename(model_path).split('.')[0]}")
         os.makedirs(temp_dir, exist_ok=True)
 
-        # Extract and save labeled segments
-        call_map = {}  # Track call types and their counts
-        file_counter = 1
-
-        for i, task in enumerate(tasks):
-            if i % 5 == 0:  # Update progress every 5 tasks
-                progress = 10.0 + (40.0 * (i / total_tasks))
-                update_detection_run_status(training_job, "in_progress", progress=min(50.0, progress))
-
-            # Skip tasks without labels
-            if not task.label:
-                continue
-
-            # Track call type counts
-            if task.label not in call_map:
-                call_map[task.label] = 0
-            call_map[task.label] += 1
-
-            # Extract and save the audio segment
-            try:
-                # Get wav_file directly from task_batch
-                if not task_batch.wav_file:
-                    logger.warning(f"Task batch {task_batch.id} has no wav_file")
-                    continue
-
-                wav_file_path = task_batch.wav_file.path
-
-                if not os.path.exists(wav_file_path):
-                    logger.warning(f"WAV file path does not exist: {wav_file_path}")
-                    continue
-
-                logger.debug(
-                    f"Extracting segment for task {task.id}: {task.onset} to {task.offset} from {wav_file_path}"
-                )
-
-                # Extract audio segment
-                segment_data, sample_rate = extract_audio_segment(wav_file_path, task.onset, task.offset)
-
-                # Check if we have valid audio data
-                if segment_data is None or len(segment_data) == 0:
-                    logger.warning(f"No audio data extracted for task {task.id}")
-                    continue
-
-                # Save as WAV with format NUMBER_LABEL.wav
-                output_filename = f"{file_counter}_{task.label}.wav"
-                output_path = os.path.join(temp_dir, output_filename)
-                sf.write(output_path, segment_data, samplerate=sample_rate)
-
-                logger.debug(f"Saved segment {file_counter} with label '{task.label}' to {output_path}")
-                file_counter += 1
-            except Exception as e:
-                # Log error but continue with other tasks
-                logger.warning(f"Error extracting segment for task {task.id}: {str(e)}")
-                continue
+        file_counter = _extract_segments_from_tasks(tasks, task_batch, temp_dir, training_job, total_tasks)
 
         update_detection_run_status(training_job, "in_progress", progress=50)
 
-        # Check if we have enough files
         if file_counter <= 1:
             error_msg = "Failed to extract any valid audio segments for training."
             update_detection_run_status(training_job, "failed", error_msg)
-
-            # Clean up
-            try:
-                import shutil
-
-                shutil.rmtree(temp_dir)
-            except Exception:
-                pass
-
+            cleanup_temp_dir(temp_dir)
             return {"status": "error", "message": error_msg}
 
-        # Check R server connection
-        server_ok, error_msg = check_r_server_connection(R_SERVER_URL)
+        # Check R server
+        server_ok, error_msg = check_r_server_and_update_status(training_job)
         if not server_ok:
-            update_detection_run_status(training_job, "failed", error_msg)
-
-            # Clean up
-            try:
-                import shutil
-
-                shutil.rmtree(temp_dir)
-            except Exception:
-                pass
-
+            cleanup_temp_dir(temp_dir)
             return {"status": "error", "message": error_msg}
 
         update_detection_run_status(training_job, "in_progress", progress=60)
 
-        # Send training request to R server
-        try:
-            # Check if parameters has algorithm_type, default to "knn"
-            algorithm_type = "knn"  # Default
-            if training_job.parameters and "algorithm_type" in training_job.parameters:
-                algorithm_type = training_job.parameters["algorithm_type"]
+        # Train the model
+        result = _train_and_create_classifier(
+            training_job=training_job,
+            model_path=model_path,
+            model_filename=model_filename,
+            data_folder=temp_dir,
+            species=task_batch.species,
+            source_task_batch=task_batch,
+            name_suffix=task_batch.name,
+            sample_count=file_counter - 1,
+        )
 
-            # Build parameters for R server
-            train_params = {
-                "data_folder": temp_dir,
-                "output_model_path": model_path,
-                "test_split": 0.2,  # Use 20% for testing
-            }
-
-            # Add any additional parameters from training_job.parameters
-            if training_job.parameters:
-                for key, value in training_job.parameters.items():
-                    if key != "algorithm_type":  # We handle this separately for endpoint selection
-                        train_params[key] = value
-
-            update_detection_run_status(training_job, "in_progress", progress=70)
-
-            # Determine which endpoint to use based on algorithm type
-            if algorithm_type.lower() == "lda":
-                endpoint = f"{R_SERVER_URL}/train/lda"
-                algorithm_description = "Linear Discriminant Analysis"
-            else:
-                endpoint = f"{R_SERVER_URL}/train/knn"
-                algorithm_description = "K-Nearest Neighbors"
-
-            logger.debug(f"Using {algorithm_type.upper()} training endpoint: {endpoint}")
-            logger.debug(f"Training parameters: {train_params}")
-
-            # Make the training request - IMPORTANT: Use data instead of params
-            train_response = requests.post(
-                endpoint,
-                data=train_params,  # Changed from params to data for proper form encoding
-                timeout=3600,  # Allow up to 1 hour for training
-            )
-
-            if train_response.status_code != 200:
-                error_msg = (
-                    f"R server training failed. Status: {train_response.status_code}, Response: {train_response.text}"
-                )
-                update_detection_run_status(training_job, "failed", error_msg)
-
-                # Clean up
-                try:
-                    import shutil
-
-                    shutil.rmtree(temp_dir)
-                except Exception:
-                    pass
-
-                return {"status": "error", "message": f"R server training failed. Status: {train_response.status_code}"}
-
-            logger.debug(f"Raw training response text: {train_response.text[:200]}...")
-
-            # Process successful response
-            train_result = train_response.json()
-            update_detection_run_status(training_job, "in_progress", progress=90)
-
-            # Handle both string and list format for status, same as in classification_tasks.py
-            status_value = train_result.get("status")
-            is_success = status_value == "success" or (
-                isinstance(status_value, list) and len(status_value) > 0 and status_value[0] == "success"
-            )
-
-            if not is_success:
-                error_msg = f"R server training error: {train_result.get('message', 'Unknown error')}"
-                update_detection_run_status(training_job, "failed", error_msg)
-
-                # Clean up
-                try:
-                    import shutil
-
-                    shutil.rmtree(temp_dir)
-                except Exception:
-                    pass
-
-                return {"status": "error", "message": error_msg}
-
-            # Training successful, create the classifier
-            # Unwrap list values if needed
-            def unwrap_list(value):
-                if isinstance(value, list) and len(value) > 0:
-                    return value[0]
-                return value
-
-            # Get accuracy, ensure it's a number not a list
-            accuracy = unwrap_list(train_result.get("accuracy", 0))
-            if not isinstance(accuracy, (int, float)):
-                try:
-                    accuracy = float(accuracy)
-                except (ValueError, TypeError):
-                    accuracy = 0
-
-            # Get classes, ensure it's a list
-            classes = train_result.get("classes", [])
-            if not isinstance(classes, list):
-                classes = []
-
-            # Create classifier in database
-            classifier = Classifier.objects.create(
-                name=f"{algorithm_type.upper()} Classifier: {task_batch.name}",
-                description=f"{algorithm_description} classifier trained on task batch: {task_batch.name} with {total_tasks} labeled tasks. Accuracy: {accuracy:.1f}%",
-                response_format=training_job.response_format,
-                celery_task="battycoda_app.audio.task_modules.classification.run_classification.run_call_classification",
-                service_url=R_SERVER_URL,
-                endpoint=f"/predict/{algorithm_type.lower()}",  # Use the appropriate endpoint for this algorithm
-                source_task_batch=task_batch,
-                model_file=os.path.join("media", "models", "classifiers", model_filename),
-                is_active=True,
-                created_by=training_job.created_by,
-                group=training_job.group,
-                species=task_batch.species,  # Link to the species
-            )
-
-            # Update the training job with classifier reference
-            training_job.classifier = classifier
-            update_detection_run_status(training_job, "completed", progress=100)
-
-            result = {
-                "status": "success",
-                "message": f"Successfully trained classifier on {file_counter - 1} segments with {len(classes)} call types. Accuracy: {accuracy:.1f}%",
-                "classifier_id": classifier.id,
-                "model_path": model_path,
-                "accuracy": accuracy,
-                "classes": classes,
-            }
-
-            # Clean up temporary directory
-            try:
-                import shutil
-
-                shutil.rmtree(temp_dir)
-            except Exception:
-                # Don't fail if cleanup fails
-                pass
-
-            return result
-
-        except Exception as e:
-            error_msg = f"Error in model training: {str(e)}"
-            update_detection_run_status(training_job, "failed", error_msg)
-
-            # Clean up temporary directory
-            try:
-                import shutil
-
-                shutil.rmtree(temp_dir)
-            except Exception:
-                pass
-
-            return {"status": "error", "message": error_msg}
+        cleanup_temp_dir(temp_dir)
+        return result
 
     except Exception as e:
-        # Update job status and return error
+        cleanup_temp_dir(temp_dir)
+        return _handle_training_error(training_job_id, e, "classifier training")
+
+
+def _extract_segments_from_tasks(tasks, task_batch, temp_dir, training_job, total_tasks):
+    """Extract audio segments from labeled tasks and save to temp directory."""
+    file_counter = 1
+
+    for i, task in enumerate(tasks):
+        if i % 5 == 0:
+            progress = 10.0 + (40.0 * (i / total_tasks))
+            update_detection_run_status(training_job, "in_progress", progress=min(50.0, progress))
+
+        if not task.label:
+            continue
+
         try:
-            training_job = ClassifierTrainingJob.objects.get(id=training_job_id)
-            error_msg = f"Error in classifier training: {str(e)}"
-            update_detection_run_status(training_job, "failed", error_msg)
-        except Exception:
-            error_msg = f"Critical error in classifier training: {str(e)}"
+            if not task_batch.wav_file:
+                logger.warning(f"Task batch {task_batch.id} has no wav_file")
+                continue
 
-        # Try to clean up the temp directory if it was created
-        try:
-            if "temp_dir" in locals() and os.path.exists(temp_dir):
-                import shutil
+            wav_file_path = task_batch.wav_file.path
+            if not os.path.exists(wav_file_path):
+                logger.warning(f"WAV file path does not exist: {wav_file_path}")
+                continue
 
-                shutil.rmtree(temp_dir)
-        except Exception:
-            pass
+            logger.debug(f"Extracting segment for task {task.id}: {task.onset} to {task.offset}")
 
-        return {"status": "error", "message": error_msg}
+            segment_data, sample_rate = extract_audio_segment(wav_file_path, task.onset, task.offset)
+
+            if segment_data is None or len(segment_data) == 0:
+                logger.warning(f"No audio data extracted for task {task.id}")
+                continue
+
+            output_filename = f"{file_counter}_{task.label}.wav"
+            output_path = os.path.join(temp_dir, output_filename)
+            sf.write(output_path, segment_data, samplerate=sample_rate)
+
+            logger.debug(f"Saved segment {file_counter} with label '{task.label}'")
+            file_counter += 1
+
+        except Exception as e:
+            logger.warning(f"Error extracting segment for task {task.id}: {str(e)}")
+            continue
+
+    return file_counter
 
 
 @shared_task(bind=True, name="battycoda_app.audio.task_modules.training_tasks.train_classifier_from_folder")
@@ -348,7 +162,7 @@ def train_classifier_from_folder(self, training_job_id, species_id):
     Returns:
         dict: Result of the training process
     """
-    from ...models.classification import Classifier, ClassifierTrainingJob
+    from ...models.classification import ClassifierTrainingJob
     from ...models.organization import Species
 
     try:
@@ -357,6 +171,7 @@ def train_classifier_from_folder(self, training_job_id, species_id):
 
         update_detection_run_status(training_job, "in_progress", progress=5)
 
+        # Validate folder path
         if not training_job.parameters or "training_data_folder" not in training_job.parameters:
             error_msg = "No training data folder specified in job parameters"
             update_detection_run_status(training_job, "failed", error_msg)
@@ -378,166 +193,166 @@ def train_classifier_from_folder(self, training_job_id, species_id):
 
         update_detection_run_status(training_job, "in_progress", progress=10)
 
-        model_dir = os.path.join(settings.MEDIA_ROOT, "models", "classifiers")
-        os.makedirs(model_dir, exist_ok=True)
-
-        timestamp = int(time.time())
-        model_hash = hashlib.md5(f"{folder_path}_{timestamp}".encode()).hexdigest()[:10]
-        model_filename = f"classifier_{model_hash}_folder.RData"
-        model_path = os.path.join(model_dir, model_filename)
-
+        # Set up model path
+        model_path, model_filename = build_model_path("folder")
         update_detection_run_status(training_job, "in_progress", progress=30)
 
-        server_ok, error_msg = check_r_server_connection(R_SERVER_URL)
+        # Check R server
+        server_ok, error_msg = check_r_server_and_update_status(training_job)
         if not server_ok:
-            update_detection_run_status(training_job, "failed", error_msg)
             return {"status": "error", "message": error_msg}
 
         update_detection_run_status(training_job, "in_progress", progress=40)
 
-        try:
-            algorithm_type = "knn"
-            if training_job.parameters and "algorithm_type" in training_job.parameters:
-                algorithm_type = training_job.parameters["algorithm_type"]
+        # Convert paths for R server
+        folder_path_for_r = get_r_server_path(folder_path)
+        model_path_for_r = get_r_server_path(model_path)
 
-            # Convert local path to R server path
-            folder_path_for_r_server = get_r_server_path(folder_path)
-            model_path_for_r_server = get_r_server_path(model_path)
+        # Calculate k value for KNN
+        extra_params = {}
+        algorithm_type = get_algorithm_type(training_job)
+        if algorithm_type.lower() == "knn":
+            import math
 
-            # Calculate appropriate k value for KNN based on dataset size
-            # Use smaller k for small datasets (rule of thumb: k = sqrt(n) but max k = n-1)
-            if algorithm_type.lower() == "knn":
-                import math
+            k_value = min(int(math.sqrt(len(wav_files))), len(wav_files) - 1, 20)
+            k_value = max(k_value, 3)
+            extra_params["k"] = k_value
 
-                k_value = min(int(math.sqrt(len(wav_files))), len(wav_files) - 1, 20)
-                k_value = max(k_value, 3)  # Minimum k of 3
-            else:
-                k_value = None
+        # Train the model
+        result = _train_and_create_classifier(
+            training_job=training_job,
+            model_path=model_path_for_r,
+            model_filename=model_filename,
+            data_folder=folder_path_for_r,
+            species=species,
+            source_task_batch=None,
+            name_suffix=os.path.basename(folder_path),
+            sample_count=len(wav_files),
+            extra_params=extra_params,
+        )
 
-            train_params = {
-                "data_folder": folder_path_for_r_server,
-                "output_model_path": model_path_for_r_server,
-                "test_split": 0.2,
-            }
-
-            if k_value is not None:
-                train_params["k"] = k_value
-
-            if training_job.parameters:
-                for key, value in training_job.parameters.items():
-                    if key not in ["algorithm_type", "training_data_folder"]:
-                        train_params[key] = value
-
-            update_detection_run_status(training_job, "in_progress", progress=50)
-
-            if algorithm_type.lower() == "lda":
-                endpoint = f"{R_SERVER_URL}/train/lda"
-                algorithm_description = "Linear Discriminant Analysis"
-            else:
-                endpoint = f"{R_SERVER_URL}/train/knn"
-                algorithm_description = "K-Nearest Neighbors"
-
-            logger.debug(f"Training classifier from folder {folder_path}")
-            logger.debug(f"Using {algorithm_type.upper()} training endpoint: {endpoint}")
-            logger.debug(f"Training parameters: {train_params}")
-
-            train_response = requests.post(endpoint, data=train_params, timeout=3600)
-
-            if train_response.status_code != 200:
-                error_msg = (
-                    f"R server training failed. Status: {train_response.status_code}, Response: {train_response.text}"
-                )
-                update_detection_run_status(training_job, "failed", error_msg)
-                return {"status": "error", "message": f"R server training failed. Status: {train_response.status_code}"}
-
-            train_result = train_response.json()
-            update_detection_run_status(training_job, "in_progress", progress=80)
-
-            status_value = train_result.get("status")
-            is_success = status_value == "success" or (
-                isinstance(status_value, list) and len(status_value) > 0 and status_value[0] == "success"
-            )
-
-            if not is_success:
-                error_msg = f"R server training error: {train_result.get('message', 'Unknown error')}"
-                update_detection_run_status(training_job, "failed", error_msg)
-                return {"status": "error", "message": error_msg}
-
-            def unwrap_list(value):
-                if isinstance(value, list) and len(value) > 0:
-                    return value[0]
-                return value
-
-            accuracy = unwrap_list(train_result.get("accuracy", 0))
-            if not isinstance(accuracy, (int, float)):
-                try:
-                    accuracy = float(accuracy)
-                except (ValueError, TypeError):
-                    accuracy = 0
-
-            classes = train_result.get("classes", [])
-            if not isinstance(classes, list):
-                classes = []
-
-            folder_name = os.path.basename(folder_path)
-
-            logger.debug(
-                f"Creating classifier: {algorithm_type.upper()} Classifier from {folder_name}, Species: {species.name}, Accuracy: {accuracy}"
-            )
-
-            try:
-                classifier = Classifier.objects.create(
-                    name=f"{algorithm_type.upper()} Classifier from {folder_name}",
-                    description=f"{algorithm_description} classifier trained from folder {folder_name} with {len(wav_files)} samples. Accuracy: {accuracy:.1f}%",
-                    response_format=training_job.response_format,
-                    celery_task="battycoda_app.audio.task_modules.classification.run_classification.run_call_classification",
-                    service_url=R_SERVER_URL,
-                    endpoint=f"/predict/{algorithm_type.lower()}",
-                    source_task_batch=None,
-                    model_file=os.path.join("media", "models", "classifiers", model_filename),
-                    is_active=True,
-                    created_by=training_job.created_by,
-                    group=training_job.group,
-                    species=species,
-                )
-                logger.debug(f"Successfully created classifier {classifier.id}")
-            except Exception as e:
-                error_msg = f"Error creating classifier in database: {str(e)}"
-                logger.exception(error_msg)
-                update_detection_run_status(training_job, "failed", error_msg)
-                return {"status": "error", "message": error_msg}
-
-            try:
-                training_job.classifier = classifier
-                training_job.save()
-                update_detection_run_status(training_job, "completed", progress=100)
-            except Exception as e:
-                error_msg = f"Error updating training job with classifier: {str(e)}"
-                update_detection_run_status(training_job, "failed", error_msg)
-                return {"status": "error", "message": error_msg}
-
-            result = {
-                "status": "success",
-                "message": f"Successfully trained classifier from folder with {len(wav_files)} samples and {len(classes)} call types. Accuracy: {accuracy:.1f}%",
-                "classifier_id": classifier.id,
-                "model_path": model_path,
-                "accuracy": accuracy,
-                "classes": classes,
-            }
-
-            return result
-
-        except Exception as e:
-            error_msg = f"Error in model training: {str(e)}"
-            update_detection_run_status(training_job, "failed", error_msg)
-            return {"status": "error", "message": error_msg}
+        return result
 
     except Exception as e:
-        try:
-            training_job = ClassifierTrainingJob.objects.get(id=training_job_id)
-            error_msg = f"Error in classifier training from folder: {str(e)}"
-            update_detection_run_status(training_job, "failed", error_msg)
-        except Exception:
-            error_msg = f"Critical error in classifier training from folder: {str(e)}"
+        return _handle_training_error(training_job_id, e, "classifier training from folder")
 
-        return {"status": "error", "message": error_msg}
+
+def _train_and_create_classifier(
+    training_job,
+    model_path,
+    model_filename,
+    data_folder,
+    species,
+    source_task_batch,
+    name_suffix,
+    sample_count,
+    extra_params=None,
+):
+    """
+    Common training logic: send request to R server and create classifier.
+
+    Args:
+        training_job: ClassifierTrainingJob instance
+        model_path: Path where model will be saved
+        model_filename: Filename for the model
+        data_folder: Folder containing training data
+        species: Species instance
+        source_task_batch: Optional TaskBatch used for training
+        name_suffix: Suffix for classifier name (batch name or folder name)
+        sample_count: Number of training samples
+        extra_params: Additional parameters for training
+
+    Returns:
+        dict: Result of training process
+    """
+    algorithm_type = get_algorithm_type(training_job)
+    algorithm_desc = get_algorithm_description(algorithm_type)
+
+    # Build training parameters
+    train_params = {
+        "data_folder": data_folder,
+        "output_model_path": model_path,
+        "test_split": 0.2,
+    }
+
+    # Add extra params (like k for KNN)
+    if extra_params:
+        train_params.update(extra_params)
+
+    # Add parameters from job (except special ones)
+    if training_job.parameters:
+        for key, value in training_job.parameters.items():
+            if key not in ["algorithm_type", "training_data_folder"]:
+                train_params[key] = value
+
+    update_detection_run_status(training_job, "in_progress", progress=50)
+
+    # Send training request
+    success, result = send_training_request(algorithm_type, train_params)
+    if not success:
+        update_detection_run_status(training_job, "failed", result)
+        return {"status": "error", "message": result}
+
+    update_detection_run_status(training_job, "in_progress", progress=80)
+
+    # Process response
+    success, data = process_training_response(result)
+    if not success:
+        update_detection_run_status(training_job, "failed", data)
+        return {"status": "error", "message": data}
+
+    accuracy = data["accuracy"]
+    classes = data["classes"]
+
+    # Create classifier
+    name = f"{algorithm_type.upper()} Classifier: {name_suffix}"
+    description = (
+        f"{algorithm_desc} classifier trained on {name_suffix} "
+        f"with {sample_count} samples. Accuracy: {accuracy:.1f}%"
+    )
+
+    success, classifier_or_error = create_classifier_from_training(
+        training_job=training_job,
+        algorithm_type=algorithm_type,
+        model_filename=model_filename,
+        accuracy=accuracy,
+        classes=classes,
+        name=name,
+        description=description,
+        species=species,
+        source_task_batch=source_task_batch,
+    )
+
+    if not success:
+        update_detection_run_status(training_job, "failed", classifier_or_error)
+        return {"status": "error", "message": classifier_or_error}
+
+    classifier = classifier_or_error
+
+    # Finalize job
+    success, error = finalize_training_job(training_job, classifier)
+    if not success:
+        return {"status": "error", "message": error}
+
+    return {
+        "status": "success",
+        "message": f"Successfully trained classifier with {sample_count} samples and {len(classes)} call types. Accuracy: {accuracy:.1f}%",
+        "classifier_id": classifier.id,
+        "model_path": model_path,
+        "accuracy": accuracy,
+        "classes": classes,
+    }
+
+
+def _handle_training_error(training_job_id, exception, context):
+    """Handle exceptions during training and update job status."""
+    from ...models.classification import ClassifierTrainingJob
+
+    try:
+        training_job = ClassifierTrainingJob.objects.get(id=training_job_id)
+        error_msg = f"Error in {context}: {str(exception)}"
+        update_detection_run_status(training_job, "failed", error_msg)
+    except Exception:
+        error_msg = f"Critical error in {context}: {str(exception)}"
+
+    return {"status": "error", "message": error_msg}
