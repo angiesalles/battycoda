@@ -46,7 +46,6 @@ ignore = [
     "E402",   # import not at top (battycoda-27d)
     "B904",   # raise without from (battycoda-uvo)
     "B007",   # unused loop variable (battycoda-aoj)
-    "F403",   # star import (battycoda-nt1)
     "B905",   # zip without strict (battycoda-1lc)
     "C401",   # unnecessary list comprehension (battycoda-afs)
     "E741",   # ambiguous variable name (battycoda-uvm)
