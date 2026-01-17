@@ -4,7 +4,7 @@
 
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { selectCluster, loadClusterDetails, loadClusterMembers } from './interactions.js';
-import { setSelectedClusterId, getSelectedClusterId } from './state.js';
+import { getSelectedClusterId, setIsProjectScope, resetState } from './state.js';
 import { API_ENDPOINTS, buildUrl } from './api.js';
 
 // Mock d3-selection
@@ -21,9 +21,8 @@ describe('cluster_explorer/interactions', () => {
   let mockGetJSON;
 
   beforeEach(() => {
-    // Reset state
-    setSelectedClusterId(null);
-    window.isProjectScope = false;
+    // Reset all state
+    resetState();
 
     // Create mock element
     mockElement = {
@@ -432,7 +431,8 @@ describe('cluster_explorer/interactions', () => {
     });
 
     it('should use correct column count for project scope', () => {
-      window.isProjectScope = true;
+      // Use setIsProjectScope to set the state (code now uses getIsProjectScope() internally)
+      setIsProjectScope(true);
 
       loadClusterMembers(1);
 

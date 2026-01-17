@@ -4,7 +4,7 @@
  * Handles saving cluster labels and descriptions.
  */
 
-import { getSelectedClusterId } from './state.js';
+import { getSelectedClusterId, getClusters } from './state.js';
 import { getCsrfToken } from '../utils/page-data.js';
 import { API_ENDPOINTS } from './api.js';
 
@@ -47,8 +47,9 @@ export function saveClusterLabel(onSuccess) {
     success: function (data) {
       if (data.status === 'success') {
         // Update the local data if clusters array exists
-        if (typeof window.clusters !== 'undefined') {
-          const cluster = window.clusters.find((c) => c.id === selectedId);
+        const clusters = getClusters();
+        if (clusters) {
+          const cluster = clusters.find((c) => c.id === selectedId);
           if (cluster) {
             cluster.label = label;
             cluster.description = description;

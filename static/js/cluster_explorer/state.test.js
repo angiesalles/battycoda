@@ -3,14 +3,24 @@
  */
 
 import { describe, it, expect, beforeEach } from 'vitest';
-import { getSelectedClusterId, setSelectedClusterId, colorScale } from './state.js';
+import {
+  getSelectedClusterId,
+  setSelectedClusterId,
+  getClusters,
+  setClusters,
+  getIsProjectScope,
+  setIsProjectScope,
+  resetState,
+  colorScale,
+} from './state.js';
 
 describe('cluster_explorer/state', () => {
+  // Reset all state before each test
+  beforeEach(() => {
+    resetState();
+  });
+
   describe('selectedClusterId', () => {
-    beforeEach(() => {
-      // Reset state before each test
-      setSelectedClusterId(null);
-    });
 
     it('should return null by default', () => {
       expect(getSelectedClusterId()).toBe(null);
@@ -61,6 +71,93 @@ describe('cluster_explorer/state', () => {
       const color1 = colorScale(5);
       const color2 = colorScale(5);
       expect(color1).toBe(color2);
+    });
+  });
+
+  describe('clusters', () => {
+    it('should return null by default', () => {
+      expect(getClusters()).toBe(null);
+    });
+
+    it('should set and get clusters array', () => {
+      const testClusters = [
+        { id: 1, label: 'Cluster 1', size: 10 },
+        { id: 2, label: 'Cluster 2', size: 20 },
+      ];
+      setClusters(testClusters);
+      expect(getClusters()).toBe(testClusters);
+    });
+
+    it('should allow setting clusters to null', () => {
+      setClusters([{ id: 1 }]);
+      setClusters(null);
+      expect(getClusters()).toBe(null);
+    });
+
+    it('should return the same array reference', () => {
+      const testClusters = [{ id: 1 }];
+      setClusters(testClusters);
+      const retrieved = getClusters();
+      expect(retrieved).toBe(testClusters);
+
+      // Mutating the retrieved array should affect the state
+      retrieved.push({ id: 2 });
+      expect(getClusters().length).toBe(2);
+    });
+  });
+
+  describe('isProjectScope', () => {
+    it('should return false by default', () => {
+      expect(getIsProjectScope()).toBe(false);
+    });
+
+    it('should set and get project scope', () => {
+      setIsProjectScope(true);
+      expect(getIsProjectScope()).toBe(true);
+    });
+
+    it('should coerce truthy values to boolean', () => {
+      setIsProjectScope(1);
+      expect(getIsProjectScope()).toBe(true);
+
+      setIsProjectScope('yes');
+      expect(getIsProjectScope()).toBe(true);
+    });
+
+    it('should coerce falsy values to boolean', () => {
+      setIsProjectScope(true);
+      setIsProjectScope(0);
+      expect(getIsProjectScope()).toBe(false);
+
+      setIsProjectScope(true);
+      setIsProjectScope('');
+      expect(getIsProjectScope()).toBe(false);
+
+      setIsProjectScope(true);
+      setIsProjectScope(null);
+      expect(getIsProjectScope()).toBe(false);
+    });
+  });
+
+  describe('resetState', () => {
+    it('should reset all state to defaults', () => {
+      // Set various state values
+      setSelectedClusterId(42);
+      setClusters([{ id: 1 }]);
+      setIsProjectScope(true);
+
+      // Verify they are set
+      expect(getSelectedClusterId()).toBe(42);
+      expect(getClusters()).not.toBe(null);
+      expect(getIsProjectScope()).toBe(true);
+
+      // Reset
+      resetState();
+
+      // Verify all are reset
+      expect(getSelectedClusterId()).toBe(null);
+      expect(getClusters()).toBe(null);
+      expect(getIsProjectScope()).toBe(false);
     });
   });
 });

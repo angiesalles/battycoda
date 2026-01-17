@@ -6,7 +6,7 @@
  */
 
 import { selectAll } from 'd3-selection';
-import { setSelectedClusterId } from './state.js';
+import { setSelectedClusterId, getIsProjectScope } from './state.js';
 import { escapeHtml } from '../utils/html.js';
 import { API_ENDPOINTS, buildUrl } from './api.js';
 
@@ -144,7 +144,7 @@ export function loadClusterMembers(clusterId) {
   $('.cluster-members').removeClass('d-none');
 
   // Determine column count based on scope
-  const colCount = typeof window.isProjectScope !== 'undefined' && window.isProjectScope ? 7 : 6;
+  const colCount = getIsProjectScope() ? 7 : 6;
 
   // Show a loading indicator
   $('#members-table-body').html(
@@ -208,7 +208,7 @@ export function loadClusterMembers(clusterId) {
       );
     }
   }).fail(function () {
-    const cols = typeof window.isProjectScope !== 'undefined' && window.isProjectScope ? 7 : 6;
+    const cols = getIsProjectScope() ? 7 : 6;
     $('#members-table-body').html(
       `<tr><td colspan="${cols}" class="text-center text-danger">Failed to load cluster members. Please try again.</td></tr>`
     );

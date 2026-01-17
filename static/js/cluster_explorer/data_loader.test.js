@@ -4,7 +4,7 @@
 
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { saveClusterLabel } from './data_loader.js';
-import { setSelectedClusterId } from './state.js';
+import { setSelectedClusterId, setClusters, getClusters, resetState } from './state.js';
 import { API_ENDPOINTS } from './api.js';
 
 // Mock getCsrfToken
@@ -18,8 +18,8 @@ describe('cluster_explorer/data_loader', () => {
   let mockElement;
 
   beforeEach(() => {
-    // Reset state
-    setSelectedClusterId(null);
+    // Reset all state
+    resetState();
 
     // Create mock element that jQuery selector returns
     mockElement = {
@@ -125,18 +125,21 @@ describe('cluster_explorer/data_loader', () => {
 
     it('should update local cluster data on success', () => {
       setSelectedClusterId(1);
-      window.clusters = [
+      // Use setClusters to set up the state (code now uses getClusters() internally)
+      const testClusters = [
         { id: 1, label: 'Old Label', description: 'Old Desc', is_labeled: false },
       ];
+      setClusters(testClusters);
 
       saveClusterLabel();
 
       const successHandler = mockAjax.lastOptions.success;
       successHandler({ status: 'success' });
 
-      expect(window.clusters[0].label).toBe('Test Label');
-      expect(window.clusters[0].description).toBe('Test Description');
-      expect(window.clusters[0].is_labeled).toBe(true);
+      const clusters = getClusters();
+      expect(clusters[0].label).toBe('Test Label');
+      expect(clusters[0].description).toBe('Test Description');
+      expect(clusters[0].is_labeled).toBe(true);
     });
 
     it('should show success toast on successful save', () => {

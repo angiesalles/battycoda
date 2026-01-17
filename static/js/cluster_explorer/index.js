@@ -14,7 +14,14 @@
  */
 
 // Import all modules
-import { getSelectedClusterId, setSelectedClusterId } from './state.js';
+import {
+  getSelectedClusterId,
+  setSelectedClusterId,
+  getClusters,
+  setClusters,
+  getIsProjectScope,
+  setIsProjectScope,
+} from './state.js';
 import { initializeVisualization, createLegend, updateVisualization } from './visualization.js';
 import { selectCluster, loadClusterDetails, loadClusterMembers } from './interactions.js';
 import { loadSegmentDetails, initializeControls } from './controls.js';
@@ -23,8 +30,10 @@ import { saveClusterLabel } from './data_loader.js';
 /**
  * Initialize the cluster explorer
  * @param {Array} clusters - Cluster data from Django template
+ * @param {Object} options - Optional configuration
+ * @param {boolean} options.isProjectScope - Whether this is a project-scoped clustering run
  */
-export function initClusterExplorer(clusters) {
+export function initClusterExplorer(clusters, options = {}) {
   const $ = window.jQuery;
   if (!$) {
     console.error('[ClusterExplorer] jQuery is not available. Cannot initialize cluster explorer.');
@@ -35,8 +44,15 @@ export function initClusterExplorer(clusters) {
     return;
   }
 
-  // Store clusters globally for other components
+  // Store clusters in state module (also set window.clusters for legacy compatibility)
+  setClusters(clusters);
   window.clusters = clusters;
+
+  // Store project scope in state module
+  // Check options first, then fall back to window.isProjectScope for backward compatibility
+  const projectScope =
+    options.isProjectScope !== undefined ? options.isProjectScope : !!window.isProjectScope;
+  setIsProjectScope(projectScope);
 
   // Initialize the visualization
   initializeVisualization(clusters);
@@ -52,7 +68,7 @@ export function initClusterExplorer(clusters) {
   $('#save-cluster-label').on('click', function () {
     saveClusterLabel(function (clusterId) {
       // Re-initialize visualization and re-select the cluster
-      initializeVisualization(window.clusters);
+      initializeVisualization(getClusters());
       selectCluster(clusterId);
     });
   });
@@ -99,6 +115,10 @@ if (document.readyState === 'loading') {
 export {
   getSelectedClusterId,
   setSelectedClusterId,
+  getClusters,
+  setClusters,
+  getIsProjectScope,
+  setIsProjectScope,
   initializeVisualization,
   createLegend,
   updateVisualization,
