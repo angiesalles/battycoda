@@ -33,9 +33,26 @@ def cluster_explorer(request, run_id):
 
     clusters = Cluster.objects.filter(clustering_run=clustering_run).order_by("cluster_id")
 
+    # Serialize clusters for JavaScript (used by json_script template tag)
+    clusters_json = [
+        {
+            "id": cluster.id,
+            "cluster_id": cluster.cluster_id,
+            "label": cluster.label or "",
+            "description": cluster.description or "",
+            "is_labeled": cluster.is_labeled,
+            "size": cluster.size,
+            "coherence": float(cluster.coherence) if cluster.coherence else 0,
+            "vis_x": float(cluster.vis_x) if cluster.vis_x else 0,
+            "vis_y": float(cluster.vis_y) if cluster.vis_y else 0,
+        }
+        for cluster in clusters
+    ]
+
     context = {
         "clustering_run": clustering_run,
         "clusters": clusters,
+        "clusters_json": clusters_json,
         "is_project_scope": clustering_run.scope == "project",
     }
     return render(request, "clustering/cluster_explorer.html", context)

@@ -243,22 +243,8 @@
      data-is-project-scope="{% if is_project_scope %}true{% else %}false{% endif %}"
      style="display: none;"></div>
 
-<!-- Cluster data as JSON (parsed by the cluster_explorer module) -->
-<script type="application/json" id="cluster-data">
-[{% for cluster in clusters %}{% if not forloop.first %},{% endif %}
-    {
-        "id": {{ cluster.id }},
-        "cluster_id": {{ cluster.cluster_id }},
-        "label": "{{ cluster.label|default:''|escapejs }}",
-        "description": "{{ cluster.description|default:''|escapejs }}",
-        "is_labeled": {{ cluster.is_labeled|lower }},
-        "size": {{ cluster.size }},
-        "coherence": {{ cluster.coherence|default:0 }},
-        "vis_x": {{ cluster.vis_x|default:0 }},
-        "vis_y": {{ cluster.vis_y|default:0 }}
-    }{% endfor %}
-]
-</script>
+<!-- Cluster data as JSON (safely serialized by Django's json_script) -->
+{{ clusters_json|json_script:"cluster-data" }}
 
 {% vite_asset 'static/js/cluster_explorer/index.js' %}
 {% endblock %}
