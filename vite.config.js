@@ -86,6 +86,8 @@ export default defineConfig({
         clusterExplorer: resolve(__dirname, 'static/js/cluster_explorer/index.js'),
         clusterMapping: resolve(__dirname, 'static/js/cluster_mapping/index.js'),
         fileUpload: resolve(__dirname, 'static/js/file_upload/index.js'),
+        profile: resolve(__dirname, 'static/js/profile/index.js'),
+        speciesCreate: resolve(__dirname, 'static/js/species/index.js'),
 
         // Theme CSS files - built separately for dynamic loading
         ...themeInputs,

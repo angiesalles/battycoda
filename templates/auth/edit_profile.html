@@ -60,6 +60,19 @@
 {% endblock %}
 
 {% block extra_js %}
+{% load vite %}
+<!-- Page data for profile module -->
+<div id="profile-page-data"
+     data-update-profile-url="{% url 'battycoda_app:update_profile_ajax' %}"
+     hidden>
+</div>
+
+{% if VITE_FEATURES.profile %}
+<!-- Vite-bundled profile module -->
+{% vite_asset 'static/js/profile/index.js' %}
+{% else %}
+<!-- Legacy inline script -->
 <script>
 {% include "auth/includes/api_keys.html" %}
+{% endif %}
 {% endblock %}

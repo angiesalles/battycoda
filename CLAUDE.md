@@ -532,6 +532,8 @@ Configuration in `.env` file:
 - `VITE_FEATURE_PLAYER` - Use Vite for audio player (default: false)
 - `VITE_FEATURE_TASK_ANNOTATION` - Use Vite for task annotation (default: false)
 - `VITE_FEATURE_SEGMENTATION` - Use Vite for segmentation (default: false)
+- `VITE_FEATURE_PROFILE` - Use Vite for profile editing (default: false)
+- `VITE_FEATURE_SPECIES_CREATE` - Use Vite for species creation (default: false)
 
 ## Vite Frontend Migration
 

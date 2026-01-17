@@ -2,8 +2,8 @@
  * Tests for HTML utility functions
  */
 
-import { describe, it, expect } from 'vitest';
-import { escapeHtml } from './html.js';
+import { describe, it, expect, vi } from 'vitest';
+import { escapeHtml, validateUrl } from './html.js';
 
 describe('escapeHtml', () => {
   it('should escape ampersand', () => {
@@ -62,5 +62,76 @@ describe('escapeHtml', () => {
     expect(escapeHtml('file" onmouseover="alert(1)')).toBe(
       'file&quot; onmouseover=&quot;alert(1)',
     );
+  });
+});
+
+describe('validateUrl', () => {
+  it('should return empty string for null', () => {
+    expect(validateUrl(null)).toBe('');
+  });
+
+  it('should return empty string for undefined', () => {
+    expect(validateUrl(undefined)).toBe('');
+  });
+
+  it('should return empty string for non-string types', () => {
+    expect(validateUrl(123)).toBe('');
+    expect(validateUrl({})).toBe('');
+    expect(validateUrl([])).toBe('');
+  });
+
+  it('should return empty string for empty string', () => {
+    expect(validateUrl('')).toBe('');
+    expect(validateUrl('   ')).toBe('');
+  });
+
+  it('should allow relative URLs starting with /', () => {
+    expect(validateUrl('/api/data')).toBe('/api/data');
+    expect(validateUrl('/media/images/photo.jpg')).toBe('/media/images/photo.jpg');
+  });
+
+  it('should allow HTTPS URLs', () => {
+    expect(validateUrl('https://example.com')).toBe('https://example.com');
+    expect(validateUrl('https://example.com/path?query=1')).toBe(
+      'https://example.com/path?query=1',
+    );
+  });
+
+  it('should allow HTTP localhost URLs for development', () => {
+    expect(validateUrl('http://localhost:8000/api')).toBe('http://localhost:8000/api');
+    expect(validateUrl('http://127.0.0.1:8000/api')).toBe('http://127.0.0.1:8000/api');
+  });
+
+  it('should reject javascript: URLs', () => {
+    const consoleWarn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    expect(validateUrl('javascript:alert(1)')).toBe('');
+    expect(consoleWarn).toHaveBeenCalled();
+    consoleWarn.mockRestore();
+  });
+
+  it('should reject data: URLs', () => {
+    const consoleWarn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    expect(validateUrl('data:text/html,<script>alert(1)</script>')).toBe('');
+    expect(consoleWarn).toHaveBeenCalled();
+    consoleWarn.mockRestore();
+  });
+
+  it('should reject non-localhost HTTP URLs', () => {
+    const consoleWarn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    expect(validateUrl('http://evil.com')).toBe('');
+    expect(consoleWarn).toHaveBeenCalled();
+    consoleWarn.mockRestore();
+  });
+
+  it('should reject vbscript: URLs', () => {
+    const consoleWarn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    expect(validateUrl('vbscript:msgbox("XSS")')).toBe('');
+    expect(consoleWarn).toHaveBeenCalled();
+    consoleWarn.mockRestore();
+  });
+
+  it('should trim whitespace from URLs', () => {
+    expect(validateUrl('  /api/data  ')).toBe('/api/data');
+    expect(validateUrl('  https://example.com  ')).toBe('https://example.com');
   });
 });

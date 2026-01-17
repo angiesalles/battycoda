@@ -2,6 +2,15 @@ document.addEventListener('DOMContentLoaded', function() {
     // escapeHtml and validateUrl are provided globally by base.html
 
     const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+
+    // Get the update URL from page data (set by edit_profile.html)
+    const pageData = document.getElementById('profile-page-data');
+    const updateProfileUrl = pageData ? pageData.dataset.updateProfileUrl : null;
+    if (!updateProfileUrl) {
+        console.error('Profile update URL not found');
+        return;
+    }
+
     const profileImageUpload = document.getElementById('profile_image_upload');
     const uploadImageBtn = document.getElementById('upload-image-btn');
     const removeImageBtn = document.getElementById('remove-image-btn');
@@ -12,43 +21,43 @@ document.addEventListener('DOMContentLoaded', function() {
     const imageUploadStatus = document.getElementById('image-upload-status');
     const emailUpdateStatus = document.getElementById('email-update-status');
     const managementFeaturesStatus = document.getElementById('management-features-status');
-    
+
     // Function to show status messages
     function showStatus(element, message, isSuccess) {
         element.innerHTML = `<div class="alert alert-${isSuccess ? 'success' : 'danger'} py-2">${escapeHtml(message)}</div>`;
-        
+
         // Clear message after 5 seconds
         setTimeout(() => {
             element.innerHTML = '';
         }, 5000);
     }
-    
+
     // Handle profile image upload
     uploadImageBtn.addEventListener('click', function() {
         if (!profileImageUpload.files.length) {
             showStatus(imageUploadStatus, 'Please select an image file first.', false);
             return;
         }
-        
+
         const file = profileImageUpload.files[0];
-        
+
         // Validate file type
         if (!file.type.match('image.*')) {
             showStatus(imageUploadStatus, 'Please select a valid image file.', false);
             return;
         }
-        
+
         // Create FormData object and append the file
         const formData = new FormData();
         formData.append('profile_image', file);
         formData.append('action', 'upload_image');
-        
+
         // Show loading state
         uploadImageBtn.disabled = true;
         uploadImageBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i> Uploading...';
-        
+
         // Send AJAX request
-        fetch('{% url "battycoda_app:update_profile_ajax" %}', {
+        fetch(updateProfileUrl, {
             method: 'POST',
             headers: {
                 'X-CSRFToken': csrfToken
@@ -59,14 +68,14 @@ document.addEventListener('DOMContentLoaded', function() {
         .then(data => {
             if (data.success) {
                 showStatus(imageUploadStatus, data.message, true);
-                
+
                 // Update the profile image on the page
                 const imageDisplay = document.getElementById('profile-image-display');
                 const validatedImageUrl = validateUrl(data.image_url);
                 if (validatedImageUrl) {
                     imageDisplay.innerHTML = `<img src="${escapeHtml(validatedImageUrl)}?v=${new Date().getTime()}" alt="Profile Image" class="img-fluid rounded-circle" style="width: 150px; height: 150px; object-fit: cover;">`;
                 }
-                
+
                 // Add remove button if it doesn't exist
                 if (!removeImageBtn && data.has_image) {
                     const removeBtn = document.createElement('button');
@@ -74,17 +83,17 @@ document.addEventListener('DOMContentLoaded', function() {
                     removeBtn.className = 'btn btn-sm btn-outline-danger ms-2';
                     removeBtn.innerHTML = '<i class="fas fa-trash me-1"></i> Remove Image';
                     document.querySelector('.mt-2').appendChild(removeBtn);
-                    
+
                     // Add event listener to newly created button
                     removeBtn.addEventListener('click', handleRemoveImage);
                 }
-                
+
                 // Update navbar profile image if it exists
                 const navbarProfileImage = document.querySelector('.nav.navbar-nav a.dropdown-toggle img');
                 if (navbarProfileImage && validatedImageUrl) {
                     navbarProfileImage.src = validatedImageUrl + '?v=' + new Date().getTime();
                 }
-                
+
                 // Clear the file input
                 profileImageUpload.value = '';
             } else {
@@ -101,25 +110,25 @@ document.addEventListener('DOMContentLoaded', function() {
             uploadImageBtn.innerHTML = '<i class="fas fa-upload me-1"></i> Upload Image';
         });
     });
-    
+
     // Handle remove profile image
     function handleRemoveImage() {
         if (!confirm('Are you sure you want to remove your profile image?')) {
             return;
         }
-        
+
         // Create FormData and append action
         const formData = new FormData();
         formData.append('action', 'remove_image');
-        
+
         // Show loading state
         if (removeImageBtn) {
             removeImageBtn.disabled = true;
             removeImageBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i> Removing...';
         }
-        
+
         // Send AJAX request
-        fetch('{% url "battycoda_app:update_profile_ajax" %}', {
+        fetch(updateProfileUrl, {
             method: 'POST',
             headers: {
                 'X-CSRFToken': csrfToken
@@ -130,7 +139,7 @@ document.addEventListener('DOMContentLoaded', function() {
         .then(data => {
             if (data.success) {
                 showStatus(imageUploadStatus, data.message, true);
-                
+
                 // Update the profile image display
                 const imageDisplay = document.getElementById('profile-image-display');
                 imageDisplay.innerHTML = `
@@ -138,12 +147,12 @@ document.addEventListener('DOMContentLoaded', function() {
                         <span class="fas fa-user text-white" style="font-size: 4rem;"></span>
                     </div>
                 `;
-                
+
                 // Remove the remove button
                 if (removeImageBtn) {
                     removeImageBtn.remove();
                 }
-                
+
                 // Update navbar image
                 const navbarProfileImage = document.querySelector('.nav.navbar-nav a.dropdown-toggle img');
                 if (navbarProfileImage) {
@@ -159,32 +168,32 @@ document.addEventListener('DOMContentLoaded', function() {
             showStatus(imageUploadStatus, 'An error occurred while removing the image.', false);
         });
     }
-    
+
     // Add event listener to remove image button if it exists
     if (removeImageBtn) {
         removeImageBtn.addEventListener('click', handleRemoveImage);
     }
-    
+
     // Handle email update
     updateEmailBtn.addEventListener('click', function() {
         const email = emailInput.value.trim();
-        
+
         if (!email) {
             showStatus(emailUpdateStatus, 'Please enter a valid email address.', false);
             return;
         }
-        
+
         // Create FormData and append email
         const formData = new FormData();
         formData.append('email', email);
         formData.append('action', 'update_email');
-        
+
         // Show loading state
         updateEmailBtn.disabled = true;
         updateEmailBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i> Updating...';
-        
+
         // Send AJAX request
-        fetch('{% url "battycoda_app:update_profile_ajax" %}', {
+        fetch(updateProfileUrl, {
             method: 'POST',
             headers: {
                 'X-CSRFToken': csrfToken
@@ -209,22 +218,22 @@ document.addEventListener('DOMContentLoaded', function() {
             updateEmailBtn.innerHTML = '<i class="fas fa-save me-1"></i> Update Email';
         });
     });
-    
+
     // Handle management features update
     updateManagementFeaturesBtn.addEventListener('click', function() {
         const isEnabled = managementFeaturesCheckbox.checked;
-        
+
         // Create FormData and append management features setting
         const formData = new FormData();
         formData.append('management_features_enabled', isEnabled);
         formData.append('action', 'update_management_features');
-        
+
         // Show loading state
         updateManagementFeaturesBtn.disabled = true;
         updateManagementFeaturesBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i> Updating...';
-        
+
         // Send AJAX request
-        fetch('{% url "battycoda_app:update_profile_ajax" %}', {
+        fetch(updateProfileUrl, {
             method: 'POST',
             headers: {
                 'X-CSRFToken': csrfToken
@@ -256,25 +265,25 @@ function copyApiKey() {
     const apiKeyInput = document.getElementById('api-key-display');
     apiKeyInput.select();
     apiKeyInput.setSelectionRange(0, 99999); // For mobile devices
-    
+
     try {
         document.execCommand('copy');
-        
+
         // Show success message
         const statusDiv = document.getElementById('api-key-status');
         statusDiv.innerHTML = '<div class="alert alert-success py-2">API key copied to clipboard!</div>';
-        
+
         // Clear message after 3 seconds
         setTimeout(() => {
             statusDiv.innerHTML = '';
         }, 3000);
     } catch (err) {
         console.error('Failed to copy: ', err);
-        
+
         // Show error message
         const statusDiv = document.getElementById('api-key-status');
         statusDiv.innerHTML = '<div class="alert alert-warning py-2">Please manually copy the API key.</div>';
-        
+
         // Clear message after 3 seconds
         setTimeout(() => {
             statusDiv.innerHTML = '';
