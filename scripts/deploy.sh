@@ -107,6 +107,31 @@ if [ ! -d "venv" ]; then
     exit 1
 fi
 
+# Load environment variables from .env for Sentry source map upload
+if [ -f ".env" ]; then
+    log_info "Loading environment variables from .env..."
+    set -a
+    source .env
+    set +a
+fi
+
+# Set production mode for Vite build (enables hidden source maps)
+export NODE_ENV=production
+
+# Set Sentry release to git commit hash for release tracking
+if git rev-parse --git-dir > /dev/null 2>&1; then
+    export SENTRY_RELEASE=$(git rev-parse HEAD)
+    log_info "Sentry release: ${SENTRY_RELEASE:0:8}..."
+fi
+
+# Check if Sentry source map upload is configured
+if [ -n "$SENTRY_AUTH_TOKEN" ] && [ -n "$SENTRY_ORG" ] && [ -n "$SENTRY_PROJECT" ]; then
+    log_info "Sentry source map upload enabled (org: $SENTRY_ORG, project: $SENTRY_PROJECT)"
+else
+    log_warn "Sentry source map upload not configured (missing SENTRY_AUTH_TOKEN, SENTRY_ORG, or SENTRY_PROJECT)"
+    log_warn "Source maps will be generated but not uploaded to Sentry"
+fi
+
 # Step 1: Install npm dependencies
 if [ "$SKIP_NPM" = false ]; then
     log_info "Installing npm dependencies (npm ci)..."

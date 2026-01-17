@@ -2,6 +2,7 @@ import { defineConfig } from 'vite';
 import { resolve } from 'path';
 import { globSync } from 'glob';
 import { basename } from 'path';
+import { sentryVitePlugin } from '@sentry/vite-plugin';
 
 // Find all theme CSS files and create entry points for them
 // Theme files need to be built separately so they can be loaded dynamically
@@ -12,7 +13,43 @@ themeFiles.forEach((file) => {
   themeInputs[`theme-${name}`] = resolve(__dirname, file);
 });
 
+// Sentry configuration for source map uploads
+// Only upload source maps when all required env vars are set
+const sentryEnabled =
+  process.env.SENTRY_AUTH_TOKEN &&
+  process.env.SENTRY_ORG &&
+  process.env.SENTRY_PROJECT;
+
+const isProduction = process.env.NODE_ENV === 'production';
+
+// Configure plugins array
+const plugins = [];
+
+if (sentryEnabled && isProduction) {
+  plugins.push(
+    sentryVitePlugin({
+      org: process.env.SENTRY_ORG,
+      project: process.env.SENTRY_PROJECT,
+      authToken: process.env.SENTRY_AUTH_TOKEN,
+      sourcemaps: {
+        // Upload source maps from the dist directory
+        assets: './static/dist/**',
+        // Delete source maps after upload (don't serve them)
+        filesToDeleteAfterUpload: './static/dist/**/*.map',
+      },
+      // Release name - use git commit hash if available
+      release: {
+        name: process.env.SENTRY_RELEASE || undefined,
+      },
+      // Disable telemetry
+      telemetry: false,
+    })
+  );
+}
+
 export default defineConfig({
+  // Plugins
+  plugins,
   // Test configuration (Vitest)
   test: {
     // Enable globals like describe, it, expect without imports
@@ -50,6 +87,11 @@ export default defineConfig({
     manifest: true,
     // Keep CSS files separate per entry point for dynamic theme loading
     cssCodeSplit: true,
+    // Source maps: generate for production debugging
+    // - In production: 'hidden' generates maps but doesn't reference them in output
+    // - In development: true generates inline source maps
+    // The Sentry plugin will upload and then delete .map files in production
+    sourcemap: isProduction ? 'hidden' : true,
     rollupOptions: {
       // External CDN dependencies - these are loaded via CDN in Django templates
       // and should not be bundled by Vite. They are available as globals on window.

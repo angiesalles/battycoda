@@ -85,6 +85,12 @@ fi
 
 # Add common location blocks
 cat >> /etc/nginx/sites-available/battycoda.conf << EOF
+    # Block source map files - these contain original source code
+    # and should not be publicly accessible (defense in depth)
+    location ~* \.map\$ {
+        return 404;
+    }
+
     location /static/ {
         alias /home/ubuntu/battycoda/staticfiles/;
     }

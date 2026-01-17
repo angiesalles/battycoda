@@ -521,6 +521,15 @@ Configuration in `.env` file:
   - When `false`: CSP violations are logged but not blocked (safe for testing)
   - When `true`: CSP violations are blocked (production enforcement)
 
+### Sentry Error Tracking
+- `SENTRY_DSN` - Sentry Data Source Name (enables error tracking when set)
+- `SENTRY_ENVIRONMENT` - Environment name (default: production)
+- `SENTRY_AUTH_TOKEN` - Auth token for source map uploads (scopes: project:releases, org:read)
+- `SENTRY_ORG` - Sentry organization slug
+- `SENTRY_PROJECT` - Sentry project name
+
+When all three source map variables are set, `./scripts/deploy.sh` will automatically upload source maps to Sentry and delete them from the build output. This enables readable stack traces in production error reports while keeping source maps private.
+
 ### Vite Frontend Build (Feature Flags)
 - `VITE_ENABLED` - Master switch for Vite bundles (default: false)
 - `VITE_FEATURE_THEME_SWITCHER` - Use Vite for theme switcher (default: false)
