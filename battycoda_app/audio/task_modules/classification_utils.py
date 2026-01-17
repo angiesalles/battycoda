@@ -4,7 +4,11 @@ Classification utility functions for BattyCoda.
 Shared utilities for classification and training tasks including R server communication.
 """
 
+import logging
+
 import requests
+
+logger = logging.getLogger(__name__)
 
 # Centralized configuration
 R_SERVER_URL = "http://localhost:8001"
@@ -29,10 +33,6 @@ def update_classification_run_status(classification_run, status, message=None, p
     classification_run.save(update_fields=update_fields)
 
     return classification_run
-
-
-# Backward compatibility alias - to be removed
-update_detection_run_status = update_classification_run_status
 
 
 def check_r_server_connection(service_url=R_SERVER_URL):
@@ -136,6 +136,101 @@ def process_classification_result(classifier, result, prediction_data, calls):
         else:
             # Missing probabilities - create equal probabilities
             create_equal_probabilities(result, calls)
+
+
+# ---------------------------------------------------------------
+# R Server Training Functions
+# ---------------------------------------------------------------
+
+
+def unwrap_list(value):
+    """
+    Unwrap single-element lists from R server responses.
+
+    R server sometimes returns values wrapped in lists (e.g., ["success"] instead of "success").
+    This function extracts the first element if value is a non-empty list.
+
+    Args:
+        value: Any value, potentially a list
+
+    Returns:
+        The unwrapped value, or original value if not a list
+    """
+    if isinstance(value, list) and len(value) > 0:
+        return value[0]
+    return value
+
+
+def send_training_request(algorithm_type, train_params):
+    """
+    Send training request to R server.
+
+    Args:
+        algorithm_type: "knn" or "lda"
+        train_params: Dictionary of training parameters
+
+    Returns:
+        tuple: (success, result_or_error)
+            - On success: (True, response_json)
+            - On failure: (False, error_message)
+    """
+    if algorithm_type.lower() == "lda":
+        endpoint = f"{R_SERVER_URL}/train/lda"
+    else:
+        endpoint = f"{R_SERVER_URL}/train/knn"
+
+    logger.debug(f"Using {algorithm_type.upper()} training endpoint: {endpoint}")
+    logger.debug(f"Training parameters: {train_params}")
+
+    try:
+        response = requests.post(endpoint, data=train_params, timeout=3600)
+
+        if response.status_code != 200:
+            error_msg = f"R server training failed. Status: {response.status_code}, Response: {response.text}"
+            return False, error_msg
+
+        logger.debug(f"Raw training response text: {response.text[:200]}...")
+        return True, response.json()
+
+    except Exception as e:
+        return False, f"Error communicating with R server: {str(e)}"
+
+
+def process_training_response(train_result):
+    """
+    Process and validate training response from R server.
+
+    Args:
+        train_result: JSON response from R server
+
+    Returns:
+        tuple: (success, data_or_error)
+            - On success: (True, {"accuracy": float, "classes": list})
+            - On failure: (False, error_message)
+    """
+    status_value = train_result.get("status")
+    is_success = status_value == "success" or (
+        isinstance(status_value, list) and len(status_value) > 0 and status_value[0] == "success"
+    )
+
+    if not is_success:
+        error_msg = f"R server training error: {train_result.get('message', 'Unknown error')}"
+        return False, error_msg
+
+    # Extract and validate accuracy
+    accuracy = unwrap_list(train_result.get("accuracy", 0))
+    if not isinstance(accuracy, (int, float)):
+        try:
+            accuracy = float(accuracy)
+        except (ValueError, TypeError):
+            accuracy = 0
+
+    # Extract and validate classes
+    classes = train_result.get("classes", [])
+    if not isinstance(classes, list):
+        classes = []
+
+    return True, {"accuracy": accuracy, "classes": classes}
 
 
 # No explicit imports of Celery tasks here to avoid circular imports

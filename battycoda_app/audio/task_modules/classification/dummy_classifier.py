@@ -7,7 +7,7 @@ Assigns equal probability to all call types without actual classification.
 from celery import shared_task
 from django.db import transaction
 
-from ..classification_utils import get_call_types, get_segments, update_detection_run_status
+from ..classification_utils import get_call_types, get_segments, update_classification_run_status
 
 
 @shared_task(bind=True, name="battycoda_app.audio.task_modules.classification.dummy_classifier.run_dummy_classifier")
@@ -27,17 +27,17 @@ def run_dummy_classifier(self, detection_run_id):
     try:
         detection_run = ClassificationRun.objects.get(id=detection_run_id)
 
-        update_detection_run_status(detection_run, "in_progress", progress=0)
+        update_classification_run_status(detection_run, "in_progress", progress=0)
 
         recording = detection_run.segmentation.recording
         segments, seg_error = get_segments(recording, detection_run.segmentation)
         if not segments:
-            update_detection_run_status(detection_run, "failed", seg_error)
+            update_classification_run_status(detection_run, "failed", seg_error)
             return {"status": "error", "message": seg_error}
 
         calls, call_error = get_call_types(recording.species)
         if not calls:
-            update_detection_run_status(detection_run, "failed", call_error)
+            update_classification_run_status(detection_run, "failed", call_error)
             return {"status": "error", "message": call_error}
 
         equal_probability = 1.0 / calls.count()
@@ -55,12 +55,12 @@ def run_dummy_classifier(self, detection_run_id):
                         )
 
                 progress = ((i + 1) / total_segments) * 100
-                update_detection_run_status(detection_run, "in_progress", progress=progress)
+                update_classification_run_status(detection_run, "in_progress", progress=progress)
 
             except Exception:
                 continue
 
-        update_detection_run_status(detection_run, "completed", progress=100)
+        update_classification_run_status(detection_run, "completed", progress=100)
 
         return {
             "status": "success",
@@ -70,5 +70,5 @@ def run_dummy_classifier(self, detection_run_id):
 
     except Exception as e:
         detection_run = ClassificationRun.objects.get(id=detection_run_id)
-        update_detection_run_status(detection_run, "failed", str(e))
+        update_classification_run_status(detection_run, "failed", str(e))
         return {"status": "error", "message": str(e)}

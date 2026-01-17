@@ -11,30 +11,17 @@ import os
 import shutil
 import time
 
-import requests
 from django.conf import settings
 
-from .classification_utils import R_SERVER_URL, check_r_server_connection, update_detection_run_status
+from .classification_utils import (
+    R_SERVER_URL,
+    check_r_server_connection,
+    process_training_response,
+    send_training_request,
+    update_classification_run_status,
+)
 
 logger = logging.getLogger(__name__)
-
-
-def unwrap_list(value):
-    """
-    Unwrap single-element lists from R server responses.
-
-    R server sometimes returns values wrapped in lists (e.g., ["success"] instead of "success").
-    This function extracts the first element if value is a non-empty list.
-
-    Args:
-        value: Any value, potentially a list
-
-    Returns:
-        The unwrapped value, or original value if not a list
-    """
-    if isinstance(value, list) and len(value) > 0:
-        return value[0]
-    return value
 
 
 def cleanup_temp_dir(temp_dir):
@@ -85,80 +72,8 @@ def check_r_server_and_update_status(training_job):
     """
     server_ok, error_msg = check_r_server_connection(R_SERVER_URL)
     if not server_ok:
-        update_detection_run_status(training_job, "failed", error_msg)
+        update_classification_run_status(training_job, "failed", error_msg)
     return server_ok, error_msg
-
-
-def send_training_request(algorithm_type, train_params):
-    """
-    Send training request to R server.
-
-    Args:
-        algorithm_type: "knn" or "lda"
-        train_params: Dictionary of training parameters
-
-    Returns:
-        tuple: (success, result_or_error)
-            - On success: (True, response_json)
-            - On failure: (False, error_message)
-    """
-    if algorithm_type.lower() == "lda":
-        endpoint = f"{R_SERVER_URL}/train/lda"
-    else:
-        endpoint = f"{R_SERVER_URL}/train/knn"
-
-    logger.debug(f"Using {algorithm_type.upper()} training endpoint: {endpoint}")
-    logger.debug(f"Training parameters: {train_params}")
-
-    try:
-        response = requests.post(endpoint, data=train_params, timeout=3600)
-
-        if response.status_code != 200:
-            error_msg = f"R server training failed. Status: {response.status_code}, Response: {response.text}"
-            return False, error_msg
-
-        logger.debug(f"Raw training response text: {response.text[:200]}...")
-        return True, response.json()
-
-    except Exception as e:
-        return False, f"Error communicating with R server: {str(e)}"
-
-
-def process_training_response(train_result):
-    """
-    Process and validate training response from R server.
-
-    Args:
-        train_result: JSON response from R server
-
-    Returns:
-        tuple: (success, data_or_error)
-            - On success: (True, {"accuracy": float, "classes": list})
-            - On failure: (False, error_message)
-    """
-    status_value = train_result.get("status")
-    is_success = status_value == "success" or (
-        isinstance(status_value, list) and len(status_value) > 0 and status_value[0] == "success"
-    )
-
-    if not is_success:
-        error_msg = f"R server training error: {train_result.get('message', 'Unknown error')}"
-        return False, error_msg
-
-    # Extract and validate accuracy
-    accuracy = unwrap_list(train_result.get("accuracy", 0))
-    if not isinstance(accuracy, (int, float)):
-        try:
-            accuracy = float(accuracy)
-        except (ValueError, TypeError):
-            accuracy = 0
-
-    # Extract and validate classes
-    classes = train_result.get("classes", [])
-    if not isinstance(classes, list):
-        classes = []
-
-    return True, {"accuracy": accuracy, "classes": classes}
 
 
 def create_classifier_from_training(
@@ -231,11 +146,11 @@ def finalize_training_job(training_job, classifier):
     try:
         training_job.classifier = classifier
         training_job.save()
-        update_detection_run_status(training_job, "completed", progress=100)
+        update_classification_run_status(training_job, "completed", progress=100)
         return True, None
     except Exception as e:
         error_msg = f"Error updating training job with classifier: {str(e)}"
-        update_detection_run_status(training_job, "failed", error_msg)
+        update_classification_run_status(training_job, "failed", error_msg)
         return False, error_msg
 
 
@@ -267,3 +182,110 @@ def get_algorithm_description(algorithm_type):
     if algorithm_type.lower() == "lda":
         return "Linear Discriminant Analysis"
     return "K-Nearest Neighbors"
+
+
+def train_and_create_classifier(
+    training_job,
+    model_path,
+    model_filename,
+    data_folder,
+    species,
+    source_task_batch,
+    name_suffix,
+    sample_count,
+    extra_params=None,
+):
+    """
+    Common training logic: send request to R server and create classifier.
+
+    Args:
+        training_job: ClassifierTrainingJob instance
+        model_path: Path where model will be saved
+        model_filename: Filename for the model
+        data_folder: Folder containing training data
+        species: Species instance
+        source_task_batch: Optional TaskBatch used for training
+        name_suffix: Suffix for classifier name (batch name or folder name)
+        sample_count: Number of training samples
+        extra_params: Additional parameters for training
+
+    Returns:
+        dict: Result of training process
+    """
+    algorithm_type = get_algorithm_type(training_job)
+    algorithm_desc = get_algorithm_description(algorithm_type)
+
+    # Build training parameters
+    train_params = {
+        "data_folder": data_folder,
+        "output_model_path": model_path,
+        "test_split": 0.2,
+    }
+
+    # Add extra params (like k for KNN)
+    if extra_params:
+        train_params.update(extra_params)
+
+    # Add parameters from job (except special ones)
+    if training_job.parameters:
+        for key, value in training_job.parameters.items():
+            if key not in ["algorithm_type", "training_data_folder"]:
+                train_params[key] = value
+
+    update_classification_run_status(training_job, "in_progress", progress=50)
+
+    # Send training request
+    success, result = send_training_request(algorithm_type, train_params)
+    if not success:
+        update_classification_run_status(training_job, "failed", result)
+        return {"status": "error", "message": result}
+
+    update_classification_run_status(training_job, "in_progress", progress=80)
+
+    # Process response
+    success, data = process_training_response(result)
+    if not success:
+        update_classification_run_status(training_job, "failed", data)
+        return {"status": "error", "message": data}
+
+    accuracy = data["accuracy"]
+    classes = data["classes"]
+
+    # Create classifier
+    name = f"{algorithm_type.upper()} Classifier: {name_suffix}"
+    description = (
+        f"{algorithm_desc} classifier trained on {name_suffix} "
+        f"with {sample_count} samples. Accuracy: {accuracy:.1f}%"
+    )
+
+    success, classifier_or_error = create_classifier_from_training(
+        training_job=training_job,
+        algorithm_type=algorithm_type,
+        model_filename=model_filename,
+        accuracy=accuracy,
+        classes=classes,
+        name=name,
+        description=description,
+        species=species,
+        source_task_batch=source_task_batch,
+    )
+
+    if not success:
+        update_classification_run_status(training_job, "failed", classifier_or_error)
+        return {"status": "error", "message": classifier_or_error}
+
+    classifier = classifier_or_error
+
+    # Finalize job
+    success, error = finalize_training_job(training_job, classifier)
+    if not success:
+        return {"status": "error", "message": error}
+
+    return {
+        "status": "success",
+        "message": f"Successfully trained classifier with {sample_count} samples and {len(classes)} call types. Accuracy: {accuracy:.1f}%",
+        "classifier_id": classifier.id,
+        "model_path": model_path,
+        "accuracy": accuracy,
+        "classes": classes,
+    }
