@@ -196,17 +196,5 @@ describe('cluster_explorer/data_loader', () => {
       expect(mockElement.attr).toHaveBeenCalledWith('disabled', false);
     });
 
-    it('should use alert when toastr is not available', () => {
-      setSelectedClusterId(1);
-      window.toastr = undefined;
-      const alertSpy = vi.spyOn(window, 'alert').mockImplementation(() => {});
-
-      saveClusterLabel();
-
-      const successHandler = mockAjax.lastOptions.success;
-      successHandler({ status: 'success' });
-
-      expect(alertSpy).toHaveBeenCalledWith('Cluster label updated successfully');
-    });
   });
 });

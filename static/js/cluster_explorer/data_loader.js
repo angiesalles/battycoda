@@ -58,28 +58,16 @@ export function saveClusterLabel(onSuccess) {
         }
 
         // Show a success message
-        if (typeof window.toastr !== 'undefined') {
-          window.toastr.success('Cluster label updated successfully');
-        } else {
-          alert('Cluster label updated successfully');
-        }
+        window.toastr.success('Cluster label updated successfully');
 
         // Call the success callback
         if (onSuccess) onSuccess(selectedId);
       } else {
-        if (typeof window.toastr !== 'undefined') {
-          window.toastr.error(`Failed to update label: ${data.message}`);
-        } else {
-          alert(`Failed to update label: ${data.message}`);
-        }
+        window.toastr.error(`Failed to update label: ${data.message}`);
       }
     },
     error: function () {
-      if (typeof window.toastr !== 'undefined') {
-        window.toastr.error('Failed to update cluster label. Please try again.');
-      } else {
-        alert('Failed to update cluster label. Please try again.');
-      }
+      window.toastr.error('Failed to update cluster label. Please try again.');
     },
     complete: function () {
       saveBtn.html(originalText);
