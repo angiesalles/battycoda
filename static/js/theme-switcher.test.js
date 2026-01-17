@@ -26,109 +26,97 @@ describe('theme-switcher', () => {
     it('should add theme class to main-body element', () => {
       document.body.innerHTML = '<div id="main-body"></div>';
 
-      applyTheme('ocean');
+      applyTheme('dark');
 
       const mainBody = document.getElementById('main-body');
-      expect(mainBody.classList.contains('theme-ocean')).toBe(true);
+      expect(mainBody.classList.contains('theme-dark')).toBe(true);
     });
 
     it('should remove existing theme classes when applying new theme', () => {
-      document.body.innerHTML = '<div id="main-body" class="theme-old-theme some-other-class"></div>';
+      document.body.innerHTML = '<div id="main-body" class="theme-light some-other-class"></div>';
 
-      applyTheme('new-theme');
+      applyTheme('dark');
 
       const mainBody = document.getElementById('main-body');
-      expect(mainBody.classList.contains('theme-old-theme')).toBe(false);
-      expect(mainBody.classList.contains('theme-new-theme')).toBe(true);
+      expect(mainBody.classList.contains('theme-light')).toBe(false);
+      expect(mainBody.classList.contains('theme-dark')).toBe(true);
       expect(mainBody.classList.contains('some-other-class')).toBe(true);
     });
 
-    it('should create CSS link element for non-default theme', () => {
+    it('should create CSS link element for theme', () => {
       document.body.innerHTML = '<div id="main-body"></div>';
 
-      applyTheme('blue-sky');
+      applyTheme('dark');
 
-      const themeLink = document.getElementById('theme-css-blue-sky');
+      const themeLink = document.getElementById('theme-css-dark');
       expect(themeLink).not.toBeNull();
       expect(themeLink.tagName).toBe('LINK');
       expect(themeLink.rel).toBe('stylesheet');
-      expect(themeLink.href).toContain('/static/css/themes/blue-sky.css');
+      expect(themeLink.href).toContain('/static/css/themes/dark.css');
     });
 
-    it('should not duplicate CSS link when applying same theme twice', () => {
+    it('should replace old theme CSS link when switching themes', () => {
       document.body.innerHTML = '<div id="main-body"></div>';
 
-      applyTheme('ocean');
-      applyTheme('ocean');
+      applyTheme('dark');
+      expect(document.getElementById('theme-css-dark')).not.toBeNull();
 
-      const themeLinks = document.querySelectorAll('#theme-css-ocean');
-      expect(themeLinks.length).toBe(1);
+      applyTheme('light');
+
+      // Old theme CSS should be removed
+      expect(document.getElementById('theme-css-dark')).toBeNull();
+      // New theme CSS should be present
+      expect(document.getElementById('theme-css-light')).not.toBeNull();
     });
 
-    it('should remove all theme CSS links when applying default theme', () => {
+    it('should only have one theme CSS link at a time', () => {
       document.body.innerHTML = '<div id="main-body"></div>';
 
-      // Apply a non-default theme first
-      applyTheme('ocean');
-      expect(document.getElementById('theme-css-ocean')).not.toBeNull();
+      applyTheme('dark');
+      applyTheme('light');
+      applyTheme('dark');
 
-      // Apply another theme
-      applyTheme('blue-sky');
-      expect(document.getElementById('theme-css-blue-sky')).not.toBeNull();
-
-      // Apply default theme
-      applyTheme('default');
-
-      // All theme CSS links should be removed
       const themeLinks = document.querySelectorAll('link[id^="theme-css-"]');
-      expect(themeLinks.length).toBe(0);
+      expect(themeLinks.length).toBe(1);
+      expect(themeLinks[0].id).toBe('theme-css-dark');
     });
 
     it('should use Vite theme URL when available', () => {
       document.body.innerHTML = '<div id="main-body"></div>';
       window.__VITE_THEME_URLS__ = {
-        ocean: '/static/dist/assets/theme-ocean-abc123.css',
+        dark: '/static/dist/assets/theme-dark-abc123.css',
       };
 
-      applyTheme('ocean');
+      applyTheme('dark');
 
-      const themeLink = document.getElementById('theme-css-ocean');
-      expect(themeLink.href).toContain('/static/dist/assets/theme-ocean-abc123.css');
+      const themeLink = document.getElementById('theme-css-dark');
+      expect(themeLink.href).toContain('/static/dist/assets/theme-dark-abc123.css');
     });
 
     it('should fall back to static URL when Vite URL not available', () => {
       document.body.innerHTML = '<div id="main-body"></div>';
       window.__VITE_THEME_URLS__ = {
-        'some-other-theme': '/static/dist/assets/theme-other.css',
+        light: '/static/dist/assets/theme-light.css',
       };
 
-      applyTheme('ocean');
+      applyTheme('dark');
 
-      const themeLink = document.getElementById('theme-css-ocean');
-      expect(themeLink.href).toContain('/static/css/themes/ocean.css');
+      const themeLink = document.getElementById('theme-css-dark');
+      expect(themeLink.href).toContain('/static/css/themes/dark.css');
     });
 
     it('should handle multiple theme classes in body', () => {
       document.body.innerHTML =
         '<div id="main-body" class="theme-one theme-two theme-three other-class"></div>';
 
-      applyTheme('new');
+      applyTheme('dark');
 
       const mainBody = document.getElementById('main-body');
-      expect(mainBody.className).toContain('theme-new');
+      expect(mainBody.className).toContain('theme-dark');
       expect(mainBody.className).not.toContain('theme-one');
       expect(mainBody.className).not.toContain('theme-two');
       expect(mainBody.className).not.toContain('theme-three');
       expect(mainBody.className).toContain('other-class');
-    });
-
-    it('should not create CSS link for default theme', () => {
-      document.body.innerHTML = '<div id="main-body"></div>';
-
-      applyTheme('default');
-
-      const themeLink = document.getElementById('theme-css-default');
-      expect(themeLink).toBeNull();
     });
   });
 
@@ -144,15 +132,15 @@ describe('theme-switcher', () => {
     });
 
     it('should call localStorage.setItem with correct key and value', () => {
-      saveThemeToLocalStorage('ocean');
+      saveThemeToLocalStorage('dark');
 
-      expect(localStorage.setItem).toHaveBeenCalledWith(LOCAL_STORAGE_KEY, 'ocean');
+      expect(localStorage.setItem).toHaveBeenCalledWith(LOCAL_STORAGE_KEY, 'dark');
     });
 
     it('should call localStorage.setItem when saving different themes', () => {
-      saveThemeToLocalStorage('blue-sky');
+      saveThemeToLocalStorage('light');
 
-      expect(localStorage.setItem).toHaveBeenCalledWith(LOCAL_STORAGE_KEY, 'blue-sky');
+      expect(localStorage.setItem).toHaveBeenCalledWith(LOCAL_STORAGE_KEY, 'light');
     });
 
     it('should handle localStorage errors gracefully', () => {
@@ -162,7 +150,7 @@ describe('theme-switcher', () => {
       });
 
       // Should not throw even when localStorage fails
-      expect(() => saveThemeToLocalStorage('ocean')).not.toThrow();
+      expect(() => saveThemeToLocalStorage('dark')).not.toThrow();
     });
 
     it('should handle localStorage being unavailable', () => {
@@ -174,7 +162,7 @@ describe('theme-switcher', () => {
       });
 
       // Should not throw
-      expect(() => saveThemeToLocalStorage('ocean')).not.toThrow();
+      expect(() => saveThemeToLocalStorage('dark')).not.toThrow();
     });
   });
 });

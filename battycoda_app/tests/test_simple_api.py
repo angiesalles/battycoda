@@ -2,6 +2,8 @@
 Tests for the Simple API endpoints.
 """
 
+# Suppress noisy logs during tests
+import logging
 import secrets
 
 from django.contrib.auth.models import User
@@ -12,9 +14,6 @@ from battycoda_app.models import Group, Project
 from battycoda_app.models.organization import Species
 from battycoda_app.models.user import UserProfile
 from battycoda_app.tests.test_settings import PASSWORD_HASHERS
-
-# Suppress noisy logs during tests
-import logging
 
 logging.disable(logging.ERROR)
 

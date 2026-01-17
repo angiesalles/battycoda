@@ -1,4 +1,5 @@
 """Tests for segmentation views"""
+
 from django.contrib.auth.models import User
 from django.test import Client
 from django.urls import reverse
@@ -14,18 +15,14 @@ class SegmentationListViewTest(BattycodaTestCase):
         self.client = Client()
 
         # Create test user
-        self.user = User.objects.create_user(
-            username="testuser", email="test@example.com", password="password123"
-        )
+        self.user = User.objects.create_user(username="testuser", email="test@example.com", password="password123")
         self.profile = UserProfile.objects.get(user=self.user)
 
         # Create a test group
         self.group = Group.objects.create(name="Test Group", description="A test group")
 
         # Add user to the group
-        self.membership = GroupMembership.objects.create(
-            user=self.user, group=self.group, is_admin=True
-        )
+        self.membership = GroupMembership.objects.create(user=self.user, group=self.group, is_admin=True)
 
         # Set as active group
         self.profile.group = self.group
@@ -88,22 +85,16 @@ class SegmentationDetailViewTest(BattycodaTestCase):
         self.client = Client()
 
         # Create test users
-        self.user = User.objects.create_user(
-            username="testuser", email="test@example.com", password="password123"
-        )
+        self.user = User.objects.create_user(username="testuser", email="test@example.com", password="password123")
         self.profile = UserProfile.objects.get(user=self.user)
 
-        self.user2 = User.objects.create_user(
-            username="testuser2", email="test2@example.com", password="password123"
-        )
+        self.user2 = User.objects.create_user(username="testuser2", email="test2@example.com", password="password123")
 
         # Create a test group
         self.group = Group.objects.create(name="Test Group", description="A test group")
 
         # Add user to the group
-        self.membership = GroupMembership.objects.create(
-            user=self.user, group=self.group, is_admin=True
-        )
+        self.membership = GroupMembership.objects.create(user=self.user, group=self.group, is_admin=True)
 
         # Set as active group
         self.profile.group = self.group
@@ -146,9 +137,7 @@ class SegmentationDetailViewTest(BattycodaTestCase):
         )
 
         # URL paths
-        self.segmentation_detail_url = reverse(
-            "battycoda_app:segmentation_detail", args=[self.segmentation.id]
-        )
+        self.segmentation_detail_url = reverse("battycoda_app:segmentation_detail", args=[self.segmentation.id])
 
     def test_segmentation_detail_view_owner(self):
         """Segmentation owner should see the detail view"""
@@ -168,18 +157,14 @@ class CreateSegmentationViewTest(BattycodaTestCase):
         self.client = Client()
 
         # Create test user
-        self.user = User.objects.create_user(
-            username="testuser", email="test@example.com", password="password123"
-        )
+        self.user = User.objects.create_user(username="testuser", email="test@example.com", password="password123")
         self.profile = UserProfile.objects.get(user=self.user)
 
         # Create a test group
         self.group = Group.objects.create(name="Test Group", description="A test group")
 
         # Add user to the group
-        self.membership = GroupMembership.objects.create(
-            user=self.user, group=self.group, is_admin=True
-        )
+        self.membership = GroupMembership.objects.create(user=self.user, group=self.group, is_admin=True)
 
         # Set as active group
         self.profile.group = self.group
@@ -238,18 +223,14 @@ class SegmentManagementViewTest(BattycodaTestCase):
         self.client = Client()
 
         # Create test user
-        self.user = User.objects.create_user(
-            username="testuser", email="test@example.com", password="password123"
-        )
+        self.user = User.objects.create_user(username="testuser", email="test@example.com", password="password123")
         self.profile = UserProfile.objects.get(user=self.user)
 
         # Create a test group
         self.group = Group.objects.create(name="Test Group", description="A test group")
 
         # Add user to the group
-        self.membership = GroupMembership.objects.create(
-            user=self.user, group=self.group, is_admin=True
-        )
+        self.membership = GroupMembership.objects.create(user=self.user, group=self.group, is_admin=True)
 
         # Set as active group
         self.profile.group = self.group
@@ -308,10 +289,13 @@ class SegmentManagementViewTest(BattycodaTestCase):
             args=[self.segmentation.id, self.segment.id],
         )
         # Edit segment is an AJAX endpoint, so POST with form data
-        response = self.client.post(edit_segment_url, {
-            "onset": 0.5,
-            "offset": 1.5,
-        })
+        response = self.client.post(
+            edit_segment_url,
+            {
+                "onset": 0.5,
+                "offset": 1.5,
+            },
+        )
         self.assertIn(response.status_code, [200, 400])  # 200 success, 400 form errors
 
 
@@ -320,18 +304,14 @@ class SegmentationBatchViewTest(BattycodaTestCase):
         self.client = Client()
 
         # Create test user
-        self.user = User.objects.create_user(
-            username="testuser", email="test@example.com", password="password123"
-        )
+        self.user = User.objects.create_user(username="testuser", email="test@example.com", password="password123")
         self.profile = UserProfile.objects.get(user=self.user)
 
         # Create a test group
         self.group = Group.objects.create(name="Test Group", description="A test group")
 
         # Add user to the group
-        self.membership = GroupMembership.objects.create(
-            user=self.user, group=self.group, is_admin=True
-        )
+        self.membership = GroupMembership.objects.create(user=self.user, group=self.group, is_admin=True)
 
         # Set as active group
         self.profile.group = self.group

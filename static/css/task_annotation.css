@@ -1,16 +1,62 @@
 /**
  * Task Annotation CSS
- * 
+ *
  * This file contains styles for the task annotation interface, including
  * spectrogram visualization, axis styling, and responsive layout.
+ *
+ * Supports both light and dark themes via CSS variables.
  */
 
-/* Apply dark theme only to annotation page */
+/* ========================================
+   CSS Variables for Theme Support
+   ======================================== */
+
+/* Light theme (default) */
 body.annotation-page {
-    background-color: #121212;
-    color: #e0e0e0;
+    --ta-bg: #f8f9fa;
+    --ta-text: #212529;
+    --ta-text-muted: #6c757d;
+    --ta-card-bg: #ffffff;
+    --ta-card-border: #dee2e6;
+    --ta-card-shadow: rgba(0, 0, 0, 0.1);
+    --ta-input-bg: #ffffff;
+    --ta-input-border: #ced4da;
+    --ta-input-focus-border: #20c997;
+    --ta-tick-color: #495057;
+    --ta-tick-minor: #6c757d;
+    --ta-axis-label: #212529;
+    --ta-spectrogram-border: #dee2e6;
+    --ta-spectrogram-shadow: rgba(0, 0, 0, 0.15);
     min-height: 100vh;
 }
+
+/* Dark theme */
+body.annotation-page.theme-dark {
+    --ta-bg: #121212;
+    --ta-text: #e0e0e0;
+    --ta-text-muted: #aaaaaa;
+    --ta-card-bg: #1e1e1e;
+    --ta-card-border: #333333;
+    --ta-card-shadow: rgba(0, 0, 0, 0.3);
+    --ta-input-bg: #2d2d2d;
+    --ta-input-border: #444444;
+    --ta-input-focus-border: #3dd9ad;
+    --ta-tick-color: #aaaaaa;
+    --ta-tick-minor: #888888;
+    --ta-axis-label: #dddddd;
+    --ta-spectrogram-border: #333333;
+    --ta-spectrogram-shadow: rgba(0, 0, 0, 0.5);
+}
+
+/* Apply theme colors */
+body.annotation-page {
+    background-color: var(--ta-bg);
+    color: var(--ta-text);
+}
+
+/* ========================================
+   Layout
+   ======================================== */
 
 /* Make sidebars sticky */
 .row {
@@ -32,6 +78,10 @@ img {
     object-fit: contain;
 }
 
+/* ========================================
+   Spectrogram Grid & Axes
+   ======================================== */
+
 /* Spectrogram styling with axis support */
 .spectrogram-wrapper {
     position: relative;
@@ -43,8 +93,8 @@ img {
 /* Grid container for spectrogram and axes */
 .spectrogram-grid-container {
     display: grid;
-    grid-template-columns: 60px 1fr; /* Width for y-axis, rest for spectrogram */
-    grid-template-rows: 1fr 40px; /* Main content and x-axis ticks (with room for label) */
+    grid-template-columns: 60px 1fr;
+    grid-template-rows: 1fr 40px;
     grid-template-areas:
         "y-label spec-img"
         "corner x-ticks";
@@ -57,14 +107,14 @@ img {
 .y-axis-label {
     grid-area: y-label;
     writing-mode: vertical-rl;
-    transform: rotate(180deg); /* Keep rotation at 180 degrees */
+    transform: rotate(180deg);
     position: absolute;
-    left: -10px; /* Position it further left as requested */
+    left: -10px;
     top: 50%;
     transform-origin: center;
     font-size: 14px;
     font-weight: 500;
-    color: #ddd;
+    color: var(--ta-axis-label);
     z-index: 5;
 }
 
@@ -76,6 +126,8 @@ img {
     display: flex;
     flex-direction: column;
     justify-self: end;
+    justify-content: space-between;
+    margin-right: 10px;
 }
 
 .corner-spacer {
@@ -98,13 +150,13 @@ img {
 
 .x-axis-label {
     position: absolute;
-    bottom: -20px; /* Position it below the ticks */
+    bottom: -20px;
     left: 0;
     width: 100%;
     text-align: center;
     font-size: 14px;
     font-weight: 500;
-    color: #ddd;
+    color: var(--ta-axis-label);
 }
 
 /* Tick set container styling */
@@ -129,14 +181,14 @@ img {
 /* Major ticks with labels */
 .x-tick-major {
     font-size: 12px;
-    color: #aaa;
-    top: 15px; /* Position below the tick mark */
+    color: var(--ta-tick-color);
+    top: 15px;
 }
 
 /* Minor ticks */
 .x-tick-minor {
     font-size: 10px;
-    color: #888;
+    color: var(--ta-tick-minor);
     top: 15px;
 }
 
@@ -145,20 +197,10 @@ img {
     content: "";
     position: absolute;
     left: 50%;
-    top: -12px; /* Position above the text */
+    top: -12px;
     width: 1px;
     height: 8px;
-    background-color: #aaa;
-}
-
-/* Y-axis styling */
-.y-axis-ticks {
-    position: relative;
-    width: 60px;
-    margin-right: 10px;
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
+    background-color: var(--ta-tick-color);
 }
 
 /* Common styles for all y-ticks */
@@ -173,7 +215,7 @@ img {
 /* Major ticks with labels */
 .y-tick-major {
     font-size: 12px;
-    color: #aaa;
+    color: var(--ta-tick-color);
     padding-right: 10px;
 }
 
@@ -185,63 +227,85 @@ img {
     right: 0;
     width: 6px;
     height: 1px;
-    background-color: #aaa;
+    background-color: var(--ta-tick-color);
 }
 
-/* Main spectrogram image */
+/* ========================================
+   Spectrogram Image
+   ======================================== */
+
 #main-spectrogram {
     display: block;
     width: 100%;
     height: 400px;
     object-fit: fill;
-    box-shadow: 0 4px 8px rgba(0,0,0,0.5);
-    border: 1px solid #333;
+    box-shadow: 0 4px 8px var(--ta-spectrogram-shadow);
+    border: 1px solid var(--ta-spectrogram-border);
     margin: 0;
     padding: 0;
+}
+
+/* ========================================
+   Cards & Sections
+   ======================================== */
+
+/* Card-like appearance for sections */
+body.annotation-page .col-md-8,
+body.annotation-page .col-md-4,
+body.annotation-page .call-type,
+body.annotation-page .audio-section,
+body.annotation-page .controls-simple {
+    background-color: var(--ta-card-bg);
+    border: 1px solid var(--ta-card-border);
+    border-radius: 4px;
+    padding: 15px;
+    box-shadow: 0 2px 5px var(--ta-card-shadow);
+    margin-bottom: 15px;
+}
+
+/* Make headers consistent */
+body.annotation-page h3 {
+    font-size: 1.25rem;
+    margin-bottom: 0.75rem;
+    color: var(--ta-text);
+}
+
+/* ========================================
+   Form Controls
+   ======================================== */
+
+body.annotation-page .form-control,
+body.annotation-page .form-select {
+    background-color: var(--ta-input-bg);
+    border: 1px solid var(--ta-input-border);
+    color: var(--ta-text);
+}
+
+body.annotation-page .form-control:focus,
+body.annotation-page .form-select:focus {
+    background-color: var(--ta-input-bg);
+    color: var(--ta-text);
+    border-color: var(--ta-input-focus-border);
+    box-shadow: 0 0 0 0.25rem rgba(32, 201, 151, 0.25);
+}
+
+body.annotation-page.theme-dark .form-control:focus,
+body.annotation-page.theme-dark .form-select:focus {
+    box-shadow: 0 0 0 0.25rem rgba(61, 217, 173, 0.25);
 }
 
 .form-check {
     margin-bottom: 0.5rem;
 }
 
-/* Make headers consistent */
-h3 {
-    font-size: 1.25rem;
-    margin-bottom: 0.75rem;
-    color: #fff;
+/* Make form labels smaller */
+.form-check-label {
+    font-size: 0.9rem;
 }
 
-/* Dark card-like appearance for sections */
-.col-md-8, .col-md-4, .call-type, .audio-section, .controls-simple {
-    background-color: #1e1e1e;
-    border-radius: 4px;
-    padding: 15px;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.3);
-    margin-bottom: 15px;
-}
-
-/* Override Bootstrap form control styles for dark theme */
-.form-control, .form-select {
-    background-color: #2d2d2d;
-    border: 1px solid #444;
-    color: #e0e0e0;
-}
-
-.form-control:focus, .form-select:focus {
-    background-color: #333;
-    color: #fff;
-    border-color: #007bff;
-}
-
-/* Loading spinner styling */
-.loading-spinner {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    min-height: 200px;
-    width: 100%;
-}
+/* ========================================
+   Sidebars
+   ======================================== */
 
 /* Task sidebar styling */
 .task-sidebar {
@@ -256,21 +320,6 @@ h3 {
     overflow: hidden;
     text-overflow: ellipsis;
     font-size: 0.85rem;
-}
-
-/* Species image styling */
-.species-image-container {
-    text-align: center;
-    padding: 5px;
-    background-color: #333;
-    border-radius: 4px;
-}
-
-.species-image {
-    max-width: 100%;
-    max-height: 150px;
-    object-fit: contain;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.3);
 }
 
 /* Task classification sidebar styling */
@@ -288,7 +337,34 @@ h3 {
     font-size: 0.85rem;
 }
 
-/* Make form labels smaller */
-.form-check-label {
-    font-size: 0.9rem;
+/* ========================================
+   Species Image
+   ======================================== */
+
+.species-image-container {
+    text-align: center;
+    padding: 5px;
+    background-color: var(--ta-card-bg);
+    border: 1px solid var(--ta-card-border);
+    border-radius: 4px;
+}
+
+.species-image {
+    max-width: 100%;
+    max-height: 150px;
+    object-fit: contain;
+    box-shadow: 0 2px 4px var(--ta-card-shadow);
+}
+
+/* ========================================
+   Loading Spinner
+   ======================================== */
+
+.loading-spinner {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 200px;
+    width: 100%;
 }

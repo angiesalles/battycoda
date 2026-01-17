@@ -1,0 +1,87 @@
+/**
+ * BattyCoda Theme: Light
+ * Clean, modern light theme with teal/green accent
+ */
+
+:root {
+  /* Primary brand color - teal/green */
+  --bs-primary: #20c997;
+  --bs-primary-rgb: 32, 201, 151;
+  --bs-link-color: #20c997;
+  --bs-link-hover-color: #1aa179;
+
+  /* Background colors */
+  --bs-body-bg: #f8f9fa;
+  --bs-body-color: #212529;
+
+  /* Card/surface colors */
+  --bc-card-bg: #ffffff;
+  --bc-card-border: #dee2e6;
+}
+
+body {
+  background-color: var(--bs-body-bg);
+  color: var(--bs-body-color);
+}
+
+.btn-primary {
+  --bs-btn-bg: #20c997;
+  --bs-btn-border-color: #20c997;
+  --bs-btn-hover-bg: #1aa179;
+  --bs-btn-hover-border-color: #198b69;
+  --bs-btn-active-bg: #198b69;
+  --bs-btn-active-border-color: #198b69;
+  --bs-btn-disabled-bg: #20c997;
+  --bs-btn-disabled-border-color: #20c997;
+}
+
+.btn-outline-primary {
+  --bs-btn-color: #20c997;
+  --bs-btn-border-color: #20c997;
+  --bs-btn-hover-bg: #20c997;
+  --bs-btn-hover-border-color: #20c997;
+  --bs-btn-active-bg: #20c997;
+  --bs-btn-active-border-color: #20c997;
+}
+
+.text-primary {
+  color: #20c997 !important;
+}
+
+.bg-primary {
+  background-color: #20c997 !important;
+}
+
+.border-primary {
+  border-color: #20c997 !important;
+}
+
+.badge.bg-primary {
+  background-color: #20c997 !important;
+}
+
+a {
+  color: #20c997;
+}
+
+a:hover {
+  color: #1aa179;
+}
+
+/* Cards and surfaces */
+.card {
+  background-color: var(--bc-card-bg);
+  border-color: var(--bc-card-border);
+}
+
+/* Form controls */
+.form-control, .form-select {
+  background-color: #ffffff;
+  border-color: #ced4da;
+  color: #212529;
+}
+
+.form-control:focus, .form-select:focus {
+  border-color: #20c997;
+  box-shadow: 0 0 0 0.25rem rgba(32, 201, 151, 0.25);
+}

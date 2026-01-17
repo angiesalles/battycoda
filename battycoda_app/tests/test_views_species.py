@@ -1,4 +1,5 @@
 """Tests for species views"""
+
 import json
 
 from django.contrib.auth.models import User
@@ -15,18 +16,14 @@ class SpeciesListViewTest(BattycodaTestCase):
         self.client = Client()
 
         # Create test user
-        self.user = User.objects.create_user(
-            username="testuser", email="test@example.com", password="password123"
-        )
+        self.user = User.objects.create_user(username="testuser", email="test@example.com", password="password123")
         self.profile = UserProfile.objects.get(user=self.user)
 
         # Create a test group
         self.group = Group.objects.create(name="Test Group", description="A test group")
 
         # Add user to the group
-        self.membership = GroupMembership.objects.create(
-            user=self.user, group=self.group, is_admin=True
-        )
+        self.membership = GroupMembership.objects.create(user=self.user, group=self.group, is_admin=True)
 
         # Set as active group
         self.profile.group = self.group
@@ -69,18 +66,14 @@ class SpeciesDetailViewTest(BattycodaTestCase):
         self.client = Client()
 
         # Create test user
-        self.user = User.objects.create_user(
-            username="testuser", email="test@example.com", password="password123"
-        )
+        self.user = User.objects.create_user(username="testuser", email="test@example.com", password="password123")
         self.profile = UserProfile.objects.get(user=self.user)
 
         # Create a test group
         self.group = Group.objects.create(name="Test Group", description="A test group")
 
         # Add user to the group
-        self.membership = GroupMembership.objects.create(
-            user=self.user, group=self.group, is_admin=True
-        )
+        self.membership = GroupMembership.objects.create(user=self.user, group=self.group, is_admin=True)
 
         # Set as active group
         self.profile.group = self.group
@@ -102,9 +95,7 @@ class SpeciesDetailViewTest(BattycodaTestCase):
         )
 
         # URL paths
-        self.species_detail_url = reverse(
-            "battycoda_app:species_detail", args=[self.species.id]
-        )
+        self.species_detail_url = reverse("battycoda_app:species_detail", args=[self.species.id])
 
     def test_species_detail_view_authenticated(self):
         """Authenticated users should see the species detail"""
@@ -132,18 +123,14 @@ class CreateSpeciesViewTest(BattycodaTestCase):
         self.client = Client()
 
         # Create test user
-        self.user = User.objects.create_user(
-            username="testuser", email="test@example.com", password="password123"
-        )
+        self.user = User.objects.create_user(username="testuser", email="test@example.com", password="password123")
         self.profile = UserProfile.objects.get(user=self.user)
 
         # Create a test group
         self.group = Group.objects.create(name="Test Group", description="A test group")
 
         # Add user to the group
-        self.membership = GroupMembership.objects.create(
-            user=self.user, group=self.group, is_admin=True
-        )
+        self.membership = GroupMembership.objects.create(user=self.user, group=self.group, is_admin=True)
 
         # Set as active group
         self.profile.group = self.group
@@ -188,10 +175,12 @@ class CreateSpeciesViewTest(BattycodaTestCase):
         species_data = {
             "name": "Species With Calls",
             "description": "A species with calls",
-            "call_types_json": json.dumps([
-                {"short_name": "C1", "long_name": "Call One"},
-                {"short_name": "C2", "long_name": "Call Two"},
-            ]),
+            "call_types_json": json.dumps(
+                [
+                    {"short_name": "C1", "long_name": "Call One"},
+                    {"short_name": "C2", "long_name": "Call Two"},
+                ]
+            ),
             "detail_padding_start_ms": 8,
             "detail_padding_end_ms": 8,
             "overview_padding_start_ms": 500,
@@ -210,18 +199,14 @@ class EditSpeciesViewTest(BattycodaTestCase):
         self.client = Client()
 
         # Create test user
-        self.user = User.objects.create_user(
-            username="testuser", email="test@example.com", password="password123"
-        )
+        self.user = User.objects.create_user(username="testuser", email="test@example.com", password="password123")
         self.profile = UserProfile.objects.get(user=self.user)
 
         # Create a test group
         self.group = Group.objects.create(name="Test Group", description="A test group")
 
         # Add user to the group
-        self.membership = GroupMembership.objects.create(
-            user=self.user, group=self.group, is_admin=True
-        )
+        self.membership = GroupMembership.objects.create(user=self.user, group=self.group, is_admin=True)
 
         # Set as active group
         self.profile.group = self.group
@@ -237,9 +222,7 @@ class EditSpeciesViewTest(BattycodaTestCase):
         )
 
         # URL paths
-        self.edit_species_url = reverse(
-            "battycoda_app:edit_species", args=[self.species.id]
-        )
+        self.edit_species_url = reverse("battycoda_app:edit_species", args=[self.species.id])
 
     def test_edit_species_view_get(self):
         """GET request should show the edit species form"""
@@ -291,18 +274,14 @@ class DeleteSpeciesViewTest(BattycodaTestCase):
         self.client = Client()
 
         # Create test user
-        self.user = User.objects.create_user(
-            username="testuser", email="test@example.com", password="password123"
-        )
+        self.user = User.objects.create_user(username="testuser", email="test@example.com", password="password123")
         self.profile = UserProfile.objects.get(user=self.user)
 
         # Create a test group
         self.group = Group.objects.create(name="Test Group", description="A test group")
 
         # Add user to the group
-        self.membership = GroupMembership.objects.create(
-            user=self.user, group=self.group, is_admin=True
-        )
+        self.membership = GroupMembership.objects.create(user=self.user, group=self.group, is_admin=True)
 
         # Set as active group
         self.profile.group = self.group
@@ -317,9 +296,7 @@ class DeleteSpeciesViewTest(BattycodaTestCase):
         )
 
         # URL paths
-        self.delete_species_url = reverse(
-            "battycoda_app:delete_species", args=[self.species.id]
-        )
+        self.delete_species_url = reverse("battycoda_app:delete_species", args=[self.species.id])
 
     def test_delete_species_view_get(self):
         """GET request should show the delete confirmation page"""
@@ -360,18 +337,14 @@ class CallManagementViewsTest(BattycodaTestCase):
         self.client = Client()
 
         # Create test user
-        self.user = User.objects.create_user(
-            username="testuser", email="test@example.com", password="password123"
-        )
+        self.user = User.objects.create_user(username="testuser", email="test@example.com", password="password123")
         self.profile = UserProfile.objects.get(user=self.user)
 
         # Create a test group
         self.group = Group.objects.create(name="Test Group", description="A test group")
 
         # Add user to the group
-        self.membership = GroupMembership.objects.create(
-            user=self.user, group=self.group, is_admin=True
-        )
+        self.membership = GroupMembership.objects.create(user=self.user, group=self.group, is_admin=True)
 
         # Set as active group
         self.profile.group = self.group
@@ -393,12 +366,8 @@ class CallManagementViewsTest(BattycodaTestCase):
         )
 
         # URL paths
-        self.add_call_url = reverse(
-            "battycoda_app:add_call", args=[self.species.id]
-        )
-        self.delete_call_url = reverse(
-            "battycoda_app:delete_call", args=[self.species.id, self.call.id]
-        )
+        self.add_call_url = reverse("battycoda_app:add_call", args=[self.species.id])
+        self.delete_call_url = reverse("battycoda_app:delete_call", args=[self.species.id, self.call.id])
 
     def test_add_call_view_post_success(self):
         """POST request with valid data should add a call"""
@@ -412,9 +381,7 @@ class CallManagementViewsTest(BattycodaTestCase):
         self.assertEqual(response.status_code, 200)
         data = response.json()
         self.assertTrue(data["success"])
-        self.assertTrue(
-            Call.objects.filter(species=self.species, short_name="NC").exists()
-        )
+        self.assertTrue(Call.objects.filter(species=self.species, short_name="NC").exists())
 
     def test_add_call_view_unauthenticated(self):
         """Unauthenticated users should be redirected"""
@@ -460,9 +427,7 @@ class ParseCallsFileViewTest(BattycodaTestCase):
         self.client = Client()
 
         # Create test user
-        self.user = User.objects.create_user(
-            username="testuser", email="test@example.com", password="password123"
-        )
+        self.user = User.objects.create_user(username="testuser", email="test@example.com", password="password123")
         self.profile = UserProfile.objects.get(user=self.user)
 
         # URL paths

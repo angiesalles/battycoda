@@ -22,9 +22,7 @@ class TaskViewsTest(BattycodaTestCase):
         self.group = Group.objects.create(name="Test Group", description="A test group")
 
         # Add user1 to the group as admin
-        self.membership = GroupMembership.objects.create(
-            user=self.user, group=self.group, is_admin=True
-        )
+        self.membership = GroupMembership.objects.create(user=self.user, group=self.group, is_admin=True)
 
         # Set as active group for user1
         self.profile.group = self.group

@@ -533,6 +533,82 @@ Configuration in `.env` file:
 - `VITE_FEATURE_TASK_ANNOTATION` - Use Vite for task annotation (default: false)
 - `VITE_FEATURE_SEGMENTATION` - Use Vite for segmentation (default: false)
 
+## Frontend Stack (Bootstrap 5)
+
+BattyCoda uses Bootstrap 5.3 with a custom light/dark theme system.
+
+### Current State
+- **Bootstrap**: 5.3.x via CDN (migrated from 4.3.1 + Maisonnette theme in Jan 2026)
+- **Icons**: Font Awesome 6.x via CDN
+- **Themes**: Light and Dark modes using CSS custom properties
+- **Build**: Vite for JS/CSS bundling
+
+### Theme System
+
+Two themes available: `light` (default) and `dark`. Users can toggle via navbar dropdown.
+
+**Theme Files:**
+- `static/css/themes/light.css` - Light theme (teal/green accent #20c997)
+- `static/css/themes/dark.css` - Dark theme (adjusted colors for dark backgrounds)
+- `static/css/themes.css` - Theme switcher dropdown styling
+
+**How it works:**
+1. Theme CSS loaded dynamically via `{% vite_theme_css theme_name %}`
+2. Body gets class `theme-light` or `theme-dark`
+3. Theme-switcher.js handles runtime switching and localStorage persistence
+4. User preference saved to database for authenticated users
+
+**Adding theme support to new CSS:**
+```css
+/* Use CSS variables that change with theme */
+.my-component {
+  background-color: var(--bc-card-bg);
+  border-color: var(--bc-card-border);
+  color: var(--bs-body-color);
+}
+
+/* Or use theme-specific overrides */
+body.theme-dark .my-component {
+  /* dark-mode specific styles */
+}
+```
+
+### Bootstrap 5 Class Reference
+
+Common utility classes (BS5 naming):
+- **Spacing**: `me-*`, `ms-*`, `pe-*`, `ps-*` (margin/padding end/start)
+- **Floats**: `float-end`, `float-start`
+- **Text**: `text-end`, `text-start`
+- **Gaps**: `gap-*`, `row-gap-*`, `column-gap-*`
+- **Visibility**: `visually-hidden` (replaces `sr-only`)
+
+### Data Attributes
+
+BS5 uses `data-bs-*` prefix:
+```html
+data-bs-toggle="dropdown"   <!-- not data-toggle -->
+data-bs-dismiss="modal"     <!-- not data-dismiss -->
+data-bs-target="#myModal"   <!-- not data-target -->
+```
+
+### JavaScript API
+
+BS5 doesn't require jQuery. Access components via:
+```javascript
+// Modal
+const modal = new bootstrap.Modal(document.getElementById('myModal'));
+modal.show();
+
+// Tooltip
+const tooltipList = [...document.querySelectorAll('[data-bs-toggle="tooltip"]')]
+  .map(el => new bootstrap.Tooltip(el));
+```
+
+### Migration History
+- **Pre-2026**: Bootstrap 4.3.1 + Maisonnette admin theme v1.3.2
+- **Jan 2026**: Migrated to Bootstrap 5.3, removed Maisonnette (discontinued)
+- **Jan 2026**: Simplified from 7 color themes to light/dark only
+
 ## Vite Frontend Migration
 
 BattyCoda uses an incremental migration strategy for moving from Django static files to Vite-bundled JavaScript.
@@ -563,9 +639,11 @@ CSS is processed through Vite with PostCSS for autoprefixing and minification:
 
 **Entry Points:**
 - `static/css/main.css` - Main CSS bundle (imports app.css, themes.css, typography.css, stroke-7)
-- `static/css/themes/*.css` - Individual theme files (built separately for dynamic loading)
+- `static/css/themes/light.css` - Light theme
+- `static/css/themes/dark.css` - Dark theme
 
 **Key Files:**
+- `static/css/app.css` - Minimal core styles (was 22K lines of Maisonnette, now ~10 lines)
 - `postcss.config.js` - PostCSS configuration (autoprefixer, cssnano)
 - `vite.config.js` - Vite config with CSS entry points
 - `battycoda_app/templatetags/vite.py` - Custom template tags for CSS loading
@@ -574,7 +652,8 @@ CSS is processed through Vite with PostCSS for autoprefixing and minification:
 ```html
 {% load vite %}
 {% vite_css 'styles' %}           <!-- Load main CSS bundle -->
-{% vite_theme_css 'blue-sky' %}   <!-- Load specific theme CSS -->
+{% vite_theme_css 'light' %}      <!-- Load light theme CSS -->
+{% vite_theme_css 'dark' %}       <!-- Load dark theme CSS -->
 {% vite_theme_urls %}             <!-- Inject theme URL mapping for JS -->
 ```
 

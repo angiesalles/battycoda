@@ -112,9 +112,7 @@ class TaskFormsTest(BattycodaTestCase):
 
     def test_task_update_form_valid(self):
         # Task.STATUS_CHOICES are: pending, in_progress, done
-        form = TaskUpdateForm(
-            data={"status": "done", "is_done": True, "label": "Test Label", "notes": "Test notes"}
-        )
+        form = TaskUpdateForm(data={"status": "done", "is_done": True, "label": "Test Label", "notes": "Test notes"})
         self.assertTrue(form.is_valid())
 
 

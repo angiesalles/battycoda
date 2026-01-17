@@ -214,16 +214,12 @@ class SpeciesForm(forms.ModelForm):
         super().__init__(*args, **kwargs)
         # Set initial values from model defaults for new instances
         if not self.instance.pk:
-            self.fields["detail_padding_start_ms"].initial = Species._meta.get_field(
-                "detail_padding_start_ms"
-            ).default
+            self.fields["detail_padding_start_ms"].initial = Species._meta.get_field("detail_padding_start_ms").default
             self.fields["detail_padding_end_ms"].initial = Species._meta.get_field("detail_padding_end_ms").default
             self.fields["overview_padding_start_ms"].initial = Species._meta.get_field(
                 "overview_padding_start_ms"
             ).default
-            self.fields["overview_padding_end_ms"].initial = Species._meta.get_field(
-                "overview_padding_end_ms"
-            ).default
+            self.fields["overview_padding_end_ms"].initial = Species._meta.get_field("overview_padding_end_ms").default
 
 
 class SpeciesEditForm(forms.ModelForm):
@@ -260,16 +256,12 @@ class SpeciesEditForm(forms.ModelForm):
         super().__init__(*args, **kwargs)
         # Set initial values from model defaults for new instances
         if not self.instance.pk:
-            self.fields["detail_padding_start_ms"].initial = Species._meta.get_field(
-                "detail_padding_start_ms"
-            ).default
+            self.fields["detail_padding_start_ms"].initial = Species._meta.get_field("detail_padding_start_ms").default
             self.fields["detail_padding_end_ms"].initial = Species._meta.get_field("detail_padding_end_ms").default
             self.fields["overview_padding_start_ms"].initial = Species._meta.get_field(
                 "overview_padding_start_ms"
             ).default
-            self.fields["overview_padding_end_ms"].initial = Species._meta.get_field(
-                "overview_padding_end_ms"
-            ).default
+            self.fields["overview_padding_end_ms"].initial = Species._meta.get_field("overview_padding_end_ms").default
 
 
 class CallForm(forms.ModelForm):

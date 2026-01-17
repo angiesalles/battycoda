@@ -8,6 +8,7 @@
 import { getCsrfToken } from './utils/page-data.js';
 
 const LOCAL_STORAGE_THEME_KEY = 'battycoda_theme';
+const VALID_THEMES = ['light', 'dark'];
 
 /**
  * Save theme to localStorage (works for all users as fallback)
@@ -77,26 +78,18 @@ export function applyTheme(themeName) {
   // Add new theme class to body
   mainBody.classList.add(`theme-${themeName}`);
 
-  // Only load theme CSS if it's not the default theme
-  if (themeName !== 'default') {
-    const themeId = `theme-css-${themeName}`;
-    let themeLink = document.getElementById(themeId);
+  // Remove all existing theme CSS files first
+  document.querySelectorAll('link[id^="theme-css-"]').forEach((link) => {
+    link.parentNode.removeChild(link);
+  });
 
-    if (!themeLink) {
-      themeLink = document.createElement('link');
-      themeLink.id = themeId;
-      themeLink.rel = 'stylesheet';
-      themeLink.href = getThemeUrl(themeName);
-      document.head.appendChild(themeLink);
-    }
-  }
-
-  // If switching to default, remove all theme CSS files
-  if (themeName === 'default') {
-    document.querySelectorAll('link[id^="theme-css-"]').forEach((link) => {
-      link.parentNode.removeChild(link);
-    });
-  }
+  // Load the new theme CSS
+  const themeId = `theme-css-${themeName}`;
+  const themeLink = document.createElement('link');
+  themeLink.id = themeId;
+  themeLink.rel = 'stylesheet';
+  themeLink.href = getThemeUrl(themeName);
+  document.head.appendChild(themeLink);
 }
 
 /**
@@ -113,7 +106,14 @@ export function initialize() {
 
   // If not authenticated, apply theme from localStorage
   if (!isAuthenticated) {
-    const savedTheme = localStorage.getItem(LOCAL_STORAGE_THEME_KEY);
+    let savedTheme = localStorage.getItem(LOCAL_STORAGE_THEME_KEY);
+
+    // Validate saved theme - clear stale values from old theme system
+    if (savedTheme && !VALID_THEMES.includes(savedTheme)) {
+      localStorage.removeItem(LOCAL_STORAGE_THEME_KEY);
+      savedTheme = null;
+    }
+
     if (savedTheme) {
       applyTheme(savedTheme);
 

@@ -32,7 +32,9 @@ class Command(BaseCommand):
                 # Use environment variable or generate a secure random password
                 password = os.environ.get("TEST_ADMIN_PASSWORD")
                 if password:
-                    self.stdout.write('No users found. Creating superuser "admin" with password from TEST_ADMIN_PASSWORD')
+                    self.stdout.write(
+                        'No users found. Creating superuser "admin" with password from TEST_ADMIN_PASSWORD'
+                    )
                 else:
                     password = generate_secure_password()
                     self.stdout.write('No users found. Creating superuser "admin" with generated password')
@@ -41,8 +43,8 @@ class Command(BaseCommand):
                     admin_user = User.objects.create_superuser(
                         username="admin", email="admin@example.com", password=password
                     )
-                    self.stdout.write(self.style.SUCCESS(f'Admin password: {password}'))
-                    self.stdout.write(self.style.WARNING('Save this password - it will not be shown again!'))
+                    self.stdout.write(self.style.SUCCESS(f"Admin password: {password}"))
+                    self.stdout.write(self.style.WARNING("Save this password - it will not be shown again!"))
                 except Exception as e:
                     self.stdout.write(self.style.ERROR(f"Error creating admin user: {e}"))
                     return

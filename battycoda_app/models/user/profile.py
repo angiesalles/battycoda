@@ -14,13 +14,8 @@ class UserProfile(models.Model):
 
     # Theme choices
     THEME_CHOICES = (
-        ("default", "Default Green"),
-        ("blue-sky", "Blue Sky"),
-        ("little-fox", "Little Fox"),
-        ("night-city", "Night City"),
-        ("orange-juice", "Orange Juice"),
-        ("passion", "Passion"),
-        ("pink-love", "Pink Love"),
+        ("light", "Light"),
+        ("dark", "Dark"),
     )
 
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name="profile")
@@ -32,9 +27,7 @@ class UserProfile(models.Model):
         help_text="Every user must belong to a group",
     )
     # User preferences
-    theme = models.CharField(
-        max_length=20, choices=THEME_CHOICES, default="default", help_text="Color theme preference"
-    )
+    theme = models.CharField(max_length=20, choices=THEME_CHOICES, default="light", help_text="Color theme preference")
 
     # Activity tracking
     last_activity = models.DateTimeField(

@@ -1,4 +1,5 @@
 """Tests for clustering views"""
+
 from django.contrib.auth.models import User
 from django.test import Client
 from django.urls import reverse
@@ -15,18 +16,14 @@ class ClusteringDashboardViewTest(BattycodaTestCase):
         self.client = Client()
 
         # Create test user
-        self.user = User.objects.create_user(
-            username="testuser", email="test@example.com", password="password123"
-        )
+        self.user = User.objects.create_user(username="testuser", email="test@example.com", password="password123")
         self.profile = UserProfile.objects.get(user=self.user)
 
         # Create a test group
         self.group = Group.objects.create(name="Test Group", description="A test group")
 
         # Add user to the group
-        self.membership = GroupMembership.objects.create(
-            user=self.user, group=self.group, is_admin=True
-        )
+        self.membership = GroupMembership.objects.create(user=self.user, group=self.group, is_admin=True)
 
         # Set as active group
         self.profile.group = self.group
@@ -55,18 +52,14 @@ class CreateClusteringRunViewTest(BattycodaTestCase):
         self.client = Client()
 
         # Create test user
-        self.user = User.objects.create_user(
-            username="testuser", email="test@example.com", password="password123"
-        )
+        self.user = User.objects.create_user(username="testuser", email="test@example.com", password="password123")
         self.profile = UserProfile.objects.get(user=self.user)
 
         # Create a test group
         self.group = Group.objects.create(name="Test Group", description="A test group")
 
         # Add user to the group
-        self.membership = GroupMembership.objects.create(
-            user=self.user, group=self.group, is_admin=True
-        )
+        self.membership = GroupMembership.objects.create(user=self.user, group=self.group, is_admin=True)
 
         # Set as active group
         self.profile.group = self.group
@@ -138,22 +131,16 @@ class ClusteringRunDetailViewTest(BattycodaTestCase):
         self.client = Client()
 
         # Create test users
-        self.user = User.objects.create_user(
-            username="testuser", email="test@example.com", password="password123"
-        )
+        self.user = User.objects.create_user(username="testuser", email="test@example.com", password="password123")
         self.profile = UserProfile.objects.get(user=self.user)
 
-        self.user2 = User.objects.create_user(
-            username="testuser2", email="test2@example.com", password="password123"
-        )
+        self.user2 = User.objects.create_user(username="testuser2", email="test2@example.com", password="password123")
 
         # Create a test group
         self.group = Group.objects.create(name="Test Group", description="A test group")
 
         # Add user to the group
-        self.membership = GroupMembership.objects.create(
-            user=self.user, group=self.group, is_admin=True
-        )
+        self.membership = GroupMembership.objects.create(user=self.user, group=self.group, is_admin=True)
 
         # Set as active group
         self.profile.group = self.group
@@ -215,9 +202,7 @@ class ClusteringRunDetailViewTest(BattycodaTestCase):
         )
 
         # URL paths
-        self.clustering_detail_url = reverse(
-            "battycoda_app:clustering_run_detail", args=[self.clustering_run.id]
-        )
+        self.clustering_detail_url = reverse("battycoda_app:clustering_run_detail", args=[self.clustering_run.id])
 
     def test_clustering_detail_view_owner(self):
         """Clustering run owner should see the detail view"""
@@ -237,18 +222,14 @@ class ClusterExplorerViewTest(BattycodaTestCase):
         self.client = Client()
 
         # Create test user
-        self.user = User.objects.create_user(
-            username="testuser", email="test@example.com", password="password123"
-        )
+        self.user = User.objects.create_user(username="testuser", email="test@example.com", password="password123")
         self.profile = UserProfile.objects.get(user=self.user)
 
         # Create a test group
         self.group = Group.objects.create(name="Test Group", description="A test group")
 
         # Add user to the group
-        self.membership = GroupMembership.objects.create(
-            user=self.user, group=self.group, is_admin=True
-        )
+        self.membership = GroupMembership.objects.create(user=self.user, group=self.group, is_admin=True)
 
         # Set as active group
         self.profile.group = self.group
@@ -318,9 +299,7 @@ class ClusterExplorerViewTest(BattycodaTestCase):
         )
 
         # URL paths
-        self.cluster_explorer_url = reverse(
-            "battycoda_app:cluster_explorer", args=[self.clustering_run.id]
-        )
+        self.cluster_explorer_url = reverse("battycoda_app:cluster_explorer", args=[self.clustering_run.id])
 
     def test_cluster_explorer_view_authenticated(self):
         """Authenticated users should see the cluster explorer"""
@@ -340,18 +319,14 @@ class ClusterMappingViewTest(BattycodaTestCase):
         self.client = Client()
 
         # Create test user
-        self.user = User.objects.create_user(
-            username="testuser", email="test@example.com", password="password123"
-        )
+        self.user = User.objects.create_user(username="testuser", email="test@example.com", password="password123")
         self.profile = UserProfile.objects.get(user=self.user)
 
         # Create a test group
         self.group = Group.objects.create(name="Test Group", description="A test group")
 
         # Add user to the group
-        self.membership = GroupMembership.objects.create(
-            user=self.user, group=self.group, is_admin=True
-        )
+        self.membership = GroupMembership.objects.create(user=self.user, group=self.group, is_admin=True)
 
         # Set as active group
         self.profile.group = self.group
@@ -413,9 +388,7 @@ class ClusterMappingViewTest(BattycodaTestCase):
         )
 
         # URL paths
-        self.mapping_url = reverse(
-            "battycoda_app:map_clusters_to_calls", args=[self.clustering_run.id]
-        )
+        self.mapping_url = reverse("battycoda_app:map_clusters_to_calls", args=[self.clustering_run.id])
 
     def test_mapping_view_authenticated(self):
         """Authenticated users should see the mapping interface"""
@@ -435,18 +408,14 @@ class ClusteringAPIViewTest(BattycodaTestCase):
         self.client = Client()
 
         # Create test user
-        self.user = User.objects.create_user(
-            username="testuser", email="test@example.com", password="password123"
-        )
+        self.user = User.objects.create_user(username="testuser", email="test@example.com", password="password123")
         self.profile = UserProfile.objects.get(user=self.user)
 
         # Create a test group
         self.group = Group.objects.create(name="Test Group", description="A test group")
 
         # Add user to the group
-        self.membership = GroupMembership.objects.create(
-            user=self.user, group=self.group, is_admin=True
-        )
+        self.membership = GroupMembership.objects.create(user=self.user, group=self.group, is_admin=True)
 
         # Set as active group
         self.profile.group = self.group
@@ -544,9 +513,7 @@ class ClusteringAPIViewTest(BattycodaTestCase):
     def test_clustering_run_status_authenticated(self):
         """Authenticated users should get clustering run status"""
         self.client.login(username="testuser", password="password123")
-        url = reverse(
-            "battycoda_app:clustering_run_status", args=[self.clustering_run.id]
-        )
+        url = reverse("battycoda_app:clustering_run_status", args=[self.clustering_run.id])
         response = self.client.get(url)
         self.assertEqual(response.status_code, 200)
         data = response.json()
@@ -558,18 +525,14 @@ class ClusterLabelUpdateViewTest(BattycodaTestCase):
         self.client = Client()
 
         # Create test user
-        self.user = User.objects.create_user(
-            username="testuser", email="test@example.com", password="password123"
-        )
+        self.user = User.objects.create_user(username="testuser", email="test@example.com", password="password123")
         self.profile = UserProfile.objects.get(user=self.user)
 
         # Create a test group
         self.group = Group.objects.create(name="Test Group", description="A test group")
 
         # Add user to the group
-        self.membership = GroupMembership.objects.create(
-            user=self.user, group=self.group, is_admin=True
-        )
+        self.membership = GroupMembership.objects.create(user=self.user, group=self.group, is_admin=True)
 
         # Set as active group
         self.profile.group = self.group

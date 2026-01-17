@@ -1,4 +1,5 @@
 """Tests for dashboard views"""
+
 from datetime import timedelta
 
 from django.contrib.auth.models import User
@@ -17,18 +18,14 @@ class DashboardViewsTest(BattycodaTestCase):
         self.client = Client()
 
         # Create test user
-        self.user = User.objects.create_user(
-            username="testuser", email="test@example.com", password="password123"
-        )
+        self.user = User.objects.create_user(username="testuser", email="test@example.com", password="password123")
         self.profile = UserProfile.objects.get(user=self.user)
 
         # Create a test group
         self.group = Group.objects.create(name="Test Group", description="A test group")
 
         # Add user to the group
-        self.membership = GroupMembership.objects.create(
-            user=self.user, group=self.group, is_admin=True
-        )
+        self.membership = GroupMembership.objects.create(user=self.user, group=self.group, is_admin=True)
 
         # Set as active group
         self.profile.group = self.group
@@ -166,18 +163,14 @@ class DashboardStreakCalculationTest(BattycodaTestCase):
         self.client = Client()
 
         # Create test user
-        self.user = User.objects.create_user(
-            username="testuser", email="test@example.com", password="password123"
-        )
+        self.user = User.objects.create_user(username="testuser", email="test@example.com", password="password123")
         self.profile = UserProfile.objects.get(user=self.user)
 
         # Create a test group
         self.group = Group.objects.create(name="Test Group", description="A test group")
 
         # Add user to the group
-        self.membership = GroupMembership.objects.create(
-            user=self.user, group=self.group, is_admin=True
-        )
+        self.membership = GroupMembership.objects.create(user=self.user, group=self.group, is_admin=True)
 
         # Set as active group
         self.profile.group = self.group

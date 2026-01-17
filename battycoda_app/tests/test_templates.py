@@ -9,6 +9,8 @@ without errors. They help catch issues like:
 - Invalid template variable references
 """
 
+# Suppress noisy logs during tests
+import logging
 import os
 
 from django.conf import settings
@@ -21,9 +23,6 @@ from battycoda_app.forms import SpeciesForm
 from battycoda_app.models.organization import Species
 from battycoda_app.models.user import Group
 from battycoda_app.tests.test_settings import PASSWORD_HASHERS
-
-# Suppress noisy logs during tests
-import logging
 
 logging.disable(logging.ERROR)
 

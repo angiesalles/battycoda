@@ -1,38 +1,17 @@
-/* 
- * BattyKoda Theme CSS
- * Based on Maisonnette Theme
+/*
+ * BattyCoda Theme Switcher Styles
  */
 
-/* Add a highlight effect for the active theme in dropdown */
+/* Highlight effect for active theme in dropdown */
 .theme-switcher-link.active .theme-name {
     font-weight: bold;
 }
 
-/* Theme colors for dropdown text */
-.theme-color-default {
-    color: #4ad69e !important;
+/* Theme color indicators for dropdown */
+.theme-color-light {
+    color: #20c997 !important;
 }
 
-.theme-color-blue-sky {
-    color: #59c2e6 !important;
-}
-
-.theme-color-little-fox {
-    color: #fe8458 !important;
-}
-
-.theme-color-night-city {
-    color: #9674c8 !important;
-}
-
-.theme-color-orange-juice {
-    color: #FBAC4F !important;
-}
-
-.theme-color-passion {
-    color: #e74c3c !important;
-}
-
-.theme-color-pink-love {
-    color: #f48fb1 !important;
+.theme-color-dark {
+    color: #3dd9ad !important;
 }

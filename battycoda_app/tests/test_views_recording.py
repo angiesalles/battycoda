@@ -1,4 +1,5 @@
 """Tests for recording views"""
+
 from django.contrib.auth.models import User
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.test import Client
@@ -12,21 +13,54 @@ from battycoda_app.tests.test_base import BattycodaTestCase
 def create_mock_wav_file(name="test.wav"):
     """Create a minimal valid WAV file for testing"""
     # Create a minimal WAV header (44 bytes) with silence
-    wav_header = bytes([
-        0x52, 0x49, 0x46, 0x46,  # "RIFF"
-        0x24, 0x00, 0x00, 0x00,  # File size - 8
-        0x57, 0x41, 0x56, 0x45,  # "WAVE"
-        0x66, 0x6d, 0x74, 0x20,  # "fmt "
-        0x10, 0x00, 0x00, 0x00,  # Subchunk1Size (16 for PCM)
-        0x01, 0x00,              # AudioFormat (1 = PCM)
-        0x01, 0x00,              # NumChannels (1)
-        0x44, 0xac, 0x00, 0x00,  # SampleRate (44100)
-        0x88, 0x58, 0x01, 0x00,  # ByteRate
-        0x02, 0x00,              # BlockAlign
-        0x10, 0x00,              # BitsPerSample (16)
-        0x64, 0x61, 0x74, 0x61,  # "data"
-        0x00, 0x00, 0x00, 0x00,  # Subchunk2Size (0 bytes of audio)
-    ])
+    wav_header = bytes(
+        [
+            0x52,
+            0x49,
+            0x46,
+            0x46,  # "RIFF"
+            0x24,
+            0x00,
+            0x00,
+            0x00,  # File size - 8
+            0x57,
+            0x41,
+            0x56,
+            0x45,  # "WAVE"
+            0x66,
+            0x6D,
+            0x74,
+            0x20,  # "fmt "
+            0x10,
+            0x00,
+            0x00,
+            0x00,  # Subchunk1Size (16 for PCM)
+            0x01,
+            0x00,  # AudioFormat (1 = PCM)
+            0x01,
+            0x00,  # NumChannels (1)
+            0x44,
+            0xAC,
+            0x00,
+            0x00,  # SampleRate (44100)
+            0x88,
+            0x58,
+            0x01,
+            0x00,  # ByteRate
+            0x02,
+            0x00,  # BlockAlign
+            0x10,
+            0x00,  # BitsPerSample (16)
+            0x64,
+            0x61,
+            0x74,
+            0x61,  # "data"
+            0x00,
+            0x00,
+            0x00,
+            0x00,  # Subchunk2Size (0 bytes of audio)
+        ]
+    )
     return SimpleUploadedFile(name, wav_header, content_type="audio/wav")
 
 
@@ -35,18 +69,14 @@ class RecordingListViewTest(BattycodaTestCase):
         self.client = Client()
 
         # Create test user
-        self.user = User.objects.create_user(
-            username="testuser", email="test@example.com", password="password123"
-        )
+        self.user = User.objects.create_user(username="testuser", email="test@example.com", password="password123")
         self.profile = UserProfile.objects.get(user=self.user)
 
         # Create a test group
         self.group = Group.objects.create(name="Test Group", description="A test group")
 
         # Add user to the group
-        self.membership = GroupMembership.objects.create(
-            user=self.user, group=self.group, is_admin=True
-        )
+        self.membership = GroupMembership.objects.create(user=self.user, group=self.group, is_admin=True)
 
         # Set as active group
         self.profile.group = self.group
@@ -94,9 +124,7 @@ class RecordingListViewTest(BattycodaTestCase):
             created_by=self.user,
         )
 
-        response = self.client.get(
-            f"{self.recording_list_url}?project={self.project.id}"
-        )
+        response = self.client.get(f"{self.recording_list_url}?project={self.project.id}")
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.context["selected_project_id"], self.project.id)
 
@@ -106,22 +134,16 @@ class RecordingDetailViewTest(BattycodaTestCase):
         self.client = Client()
 
         # Create test users
-        self.user = User.objects.create_user(
-            username="testuser", email="test@example.com", password="password123"
-        )
+        self.user = User.objects.create_user(username="testuser", email="test@example.com", password="password123")
         self.profile = UserProfile.objects.get(user=self.user)
 
-        self.user2 = User.objects.create_user(
-            username="testuser2", email="test2@example.com", password="password123"
-        )
+        self.user2 = User.objects.create_user(username="testuser2", email="test2@example.com", password="password123")
 
         # Create a test group
         self.group = Group.objects.create(name="Test Group", description="A test group")
 
         # Add user to the group
-        self.membership = GroupMembership.objects.create(
-            user=self.user, group=self.group, is_admin=True
-        )
+        self.membership = GroupMembership.objects.create(user=self.user, group=self.group, is_admin=True)
 
         # Set as active group
         self.profile.group = self.group
@@ -151,9 +173,7 @@ class RecordingDetailViewTest(BattycodaTestCase):
         )
 
         # URL paths
-        self.recording_detail_url = reverse(
-            "battycoda_app:recording_detail", args=[self.recording.id]
-        )
+        self.recording_detail_url = reverse("battycoda_app:recording_detail", args=[self.recording.id])
 
     def test_recording_detail_view_owner(self):
         """Recording owner should see the detail view"""
@@ -180,18 +200,14 @@ class CreateRecordingViewTest(BattycodaTestCase):
         self.client = Client()
 
         # Create test user
-        self.user = User.objects.create_user(
-            username="testuser", email="test@example.com", password="password123"
-        )
+        self.user = User.objects.create_user(username="testuser", email="test@example.com", password="password123")
         self.profile = UserProfile.objects.get(user=self.user)
 
         # Create a test group
         self.group = Group.objects.create(name="Test Group", description="A test group")
 
         # Add user to the group
-        self.membership = GroupMembership.objects.create(
-            user=self.user, group=self.group, is_admin=True
-        )
+        self.membership = GroupMembership.objects.create(user=self.user, group=self.group, is_admin=True)
 
         # Set as active group
         self.profile.group = self.group
@@ -232,22 +248,16 @@ class EditRecordingViewTest(BattycodaTestCase):
         self.client = Client()
 
         # Create test users
-        self.user = User.objects.create_user(
-            username="testuser", email="test@example.com", password="password123"
-        )
+        self.user = User.objects.create_user(username="testuser", email="test@example.com", password="password123")
         self.profile = UserProfile.objects.get(user=self.user)
 
-        self.user2 = User.objects.create_user(
-            username="testuser2", email="test2@example.com", password="password123"
-        )
+        self.user2 = User.objects.create_user(username="testuser2", email="test2@example.com", password="password123")
 
         # Create a test group
         self.group = Group.objects.create(name="Test Group", description="A test group")
 
         # Add user to the group
-        self.membership = GroupMembership.objects.create(
-            user=self.user, group=self.group, is_admin=True
-        )
+        self.membership = GroupMembership.objects.create(user=self.user, group=self.group, is_admin=True)
 
         # Set as active group
         self.profile.group = self.group
@@ -276,9 +286,7 @@ class EditRecordingViewTest(BattycodaTestCase):
         )
 
         # URL paths
-        self.edit_recording_url = reverse(
-            "battycoda_app:edit_recording", args=[self.recording.id]
-        )
+        self.edit_recording_url = reverse("battycoda_app:edit_recording", args=[self.recording.id])
 
     def test_edit_recording_view_get_owner(self):
         """Recording owner should see the edit form"""
@@ -320,22 +328,16 @@ class DeleteRecordingViewTest(BattycodaTestCase):
         self.client = Client()
 
         # Create test users
-        self.user = User.objects.create_user(
-            username="testuser", email="test@example.com", password="password123"
-        )
+        self.user = User.objects.create_user(username="testuser", email="test@example.com", password="password123")
         self.profile = UserProfile.objects.get(user=self.user)
 
-        self.user2 = User.objects.create_user(
-            username="testuser2", email="test2@example.com", password="password123"
-        )
+        self.user2 = User.objects.create_user(username="testuser2", email="test2@example.com", password="password123")
 
         # Create a test group
         self.group = Group.objects.create(name="Test Group", description="A test group")
 
         # Add user to the group
-        self.membership = GroupMembership.objects.create(
-            user=self.user, group=self.group, is_admin=True
-        )
+        self.membership = GroupMembership.objects.create(user=self.user, group=self.group, is_admin=True)
 
         # Set as active group
         self.profile.group = self.group
@@ -364,9 +366,7 @@ class DeleteRecordingViewTest(BattycodaTestCase):
         )
 
         # URL paths
-        self.delete_recording_url = reverse(
-            "battycoda_app:delete_recording", args=[self.recording.id]
-        )
+        self.delete_recording_url = reverse("battycoda_app:delete_recording", args=[self.recording.id])
 
     def test_delete_recording_view_get(self):
         """GET request should show the delete confirmation page"""
