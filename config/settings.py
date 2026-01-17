@@ -437,8 +437,7 @@ VITE_FEATURES = {
     "player": os.environ.get("VITE_FEATURE_PLAYER", "false").lower() == "true",
     "task_annotation": os.environ.get("VITE_FEATURE_TASK_ANNOTATION", "false").lower() == "true",
     "segmentation": os.environ.get("VITE_FEATURE_SEGMENTATION", "false").lower() == "true",
-    "profile": os.environ.get("VITE_FEATURE_PROFILE", "false").lower() == "true",
-    "species_create": os.environ.get("VITE_FEATURE_SPECIES_CREATE", "false").lower() == "true",
+    # profile and species_create now always use Vite modules (no feature flag needed)
 }
 
 # =============================================================================

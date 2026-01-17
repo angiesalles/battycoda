@@ -67,12 +67,5 @@
      hidden>
 </div>
 
-{% if VITE_FEATURES.profile %}
-<!-- Vite-bundled profile module -->
 {% vite_asset 'static/js/profile/index.js' %}
-{% else %}
-<!-- Legacy inline script -->
-<script>
-{% include "auth/includes/api_keys.html" %}
-{% endif %}
 {% endblock %}
