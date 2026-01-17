@@ -26,7 +26,14 @@ import { saveClusterLabel } from './data_loader.js';
  */
 export function initClusterExplorer(clusters) {
   const $ = window.jQuery;
-  if (!$ || !clusters) return;
+  if (!$) {
+    console.error('[ClusterExplorer] jQuery is not available. Cannot initialize cluster explorer.');
+    return;
+  }
+  if (!clusters) {
+    console.error('[ClusterExplorer] No clusters data provided. Cannot initialize cluster explorer.');
+    return;
+  }
 
   // Store clusters globally for other components
   window.clusters = clusters;
@@ -62,11 +69,16 @@ export function initClusterExplorer(clusters) {
  */
 function autoInitialize() {
   const $ = window.jQuery;
-  if (!$) return;
+  if (!$) {
+    console.warn('[ClusterExplorer] jQuery not available during auto-initialization. Skipping.');
+    return;
+  }
 
   // Check if clusters data is available
   if (typeof window.clusters !== 'undefined' && window.clusters) {
     initClusterExplorer(window.clusters);
+  } else {
+    console.debug('[ClusterExplorer] No clusters data found (window.clusters). Auto-initialization skipped.');
   }
 }
 

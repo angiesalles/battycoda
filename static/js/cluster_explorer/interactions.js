@@ -16,7 +16,10 @@ import { API_ENDPOINTS, buildUrl } from './api.js';
  */
 export function selectCluster(clusterId) {
   const $ = window.jQuery;
-  if (!$) return;
+  if (!$) {
+    console.error('[ClusterExplorer] jQuery is not available. Cannot select cluster.');
+    return;
+  }
 
   // Update the selection
   setSelectedClusterId(clusterId);
@@ -41,7 +44,10 @@ export function selectCluster(clusterId) {
  */
 export function loadClusterDetails(clusterId) {
   const $ = window.jQuery;
-  if (!$) return;
+  if (!$) {
+    console.error('[ClusterExplorer] jQuery is not available. Cannot load cluster details.');
+    return;
+  }
 
   // Show the details panel
   $('.initial-message').addClass('d-none');
@@ -113,7 +119,10 @@ export function loadClusterDetails(clusterId) {
  */
 export function loadClusterMembers(clusterId) {
   const $ = window.jQuery;
-  if (!$) return;
+  if (!$) {
+    console.error('[ClusterExplorer] jQuery is not available. Cannot load cluster members.');
+    return;
+  }
 
   // Show the members panel
   $('.initial-members-message').addClass('d-none');

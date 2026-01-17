@@ -14,10 +14,16 @@ import { API_ENDPOINTS } from './api.js';
  */
 export function saveClusterLabel(onSuccess) {
   const $ = window.jQuery;
-  if (!$) return;
+  if (!$) {
+    console.error('[ClusterExplorer] jQuery is not available. Cannot save cluster label.');
+    return;
+  }
 
   const selectedId = getSelectedClusterId();
-  if (!selectedId) return;
+  if (!selectedId) {
+    console.warn('[ClusterExplorer] No cluster selected. Cannot save cluster label.');
+    return;
+  }
 
   const label = $('#cluster-label').val();
   const description = $('#cluster-description').val();

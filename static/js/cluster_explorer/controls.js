@@ -16,7 +16,10 @@ import { API_ENDPOINTS, buildUrl } from './api.js';
  */
 export function loadSegmentDetails(segmentId) {
   const $ = window.jQuery;
-  if (!$) return;
+  if (!$) {
+    console.error('[ClusterExplorer] jQuery is not available. Cannot load segment details.');
+    return;
+  }
 
   // Show a loading indicator in the modal
   $('.segment-spectrogram').html('<div class="spinner-border text-primary"></div>');
@@ -60,7 +63,10 @@ export function loadSegmentDetails(segmentId) {
  */
 export function initializeControls(onPointSizeChange, onOpacityChange) {
   const $ = window.jQuery;
-  if (!$) return;
+  if (!$) {
+    console.error('[ClusterExplorer] jQuery is not available. Cannot initialize controls.');
+    return;
+  }
 
   // Clean up existing handlers to prevent duplicates on re-initialization
   $('#point-size').off('input');

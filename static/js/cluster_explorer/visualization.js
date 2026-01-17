@@ -21,7 +21,14 @@ import { escapeHtml } from '../utils/html.js';
  */
 export function initializeVisualization(clusters) {
   const $ = window.jQuery;
-  if (!$ || !clusters) return null;
+  if (!$) {
+    console.error('[ClusterExplorer] jQuery is not available. Cannot initialize visualization.');
+    return null;
+  }
+  if (!clusters) {
+    console.error('[ClusterExplorer] No clusters data provided. Cannot initialize visualization.');
+    return null;
+  }
 
   // If there are no clusters, show a message
   if (clusters.length === 0) {
@@ -148,7 +155,10 @@ export function initializeVisualization(clusters) {
  */
 export function createLegend(clusters) {
   const $ = window.jQuery;
-  if (!$) return;
+  if (!$) {
+    console.error('[ClusterExplorer] jQuery is not available. Cannot create legend.');
+    return;
+  }
 
   const legendDiv = $('.cluster-legend');
   legendDiv.empty();
@@ -181,7 +191,10 @@ export function createLegend(clusters) {
  */
 export function updateVisualization() {
   const $ = window.jQuery;
-  if (!$) return;
+  if (!$) {
+    console.error('[ClusterExplorer] jQuery is not available. Cannot update visualization.');
+    return;
+  }
 
   const pointSize = parseInt($('#point-size').val());
   const opacity = parseFloat($('#cluster-opacity').val());
