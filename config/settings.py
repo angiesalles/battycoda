@@ -377,6 +377,7 @@ SPECTACULAR_SETTINGS = {
 # Sentry Error Tracking Configuration
 SENTRY_DSN = os.environ.get("SENTRY_DSN")
 SENTRY_ENVIRONMENT = os.environ.get("SENTRY_ENVIRONMENT", "production")
+SENTRY_RELEASE = os.environ.get("SENTRY_RELEASE")  # Git commit hash, set by deploy.sh
 
 if SENTRY_DSN:
     import sentry_sdk
@@ -394,6 +395,7 @@ if SENTRY_DSN:
         traces_sample_rate=0.1,
         send_default_pii=True,
         environment=SENTRY_ENVIRONMENT,
+        release=SENTRY_RELEASE,  # Matches JS source maps release
     )
 
 # Vite Frontend Build Configuration

@@ -122,6 +122,13 @@ export NODE_ENV=production
 if git rev-parse --git-dir > /dev/null 2>&1; then
     export SENTRY_RELEASE=$(git rev-parse HEAD)
     log_info "Sentry release: ${SENTRY_RELEASE:0:8}..."
+
+    # Persist SENTRY_RELEASE to .env for runtime use by Django/Celery
+    if grep -q "^SENTRY_RELEASE=" .env 2>/dev/null; then
+        sed -i "s|^SENTRY_RELEASE=.*|SENTRY_RELEASE=$SENTRY_RELEASE|" .env
+    else
+        echo "SENTRY_RELEASE=$SENTRY_RELEASE" >> .env
+    fi
 fi
 
 # Check if Sentry source map upload is configured
