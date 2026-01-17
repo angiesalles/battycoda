@@ -91,11 +91,6 @@ describe('cluster_explorer/index', () => {
     delete window.jQuery;
     delete window.clusters;
     delete window.isProjectScope;
-    delete window.initClusterExplorer;
-    delete window.selectCluster;
-    delete window.loadSegmentDetails;
-    delete window.saveClusterLabel;
-    delete window.initializeVisualization;
   });
 
   afterEach(() => {
@@ -358,45 +353,6 @@ describe('cluster_explorer/index', () => {
 
       expect(initializeVisualization).toHaveBeenCalledWith(clusters);
       expect(selectCluster).toHaveBeenCalledWith(42);
-    });
-  });
-
-  describe('global exports', () => {
-    // These tests verify that globals are set when initClusterExplorer is called
-    // The module sets globals on load, but beforeEach cleans them for isolation
-    // So we verify by calling initClusterExplorer and checking globals exist after
-
-    it('should set window.initClusterExplorer as a function on module load', async () => {
-      // Re-import the module to get fresh global assignments
-      // Use dynamic import to bypass Vitest's module cache
-      const freshModule = await import('./index.js?fresh1');
-      expect(typeof freshModule.initClusterExplorer).toBe('function');
-      // The module also exposes window.initClusterExplorer
-      expect(typeof window.initClusterExplorer).toBe('function');
-    });
-
-    it('should set window.selectCluster as a function on module load', async () => {
-      const freshModule = await import('./index.js?fresh2');
-      expect(typeof freshModule.selectCluster).toBe('function');
-      expect(typeof window.selectCluster).toBe('function');
-    });
-
-    it('should set window.loadSegmentDetails as a function on module load', async () => {
-      const freshModule = await import('./index.js?fresh3');
-      expect(typeof freshModule.loadSegmentDetails).toBe('function');
-      expect(typeof window.loadSegmentDetails).toBe('function');
-    });
-
-    it('should set window.saveClusterLabel as a function on module load', async () => {
-      const freshModule = await import('./index.js?fresh4');
-      expect(typeof freshModule.saveClusterLabel).toBe('function');
-      expect(typeof window.saveClusterLabel).toBe('function');
-    });
-
-    it('should set window.initializeVisualization as a function on module load', async () => {
-      const freshModule = await import('./index.js?fresh5');
-      expect(typeof freshModule.initializeVisualization).toBe('function');
-      expect(typeof window.initializeVisualization).toBe('function');
     });
   });
 

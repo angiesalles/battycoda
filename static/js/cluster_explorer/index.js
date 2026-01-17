@@ -138,10 +138,3 @@ export {
   loadSegmentDetails,
   saveClusterLabel,
 };
-
-// Expose key functions globally for Django template usage
-window.initClusterExplorer = initClusterExplorer;
-window.selectCluster = selectCluster;
-window.loadSegmentDetails = loadSegmentDetails;
-window.saveClusterLabel = saveClusterLabel;
-window.initializeVisualization = initializeVisualization;
