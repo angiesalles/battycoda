@@ -8,9 +8,9 @@
  * - D3.js (bundled via npm for tree-shaking benefits)
  * - jQuery (loaded via CDN as window.jQuery)
  *
- * Global data expected from Django template:
- * - window.clusters: Array of cluster objects
- * - window.isProjectScope: Boolean indicating project-level clustering
+ * Data from Django template (via DOM elements, not window globals):
+ * - #cluster-data: JSON script tag containing clusters array
+ * - #cluster-explorer-config: Element with data-is-project-scope attribute
  */
 
 // Import all modules
@@ -52,14 +52,20 @@ export function initClusterExplorer(clusters, options = {}) {
     return;
   }
 
-  // Store clusters in state module (also set window.clusters for legacy compatibility)
+  // Store clusters in state module
   setClusters(clusters);
-  window.clusters = clusters;
 
   // Store project scope in state module
-  // Check options first, then fall back to window.isProjectScope for backward compatibility
-  const projectScope =
-    options.isProjectScope !== undefined ? options.isProjectScope : !!window.isProjectScope;
+  // Check options first, then fall back to reading from DOM config element
+  let projectScope = false;
+  if (options.isProjectScope !== undefined) {
+    projectScope = options.isProjectScope;
+  } else {
+    const configEl = document.getElementById('cluster-explorer-config');
+    if (configEl) {
+      projectScope = configEl.dataset.isProjectScope === 'true';
+    }
+  }
   setIsProjectScope(projectScope);
 
   // Initialize the visualization
@@ -89,7 +95,8 @@ export function initClusterExplorer(clusters, options = {}) {
 }
 
 /**
- * Auto-initialize if clusters data is available on page load
+ * Auto-initialize if clusters data is available on page load.
+ * Reads cluster data from a JSON script tag (#cluster-data) in the DOM.
  */
 function autoInitialize() {
   const $ = window.jQuery;
@@ -98,12 +105,21 @@ function autoInitialize() {
     return;
   }
 
-  // Check if clusters data is available
-  if (typeof window.clusters !== 'undefined' && window.clusters) {
-    initClusterExplorer(window.clusters);
-  } else {
-    console.debug('[ClusterExplorer] No clusters data found (window.clusters). Auto-initialization skipped.');
+  // Try to read clusters from JSON script tag in DOM
+  const clusterDataEl = document.getElementById('cluster-data');
+  if (clusterDataEl) {
+    try {
+      const clusters = JSON.parse(clusterDataEl.textContent);
+      if (clusters && Array.isArray(clusters)) {
+        initClusterExplorer(clusters);
+        return;
+      }
+    } catch (e) {
+      console.error('[ClusterExplorer] Failed to parse cluster data from #cluster-data:', e);
+    }
   }
+
+  console.debug('[ClusterExplorer] No cluster data found (#cluster-data element). Auto-initialization skipped.');
 }
 
 // Auto-initialize on DOMContentLoaded

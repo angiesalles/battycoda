@@ -89,8 +89,16 @@ describe('cluster_explorer/index', () => {
 
     // Clean up window globals
     delete window.jQuery;
-    delete window.clusters;
-    delete window.isProjectScope;
+
+    // Clean up any DOM config elements from previous tests
+    const existingConfig = document.getElementById('cluster-explorer-config');
+    if (existingConfig) {
+      existingConfig.remove();
+    }
+    const existingData = document.getElementById('cluster-data');
+    if (existingData) {
+      existingData.remove();
+    }
   });
 
   afterEach(() => {
@@ -157,15 +165,6 @@ describe('cluster_explorer/index', () => {
       expect(getClusters()).toBe(clusters);
     });
 
-    it('should set window.clusters for legacy compatibility', () => {
-      setJQuery(mockJQuery);
-      const clusters = [{ id: 1, label: 'Cluster 1' }];
-
-      initClusterExplorer(clusters);
-
-      expect(window.clusters).toBe(clusters);
-    });
-
     it('should use options.jQuery when provided (dependency injection)', () => {
       // Do not set jQuery in state
       setJQuery(null);
@@ -194,27 +193,44 @@ describe('cluster_explorer/index', () => {
 
     it('should set isProjectScope to false when option is explicitly false', () => {
       setJQuery(mockJQuery);
-      window.isProjectScope = true; // Set window value to true
+      // Create DOM config element with true value
+      const configEl = document.createElement('div');
+      configEl.id = 'cluster-explorer-config';
+      configEl.dataset.isProjectScope = 'true';
+      document.body.appendChild(configEl);
+
       const clusters = [{ id: 1, label: 'Cluster 1' }];
 
+      // Options should override DOM config
       initClusterExplorer(clusters, { isProjectScope: false });
 
       expect(getIsProjectScope()).toBe(false);
+
+      // Cleanup
+      document.body.removeChild(configEl);
     });
 
-    it('should fall back to window.isProjectScope when options.isProjectScope is undefined', () => {
+    it('should fall back to DOM config element when options.isProjectScope is undefined', () => {
       setJQuery(mockJQuery);
-      window.isProjectScope = true;
+      // Create DOM config element
+      const configEl = document.createElement('div');
+      configEl.id = 'cluster-explorer-config';
+      configEl.dataset.isProjectScope = 'true';
+      document.body.appendChild(configEl);
+
       const clusters = [{ id: 1, label: 'Cluster 1' }];
 
       initClusterExplorer(clusters, {});
 
       expect(getIsProjectScope()).toBe(true);
+
+      // Cleanup
+      document.body.removeChild(configEl);
     });
 
     it('should default isProjectScope to false when not provided anywhere', () => {
       setJQuery(mockJQuery);
-      delete window.isProjectScope;
+      // No DOM config element, no options
       const clusters = [{ id: 1, label: 'Cluster 1' }];
 
       initClusterExplorer(clusters);
