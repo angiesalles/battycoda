@@ -9,7 +9,7 @@
 /static/js/app.min.js
 /static/lib
 /tmp
-celerybeat-schedule
+celerybeat-schedule*
 
 # Node.js / Vite
 node_modules/
