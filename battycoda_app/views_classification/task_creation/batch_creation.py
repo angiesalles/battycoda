@@ -6,8 +6,6 @@ Provides functionality to convert detection run results into manual tasks for re
 import logging
 
 from django.contrib import messages
-
-logger = logging.getLogger(__name__)
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
@@ -17,6 +15,8 @@ from battycoda_app.models.organization import Species
 from battycoda_app.models.task import TaskBatch
 
 from .helpers import create_task_batch_helper
+
+logger = logging.getLogger(__name__)
 
 
 @login_required

@@ -2,6 +2,7 @@
 Test settings for the Battycoda project.
 """
 
+import tempfile
 from unittest.mock import MagicMock, patch
 
 # Use a fast password hasher for tests (MD5 is ~100x faster than PBKDF2)
@@ -41,8 +42,6 @@ DATABASES = {
 }
 
 # Use a temporary directory for media files during tests
-import tempfile
-
 MEDIA_ROOT = tempfile.mkdtemp()
 
 # Disable Celery tasks during tests

@@ -10,8 +10,6 @@ from io import BytesIO
 
 import soundfile as sf
 from django.contrib import messages
-
-logger = logging.getLogger(__name__)
 from django.contrib.auth.decorators import login_required
 from django.core.paginator import Paginator
 from django.http import FileResponse, HttpResponse, JsonResponse
@@ -20,6 +18,8 @@ from django.shortcuts import get_object_or_404, redirect, render
 from battycoda_app.audio.task_modules.base import extract_audio_segment
 from battycoda_app.models.classification import CallProbability, ClassificationResult, ClassificationRun
 from battycoda_app.models.organization import Call
+
+logger = logging.getLogger(__name__)
 
 
 @login_required

@@ -57,8 +57,10 @@ def auto_segment_recording_task(
             segmentation = Segmentation.objects.get(id=segmentation_id)
 
             # Update task_id in the segmentation record to match what the worker sees
-            if segmentation.task_id != self.request.id:
-                segmentation.task_id = self.request.id
+            # Use empty string if request.id is None (e.g., when running synchronously in tests)
+            current_task_id = self.request.id or ""
+            if segmentation.task_id != current_task_id:
+                segmentation.task_id = current_task_id
                 segmentation.save(update_fields=["task_id"])
 
             # Determine which algorithm to use based on the segmentation's algorithm type
