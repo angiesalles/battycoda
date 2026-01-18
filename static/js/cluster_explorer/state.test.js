@@ -23,7 +23,6 @@ describe('cluster_explorer/state', () => {
   });
 
   describe('selectedClusterId', () => {
-
     it('should return null by default', () => {
       expect(getSelectedClusterId()).toBe(null);
     });

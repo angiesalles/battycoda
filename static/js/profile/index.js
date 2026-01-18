@@ -110,7 +110,9 @@ function setupImageUpload(updateUrl) {
           }
 
           // Update navbar profile image if it exists
-          const navbarProfileImage = document.querySelector('.nav.navbar-nav a.dropdown-toggle img');
+          const navbarProfileImage = document.querySelector(
+            '.nav.navbar-nav a.dropdown-toggle img'
+          );
           if (navbarProfileImage && validatedImageUrl) {
             navbarProfileImage.src = validatedImageUrl + '?v=' + new Date().getTime();
           }
@@ -289,7 +291,8 @@ function setupManagementFeaturesUpdate(updateUrl) {
 
     // Show loading state
     updateManagementFeaturesBtn.disabled = true;
-    updateManagementFeaturesBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i> Updating...';
+    updateManagementFeaturesBtn.innerHTML =
+      '<i class="fas fa-spinner fa-spin me-1"></i> Updating...';
 
     // Send AJAX request
     fetch(updateUrl, {
@@ -309,7 +312,11 @@ function setupManagementFeaturesUpdate(updateUrl) {
       })
       .catch((error) => {
         console.error('Error:', error);
-        showStatus(managementFeaturesStatus, 'An error occurred while updating management features.', false);
+        showStatus(
+          managementFeaturesStatus,
+          'An error occurred while updating management features.',
+          false
+        );
       })
       .finally(() => {
         // Reset button state
@@ -338,7 +345,8 @@ function setupApiKeyCopy() {
       // Show success message
       const statusDiv = document.getElementById('api-key-status');
       if (statusDiv) {
-        statusDiv.innerHTML = '<div class="alert alert-success py-2">API key copied to clipboard!</div>';
+        statusDiv.innerHTML =
+          '<div class="alert alert-success py-2">API key copied to clipboard!</div>';
 
         // Clear message after 3 seconds
         setTimeout(() => {

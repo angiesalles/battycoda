@@ -224,9 +224,7 @@ describe('cluster_explorer/visualization', () => {
     });
 
     it('should use cluster_id as fallback label when label is null', () => {
-      const clusters = [
-        { id: 1, cluster_id: 1, label: null, size: 10, color: '#ff0000' },
-      ];
+      const clusters = [{ id: 1, cluster_id: 1, label: null, size: 10, color: '#ff0000' }];
 
       // Track the HTML being appended
       const appendedHtml = [];
@@ -244,9 +242,7 @@ describe('cluster_explorer/visualization', () => {
     });
 
     it('should make legend items clickable', () => {
-      const clusters = [
-        { id: 1, cluster_id: 1, label: 'Test', size: 10, color: '#ff0000' },
-      ];
+      const clusters = [{ id: 1, cluster_id: 1, label: 'Test', size: 10, color: '#ff0000' }];
 
       mockElement.on.mockImplementation(() => {
         return mockElement;

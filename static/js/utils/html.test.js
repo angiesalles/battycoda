@@ -28,7 +28,7 @@ describe('escapeHtml', () => {
 
   it('should escape multiple special characters', () => {
     expect(escapeHtml('<script>alert("XSS")</script>')).toBe(
-      '&lt;script&gt;alert(&quot;XSS&quot;)&lt;/script&gt;',
+      '&lt;script&gt;alert(&quot;XSS&quot;)&lt;/script&gt;'
     );
   });
 
@@ -55,13 +55,11 @@ describe('escapeHtml', () => {
   it('should handle realistic XSS attack payloads', () => {
     // Filename-based XSS attack
     expect(escapeHtml('<img src=x onerror=alert(1)>.wav')).toBe(
-      '&lt;img src=x onerror=alert(1)&gt;.wav',
+      '&lt;img src=x onerror=alert(1)&gt;.wav'
     );
 
     // Event handler injection
-    expect(escapeHtml('file" onmouseover="alert(1)')).toBe(
-      'file&quot; onmouseover=&quot;alert(1)',
-    );
+    expect(escapeHtml('file" onmouseover="alert(1)')).toBe('file&quot; onmouseover=&quot;alert(1)');
   });
 });
 
@@ -93,7 +91,7 @@ describe('validateUrl', () => {
   it('should allow HTTPS URLs', () => {
     expect(validateUrl('https://example.com')).toBe('https://example.com');
     expect(validateUrl('https://example.com/path?query=1')).toBe(
-      'https://example.com/path?query=1',
+      'https://example.com/path?query=1'
     );
   });
 

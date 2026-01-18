@@ -91,4 +91,3 @@ export function initialize(options = {}) {
     checkNameExists(input.value.trim(), checkUrl, warning);
   }
 }
-

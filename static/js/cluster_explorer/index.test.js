@@ -294,7 +294,11 @@ describe('cluster_explorer/index', () => {
       initClusterExplorer(clusters);
 
       expect(mockJQuery).toHaveBeenCalledWith(document);
-      expect(docElement.on).toHaveBeenCalledWith('click', '.view-segment-btn', expect.any(Function));
+      expect(docElement.on).toHaveBeenCalledWith(
+        'click',
+        '.view-segment-btn',
+        expect.any(Function)
+      );
     });
 
     it('should load segment details when view segment button is clicked', () => {

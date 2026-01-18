@@ -257,12 +257,7 @@ describe('ViewManager', () => {
       // visibleDuration = 120 / 2 = 60
       // visibleStartTime = 0.25 * 120 = 30
       // visibleEndTime = min(30 + 60, 120) = 90
-      expect(mockPlayer.spectrogramDataRenderer.updateView).toHaveBeenCalledWith(
-        30,
-        90,
-        800,
-        200
-      );
+      expect(mockPlayer.spectrogramDataRenderer.updateView).toHaveBeenCalledWith(30, 90, 800, 200);
     });
   });
 

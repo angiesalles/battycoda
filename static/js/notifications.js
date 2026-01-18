@@ -161,7 +161,9 @@ export async function loadNavbarNotifications() {
     // Handle fetch errors
     if (notificationsList) {
       notificationsList.innerHTML = '';
-      notificationsList.appendChild(createEmptyStateElement('s7-close', 'Failed to load notifications'));
+      notificationsList.appendChild(
+        createEmptyStateElement('s7-close', 'Failed to load notifications')
+      );
     }
   }
 }

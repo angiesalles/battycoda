@@ -48,7 +48,9 @@ export function initClusterExplorer(clusters, options = {}) {
     return;
   }
   if (!clusters) {
-    console.error('[ClusterExplorer] No clusters data provided. Cannot initialize cluster explorer.');
+    console.error(
+      '[ClusterExplorer] No clusters data provided. Cannot initialize cluster explorer.'
+    );
     return;
   }
 
@@ -119,7 +121,9 @@ function autoInitialize() {
     }
   }
 
-  console.debug('[ClusterExplorer] No cluster data found (#cluster-data element). Auto-initialization skipped.');
+  console.debug(
+    '[ClusterExplorer] No cluster data found (#cluster-data element). Auto-initialization skipped.'
+  );
 }
 
 // Auto-initialize on DOMContentLoaded

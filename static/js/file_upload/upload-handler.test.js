@@ -190,7 +190,11 @@ describe('createUploadHandler', () => {
     handler.start();
 
     // In jsdom, form.action gets resolved to full URL (e.g., http://localhost:3000/api/upload/)
-    expect(mockXhr.open).toHaveBeenCalledWith('POST', expect.stringContaining('/api/upload/'), true);
+    expect(mockXhr.open).toHaveBeenCalledWith(
+      'POST',
+      expect.stringContaining('/api/upload/'),
+      true
+    );
     expect(mockXhr.send).toHaveBeenCalled();
   });
 
@@ -236,10 +240,7 @@ describe('createUploadHandler', () => {
 
     handler.start();
 
-    expect(mockXhr.upload.addEventListener).toHaveBeenCalledWith(
-      'progress',
-      expect.any(Function),
-    );
+    expect(mockXhr.upload.addEventListener).toHaveBeenCalledWith('progress', expect.any(Function));
   });
 
   it('should register load event listener', () => {
@@ -333,7 +334,7 @@ describe('createUploadHandler', () => {
 
       // Get the load callback and call it
       const loadCallback = mockXhr.addEventListener.mock.calls.find(
-        (call) => call[0] === 'load',
+        (call) => call[0] === 'load'
       )[1];
       loadCallback();
 
@@ -341,7 +342,7 @@ describe('createUploadHandler', () => {
         expect.objectContaining({
           success: true,
           recordings_created: 5,
-        }),
+        })
       );
       expect(onError).not.toHaveBeenCalled();
     });
@@ -368,7 +369,7 @@ describe('createUploadHandler', () => {
       });
 
       const loadCallback = mockXhr.addEventListener.mock.calls.find(
-        (call) => call[0] === 'load',
+        (call) => call[0] === 'load'
       )[1];
       loadCallback();
 
@@ -393,7 +394,7 @@ describe('createUploadHandler', () => {
       mockXhr.statusText = 'Internal Server Error';
 
       const loadCallback = mockXhr.addEventListener.mock.calls.find(
-        (call) => call[0] === 'load',
+        (call) => call[0] === 'load'
       )[1];
       loadCallback();
 
@@ -414,7 +415,7 @@ describe('createUploadHandler', () => {
 
       // Simulate network error
       const errorCallback = mockXhr.addEventListener.mock.calls.find(
-        (call) => call[0] === 'error',
+        (call) => call[0] === 'error'
       )[1];
       errorCallback();
 
@@ -432,7 +433,7 @@ describe('createUploadHandler', () => {
 
       // Simulate abort
       const abortCallback = mockXhr.addEventListener.mock.calls.find(
-        (call) => call[0] === 'abort',
+        (call) => call[0] === 'abort'
       )[1];
       abortCallback();
 
@@ -459,7 +460,7 @@ describe('createUploadHandler', () => {
       });
 
       const loadCallback = mockXhr.addEventListener.mock.calls.find(
-        (call) => call[0] === 'load',
+        (call) => call[0] === 'load'
       )[1];
       loadCallback();
 
@@ -480,7 +481,7 @@ describe('createUploadHandler', () => {
       mockXhr.responseURL = '/success-page/';
 
       const loadCallback = mockXhr.addEventListener.mock.calls.find(
-        (call) => call[0] === 'load',
+        (call) => call[0] === 'load'
       )[1];
       loadCallback();
 
@@ -500,7 +501,7 @@ describe('createUploadHandler', () => {
 
       // Get the progress callback
       const progressCallback = mockXhr.upload.addEventListener.mock.calls.find(
-        (call) => call[0] === 'progress',
+        (call) => call[0] === 'progress'
       )[1];
 
       // Simulate progress event
@@ -527,7 +528,7 @@ describe('createUploadHandler', () => {
       progressBar.style.width = '0%';
 
       const progressCallback = mockXhr.upload.addEventListener.mock.calls.find(
-        (call) => call[0] === 'progress',
+        (call) => call[0] === 'progress'
       )[1];
 
       // Simulate non-computable progress event

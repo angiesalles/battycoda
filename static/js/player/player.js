@@ -15,7 +15,6 @@ import { DataManager } from './data_manager.js';
 import { SeekHandler } from './seek_handler.js';
 import { PlayRegionHandler } from './play_region_handler.js';
 
-
 /**
  * WaveformPlayer class - encapsulates waveform player functionality
  */

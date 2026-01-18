@@ -30,12 +30,7 @@ export {
   showCancelled,
 } from './progress.js';
 export { createUploadHandler, hasRequiredFiles } from './upload-handler.js';
-export {
-  isValidWavFile,
-  isValidPickleFile,
-  validateFiles,
-  formatFileSize,
-} from './validation.js';
+export { isValidWavFile, isValidPickleFile, validateFiles, formatFileSize } from './validation.js';
 export { initFileUpload, autoInit } from './initialization.js';
 
 // Auto-initialize when this module is loaded

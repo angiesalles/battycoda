@@ -201,9 +201,7 @@ describe('cluster_explorer/interactions', () => {
         coherence: 0.9,
         representative_spectrogram_url: null,
         representative_audio_url: null,
-        mappings: [
-          { species_name: 'Eptesicus fuscus', call_name: 'Echo', confidence: 0.95 },
-        ],
+        mappings: [{ species_name: 'Eptesicus fuscus', call_name: 'Echo', confidence: 0.95 }],
       });
 
       expect(mockElement.addClass).toHaveBeenCalledWith('d-none');
@@ -299,21 +297,11 @@ describe('cluster_explorer/interactions', () => {
       });
 
       // Check that HTML was set for the table body
-      expect(mockElement.html).toHaveBeenCalledWith(
-        expect.stringContaining('101')
-      );
-      expect(mockElement.html).toHaveBeenCalledWith(
-        expect.stringContaining('0.500')
-      );
-      expect(mockElement.html).toHaveBeenCalledWith(
-        expect.stringContaining('1.200')
-      );
-      expect(mockElement.html).toHaveBeenCalledWith(
-        expect.stringContaining('0.700')
-      );
-      expect(mockElement.html).toHaveBeenCalledWith(
-        expect.stringContaining('0.92')
-      );
+      expect(mockElement.html).toHaveBeenCalledWith(expect.stringContaining('101'));
+      expect(mockElement.html).toHaveBeenCalledWith(expect.stringContaining('0.500'));
+      expect(mockElement.html).toHaveBeenCalledWith(expect.stringContaining('1.200'));
+      expect(mockElement.html).toHaveBeenCalledWith(expect.stringContaining('0.700'));
+      expect(mockElement.html).toHaveBeenCalledWith(expect.stringContaining('0.92'));
     });
 
     it('should include recording name column for project scope', () => {
@@ -337,9 +325,7 @@ describe('cluster_explorer/interactions', () => {
         is_project_scope: true,
       });
 
-      expect(mockElement.html).toHaveBeenCalledWith(
-        expect.stringContaining('Recording 1')
-      );
+      expect(mockElement.html).toHaveBeenCalledWith(expect.stringContaining('Recording 1'));
     });
 
     it('should show "has more" message when results are truncated', () => {
@@ -404,9 +390,7 @@ describe('cluster_explorer/interactions', () => {
         is_project_scope: false,
       });
 
-      expect(mockElement.html).toHaveBeenCalledWith(
-        expect.stringContaining('N/A')
-      );
+      expect(mockElement.html).toHaveBeenCalledWith(expect.stringContaining('N/A'));
     });
 
     it('should show error message on API failure response', () => {

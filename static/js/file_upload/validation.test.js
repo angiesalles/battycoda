@@ -3,12 +3,7 @@
  */
 
 import { describe, it, expect } from 'vitest';
-import {
-  isValidWavFile,
-  isValidPickleFile,
-  validateFiles,
-  formatFileSize,
-} from './validation.js';
+import { isValidWavFile, isValidPickleFile, validateFiles, formatFileSize } from './validation.js';
 
 describe('isValidWavFile', () => {
   it('should accept .wav extension', () => {
@@ -96,11 +91,7 @@ describe('isValidPickleFile', () => {
 
 describe('validateFiles', () => {
   it('should separate valid and invalid files', () => {
-    const files = [
-      { name: 'valid.wav' },
-      { name: 'invalid.mp3' },
-      { name: 'another.wav' },
-    ];
+    const files = [{ name: 'valid.wav' }, { name: 'invalid.mp3' }, { name: 'another.wav' }];
 
     const result = validateFiles(files, isValidWavFile);
 
@@ -139,7 +130,10 @@ describe('validateFiles', () => {
   });
 
   it('should work with custom validators', () => {
-    const files = [{ name: 'big.wav', size: 1000000 }, { name: 'small.wav', size: 100 }];
+    const files = [
+      { name: 'big.wav', size: 1000000 },
+      { name: 'small.wav', size: 100 },
+    ];
 
     const sizeValidator = (file) => file.size > 1000;
     const result = validateFiles(files, sizeValidator);

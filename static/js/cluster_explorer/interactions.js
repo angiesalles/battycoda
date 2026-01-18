@@ -152,62 +152,65 @@ export function loadClusterMembers(clusterId) {
   );
 
   // Load members from the API
-  $.getJSON(buildUrl(API_ENDPOINTS.GET_CLUSTER_MEMBERS, { cluster_id: clusterId, limit: 50 }), function (data) {
-    if (data.status === 'success') {
-      const members = data.members;
-      const isProject = data.is_project_scope;
+  $.getJSON(
+    buildUrl(API_ENDPOINTS.GET_CLUSTER_MEMBERS, { cluster_id: clusterId, limit: 50 }),
+    function (data) {
+      if (data.status === 'success') {
+        const members = data.members;
+        const isProject = data.is_project_scope;
 
-      if (members && members.length > 0) {
-        let html = '';
+        if (members && members.length > 0) {
+          let html = '';
 
-        members.forEach((member) => {
-          const onset = member.onset.toFixed(3);
-          const offset = member.offset.toFixed(3);
-          const duration = member.duration.toFixed(3);
-          const confidence = member.confidence ? member.confidence.toFixed(2) : 'N/A';
+          members.forEach((member) => {
+            const onset = member.onset.toFixed(3);
+            const offset = member.offset.toFixed(3);
+            const duration = member.duration.toFixed(3);
+            const confidence = member.confidence ? member.confidence.toFixed(2) : 'N/A';
 
-          html += '<tr>';
-          html += `<td>${member.segment_id}</td>`;
+            html += '<tr>';
+            html += `<td>${member.segment_id}</td>`;
 
-          if (isProject) {
-            html += `<td>${escapeHtml(member.recording_name || '')}</td>`;
-          }
+            if (isProject) {
+              html += `<td>${escapeHtml(member.recording_name || '')}</td>`;
+            }
 
-          html += `<td>${onset}</td>`;
-          html += `<td>${offset}</td>`;
-          html += `<td>${duration}</td>`;
-          html += `<td>${confidence}</td>`;
-          html += `<td>
+            html += `<td>${onset}</td>`;
+            html += `<td>${offset}</td>`;
+            html += `<td>${duration}</td>`;
+            html += `<td>${confidence}</td>`;
+            html += `<td>
                         <button class="btn btn-sm btn-primary view-segment-btn" data-segment-id="${member.segment_id}" data-toggle="modal" data-target="#segmentDetailsModal">
                             <i class="fa fa-eye"></i> View
                         </button>
                     </td>`;
-          html += '</tr>';
-        });
+            html += '</tr>';
+          });
 
-        if (data.has_more) {
-          const colSpan = isProject ? 7 : 6;
-          html += `
+          if (data.has_more) {
+            const colSpan = isProject ? 7 : 6;
+            html += `
                         <tr>
                             <td colspan="${colSpan}" class="text-center">
                                 <em>Showing ${members.length} of ${data.total_size} segments. Export the cluster to see all segments.</em>
                             </td>
                         </tr>
                     `;
-        }
+          }
 
-        $('#members-table-body').html(html);
+          $('#members-table-body').html(html);
+        } else {
+          $('#members-table-body').html(
+            `<tr><td colspan="${colCount}" class="text-center">No segments in this cluster</td></tr>`
+          );
+        }
       } else {
         $('#members-table-body').html(
-          `<tr><td colspan="${colCount}" class="text-center">No segments in this cluster</td></tr>`
+          `<tr><td colspan="${colCount}" class="text-center text-danger">Failed to load members: ${escapeHtml(data.message)}</td></tr>`
         );
       }
-    } else {
-      $('#members-table-body').html(
-        `<tr><td colspan="${colCount}" class="text-center text-danger">Failed to load members: ${escapeHtml(data.message)}</td></tr>`
-      );
     }
-  }).fail(function () {
+  ).fail(function () {
     const cols = getIsProjectScope() ? 7 : 6;
     $('#members-table-body').html(
       `<tr><td colspan="${cols}" class="text-center text-danger">Failed to load cluster members. Please try again.</td></tr>`

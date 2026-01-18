@@ -14,7 +14,9 @@ import { escapeHtml } from '../utils/html.js';
 export function initializeClusterPreviewModal(createMappingFn) {
   const $ = window.jQuery;
   if (!$) {
-    console.error('[ClusterMapping] jQuery is not available. Cannot initialize cluster preview modal.');
+    console.error(
+      '[ClusterMapping] jQuery is not available. Cannot initialize cluster preview modal.'
+    );
     return;
   }
 
@@ -39,7 +41,9 @@ export function initializeClusterPreviewModal(createMappingFn) {
       const callName = $(this).find('h6').text().trim();
       const speciesName = $(this).closest('.species-section').find('h5').text().trim();
 
-      selectElement.append(`<option value="${escapeHtml(String(callId))}">${escapeHtml(speciesName)}: ${escapeHtml(callName)}</option>`);
+      selectElement.append(
+        `<option value="${escapeHtml(String(callId))}">${escapeHtml(speciesName)}: ${escapeHtml(callName)}</option>`
+      );
     });
   });
 

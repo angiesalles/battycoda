@@ -72,7 +72,9 @@ export function initializeVisualization(clusters) {
   // Check if visualization container exists
   const vizContainer = $('#cluster-visualization');
   if (vizContainer.length === 0) {
-    console.error('[ClusterExplorer] Visualization container #cluster-visualization not found in DOM.');
+    console.error(
+      '[ClusterExplorer] Visualization container #cluster-visualization not found in DOM.'
+    );
     return null;
   }
 
@@ -223,7 +225,9 @@ export function initializeVisualization(clusters) {
       .attr('font-size', '10px');
   } catch (error) {
     console.error('[ClusterExplorer] Failed to draw cluster points:', error);
-    vizContainer.html('<div class="alert alert-danger">Failed to render cluster visualization.</div>');
+    vizContainer.html(
+      '<div class="alert alert-danger">Failed to render cluster visualization.</div>'
+    );
     return null;
   }
 

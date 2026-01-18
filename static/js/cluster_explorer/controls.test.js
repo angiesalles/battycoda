@@ -178,14 +178,20 @@ describe('cluster_explorer/controls', () => {
       setJQuery(null);
       delete window.jQuery;
 
-      initializeControls(() => {}, () => {});
+      initializeControls(
+        () => {},
+        () => {}
+      );
 
       // No error should be thrown
       expect(mockElement.on).not.toHaveBeenCalled();
     });
 
     it('should set up point size slider event handler', () => {
-      initializeControls(() => {}, () => {});
+      initializeControls(
+        () => {},
+        () => {}
+      );
 
       // Check that event handler was registered
       expect(mockJQuery).toHaveBeenCalledWith('#point-size');
@@ -193,7 +199,10 @@ describe('cluster_explorer/controls', () => {
     });
 
     it('should set up opacity slider event handler', () => {
-      initializeControls(() => {}, () => {});
+      initializeControls(
+        () => {},
+        () => {}
+      );
 
       expect(mockJQuery).toHaveBeenCalledWith('#cluster-opacity');
       expect(mockElement.on).toHaveBeenCalledWith('input', expect.any(Function));

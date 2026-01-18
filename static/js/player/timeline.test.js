@@ -222,14 +222,7 @@ describe('TimelineRenderer', () => {
 
       timelineRenderer.draw();
 
-      expect(timeMarkersSpy).toHaveBeenCalledWith(
-        expect.anything(),
-        800,
-        120,
-        0,
-        120,
-        120
-      );
+      expect(timeMarkersSpy).toHaveBeenCalledWith(expect.anything(), 800, 120, 0, 120, 120);
     });
 
     it('should handle maximum zoom', () => {
@@ -244,14 +237,7 @@ describe('TimelineRenderer', () => {
       // visibleDuration = 100 / 10 = 10
       // startTime = 0.5 * 100 = 50
       // endTime = min(50 + 10, 100) = 60
-      expect(timeMarkersSpy).toHaveBeenCalledWith(
-        expect.anything(),
-        800,
-        100,
-        50,
-        60,
-        10
-      );
+      expect(timeMarkersSpy).toHaveBeenCalledWith(expect.anything(), 800, 100, 50, 60, 10);
     });
   });
 

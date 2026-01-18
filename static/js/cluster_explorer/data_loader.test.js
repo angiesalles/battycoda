@@ -152,9 +152,7 @@ describe('cluster_explorer/data_loader', () => {
       const successHandler = mockAjax.lastOptions.success;
       successHandler({ status: 'success' });
 
-      expect(window.toastr.success).toHaveBeenCalledWith(
-        'Cluster label updated successfully'
-      );
+      expect(window.toastr.success).toHaveBeenCalledWith('Cluster label updated successfully');
     });
 
     it('should show error toast on API error response', () => {
@@ -195,6 +193,5 @@ describe('cluster_explorer/data_loader', () => {
 
       expect(mockElement.attr).toHaveBeenCalledWith('disabled', false);
     });
-
   });
 });

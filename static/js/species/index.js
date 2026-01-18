@@ -123,7 +123,9 @@ function addCall(shortName, longName) {
   const addCallMessages = document.getElementById('add-call-messages');
 
   // Check if a call with this short name already exists
-  const existing = callTypes.find((call) => call.short_name.toLowerCase() === shortName.toLowerCase());
+  const existing = callTypes.find(
+    (call) => call.short_name.toLowerCase() === shortName.toLowerCase()
+  );
   if (existing) {
     showMessage(addCallMessages, `A call with short name '${shortName}' already exists.`, 'error');
     return false;
@@ -303,7 +305,11 @@ function setupFileParsing() {
       updateCallTypesJson();
       renderCallsTable();
 
-      showMessage(fileLoadStatus, `Successfully loaded ${calls.length} call types from file`, 'success');
+      showMessage(
+        fileLoadStatus,
+        `Successfully loaded ${calls.length} call types from file`,
+        'success'
+      );
     };
 
     reader.onerror = function () {

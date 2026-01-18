@@ -34,9 +34,7 @@ describe('taskbatch/name_validator', () => {
 
       await checkNameExists('Test Batch Name', '/api/check-name/', null);
 
-      expect(global.fetch).toHaveBeenCalledWith(
-        '/api/check-name/?name=Test%20Batch%20Name'
-      );
+      expect(global.fetch).toHaveBeenCalledWith('/api/check-name/?name=Test%20Batch%20Name');
     });
 
     it('should return true and show warning when name exists', async () => {
@@ -220,9 +218,7 @@ describe('taskbatch/name_validator', () => {
       initialize();
 
       // Should check immediately for initial value (not debounced)
-      expect(global.fetch).toHaveBeenCalledWith(
-        '/api/check-name/?name=Initial%20Value'
-      );
+      expect(global.fetch).toHaveBeenCalledWith('/api/check-name/?name=Initial%20Value');
     });
 
     it('should accept custom elements via options', async () => {
