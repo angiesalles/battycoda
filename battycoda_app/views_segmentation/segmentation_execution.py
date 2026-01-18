@@ -4,11 +4,10 @@ Views for executing automated segmentation tasks on recordings.
 
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
-from django.db import transaction
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 
-from battycoda_app.models import Recording, Segment, Segmentation, SegmentationAlgorithm
+from battycoda_app.models import Recording, Segmentation, SegmentationAlgorithm
 
 
 @login_required
@@ -68,8 +67,6 @@ def auto_segment_recording_view(request, recording_id, algorithm_id=None):
         # Get the algorithm by ID if specified
         if algorithm_id:
             try:
-                # Debug logs
-
                 # Use filter().first() instead of get() to avoid MultipleObjectsReturned error
                 algorithm = SegmentationAlgorithm.objects.filter(id=int(algorithm_id), is_active=True).first()
                 if not algorithm:
@@ -156,18 +153,6 @@ def auto_segment_recording_view(request, recording_id, algorithm_id=None):
             # Update the segmentation with the actual task ID
             segmentation.task_id = task.id
             segmentation.save(update_fields=["task_id"])
-
-            # Store task ID in session for status checking
-            request.session[f"auto_segment_task_{recording_id}"] = task.id
-
-            # Delete any existing segments for this recording
-            with transaction.atomic():
-                # Delete existing segments
-                existing_count = Segment.objects.filter(recording=recording).count()
-                if existing_count > 0:
-                    Segment.objects.filter(recording=recording).delete()
-
-                # The segmentation was already created before launching the task
 
             # Set success message
             messages.success(
