@@ -914,9 +914,13 @@ tests/e2e/
 ├── global-teardown.js       # Cleanup after tests
 ├── fixtures/                # Test data and state
 ├── helpers/                 # Shared test utilities
-│   └── auth.js              # Login helpers
+│   ├── auth.js              # Login helpers
+│   └── theme.js             # Theme switching helpers
 └── specs/                   # Test files
-    └── smoke.spec.js        # Basic smoke tests
+    ├── smoke.spec.js        # Basic smoke tests
+    ├── auth.spec.js         # Authentication tests
+    ├── visual.spec.js       # Visual regression tests
+    └── ...                  # Other feature tests
 ```
 
 **Writing E2E tests:**
@@ -932,6 +936,53 @@ test('user can view dashboard', async ({ page }) => {
 ```
 
 **Configuration:** Playwright config is at `playwright.config.js` in project root. Tests run against `http://localhost:8000` by default.
+
+### Visual Regression Testing
+
+Visual regression tests capture screenshots of key pages and compare them against baseline images to detect unintended UI changes.
+
+**Running visual tests:**
+```bash
+# Run visual regression tests (compares against baselines)
+npx playwright test tests/e2e/specs/visual.spec.js
+
+# Update baselines after intentional UI changes
+npx playwright test tests/e2e/specs/visual.spec.js --update-snapshots
+```
+
+**Baseline screenshots location:** `tests/e2e/specs/visual.spec.js-snapshots/`
+
+**Pages covered:**
+- Login page (light + dark themes)
+- Registration page (light + dark themes)
+- Home/Dashboard (light + dark themes)
+- Recordings list (light + dark themes)
+- Projects list (light + dark themes)
+- Clustering dashboard (light + dark themes)
+- Create clustering run (light + dark themes)
+
+**Theme testing helpers:** `tests/e2e/helpers/theme.js`
+```javascript
+import { setTheme, applyTheme } from '../helpers/theme.js';
+
+// Set theme before navigation (via localStorage)
+await setTheme(page, 'dark');
+await page.goto('/some-page/');
+
+// Apply theme after page is loaded
+await applyTheme(page, 'dark');
+```
+
+**When to update baselines:**
+- After intentional CSS/styling changes
+- After layout changes
+- After component redesigns
+- Never commit baseline updates without reviewing the diffs
+
+**Adding new visual tests:**
+1. Add test to `tests/e2e/specs/visual.spec.js`
+2. Run with `--update-snapshots` to create baseline
+3. Commit the new baseline PNG files
 
 ### Test Database Setup
 
