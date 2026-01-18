@@ -393,7 +393,7 @@ python manage.py generate_missing_hdf5 --dry-run  # Preview only
 ./generate_hdf5_background.sh                    # All missing files
 ./generate_hdf5_background.sh --batch-size 10    # First 10 only
 ./generate_hdf5_background.sh --dry-run          # Preview
-# Logs to: logs/hdf5_generation_TIMESTAMP.log
+# Logs to: /var/log/battycoda/hdf5_generation_TIMESTAMP.log
 
 # Import species from CSV
 python manage.py import_species
