@@ -184,35 +184,22 @@
                     {% csrf_token %}
                     <h5 class="mb-3">Select Label</h5>
                     
-                    <!-- Dynamic call types from the species text file -->
-                    {% if call_types %}
-                        {% for call_type in call_types %}
-                        <div class="form-check mb-2">
-                            <input class="form-check-input" type="radio" id="{{ call_type|slugify }}" name="type_call" value="{{ call_type }}" 
-                                {% if task.label == call_type %}checked{% endif %}>
-                            <label class="form-check-label" for="{{ call_type|slugify }}">
-                                {{ call_type }}
-                                {% if task.label == call_type %}<span class="badge bg-info ms-1">Auto</span>{% endif %}
-                            </label>
-                        </div>
-                        {% endfor %}
-                    {% else %}
-                        <!-- Default options if no call types found -->
-                        <div class="form-check mb-2">
-                            <input class="form-check-input" type="radio" id="correct" name="type_call" value="correct">
-                            <label class="form-check-label" for="correct">Correctly classified</label>
-                        </div>
-                        
-                        <div class="form-check mb-2">
-                            <input class="form-check-input" type="radio" id="Unsure" name="type_call" value="Unsure">
-                            <label class="form-check-label" for="Unsure">Unsure</label>
-                        </div>
-                    {% endif %}
-                    
-                    <!-- Unknown option -->
+                    <!-- Dynamic call types from the species -->
+                    {% for call_type in call_types %}
                     <div class="form-check mb-2">
-                        <input class="form-check-input" type="radio" id="Unknown" name="type_call" value="Unknown" 
-                            {% if not task.label %}checked{% endif %}>
+                        <input class="form-check-input" type="radio" id="{{ call_type|slugify }}" name="type_call" value="{{ call_type }}"
+                            {% if task.label == call_type %}checked{% endif %}>
+                        <label class="form-check-label" for="{{ call_type|slugify }}">
+                            {{ call_type }}
+                            {% if task.label == call_type %}<span class="badge bg-info ms-1">Auto</span>{% endif %}
+                        </label>
+                    </div>
+                    {% endfor %}
+
+                    <!-- Unknown option (always available as fallback) -->
+                    <div class="form-check mb-2">
+                        <input class="form-check-input" type="radio" id="Unknown" name="type_call" value="Unknown"
+                            {% if not task.label or task.label == "Unknown" %}checked{% endif %}>
                         <label class="form-check-label" for="Unknown">Unknown</label>
                     </div>
                     
