@@ -109,8 +109,6 @@ def auto_segment_recording_view(request, recording_id, algorithm_id=None):
     existing_segmentation = None
 
     if request.method == "POST":
-        # Log the POST data for debugging
-
         # Get parameters from request
         algorithm_id = request.POST.get("algorithm")
 

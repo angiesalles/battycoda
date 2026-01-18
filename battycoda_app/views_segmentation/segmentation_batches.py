@@ -2,12 +2,16 @@
 Views for managing batch segmentation operations.
 """
 
+import logging
+
 from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse
 from django.shortcuts import render
 from django.urls import reverse
 
 from battycoda_app.models import Project, Recording, Segmentation
+
+logger = logging.getLogger(__name__)
 
 
 @login_required
@@ -94,11 +98,25 @@ def segmentation_jobs_status_view(request):
                         segmentation.save()
                     else:
                         # Task returned error status
+                        error_message = task_result.get("message", "Unknown error in segmentation task")
+                        logger.error(
+                            "Segmentation %s failed: %s",
+                            segmentation.id,
+                            error_message,
+                        )
                         segmentation.status = "failed"
+                        segmentation.error_message = error_message
                         segmentation.save()
                 else:
                     # Task failed with exception
+                    error_info = str(result.result)
+                    logger.error(
+                        "Segmentation %s failed with exception: %s",
+                        segmentation.id,
+                        error_info,
+                    )
                     segmentation.status = "failed"
+                    segmentation.error_message = error_info
                     segmentation.save()
 
     # Format the segmentations for the response
