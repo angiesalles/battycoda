@@ -26,13 +26,22 @@ export class WaveformPlayer {
    * @param {boolean} allowSelection - Whether to allow selecting regions
    * @param {boolean} showZoom - Whether to show zoom controls
    * @param {Array} [segmentsData] - Optional array of segments to display
+   * @param {Object} [urls] - URL templates for API endpoints
+   * @param {string} [urls.waveformData] - URL template for waveform data (e.g., "/recordings/{recordingId}/waveform-data/")
+   * @param {string} [urls.spectrogramData] - URL template for spectrogram data (e.g., "/recordings/{recordingId}/spectrogram-data/")
    */
-  constructor(containerId, recordingId, allowSelection, showZoom, segmentsData) {
+  constructor(containerId, recordingId, allowSelection, showZoom, segmentsData, urls = {}) {
     // Configuration
     this.containerId = containerId;
     this.recordingId = recordingId;
     this.allowSelection = allowSelection;
     this.showZoom = showZoom;
+
+    // URL templates - use provided URLs or fall back to defaults for backwards compatibility
+    this.urls = {
+      waveformData: urls.waveformData || `/recordings/${recordingId}/waveform-data/`,
+      spectrogramData: urls.spectrogramData || `/recordings/${recordingId}/spectrogram-data/`,
+    };
 
     // DOM elements
     this.initDomElements();
@@ -53,7 +62,9 @@ export class WaveformPlayer {
     // Renderers
     this.waveformRenderer = new WaveformRenderer(this);
     this.timelineRenderer = new TimelineRenderer(this);
-    this.spectrogramDataRenderer = new SpectrogramDataRenderer(containerId, recordingId, this);
+    this.spectrogramDataRenderer = new SpectrogramDataRenderer(containerId, recordingId, this, {
+      spectrogramData: this.urls.spectrogramData,
+    });
     this.overlayRenderer = new OverlayRenderer(this);
 
     // View manager
@@ -132,7 +143,7 @@ export class WaveformPlayer {
       if (this.statusEl) this.statusEl.textContent = 'Loading...';
 
       console.log('Loading waveform data for recording:', this.recordingId);
-      const response = await fetch(`/recordings/${this.recordingId}/waveform-data/`);
+      const response = await fetch(this.urls.waveformData);
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }

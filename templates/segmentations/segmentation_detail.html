@@ -151,7 +151,12 @@
             csrfToken: csrfToken,
             segments: segmentsData,
             containerId: 'segment-waveform-container',
-            readOnly: isReadOnly
+            readOnly: isReadOnly,
+            urls: {
+                add: "{% url 'battycoda_app:add_segment' segmentation_id=active_segmentation.id %}",
+                edit: "{% url 'battycoda_app:edit_segment' segmentation_id=active_segmentation.id segment_id=0 %}".replace('/0/', '/{segmentId}/'),
+                delete: "{% url 'battycoda_app:delete_segment' segmentation_id=active_segmentation.id segment_id=0 %}".replace('/0/', '/{segmentId}/')
+            }
         });
     });
 </script>

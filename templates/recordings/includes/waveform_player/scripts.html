@@ -9,7 +9,17 @@
     document.addEventListener('DOMContentLoaded', function() {
         // Initialize waveform player for {{ container_id }}
         if (window.initWaveformPlayer) {
-            window.initWaveformPlayer("{{ container_id }}", {{ recording.id }}, {{ allow_selection|yesno:"true,false" }}, {{ show_zoom|yesno:"true,false" }}, {% if segments %}{{ segments|safe }}{% else %}null{% endif %});
+            window.initWaveformPlayer(
+                "{{ container_id }}",
+                {{ recording.id }},
+                {{ allow_selection|yesno:"true,false" }},
+                {{ show_zoom|yesno:"true,false" }},
+                {% if segments %}{{ segments|safe }}{% else %}null{% endif %},
+                {
+                    waveformData: "{% url 'battycoda_app:recording_waveform_data' recording_id=recording.id %}",
+                    spectrogramData: "{% url 'battycoda_app:get_spectrogram_data' recording_id=recording.id %}"
+                }
+            );
         }
 
         {% if spectrogram_info.status == 'available' %}

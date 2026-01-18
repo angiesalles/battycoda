@@ -10,6 +10,19 @@ import { SegmentSearchPagination } from './segment_search_pagination.js';
 import { escapeHtml } from '../utils/html.js';
 
 export class SegmentManager {
+  /**
+   * @param {Object} options - Configuration options
+   * @param {number} options.recordingId - Recording ID
+   * @param {number} options.segmentationId - Segmentation ID
+   * @param {string} [options.waveformId] - Waveform player container ID
+   * @param {string} options.csrfToken - CSRF token for requests
+   * @param {boolean} [options.readOnly] - Whether the manager is read-only
+   * @param {Array} [options.segments] - Initial segments
+   * @param {Object} [options.urls] - URL templates for API endpoints
+   * @param {string} [options.urls.add] - URL template for adding segments
+   * @param {string} [options.urls.edit] - URL template for editing segments
+   * @param {string} [options.urls.delete] - URL template for deleting segments
+   */
   constructor(options) {
     // Configuration
     this.recordingId = options.recordingId;
@@ -18,8 +31,8 @@ export class SegmentManager {
     this.csrfToken = options.csrfToken;
     this.readOnly = options.readOnly || false;
 
-    // Initialize modules
-    this.crud = new SegmentCRUD(this.segmentationId, this.csrfToken);
+    // Initialize modules with URL templates
+    this.crud = new SegmentCRUD(this.segmentationId, this.csrfToken, options.urls);
     this.display = new SegmentDisplay(this.playerId, this.readOnly);
     this.searchPagination = new SegmentSearchPagination();
 

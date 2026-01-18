@@ -117,28 +117,28 @@ export class SegmentDragHandler {
         return;
       }
 
-      // Get segmentation ID from the segment manager
+      // Get segment manager to access CRUD operations
       const segmentManager = window.battycoda?.segmentation?.[player.containerId];
-      if (!segmentManager?.segmentationId) {
-        throw new Error('Segmentation ID not found');
+      if (!segmentManager?.crud) {
+        throw new Error('Segment manager not found');
       }
 
-      // Update segment via API
+      // Update segment via API using the CRUD module's URL template
       try {
-        const response = await fetch(
-          `/segmentations/${segmentManager.segmentationId}/segments/${segment.id}/edit/`,
-          {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/x-www-form-urlencoded',
-              'X-CSRFToken': getCsrfToken(),
-            },
-            body: new URLSearchParams({
-              onset: segment.onset.toFixed(6),
-              offset: segment.offset.toFixed(6),
-            }),
-          }
-        );
+        const url = segmentManager.crud.interpolateUrl(segmentManager.crud.urls.edit, {
+          segmentId: segment.id,
+        });
+        const response = await fetch(url, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+            'X-CSRFToken': getCsrfToken(),
+          },
+          body: new URLSearchParams({
+            onset: segment.onset.toFixed(6),
+            offset: segment.offset.toFixed(6),
+          }),
+        });
 
         if (!response.ok) {
           throw new Error('Failed to update segment');

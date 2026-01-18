@@ -19,13 +19,17 @@ if (window.players === undefined) {
  * @param {boolean} allowSelection - Whether to allow selecting regions
  * @param {boolean} showZoom - Whether to show zoom controls
  * @param {Array} [segmentsData] - Optional array of segments to display in the waveform
+ * @param {Object} [urls] - URL templates for API endpoints
+ * @param {string} [urls.waveformData] - URL template for waveform data
+ * @param {string} [urls.spectrogramData] - URL template for spectrogram data
  */
 export function initWaveformPlayer(
   containerId,
   recordingId,
   allowSelection,
   showZoom,
-  segmentsData
+  segmentsData,
+  urls
 ) {
   // Debug: Log what we receive
   console.log('initWaveformPlayer called with:', {
@@ -34,6 +38,7 @@ export function initWaveformPlayer(
     allowSelection,
     showZoom,
     segmentsData: segmentsData ? segmentsData.length : 'null',
+    urls: urls || 'default',
   });
 
   // Create a new WaveformPlayer instance
@@ -42,7 +47,8 @@ export function initWaveformPlayer(
     recordingId,
     allowSelection,
     showZoom,
-    segmentsData
+    segmentsData,
+    urls
   );
 
   // Try to initialize spectrogram data from HDF5

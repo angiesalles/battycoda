@@ -8,10 +8,23 @@ import { CanvasInteractions } from './canvas_interactions.js';
 import { ROSEUS_COLORMAP } from '../utils/colormaps.js';
 
 export class SpectrogramDataRenderer {
-  constructor(containerId, recordingId, player) {
+  /**
+   * @param {string} containerId - ID of the container element
+   * @param {number} recordingId - ID of the recording
+   * @param {Object} player - The waveform player instance
+   * @param {Object} urls - URL templates for API endpoints
+   * @param {string} urls.spectrogramData - URL template for spectrogram data (e.g., "/recordings/{recordingId}/spectrogram-data/")
+   */
+  constructor(containerId, recordingId, player, urls = {}) {
     this.containerId = containerId;
     this.recordingId = recordingId;
     this.player = player;
+
+    // URL templates - use provided URLs or fall back to defaults for backwards compatibility
+    this.urls = {
+      spectrogramData:
+        urls.spectrogramData || `/recordings/${recordingId}/spectrogram-data/`,
+    };
     this.spectrogramData = null;
     this.metadata = null;
     this.canvas = null;
@@ -71,7 +84,7 @@ export class SpectrogramDataRenderer {
     try {
       console.log('Loading spectrogram data for recording:', this.recordingId);
 
-      const response = await fetch(`/recordings/${this.recordingId}/spectrogram-data/`);
+      const response = await fetch(this.urls.spectrogramData);
 
       if (!response.ok) {
         console.error('Failed to load spectrogram data:', response.status);
