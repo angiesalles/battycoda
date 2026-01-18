@@ -7,22 +7,29 @@ audio streaming, waveform data, and spectrogram operations.
 
 from django.urls import path
 
-from . import views_audio_streaming, views_batch_upload, views_recording_core, views_recordings_duplicates
+from . import (
+    views_audio_streaming,
+    views_batch_upload,
+    views_recording_crud,
+    views_recording_list,
+    views_recording_utils,
+    views_recordings_duplicates,
+)
 
 urlpatterns = [
-    path("recordings/", views_recording_core.recording_list_view, name="recording_list"),
-    path("recordings/<int:recording_id>/", views_recording_core.recording_detail_view, name="recording_detail"),
-    path("recordings/create/", views_recording_core.create_recording_view, name="create_recording"),
-    path("recordings/<int:recording_id>/edit/", views_recording_core.edit_recording_view, name="edit_recording"),
-    path("recordings/<int:recording_id>/delete/", views_recording_core.delete_recording_view, name="delete_recording"),
+    path("recordings/", views_recording_list.recording_list_view, name="recording_list"),
+    path("recordings/<int:recording_id>/", views_recording_list.recording_detail_view, name="recording_detail"),
+    path("recordings/create/", views_recording_crud.create_recording_view, name="create_recording"),
+    path("recordings/<int:recording_id>/edit/", views_recording_crud.edit_recording_view, name="edit_recording"),
+    path("recordings/<int:recording_id>/delete/", views_recording_crud.delete_recording_view, name="delete_recording"),
     path(
         "recordings/<int:recording_id>/recalculate-audio-info/",
-        views_recording_core.recalculate_audio_info_view,
+        views_recording_utils.recalculate_audio_info_view,
         name="recalculate_audio_info",
     ),
     path(
         "recordings/process-missing-sample-rates/",
-        views_recording_core.process_missing_sample_rates,
+        views_recording_utils.process_missing_sample_rates,
         name="process_missing_sample_rates",
     ),
     path(
