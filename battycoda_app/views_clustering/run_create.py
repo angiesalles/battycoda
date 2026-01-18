@@ -1,4 +1,4 @@
-"""Clustering run management views."""
+"""Clustering run creation views."""
 
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
@@ -6,37 +6,9 @@ from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 
 from ..models import Project, Segmentation, Species
-from ..models.clustering import Cluster, ClusteringAlgorithm, ClusteringRun
+from ..models.clustering import ClusteringAlgorithm, ClusteringRun
 from ..models.segmentation import Segment
 from .permissions import check_clustering_permission
-
-
-@login_required
-def dashboard(request):
-    """Display a list of clustering runs for the user's group."""
-    group = request.user.profile.group
-
-    if group:
-        clustering_runs = ClusteringRun.objects.filter(group=group).order_by("-created_at")
-    else:
-        clustering_runs = ClusteringRun.objects.filter(created_by=request.user).order_by("-created_at")
-
-    if group:
-        algorithms = ClusteringAlgorithm.objects.filter(is_active=True).filter(group=group).order_by("name")
-    else:
-        algorithms = ClusteringAlgorithm.objects.filter(is_active=True).filter(created_by=request.user).order_by("name")
-
-    algorithms = list(algorithms) + list(
-        ClusteringAlgorithm.objects.filter(is_active=True, group__isnull=True).exclude(
-            id__in=[a.id for a in algorithms]
-        )
-    )
-
-    context = {
-        "clustering_runs": clustering_runs,
-        "algorithms": algorithms,
-    }
-    return render(request, "clustering/dashboard.html", context)
 
 
 @login_required
@@ -190,47 +162,6 @@ def create_clustering_run(request):
         "algorithms": algorithms,
     }
     return render(request, "clustering/create_run.html", context)
-
-
-@login_required
-def clustering_run_detail(request, run_id):
-    """Display details of a clustering run."""
-    clustering_run = get_object_or_404(ClusteringRun, id=run_id)
-
-    error = check_clustering_permission(
-        request, clustering_run, error_message="You don't have permission to view this clustering run"
-    )
-    if error:
-        return error
-
-    clusters = []
-    if clustering_run.status == "completed":
-        clusters = Cluster.objects.filter(clustering_run=clustering_run).order_by("cluster_id")
-
-    context = {
-        "clustering_run": clustering_run,
-        "clusters": clusters,
-    }
-    return render(request, "clustering/run_detail.html", context)
-
-
-@login_required
-def clustering_run_status(request, run_id):
-    """Check the status of a clustering run."""
-    clustering_run = get_object_or_404(ClusteringRun, id=run_id)
-
-    error = check_clustering_permission(request, clustering_run, json_response=True)
-    if error:
-        return error
-
-    return JsonResponse(
-        {
-            "status": clustering_run.status,
-            "progress": clustering_run.progress,
-            "progress_message": clustering_run.progress_message,
-            "clusters_created": clustering_run.num_clusters_created,
-        }
-    )
 
 
 @login_required
