@@ -2,7 +2,6 @@
  * Pickle Upload Page Module
  *
  * Handles pickle file upload for segmentation via AJAX.
- * Uses jQuery for legacy compatibility.
  *
  * Usage:
  * Include this script with URL configuration:
@@ -27,8 +26,8 @@ function getPickleUploadConfig() {
   }
   try {
     return JSON.parse(dataElement.textContent);
-  } catch (e) {
-    console.error('Error parsing pickle upload data:', e);
+  } catch {
+    console.error('Error parsing pickle upload data');
     return {};
   }
 }
@@ -38,11 +37,24 @@ function getPickleUploadConfig() {
  * @param {string} text - Text to escape
  * @returns {string} Escaped text
  */
-function escapeHtmlPickle(text) {
+function escapeHtml(text) {
   if (text === null || text === undefined) return '';
   const div = document.createElement('div');
   div.textContent = text;
   return div.innerHTML;
+}
+
+/**
+ * Show an alert message before the form
+ * @param {HTMLElement} form - The form element
+ * @param {string} message - Message to display
+ * @param {string} type - Alert type: 'success' or 'danger'
+ */
+function showAlert(form, message, type) {
+  const alertDiv = document.createElement('div');
+  alertDiv.className = `alert alert-${type}`;
+  alertDiv.innerHTML = type === 'danger' ? `Error: ${escapeHtml(message)}` : escapeHtml(message);
+  form.parentNode.insertBefore(alertDiv, form);
 }
 
 /**
@@ -54,69 +66,61 @@ function setupPickleUploadForm() {
     return;
   }
 
+  const form = document.getElementById('pickle-upload-form');
+  if (!form) return;
+
   const config = getPickleUploadConfig();
 
-  // Handle form submission
-  $('#pickle-upload-form').on('submit', function (e) {
+  form.addEventListener('submit', function (e) {
     e.preventDefault();
 
+    const submitBtn = form.querySelector('button[type="submit"]');
+    const originalText = submitBtn.textContent;
+
     // Show loading indicator
-    const submitBtn = $(this).find('button[type="submit"]');
-    const originalText = submitBtn.text();
-    submitBtn
-      .prop('disabled', true)
-      .html(
-        '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Processing...'
-      );
+    submitBtn.disabled = true;
+    submitBtn.innerHTML =
+      '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Processing...';
 
     // Create FormData object
-    const formData = new FormData(this);
+    const formData = new FormData(form);
 
-    // Submit form via AJAX
-    $.ajax({
-      url: config.uploadUrl,
-      type: 'POST',
-      data: formData,
-      processData: false,
-      contentType: false,
-      success: function (response) {
-        if (response.success) {
+    // Submit form via fetch
+    fetch(config.uploadUrl, {
+      method: 'POST',
+      body: formData,
+    })
+      .then((response) => response.json())
+      .then((data) => {
+        if (data.success) {
           // Show success message
-          const message = response.message || 'Pickle file processed successfully.';
-          const alert = `<div class="alert alert-success">${escapeHtmlPickle(message)}</div>`;
-          $('#pickle-upload-form').before(alert);
+          const message = data.message || 'Pickle file processed successfully.';
+          showAlert(form, message, 'success');
 
           // Redirect after short delay
-          setTimeout(function () {
-            window.location.href = response.redirect_url || config.redirectUrl;
+          setTimeout(() => {
+            window.location.href = data.redirect_url || config.redirectUrl;
           }, 1500);
         } else {
           // Show error message
-          const errorMsg = response.error || 'An unknown error occurred.';
-          const alert = `<div class="alert alert-danger">Error: ${escapeHtmlPickle(errorMsg)}</div>`;
-          $('#pickle-upload-form').before(alert);
-          submitBtn.prop('disabled', false).text(originalText);
+          const errorMsg = data.error || 'An unknown error occurred.';
+          showAlert(form, errorMsg, 'danger');
+          submitBtn.disabled = false;
+          submitBtn.textContent = originalText;
         }
-      },
-      error: function (xhr) {
-        // Show error message
-        let errorMsg = 'Server error occurred.';
-        try {
-          const response = JSON.parse(xhr.responseText);
-          errorMsg = response.error || errorMsg;
-        } catch (e) {
-          console.error('Error parsing response:', e);
-        }
-
-        const alert = `<div class="alert alert-danger">Error: ${escapeHtmlPickle(errorMsg)}</div>`;
-        $('#pickle-upload-form').before(alert);
-        submitBtn.prop('disabled', false).text(originalText);
-      },
-    });
+      })
+      .catch((error) => {
+        console.error('Upload error:', error);
+        showAlert(form, 'Server error occurred.', 'danger');
+        submitBtn.disabled = false;
+        submitBtn.textContent = originalText;
+      });
   });
 }
 
-// Initialize when DOM is ready (jQuery style)
-$(document).ready(function () {
+// Initialize when DOM is ready
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', setupPickleUploadForm);
+} else {
   setupPickleUploadForm();
-});
+}
