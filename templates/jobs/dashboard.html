@@ -110,102 +110,13 @@
 {% endblock %}
 
 {% block extra_js %}
+<!-- Page data for jobs dashboard -->
+<div id="jobs-page-data"
+     data-job-status-url="{% url 'battycoda_app:job_status_api' %}"
+     data-cancel-job-url-template="{% url 'battycoda_app:cancel_job' job_type='PLACEHOLDER' job_id=0 %}"
+     data-csrf-token="{{ csrf_token }}"
+     hidden></div>
+
 <script src="{% static 'js/datetime_formatter.js' %}"></script>
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-    let autoRefreshInterval = null;
-    let autoRefreshEnabled = true;
-    
-    const refreshButton = document.getElementById('refresh-jobs');
-    const autoRefreshToggle = document.getElementById('auto-refresh-toggle');
-    
-    // Auto-refresh functionality
-    function refreshJobsData() {
-        fetch('{% url "battycoda_app:job_status_api" %}')
-            .then(response => response.json())
-            .then(data => {
-                // Update counters
-                document.getElementById('segmentation-count').textContent = data.segmentation_jobs.length;
-                document.getElementById('detection-count').textContent = data.detection_jobs.length;
-                document.getElementById('training-count').textContent = data.training_jobs.length;
-                document.getElementById('clustering-count').textContent = data.clustering_jobs.length;
-                document.getElementById('spectrogram-count').textContent = data.spectrogram_jobs.length;
-                
-                // Update last refresh time
-                const now = new Date().toLocaleTimeString();
-                console.log('Jobs refreshed at:', now);
-            })
-            .catch(error => {
-                console.error('Error refreshing jobs:', error);
-            });
-    }
-    
-    // Manual refresh
-    refreshButton.addEventListener('click', function() {
-        refreshJobsData();
-        // Reload the page to update the full tables
-        window.location.reload();
-    });
-    
-    // Auto-refresh toggle
-    autoRefreshToggle.addEventListener('click', function() {
-        autoRefreshEnabled = !autoRefreshEnabled;
-        
-        if (autoRefreshEnabled) {
-            autoRefreshToggle.innerHTML = '<i class="fas fa-pause"></i> Auto-refresh: ON';
-            autoRefreshToggle.classList.remove('btn-outline-secondary');
-            autoRefreshToggle.classList.add('btn-outline-success');
-            
-            // Start auto-refresh every 30 seconds
-            autoRefreshInterval = setInterval(refreshJobsData, 30000);
-        } else {
-            autoRefreshToggle.innerHTML = '<i class="fas fa-play"></i> Auto-refresh: OFF';
-            autoRefreshToggle.classList.remove('btn-outline-success');
-            autoRefreshToggle.classList.add('btn-outline-secondary');
-            
-            // Stop auto-refresh
-            if (autoRefreshInterval) {
-                clearInterval(autoRefreshInterval);
-                autoRefreshInterval = null;
-            }
-        }
-    });
-    
-    // Start auto-refresh by default
-    if (autoRefreshEnabled) {
-        autoRefreshInterval = setInterval(refreshJobsData, 30000);
-    }
-    
-    // Job cancellation
-    document.querySelectorAll('.cancel-job').forEach(button => {
-        button.addEventListener('click', function() {
-            const jobType = this.dataset.jobType;
-            const jobId = this.dataset.jobId;
-            
-            if (confirm('Are you sure you want to cancel this job?')) {
-                fetch(`{% url "battycoda_app:cancel_job" job_type="PLACEHOLDER" job_id=0 %}`.replace('PLACEHOLDER', jobType).replace('0', jobId), {
-                    method: 'POST',
-                    headers: {
-                        'X-CSRFToken': '{{ csrf_token }}',
-                        'Content-Type': 'application/json',
-                    },
-                })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.success) {
-                        // Reload the page to show updated status
-                        window.location.reload();
-                    } else {
-                        alert('Error cancelling job: ' + data.error);
-                    }
-                })
-                .catch(error => {
-                    console.error('Error:', error);
-                    alert('Error cancelling job');
-                });
-            }
-        });
-    });
-});
-</script>
+<script src="{% static 'js/pages/jobs-dashboard.js' %}"></script>
 {% endblock %}
