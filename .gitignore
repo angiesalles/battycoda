@@ -19,3 +19,7 @@ static/dist/
 playwright-report/
 test-results/
 .playwright/
+
+# Development artifacts (data prep scripts)
+format_training_folder.py
+label_rousettus_training_data.py
