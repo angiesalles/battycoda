@@ -168,33 +168,10 @@
 {% endblock %}
 
 {% block extra_js %}
-<script>
-$(document).ready(function() {
-    // Auto-refresh progress for in-progress runs
-    const updateProgress = function() {
-        $('tr').each(function() {
-            const status = $(this).find('td:nth-child(4) .badge').text().trim();
-            if (status === 'in_progress' || status === 'pending') {
-                const runId = $(this).find('td:nth-child(1) a').attr('href').split('/').slice(-2)[0];
-                $.get(`/clustering/run/${runId}/status/`, function(data) {
-                    if (data.status && data.progress !== undefined) {
-                        const progressBar = $(`tr:contains('${runId}') .progress-bar`);
-                        progressBar.css('width', `${data.progress}%`);
-                        progressBar.attr('aria-valuenow', data.progress);
-                        progressBar.text(`${Math.floor(data.progress)}%`);
-                        
-                        // Update status badge if it changed
-                        if (data.status !== status) {
-                            location.reload();  // Just reload the page if status changed
-                        }
-                    }
-                });
-            }
-        });
-    };
-    
-    // Update progress every 5 seconds
-    setInterval(updateProgress, 5000);
-});
-</script>
+<!-- Page data for clustering dashboard -->
+<div id="clustering-dashboard-data"
+     data-run-status-url-template="/clustering/run/{run_id}/status/"
+     hidden></div>
+
+<script src="{% static 'js/pages/clustering-dashboard.js' %}"></script>
 {% endblock %}

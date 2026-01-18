@@ -235,35 +235,11 @@
 {% endblock %}
 
 {% block extra_js %}
-{% if clustering_run.is_processing %}
-<script>
-$(document).ready(function() {
-    // Refresh progress for in-progress runs
-    const updateProgress = function() {
-        $.get("{% url 'battycoda_app:clustering_run_status' run_id=clustering_run.id %}", function(data) {
-            if (data.progress !== undefined) {
-                // Update the progress bar
-                const progress = data.progress;
-                $('.progress-bar').css('width', `${progress}%`);
-                $('.progress-bar').attr('aria-valuenow', progress);
-                $('.progress-bar').text(`${progress.toFixed(1)}%`);
+<!-- Page data for clustering run detail -->
+<div id="clustering-run-detail-data"
+     data-run-status-url="{% url 'battycoda_app:clustering_run_status' run_id=clustering_run.id %}"
+     data-is-processing="{% if clustering_run.is_processing %}true{% else %}false{% endif %}"
+     hidden></div>
 
-                // Update progress message
-                if (data.progress_message) {
-                    $('#progress-message').text(data.progress_message);
-                }
-
-                // If status has changed, reload the page
-                if (data.status !== 'in_progress' && data.status !== 'pending') {
-                    location.reload();
-                }
-            }
-        });
-    };
-
-    // Update progress every 3 seconds
-    setInterval(updateProgress, 3000);
-});
-</script>
-{% endif %}
+<script src="{% static 'js/pages/clustering-run-detail.js' %}"></script>
 {% endblock %}
