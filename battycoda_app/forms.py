@@ -222,48 +222,6 @@ class SpeciesForm(forms.ModelForm):
             self.fields["overview_padding_end_ms"].initial = Species._meta.get_field("overview_padding_end_ms").default
 
 
-class SpeciesEditForm(forms.ModelForm):
-    """Form for editing species without calls file upload"""
-
-    class Meta:
-        model = Species
-        fields = [
-            "name",
-            "description",
-            "image",
-            "detail_padding_start_ms",
-            "detail_padding_end_ms",
-            "overview_padding_start_ms",
-            "overview_padding_end_ms",
-        ]
-        widgets = {
-            "name": forms.TextInput(attrs={"class": "form-control"}),
-            "description": forms.Textarea(attrs={"rows": 3, "class": "form-control"}),
-            "image": forms.FileInput(attrs={"class": "form-control"}),
-            "detail_padding_start_ms": forms.NumberInput(attrs={"class": "form-control", "min": "0"}),
-            "detail_padding_end_ms": forms.NumberInput(attrs={"class": "form-control", "min": "0"}),
-            "overview_padding_start_ms": forms.NumberInput(attrs={"class": "form-control", "min": "0"}),
-            "overview_padding_end_ms": forms.NumberInput(attrs={"class": "form-control", "min": "0"}),
-        }
-        help_texts = {
-            "detail_padding_start_ms": "Padding in milliseconds before the call in detail view",
-            "detail_padding_end_ms": "Padding in milliseconds after the call in detail view",
-            "overview_padding_start_ms": "Padding in milliseconds before the call in overview",
-            "overview_padding_end_ms": "Padding in milliseconds after the call in overview",
-        }
-
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        # Set initial values from model defaults for new instances
-        if not self.instance.pk:
-            self.fields["detail_padding_start_ms"].initial = Species._meta.get_field("detail_padding_start_ms").default
-            self.fields["detail_padding_end_ms"].initial = Species._meta.get_field("detail_padding_end_ms").default
-            self.fields["overview_padding_start_ms"].initial = Species._meta.get_field(
-                "overview_padding_start_ms"
-            ).default
-            self.fields["overview_padding_end_ms"].initial = Species._meta.get_field("overview_padding_end_ms").default
-
-
 class CallForm(forms.ModelForm):
     class Meta:
         model = Call
@@ -381,11 +339,6 @@ class RecordingForm(forms.ModelForm):
                 # Pre-select the Demo Project if it's the only project
                 if project_queryset.count() == 1 and not self.instance.pk:
                     self.fields["project"].initial = project_queryset.first()
-
-    def clean_name(self):
-        """Name validation"""
-        name = self.cleaned_data.get("name")
-        return name
 
 
 class SegmentForm(forms.ModelForm):

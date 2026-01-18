@@ -10,7 +10,7 @@ from django.shortcuts import get_object_or_404, redirect, render
 from django.template.loader import render_to_string
 from django.views.decorators.http import require_POST
 
-from .forms import SpeciesEditForm, SpeciesForm
+from .forms import SpeciesForm
 from .models.organization import Call, Species
 from .models.recording import Recording
 from .models.task import Task, TaskBatch
@@ -164,7 +164,7 @@ def edit_species_view(request, species_id):
     calls = Call.objects.filter(species=species)
 
     if request.method == "POST":
-        form = SpeciesEditForm(request.POST, request.FILES, instance=species)
+        form = SpeciesForm(request.POST, request.FILES, instance=species)
 
         if form.is_valid():
             # Save species (basic info only)
@@ -172,7 +172,7 @@ def edit_species_view(request, species_id):
             messages.success(request, "Species updated successfully.")
             return redirect("battycoda_app:species_detail", species_id=species.id)
     else:
-        form = SpeciesEditForm(instance=species)
+        form = SpeciesForm(instance=species)
 
     # Get calls again to ensure they're in the context
     calls = Call.objects.filter(species=species)
