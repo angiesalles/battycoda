@@ -8,8 +8,8 @@ export class SegmentCRUD {
    * @param {string} csrfToken - CSRF token for requests
    * @param {Object} urls - URL templates for API endpoints
    * @param {string} urls.add - URL template for adding segments (e.g., "/segmentations/{segmentationId}/segments/add/")
-   * @param {string} urls.edit - URL template for editing segments (e.g., "/segmentations/{segmentationId}/segments/{segmentId}/edit/")
-   * @param {string} urls.delete - URL template for deleting segments (e.g., "/segmentations/{segmentationId}/segments/{segmentId}/delete/")
+   * @param {string} urls.edit - URL template for editing segments (e.g., "/segmentations/{segmentationId}/segments/{segment_id}/edit/")
+   * @param {string} urls.delete - URL template for deleting segments (e.g., "/segmentations/{segmentationId}/segments/{segment_id}/delete/")
    */
   constructor(segmentationId, csrfToken, urls = {}) {
     this.segmentationId = segmentationId;
@@ -18,8 +18,8 @@ export class SegmentCRUD {
     // URL templates - use provided URLs or fall back to defaults for backwards compatibility
     this.urls = {
       add: urls.add || `/segmentations/${segmentationId}/segments/add/`,
-      edit: urls.edit || `/segmentations/${segmentationId}/segments/{segmentId}/edit/`,
-      delete: urls.delete || `/segmentations/${segmentationId}/segments/{segmentId}/delete/`,
+      edit: urls.edit || `/segmentations/${segmentationId}/segments/{segment_id}/edit/`,
+      delete: urls.delete || `/segmentations/${segmentationId}/segments/{segment_id}/delete/`,
     };
   }
 
@@ -90,7 +90,7 @@ export class SegmentCRUD {
         formData.append('notes', segmentData.notes);
       }
 
-      const url = this.interpolateUrl(this.urls.edit, { segmentId });
+      const url = this.interpolateUrl(this.urls.edit, { segment_id: segmentId });
       const response = await fetch(url, {
         method: 'POST',
         body: formData,
@@ -122,7 +122,7 @@ export class SegmentCRUD {
       const formData = new FormData();
       formData.append('csrfmiddlewaretoken', this.csrfToken);
 
-      const url = this.interpolateUrl(this.urls.delete, { segmentId });
+      const url = this.interpolateUrl(this.urls.delete, { segment_id: segmentId });
       const response = await fetch(url, {
         method: 'POST',
         body: formData,

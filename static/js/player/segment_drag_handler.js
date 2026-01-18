@@ -126,7 +126,7 @@ export class SegmentDragHandler {
       // Update segment via API using the CRUD module's URL template
       try {
         const url = segmentManager.crud.interpolateUrl(segmentManager.crud.urls.edit, {
-          segmentId: segment.id,
+          segment_id: segment.id,
         });
         const response = await fetch(url, {
           method: 'POST',

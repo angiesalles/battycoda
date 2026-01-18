@@ -1,6 +1,54 @@
 from django import template
+from django.urls import reverse
 
 register = template.Library()
+
+
+@register.simple_tag
+def url_template(url_name, placeholders="", **kwargs):
+    """
+    Generate a URL template with placeholders for JavaScript interpolation.
+
+    Unlike Django's {% url %} tag which requires all parameters, this tag
+    generates a URL pattern with {placeholder} syntax for parameters that
+    will be filled in by JavaScript at runtime.
+
+    Usage:
+        {% url_template 'battycoda_app:edit_segment' placeholders='segment_id' segmentation_id=segmentation.id %}
+
+    This produces: "/segmentations/123/segments/{segment_id}/edit/"
+
+    For multiple placeholders:
+        {% url_template 'battycoda_app:some_view' placeholders='param1,param2' fixed_param=value %}
+
+    Args:
+        url_name: The name of the URL pattern (e.g., 'battycoda_app:edit_segment')
+        placeholders: Comma-separated list of parameter names to use as placeholders
+        **kwargs: Fixed parameters to include in the URL
+
+    Returns:
+        A URL string with {placeholder} syntax for the specified parameters
+    """
+    # Parse placeholder names
+    placeholder_names = [p.strip() for p in placeholders.split(",") if p.strip()]
+
+    # Build kwargs with placeholder values (use a marker we can replace)
+    url_kwargs = dict(kwargs)
+    placeholder_marker = "__PLACEHOLDER_{}__"
+
+    for name in placeholder_names:
+        # Use 0 as a dummy value that will be replaced
+        url_kwargs[name] = 0
+
+    # Generate the URL with dummy values
+    url = reverse(url_name, kwargs=url_kwargs)
+
+    # Replace dummy values with placeholder syntax
+    for name in placeholder_names:
+        # Replace /0/ with /{name}/ - handles integer placeholders
+        url = url.replace("/0/", "/{" + name + "}/", 1)
+
+    return url
 
 
 @register.filter

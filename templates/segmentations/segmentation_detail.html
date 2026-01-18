@@ -1,6 +1,7 @@
 {% extends 'base.html' %}
 {% load static %}
 {% load django_vite %}
+{% load battycoda_tags %}
 
 {% block title %}BattyCoda - {{ active_segmentation.name }}{% endblock %}
 
@@ -154,8 +155,8 @@
             readOnly: isReadOnly,
             urls: {
                 add: "{% url 'battycoda_app:add_segment' segmentation_id=active_segmentation.id %}",
-                edit: "{% url 'battycoda_app:edit_segment' segmentation_id=active_segmentation.id segment_id=0 %}".replace('/0/', '/{segmentId}/'),
-                delete: "{% url 'battycoda_app:delete_segment' segmentation_id=active_segmentation.id segment_id=0 %}".replace('/0/', '/{segmentId}/')
+                edit: "{% url_template 'battycoda_app:edit_segment' placeholders='segment_id' segmentation_id=active_segmentation.id %}",
+                delete: "{% url_template 'battycoda_app:delete_segment' placeholders='segment_id' segmentation_id=active_segmentation.id %}"
             }
         });
     });
