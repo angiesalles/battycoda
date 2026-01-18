@@ -11,6 +11,7 @@ from ..models import Segment
 from ..models.clustering import Cluster, ClusterCallMapping, ClusteringRun, SegmentCluster
 from ..models.organization import Species
 from ..utils_modules.validation import get_int_param
+from .permissions import check_clustering_permission
 
 
 @login_required
@@ -18,14 +19,11 @@ def cluster_explorer(request, run_id):
     """Interactive visualization of clusters for a clustering run."""
     clustering_run = get_object_or_404(ClusteringRun, id=run_id)
 
-    if not request.user.is_staff:
-        if clustering_run.group and clustering_run.group != request.user.profile.group:
-            messages.error(request, "You don't have permission to view this clustering run")
-            return redirect("battycoda_app:clustering_dashboard")
-
-        if not clustering_run.group and clustering_run.created_by != request.user:
-            messages.error(request, "You don't have permission to view this clustering run")
-            return redirect("battycoda_app:clustering_dashboard")
+    error = check_clustering_permission(
+        request, clustering_run, error_message="You don't have permission to view this clustering run"
+    )
+    if error:
+        return error
 
     if clustering_run.status != "completed":
         messages.error(request, "Clustering run is not yet completed")
@@ -63,14 +61,11 @@ def mapping_interface(request, run_id):
     """Interface for mapping clusters to call types."""
     clustering_run = get_object_or_404(ClusteringRun, id=run_id)
 
-    if not request.user.is_staff:
-        if clustering_run.group and clustering_run.group != request.user.profile.group:
-            messages.error(request, "You don't have permission to view this clustering run")
-            return redirect("battycoda_app:clustering_dashboard")
-
-        if not clustering_run.group and clustering_run.created_by != request.user:
-            messages.error(request, "You don't have permission to view this clustering run")
-            return redirect("battycoda_app:clustering_dashboard")
+    error = check_clustering_permission(
+        request, clustering_run, error_message="You don't have permission to view this clustering run"
+    )
+    if error:
+        return error
 
     if clustering_run.status != "completed":
         messages.error(request, "Clustering run is not yet completed")
@@ -109,12 +104,11 @@ def get_cluster_data(request):
 
     cluster = get_object_or_404(Cluster, id=cluster_id)
 
-    if not request.user.is_staff:
-        if cluster.clustering_run.group and cluster.clustering_run.group != request.user.profile.group:
-            return JsonResponse({"status": "error", "message": "You don't have permission to view this cluster"})
-
-        if not cluster.clustering_run.group and cluster.clustering_run.created_by != request.user:
-            return JsonResponse({"status": "error", "message": "You don't have permission to view this cluster"})
+    error = check_clustering_permission(
+        request, cluster, json_response=True, error_message="You don't have permission to view this cluster"
+    )
+    if error:
+        return error
 
     mappings = ClusterCallMapping.objects.filter(cluster=cluster).select_related("call", "call__species")
 
@@ -160,12 +154,11 @@ def get_segment_data(request):
 
     segment = get_object_or_404(Segment, id=segment_id)
 
-    if not request.user.is_staff:
-        if segment.recording.group and segment.recording.group != request.user.profile.group:
-            return JsonResponse({"status": "error", "message": "You don't have permission to view this segment"})
-
-        if not segment.recording.group and segment.recording.created_by != request.user:
-            return JsonResponse({"status": "error", "message": "You don't have permission to view this segment"})
+    error = check_clustering_permission(
+        request, segment, json_response=True, error_message="You don't have permission to view this segment"
+    )
+    if error:
+        return error
 
     response_data = {
         "status": "success",
@@ -194,12 +187,11 @@ def get_cluster_members(request):
 
     cluster = get_object_or_404(Cluster, id=cluster_id)
 
-    if not request.user.is_staff:
-        if cluster.clustering_run.group and cluster.clustering_run.group != request.user.profile.group:
-            return JsonResponse({"status": "error", "message": "You don't have permission to view this cluster"})
-
-        if not cluster.clustering_run.group and cluster.clustering_run.created_by != request.user:
-            return JsonResponse({"status": "error", "message": "You don't have permission to view this cluster"})
+    error = check_clustering_permission(
+        request, cluster, json_response=True, error_message="You don't have permission to view this cluster"
+    )
+    if error:
+        return error
 
     # Get the segment clusters with related data
     segment_clusters = (

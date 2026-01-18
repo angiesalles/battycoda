@@ -8,6 +8,7 @@ from django.shortcuts import get_object_or_404, redirect, render
 from ..models import Project, Segmentation, Species
 from ..models.clustering import Cluster, ClusteringAlgorithm, ClusteringRun
 from ..models.segmentation import Segment
+from .permissions import check_clustering_permission
 
 
 @login_required
@@ -196,14 +197,11 @@ def clustering_run_detail(request, run_id):
     """Display details of a clustering run."""
     clustering_run = get_object_or_404(ClusteringRun, id=run_id)
 
-    if not request.user.is_staff:
-        if clustering_run.group and clustering_run.group != request.user.profile.group:
-            messages.error(request, "You don't have permission to view this clustering run")
-            return redirect("battycoda_app:clustering_dashboard")
-
-        if not clustering_run.group and clustering_run.created_by != request.user:
-            messages.error(request, "You don't have permission to view this clustering run")
-            return redirect("battycoda_app:clustering_dashboard")
+    error = check_clustering_permission(
+        request, clustering_run, error_message="You don't have permission to view this clustering run"
+    )
+    if error:
+        return error
 
     clusters = []
     if clustering_run.status == "completed":
@@ -221,12 +219,9 @@ def clustering_run_status(request, run_id):
     """Check the status of a clustering run."""
     clustering_run = get_object_or_404(ClusteringRun, id=run_id)
 
-    if not request.user.is_staff:
-        if clustering_run.group and clustering_run.group != request.user.profile.group:
-            return JsonResponse({"status": "error", "message": "Permission denied"}, status=403)
-
-        if not clustering_run.group and clustering_run.created_by != request.user:
-            return JsonResponse({"status": "error", "message": "Permission denied"}, status=403)
+    error = check_clustering_permission(request, clustering_run, json_response=True)
+    if error:
+        return error
 
     return JsonResponse(
         {

@@ -8,6 +8,7 @@ from django.views.decorators.http import require_POST
 
 from ..models import Call
 from ..models.clustering import Cluster, ClusterCallMapping, ClusteringRun, SegmentCluster
+from .permissions import check_clustering_permission
 
 
 @login_required
@@ -15,14 +16,11 @@ def export_clusters(request, run_id):
     """Export cluster data as CSV."""
     clustering_run = get_object_or_404(ClusteringRun, id=run_id)
 
-    if not request.user.is_staff:
-        if clustering_run.group and clustering_run.group != request.user.profile.group:
-            messages.error(request, "You don't have permission to export this clustering run")
-            return redirect("battycoda_app:clustering_dashboard")
-
-        if not clustering_run.group and clustering_run.created_by != request.user:
-            messages.error(request, "You don't have permission to export this clustering run")
-            return redirect("battycoda_app:clustering_dashboard")
+    error = check_clustering_permission(
+        request, clustering_run, error_message="You don't have permission to export this clustering run"
+    )
+    if error:
+        return error
 
     if clustering_run.status != "completed":
         messages.error(request, "Clustering run is not yet completed")
@@ -67,14 +65,11 @@ def export_mappings(request, run_id):
     """Export cluster-call mappings as CSV."""
     clustering_run = get_object_or_404(ClusteringRun, id=run_id)
 
-    if not request.user.is_staff:
-        if clustering_run.group and clustering_run.group != request.user.profile.group:
-            messages.error(request, "You don't have permission to export this clustering run")
-            return redirect("battycoda_app:clustering_dashboard")
-
-        if not clustering_run.group and clustering_run.created_by != request.user:
-            messages.error(request, "You don't have permission to export this clustering run")
-            return redirect("battycoda_app:clustering_dashboard")
+    error = check_clustering_permission(
+        request, clustering_run, error_message="You don't have permission to export this clustering run"
+    )
+    if error:
+        return error
 
     mappings = ClusterCallMapping.objects.filter(cluster__clustering_run=clustering_run).select_related(
         "cluster", "call", "call__species"
@@ -105,12 +100,11 @@ def update_cluster_label(request):
 
     cluster = get_object_or_404(Cluster, id=cluster_id)
 
-    if not request.user.is_staff:
-        if cluster.clustering_run.group and cluster.clustering_run.group != request.user.profile.group:
-            return JsonResponse({"status": "error", "message": "You don't have permission to edit this cluster"})
-
-        if not cluster.clustering_run.group and cluster.clustering_run.created_by != request.user:
-            return JsonResponse({"status": "error", "message": "You don't have permission to edit this cluster"})
+    error = check_clustering_permission(
+        request, cluster, json_response=True, error_message="You don't have permission to edit this cluster"
+    )
+    if error:
+        return error
 
     cluster.label = label
     cluster.description = description
@@ -135,12 +129,11 @@ def create_cluster_mapping(request):
     cluster = get_object_or_404(Cluster, id=cluster_id)
     call = get_object_or_404(Call, id=call_id)
 
-    if not request.user.is_staff:
-        if cluster.clustering_run.group and cluster.clustering_run.group != request.user.profile.group:
-            return JsonResponse({"status": "error", "message": "You don't have permission to edit this cluster"})
-
-        if not cluster.clustering_run.group and cluster.clustering_run.created_by != request.user:
-            return JsonResponse({"status": "error", "message": "You don't have permission to edit this cluster"})
+    error = check_clustering_permission(
+        request, cluster, json_response=True, error_message="You don't have permission to edit this cluster"
+    )
+    if error:
+        return error
 
     existing_mapping = ClusterCallMapping.objects.filter(cluster=cluster, call=call).first()
     if existing_mapping:
@@ -184,12 +177,11 @@ def delete_cluster_mapping(request):
 
     mapping = get_object_or_404(ClusterCallMapping, id=mapping_id)
 
-    if not request.user.is_staff:
-        if mapping.cluster.clustering_run.group and mapping.cluster.clustering_run.group != request.user.profile.group:
-            return JsonResponse({"status": "error", "message": "You don't have permission to delete this mapping"})
-
-        if not mapping.cluster.clustering_run.group and mapping.cluster.clustering_run.created_by != request.user:
-            return JsonResponse({"status": "error", "message": "You don't have permission to delete this mapping"})
+    error = check_clustering_permission(
+        request, mapping, json_response=True, error_message="You don't have permission to delete this mapping"
+    )
+    if error:
+        return error
 
     call_id = mapping.call.id
 
@@ -217,12 +209,11 @@ def update_mapping_confidence(request):
 
     mapping = get_object_or_404(ClusterCallMapping, id=mapping_id)
 
-    if not request.user.is_staff:
-        if mapping.cluster.clustering_run.group and mapping.cluster.clustering_run.group != request.user.profile.group:
-            return JsonResponse({"status": "error", "message": "You don't have permission to edit this mapping"})
-
-        if not mapping.cluster.clustering_run.group and mapping.cluster.clustering_run.created_by != request.user:
-            return JsonResponse({"status": "error", "message": "You don't have permission to edit this mapping"})
+    error = check_clustering_permission(
+        request, mapping, json_response=True, error_message="You don't have permission to edit this mapping"
+    )
+    if error:
+        return error
 
     mapping.confidence = float(confidence)
     mapping.save()
