@@ -390,9 +390,9 @@ python manage.py generate_missing_hdf5
 python manage.py generate_missing_hdf5 --dry-run  # Preview only
 
 # Background generation with CPU throttling (recommended for many files):
-./generate_hdf5_background.sh                    # All missing files
-./generate_hdf5_background.sh --batch-size 10    # First 10 only
-./generate_hdf5_background.sh --dry-run          # Preview
+./scripts/generate_hdf5_background.sh                    # All missing files
+./scripts/generate_hdf5_background.sh --batch-size 10    # First 10 only
+./scripts/generate_hdf5_background.sh --dry-run          # Preview
 # Logs to: /var/log/battycoda/hdf5_generation_TIMESTAMP.log
 
 # Import species from CSV
