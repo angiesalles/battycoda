@@ -8,6 +8,7 @@ from django.shortcuts import get_object_or_404, redirect, render
 from ..models import Project, Segmentation, Species
 from ..models.clustering import ClusteringAlgorithm, ClusteringRun
 from ..models.segmentation import Segment
+from .helpers import get_available_algorithms
 from .permissions import check_clustering_permission
 
 
@@ -25,16 +26,7 @@ def create_clustering_run(request):
         projects = Project.objects.filter(created_by=request.user).order_by("name")
 
     # Get available algorithms
-    if group:
-        algorithms = ClusteringAlgorithm.objects.filter(is_active=True).filter(group=group).order_by("name")
-    else:
-        algorithms = ClusteringAlgorithm.objects.filter(is_active=True).filter(created_by=request.user).order_by("name")
-
-    algorithms = list(algorithms) + list(
-        ClusteringAlgorithm.objects.filter(is_active=True, group__isnull=True).exclude(
-            id__in=[a.id for a in algorithms]
-        )
-    )
+    algorithms = get_available_algorithms(request.user)
 
     if request.method == "POST":
         scope = request.POST.get("scope", "segmentation")

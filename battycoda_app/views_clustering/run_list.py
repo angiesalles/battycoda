@@ -3,7 +3,8 @@
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import render
 
-from ..models.clustering import ClusteringAlgorithm, ClusteringRun
+from ..models.clustering import ClusteringRun
+from .helpers import get_available_algorithms
 
 
 @login_required
@@ -16,19 +17,8 @@ def dashboard(request):
     else:
         clustering_runs = ClusteringRun.objects.filter(created_by=request.user).order_by("-created_at")
 
-    if group:
-        algorithms = ClusteringAlgorithm.objects.filter(is_active=True).filter(group=group).order_by("name")
-    else:
-        algorithms = ClusteringAlgorithm.objects.filter(is_active=True).filter(created_by=request.user).order_by("name")
-
-    algorithms = list(algorithms) + list(
-        ClusteringAlgorithm.objects.filter(is_active=True, group__isnull=True).exclude(
-            id__in=[a.id for a in algorithms]
-        )
-    )
-
     context = {
         "clustering_runs": clustering_runs,
-        "algorithms": algorithms,
+        "algorithms": get_available_algorithms(request.user),
     }
     return render(request, "clustering/dashboard.html", context)
