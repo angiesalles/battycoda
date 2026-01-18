@@ -97,6 +97,7 @@ def create_demo_segmentation(user, recording, pickle_path):
         # Create and save the segment
         Segment.objects.create(
             recording=recording,
+            segmentation=segmentation,
             name=f"Segment {i + 1}",
             onset=onset_value,
             offset=offset_value,

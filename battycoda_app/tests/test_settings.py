@@ -16,6 +16,11 @@ import_default_species_patch = patch(
     "battycoda_app.utils_modules.species_utils.import_default_species", MagicMock(return_value=[])
 )
 
+# Patch create_demo_task_batch to return None (prevents demo task creation during tests)
+create_demo_task_batch_patch = patch(
+    "battycoda_app.utils_modules.demo_utils.create_demo_task_batch", MagicMock(return_value=None)
+)
+
 # Patch file operations
 file_operations_patch = patch(
     "django.core.files.storage.FileSystemStorage._save", MagicMock(return_value="test_file.txt")
@@ -54,5 +59,6 @@ CELERY_TASK_ALWAYS_EAGER = True
 # during user creation signals.
 all_patches = [
     import_default_species_patch,
+    create_demo_task_batch_patch,
     file_operations_patch,
 ]
