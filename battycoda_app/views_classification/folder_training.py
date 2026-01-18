@@ -13,6 +13,44 @@ from battycoda_app.models.classification import ClassifierTrainingJob
 from battycoda_app.models.organization import Call, Species
 
 
+def _get_training_data_base():
+    """Get the base path for training data folders."""
+    return os.path.join(settings.BASE_DIR, "training_data")
+
+
+def _extract_labels_from_folder(folder_path):
+    """
+    Extract unique labels from WAV files in a folder.
+
+    Files must be named: NUMBER_LABEL.wav (e.g., 001_echolocation.wav)
+
+    Returns:
+        tuple: (wav_files, labels) where wav_files is list of filenames
+               and labels is set of unique label strings
+    """
+    wav_files = [f for f in os.listdir(folder_path) if f.lower().endswith(".wav")]
+    labels = set()
+
+    for wav_file in wav_files:
+        parts = wav_file.rsplit("_", 1)
+        if len(parts) == 2:
+            label = parts[1].replace(".wav", "").replace(".WAV", "")
+            if label:
+                labels.add(label)
+
+    return wav_files, labels
+
+
+def _get_available_species(user):
+    """Get species available to a user based on their group membership."""
+    profile = user.profile
+    if profile.group:
+        return Species.objects.filter(
+            models.Q(group=profile.group) | models.Q(is_system=True)
+        ).order_by("name")
+    return Species.objects.filter(is_system=True).order_by("name")
+
+
 def validate_training_folder(folder_path, species):
     """
     Validate training data folder and return validation results.
@@ -126,127 +164,9 @@ def validate_training_folder(folder_path, species):
 
 
 @login_required
-def create_classifier_from_folder_view(request, folder_name=None):
-    """Create a new classifier training job from a training data folder."""
-    training_data_base = os.path.join(settings.BASE_DIR, "training_data")
-
-    if request.method == "POST":
-        folder_name = request.POST.get("folder_name") or folder_name
-        name = request.POST.get("name")
-        description = request.POST.get("description", "")
-        algorithm_type = request.POST.get("algorithm_type", "knn")
-        species_id = request.POST.get("species_id")
-
-        if not folder_name:
-            messages.error(request, "Training data folder is required")
-            return redirect("battycoda_app:create_classifier_from_folder")
-
-        if not species_id:
-            messages.error(request, "Species selection is required")
-            return redirect("battycoda_app:create_classifier_from_folder_for_folder", folder_name=folder_name)
-
-        folder_path = os.path.join(training_data_base, folder_name)
-        if not os.path.exists(folder_path) or not os.path.isdir(folder_path):
-            messages.error(request, f"Training data folder '{folder_name}' does not exist")
-            return redirect("battycoda_app:create_classifier_from_folder")
-
-        species = get_object_or_404(Species, id=species_id)
-        profile = request.user.profile
-
-        if species.group and species.group != profile.group:
-            messages.error(request, "You don't have permission to use this species")
-            return redirect("battycoda_app:create_classifier_from_folder")
-
-        is_valid, errors, warnings, stats = validate_training_folder(folder_path, species)
-
-        if not is_valid:
-            for error in errors:
-                messages.error(request, error)
-            return redirect("battycoda_app:create_classifier_from_folder_for_folder", folder_name=folder_name)
-
-        for warning in warnings:
-            messages.warning(request, warning)
-
-        parameters = {"algorithm_type": algorithm_type, "training_data_folder": folder_path}
-
-        try:
-            job = ClassifierTrainingJob.objects.create(
-                name=name or f"Classifier from {folder_name}",
-                description=description,
-                task_batch=None,
-                created_by=request.user,
-                group=profile.group,
-                response_format="full_probability",
-                parameters=parameters,
-                status="pending",
-                progress=0.0,
-            )
-
-            from battycoda_app.audio.task_modules.training_tasks import train_classifier_from_folder
-
-            train_classifier_from_folder.delay(job.id, species.id)
-
-            messages.success(request, "Classifier training job created successfully. Training will begin shortly.")
-            return redirect("battycoda_app:classifier_training_job_detail", job_id=job.id)
-
-        except Exception as e:
-            messages.error(request, f"Error creating classifier training job: {str(e)}")
-            return redirect("battycoda_app:create_classifier_from_folder")
-
-    if folder_name:
-        folder_path = os.path.join(training_data_base, folder_name)
-
-        if not os.path.exists(folder_path) or not os.path.isdir(folder_path):
-            messages.error(request, f"Training data folder '{folder_name}' does not exist")
-            return redirect("battycoda_app:create_classifier_from_folder")
-
-        profile = request.user.profile
-        if profile.group:
-            available_species = Species.objects.filter(
-                models.Q(group=profile.group) | models.Q(is_system=True)
-            ).order_by("name")
-        else:
-            available_species = Species.objects.filter(is_system=True).order_by("name")
-
-        selected_species_id = request.GET.get("species_id")
-        validation_results = None
-
-        if selected_species_id:
-            try:
-                selected_species = Species.objects.get(id=selected_species_id)
-                is_valid, errors, warnings, stats = validate_training_folder(folder_path, selected_species)
-                validation_results = {
-                    "is_valid": is_valid,
-                    "errors": errors,
-                    "warnings": warnings,
-                    "stats": stats,
-                    "species": selected_species,
-                }
-            except Species.DoesNotExist:
-                pass
-
-        wav_files = [f for f in os.listdir(folder_path) if f.lower().endswith(".wav")]
-        file_count = len(wav_files)
-
-        labels = set()
-        for wav_file in wav_files:
-            parts = wav_file.rsplit("_", 1)
-            if len(parts) == 2:
-                label = parts[1].replace(".wav", "").replace(".WAV", "")
-                labels.add(label)
-
-        context = {
-            "folder_name": folder_name,
-            "folder_path": folder_path,
-            "file_count": file_count,
-            "label_count": len(labels),
-            "labels": sorted(labels),
-            "available_species": available_species,
-            "selected_species_id": selected_species_id,
-            "validation_results": validation_results,
-        }
-
-        return render(request, "classification/create_classifier_from_folder.html", context)
+def select_training_folder_view(request):
+    """Display list of available training data folders."""
+    training_data_base = _get_training_data_base()
 
     if not os.path.exists(training_data_base):
         messages.error(request, "Training data directory does not exist")
@@ -256,29 +176,146 @@ def create_classifier_from_folder_view(request, folder_name=None):
     for item in os.listdir(training_data_base):
         item_path = os.path.join(training_data_base, item)
         if os.path.isdir(item_path):
-            wav_files = [f for f in os.listdir(item_path) if f.endswith(".wav")]
-            file_count = len(wav_files)
-
-            labels = set()
-            for wav_file in wav_files:
-                parts = wav_file.rsplit("_", 1)
-                if len(parts) == 2:
-                    label = parts[1].replace(".wav", "")
-                    labels.add(label)
-
-            folders.append(
-                {
-                    "name": item,
-                    "file_count": file_count,
-                    "label_count": len(labels),
-                }
-            )
+            wav_files, labels = _extract_labels_from_folder(item_path)
+            folders.append({
+                "name": item,
+                "file_count": len(wav_files),
+                "label_count": len(labels),
+            })
 
     folders.sort(key=lambda x: x["name"])
 
-    context = {
+    return render(request, "classification/select_training_folder.html", {
         "folders": folders,
         "training_data_base": training_data_base,
-    }
+    })
 
-    return render(request, "classification/select_training_folder.html", context)
+
+@login_required
+def training_folder_details_view(request, folder_name):
+    """Display folder details and validation results for a training data folder."""
+    training_data_base = _get_training_data_base()
+    folder_path = os.path.join(training_data_base, folder_name)
+
+    if not os.path.exists(folder_path) or not os.path.isdir(folder_path):
+        messages.error(request, f"Training data folder '{folder_name}' does not exist")
+        return redirect("battycoda_app:select_training_folder")
+
+    wav_files, labels = _extract_labels_from_folder(folder_path)
+    available_species = _get_available_species(request.user)
+
+    selected_species_id = request.GET.get("species_id")
+    validation_results = None
+
+    if selected_species_id:
+        try:
+            selected_species = Species.objects.get(id=selected_species_id)
+            is_valid, errors, warnings, stats = validate_training_folder(folder_path, selected_species)
+            validation_results = {
+                "is_valid": is_valid,
+                "errors": errors,
+                "warnings": warnings,
+                "stats": stats,
+                "species": selected_species,
+            }
+        except Species.DoesNotExist:
+            pass
+
+    return render(request, "classification/create_classifier_from_folder.html", {
+        "folder_name": folder_name,
+        "folder_path": folder_path,
+        "file_count": len(wav_files),
+        "label_count": len(labels),
+        "labels": sorted(labels),
+        "available_species": available_species,
+        "selected_species_id": selected_species_id,
+        "validation_results": validation_results,
+    })
+
+
+@login_required
+def create_training_job_view(request, folder_name):
+    """Create a new classifier training job from a training data folder (POST only)."""
+    if request.method != "POST":
+        return redirect("battycoda_app:training_folder_details", folder_name=folder_name)
+
+    training_data_base = _get_training_data_base()
+
+    name = request.POST.get("name")
+    description = request.POST.get("description", "")
+    algorithm_type = request.POST.get("algorithm_type", "knn")
+    species_id = request.POST.get("species_id")
+
+    if not species_id:
+        messages.error(request, "Species selection is required")
+        return redirect("battycoda_app:training_folder_details", folder_name=folder_name)
+
+    folder_path = os.path.join(training_data_base, folder_name)
+    if not os.path.exists(folder_path) or not os.path.isdir(folder_path):
+        messages.error(request, f"Training data folder '{folder_name}' does not exist")
+        return redirect("battycoda_app:select_training_folder")
+
+    species = get_object_or_404(Species, id=species_id)
+    profile = request.user.profile
+
+    if species.group and species.group != profile.group:
+        messages.error(request, "You don't have permission to use this species")
+        return redirect("battycoda_app:select_training_folder")
+
+    is_valid, errors, warnings, stats = validate_training_folder(folder_path, species)
+
+    if not is_valid:
+        for error in errors:
+            messages.error(request, error)
+        return redirect("battycoda_app:training_folder_details", folder_name=folder_name)
+
+    for warning in warnings:
+        messages.warning(request, warning)
+
+    parameters = {"algorithm_type": algorithm_type, "training_data_folder": folder_path}
+
+    try:
+        job = ClassifierTrainingJob.objects.create(
+            name=name or f"Classifier from {folder_name}",
+            description=description,
+            task_batch=None,
+            created_by=request.user,
+            group=profile.group,
+            response_format="full_probability",
+            parameters=parameters,
+            status="pending",
+            progress=0.0,
+        )
+
+        from battycoda_app.audio.task_modules.training_tasks import train_classifier_from_folder
+
+        train_classifier_from_folder.delay(job.id, species.id)
+
+        messages.success(request, "Classifier training job created successfully. Training will begin shortly.")
+        return redirect("battycoda_app:classifier_training_job_detail", job_id=job.id)
+
+    except Exception as e:
+        messages.error(request, f"Error creating classifier training job: {str(e)}")
+        return redirect("battycoda_app:select_training_folder")
+
+
+# Legacy view for backwards compatibility with existing URL patterns
+@login_required
+def create_classifier_from_folder_view(request, folder_name=None):
+    """
+    Legacy dispatcher that routes to the appropriate view.
+
+    This maintains backwards compatibility with existing URL patterns.
+    """
+    if request.method == "POST":
+        # POST always has folder_name from form or URL
+        folder_name = request.POST.get("folder_name") or folder_name
+        if not folder_name:
+            messages.error(request, "Training data folder is required")
+            return redirect("battycoda_app:select_training_folder")
+        return create_training_job_view(request, folder_name)
+
+    if folder_name:
+        return training_folder_details_view(request, folder_name)
+
+    return select_training_folder_view(request)

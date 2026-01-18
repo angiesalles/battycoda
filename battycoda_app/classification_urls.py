@@ -19,7 +19,12 @@ from .views_classification.classifier_training import (
     delete_classifier_training_job_view,
 )
 from .views_classification.dashboard import classification_home_view
-from .views_classification.folder_training import create_classifier_from_folder_view
+from .views_classification.folder_training import (
+    create_classifier_from_folder_view,
+    create_training_job_view,
+    select_training_folder_view,
+    training_folder_details_view,
+)
 from .views_classification.results_application import apply_detection_results_view
 from .views_classification.run_creation import create_detection_run_view, delete_detection_run_view
 from .views_classification.runs_details import (
@@ -104,6 +109,23 @@ urlpatterns = [
         delete_classifier_training_job_view,
         name="delete_classifier_training_job",
     ),
+    # New cleaner URL patterns for folder training
+    path(
+        "classification/training-folders/",
+        select_training_folder_view,
+        name="select_training_folder",
+    ),
+    path(
+        "classification/training-folders/<str:folder_name>/",
+        training_folder_details_view,
+        name="training_folder_details",
+    ),
+    path(
+        "classification/training-folders/<str:folder_name>/create-job/",
+        create_training_job_view,
+        name="create_training_job",
+    ),
+    # Legacy URL patterns (maintained for backwards compatibility)
     path(
         "classification/classifiers/from-folder/",
         create_classifier_from_folder_view,
