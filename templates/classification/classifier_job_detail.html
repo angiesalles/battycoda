@@ -44,7 +44,7 @@
                             </h6>
                             <span>{{ job.progress|floatformat:1 }}%</span>
                         </div>
-                        <div class="progress" style="height: 25px;">
+                        <div class="progress" class="h-25">
                             <div class="progress-bar {% if job.status == 'failed' %}bg-danger{% endif %}" 
                                  role="progressbar" 
                                  style="width: {{ job.progress }}%;" 

@@ -11,6 +11,14 @@
 // Core utilities that run on every page
 // These are imported for their side effects (they self-initialize on DOMContentLoaded)
 
+// Security utilities - XSS prevention helpers (escapeHtml, validateUrl)
+// Also exposes as window.escapeHtml and window.validateUrl for backwards compatibility
+import './utils/security.js';
+
+// Sentry error tracking initialization
+// Reads config from #sentry-config data attributes
+import './integrations/sentry-init.js';
+
 // Date/time formatting - converts UTC timestamps to local time
 import './datetime_formatter.js';
 
@@ -19,6 +27,12 @@ import './theme-switcher.js';
 
 // Notifications - handles navbar notification loading and updates
 import './notifications.js';
+
+// Application initialization - App.init(), Select2, toastr, Django messages, management features
+import './core/app-init.js';
+
+// Bootstrap component auto-initialization (tooltips, popovers)
+import './utils/bootstrap-init.js';
 
 /**
  * Feature modules (dynamically imported where needed):

@@ -214,58 +214,21 @@
   src="https://js.sentry-cdn.com/{{ SENTRY_DSN|slice:'8:'|cut:'@' }}.min.js"
   crossorigin="anonymous"
 ></script>
-<script>
-  Sentry.onLoad(function() {
-    Sentry.init({
-      environment: "{{ SENTRY_ENVIRONMENT|default:'production' }}",
-      tracesSampleRate: 0.1,
-    });
-    {% if user.is_authenticated %}
-    Sentry.setUser({
-      id: "{{ user.id }}",
-      email: "{{ user.email }}",
-      username: "{{ user.username }}"
-    });
-    {% endif %}
-  });
-</script>
+<!-- Sentry config passed via data attributes, initialized by sentry-init.js in Vite bundle -->
+<div id="sentry-config"
+     data-environment="{{ SENTRY_ENVIRONMENT|default:'production' }}"
+     {% if user.is_authenticated %}
+     data-user-id="{{ user.id }}"
+     data-user-email="{{ user.email }}"
+     data-user-username="{{ user.username }}"
+     {% endif %}
+     hidden></div>
 {% endif %}
 
 <!-- Maisonnette Core JS from CDN -->
 <script id="jqueryScript" src="https://code.jquery.com/jquery-3.3.1.min.js" integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8=" crossorigin="anonymous"></script>
 
-<!-- Global HTML escape utility for inline scripts (XSS prevention) -->
-<script id="escapeHtmlScript">
-window.escapeHtml = function(str) {
-    if (str == null) return '';
-    var div = document.createElement('div');
-    div.textContent = String(str);
-    return div.innerHTML;
-};
-</script>
-
-<!-- Global URL validation utility for dynamically loaded resources (defense-in-depth) -->
-<script id="validateUrlScript">
-window.validateUrl = function(url) {
-    // Returns the URL if safe, or empty string if potentially dangerous
-    if (url == null || typeof url !== 'string') return '';
-    url = url.trim();
-    if (url === '') return '';
-
-    // Allow relative URLs starting with /
-    if (url.startsWith('/')) return url;
-
-    // Allow HTTPS URLs
-    if (url.startsWith('https://')) return url;
-
-    // Allow HTTP only for localhost (development)
-    if (url.startsWith('http://localhost') || url.startsWith('http://127.0.0.1')) return url;
-
-    // Reject everything else (javascript:, data:, vbscript:, ftp:, etc.)
-    console.warn('validateUrl rejected potentially unsafe URL:', url);
-    return '';
-};
-</script>
+<!-- Security utilities (escapeHtml, validateUrl) are loaded via Vite bundle in main.js -->
 
 <script id="perfectScrollbarScript" src="https://cdn.jsdelivr.net/npm/perfect-scrollbar@1.5.0/dist/perfect-scrollbar.min.js"></script>
 <script id="toastrScript" src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
@@ -292,87 +255,24 @@ window.validateUrl = function(url) {
 <!-- Theme URLs for dynamic theme loading (used by theme-switcher.js) -->
 {% vite_theme_urls %}
 
-<!-- Main Vite bundle (includes datetime_formatter, theme-switcher, notifications) -->
-{% vite_asset 'static/js/main.js' %}
+<!-- App config for JavaScript initialization -->
+<div id="app-config"
+     data-csrf-token="{{ csrf_token }}"
+     {% if user.is_authenticated %}
+     data-update-profile-url="{% url 'battycoda_app:update_profile_ajax' %}"
+     data-user-authenticated="true"
+     {% else %}
+     data-user-authenticated="false"
+     {% endif %}
+     hidden></div>
 
-<script id="appInitScript" type="text/javascript">
-    $(document).ready(function(){
-        // Initialize Maisonnette
-        App.init();
-        
-        // Initialize Select2 on all select elements
-        $('select.form-control').select2({
-            width: '100%'
-        });
-        
-        // Configure toastr options
-        toastr.options = {
-            "closeButton": true,
-            "debug": false,
-            "newestOnTop": true,
-            "progressBar": true,
-            "positionClass": "toast-top-right",
-            "preventDuplicates": false,
-            "onclick": null,
-            "showDuration": "300",
-            "hideDuration": "1000",
-            "timeOut": "5000",
-            "extendedTimeOut": "1000",
-            "showEasing": "swing",
-            "hideEasing": "linear",
-            "showMethod": "fadeIn",
-            "hideMethod": "fadeOut"
-        };
-        
-        // Display Django messages using toastr
-        {% if messages %}
-            {% for message in messages %}
-                {% if message.tags == 'success' %}
-                    toastr.success('{{ message|escapejs }}');
-                {% elif message.tags == 'info' %}
-                    toastr.info('{{ message|escapejs }}');
-                {% elif message.tags == 'warning' %}
-                    toastr.warning('{{ message|escapejs }}');
-                {% elif message.tags == 'error' %}
-                    toastr.error('{{ message|escapejs }}');
-                {% else %}
-                    toastr.info('{{ message|escapejs }}');
-                {% endif %}
-            {% endfor %}
-        {% endif %}
-    });
-    
-    // Function to activate management features
-    function activateManagementFeatures() {
-        {% if user.is_authenticated %}
-        $.ajax({
-            url: '{% url "battycoda_app:update_profile_ajax" %}',
-            type: 'POST',
-            data: {
-                'action': 'update_management_features',
-                'enabled': 'true',
-                'csrfmiddlewaretoken': $('[name=csrfmiddlewaretoken]').val() || '{{ csrf_token }}'
-            },
-            success: function(response) {
-                if (response.success) {
-                    toastr.success(response.message);
-                    // Reload the page to show the new menu items
-                    setTimeout(function() {
-                        window.location.reload();
-                    }, 1000);
-                } else {
-                    toastr.error(response.message);
-                }
-            },
-            error: function(xhr, status, error) {
-                toastr.error('Failed to activate management features. Please try again.');
-            }
-        });
-        {% else %}
-        toastr.error('You must be logged in to activate management features.');
-        {% endif %}
-    }
+<!-- Django messages for toastr display -->
+<script id="django-messages" type="application/json">
+{% if messages %}[{% for message in messages %}{"level": "{{ message.tags }}", "message": "{{ message|escapejs }}"}{% if not forloop.last %}, {% endif %}{% endfor %}]{% else %}[]{% endif %}
 </script>
+
+<!-- Main Vite bundle (includes all core initializations) -->
+{% vite_asset 'static/js/main.js' %}
 
 {% block extra_js %}{% endblock %}
 </body>

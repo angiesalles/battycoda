@@ -462,9 +462,10 @@ CSP is implemented via `django-csp` middleware. Configuration is in `config/sett
 **Modes:**
 - **Report-Only (default)**: Violations are logged but not blocked. Safe for testing.
 - **Enforcement**: Violations are blocked. Enable with `CSP_ENFORCE=true` in `.env`.
+- **Strict Mode**: Removes `'unsafe-inline'` from script-src. Enable with `CSP_STRICT_MODE=true` in `.env`.
 
 **Current Policy:**
-- Scripts allowed from: `'self'`, `'unsafe-inline'`, CDNs (jsdelivr, cloudflare, jquery, sentry)
+- Scripts allowed from: `'self'`, CDNs (jsdelivr, cloudflare, jquery, sentry), + `'unsafe-inline'` in non-strict mode
 - Styles allowed from: `'self'`, `'unsafe-inline'`, CDNs (jsdelivr, cloudflare, googleapis)
 - Images: `'self'`, `data:` (for inline images/spectrograms)
 - Fonts: `'self'`, CDNs (cloudflare, gstatic)
@@ -473,11 +474,45 @@ CSP is implemented via `django-csp` middleware. Configuration is in `config/sett
 **Development Mode:**
 When `DEBUG=true` and `VITE_DEV_MODE=true`, the Vite dev server (localhost:5173) is automatically allowed.
 
-### Future Improvements
+### Script Migration Status (battycoda-1gxd)
 
-The policy currently uses `'unsafe-inline'` for scripts and styles because the codebase has many inline scripts and styles. Future work should:
-1. Migrate inline scripts to external files or use nonces
-2. Remove `'unsafe-inline'` directives for stronger security
+The following inline scripts have been migrated to external files:
+- **Security utilities** (`static/js/utils/security.js`): `escapeHtml()`, `validateUrl()`
+- **Sentry initialization** (`static/js/integrations/sentry-init.js`): Reads config from `#sentry-config` data attributes
+- **App initialization** (`static/js/core/app-init.js`): Select2, toastr config, Django messages, management features
+- **Bootstrap initialization** (`static/js/utils/bootstrap-init.js`): Auto-initializes tooltips and popovers
+
+**Remaining inline scripts:**
+- Page-specific scripts in jobs dashboard, segmentation params, and other templates
+- These can use nonces in strict mode (Vite template tags support nonces)
+
+### CSS Migration Status
+
+**Completed:**
+- Created `static/css/utilities.css` with common utility classes
+- Migrated some progress bar height styles (`h-20`, `h-25` classes)
+
+**Remaining work:**
+- Dynamic progress bar widths (`style="width: {{ progress }}%;"`) still use inline styles
+- CSP nonces only work on `<style>` blocks, not `style=""` attributes
+- Fully removing `'unsafe-inline'` from style-src requires JavaScript-based styling
+
+### Enabling Strict Mode
+
+Before enabling strict mode:
+1. Test in report-only mode first (`CSP_ENFORCE=false`)
+2. Check browser console for CSP violations
+3. Fix any violations (move to external files or add nonces)
+
+```bash
+# Enable strict mode (removes 'unsafe-inline' from script-src)
+# In .env:
+CSP_STRICT_MODE=true
+CSP_ENFORCE=false  # Start in report-only mode
+
+# After testing, enable enforcement:
+CSP_ENFORCE=true
+```
 
 ### Checking CSP Headers
 
@@ -492,7 +527,12 @@ curl -sI http://localhost:8000/ | grep -i "content-security-policy"
 # Content-Security-Policy: ...
 ```
 
-Key file: `config/settings.py` (search for "Content Security Policy")
+Key files:
+- `config/settings.py` - CSP configuration
+- `battycoda_app/templatetags/vite.py` - Vite template tags with nonce support
+- `static/js/utils/security.js` - Security utility functions
+- `static/js/core/app-init.js` - Application initialization
+- `static/css/utilities.css` - CSS utility classes
 
 ## Environment Configuration
 

@@ -20,3 +20,6 @@
 
 /* Typography: Raleway for headings */
 @import './typography.css';
+
+/* Utility classes for CSP compliance (replacing inline styles) */
+@import './utilities.css';

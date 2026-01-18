@@ -14,6 +14,10 @@ Usage in templates:
 
 Note: The entry_name for vite_asset should match the key in vite.config.js input object,
 which corresponds to the file path (e.g., 'static/js/main.js').
+
+CSP Nonce Support:
+    When CSP_STRICT_MODE is enabled, script tags include nonce attributes from request.csp_nonce.
+    This allows scripts to execute without 'unsafe-inline' in the CSP policy.
 """
 
 import json
@@ -25,6 +29,29 @@ from django.templatetags.static import static
 from django.utils.safestring import mark_safe
 
 register = template.Library()
+
+
+def get_csp_nonce(context):
+    """Get CSP nonce from request context if available and strict mode is enabled."""
+    if not getattr(settings, "CSP_STRICT_MODE", False):
+        return None
+    request = context.get("request")
+    if request and hasattr(request, "csp_nonce"):
+        return request.csp_nonce
+    return None
+
+
+def make_script_tag(src, module=True, nonce=None):
+    """Generate a script tag with optional nonce attribute."""
+    type_attr = ' type="module"' if module else ""
+    nonce_attr = f' nonce="{nonce}"' if nonce else ""
+    return f'<script{type_attr} src="{src}"{nonce_attr}></script>'
+
+
+def make_inline_script_tag(content, nonce=None):
+    """Generate an inline script tag with optional nonce attribute."""
+    nonce_attr = f' nonce="{nonce}"' if nonce else ""
+    return f"<script{nonce_attr}>{content}</script>"
 
 # Cache for manifest to avoid repeated file reads
 _manifest_cache = None
@@ -57,23 +84,26 @@ def is_vite_dev_mode():
     return settings.DEBUG and getattr(settings, "VITE_DEV_MODE", True)
 
 
-@register.simple_tag
-def vite_asset(entry_name):
+@register.simple_tag(takes_context=True)
+def vite_asset(context, entry_name):
     """
     Load a Vite JS asset, handling dev vs prod environments.
 
     Args:
+        context: Template context (for CSP nonce access)
         entry_name: The entry point path as used in vite.config.js input
                     (e.g., 'static/js/main.js', 'static/js/cluster_explorer/index.js')
 
     Returns:
         HTML script tag(s) for the entry point and any CSS dependencies.
     """
+    nonce = get_csp_nonce(context)
+
     if is_vite_dev_mode():
         # In dev, load from Vite dev server using the original file path
         # Vite serves files from their source locations
         script_url = f"http://localhost:5173/{entry_name}"
-        return mark_safe(f'<script type="module" src="{script_url}"></script>')
+        return mark_safe(make_script_tag(script_url, module=True, nonce=nonce))
 
     # In production, read from manifest
     manifest = get_vite_manifest()
@@ -97,7 +127,7 @@ def vite_asset(entry_name):
 
     # Add the main script
     js_url = static(f"dist/{entry['file']}")
-    tags.append(f'<script type="module" src="{js_url}"></script>')
+    tags.append(make_script_tag(js_url, module=True, nonce=nonce))
 
     return mark_safe("\n".join(tags))
 
@@ -136,17 +166,21 @@ def vite_css(entry_name):
     return mark_safe(f'<link rel="stylesheet" href="{css_url}">')
 
 
-@register.simple_tag
-def vite_theme_urls():
+@register.simple_tag(takes_context=True)
+def vite_theme_urls(context):
     """
     Generate a JavaScript object with theme name -> URL mapping.
 
     This allows the theme-switcher.js to load the correct URLs for themes
     in both development and production modes.
 
+    Args:
+        context: Template context (for CSP nonce access)
+
     Returns:
         HTML script tag with window.__VITE_THEME_URLS__ object.
     """
+    nonce = get_csp_nonce(context)
     theme_urls = {}
 
     if is_vite_dev_mode():
@@ -169,9 +203,9 @@ def vite_theme_urls():
             for theme in themes:
                 theme_urls[theme] = static(f"css/themes/{theme}.css")
 
-    # Output as a script tag
+    # Output as a script tag with nonce if available
     urls_json = json.dumps(theme_urls)
-    return mark_safe(f"<script>window.__VITE_THEME_URLS__ = {urls_json};</script>")
+    return mark_safe(make_inline_script_tag(f"window.__VITE_THEME_URLS__ = {urls_json};", nonce))
 
 
 @register.simple_tag
@@ -208,34 +242,43 @@ def vite_theme_css(theme_name):
     return mark_safe(f'<link id="theme-css-{theme_name}" rel="stylesheet" href="{css_url}">')
 
 
-@register.simple_tag
-def vite_hmr():
+@register.simple_tag(takes_context=True)
+def vite_hmr(context):
     """
     Inject the Vite HMR client script in development mode.
+
+    Args:
+        context: Template context (for CSP nonce access)
 
     Returns:
         HTML script tag for HMR client in dev mode, empty string in prod.
     """
     if is_vite_dev_mode():
-        return mark_safe('<script type="module" src="http://localhost:5173/@vite/client"></script>')
+        nonce = get_csp_nonce(context)
+        return mark_safe(make_script_tag("http://localhost:5173/@vite/client", module=True, nonce=nonce))
     return ""
 
 
-@register.simple_tag
-def vite_react_refresh():
+@register.simple_tag(takes_context=True)
+def vite_react_refresh(context):
     """
     Inject React Refresh runtime for HMR (if using React).
+
+    Args:
+        context: Template context (for CSP nonce access)
 
     Returns:
         HTML script tag for React Refresh in dev mode, empty string in prod.
     """
     if is_vite_dev_mode():
+        nonce = get_csp_nonce(context)
+        nonce_attr = f' nonce="{nonce}"' if nonce else ""
         return mark_safe(
-            """
-<script type="module">
+            f"""
+<script type="module"{nonce_attr}>
   import RefreshRuntime from 'http://localhost:5173/@react-refresh'
   RefreshRuntime.injectIntoGlobalHook(window)
-  window.$RefreshReg$ = () => {}
+  window.$RefreshReg$ = () => {{}}
   window.$RefreshSig$ = () => (type) => type
   window.__vite_plugin_react_preamble_installed__ = true
 </script>

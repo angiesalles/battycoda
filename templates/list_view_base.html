@@ -128,19 +128,4 @@
 </div>
 {% endblock %}
 
-{% block extra_js %}
-<script>
-    document.addEventListener('DOMContentLoaded', function() {
-        // Initialize Bootstrap 5 tooltips
-        var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
-        tooltipTriggerList.map(function (tooltipTriggerEl) {
-            return new bootstrap.Tooltip(tooltipTriggerEl);
-        });
-
-        // Check for datetime elements
-        if (typeof formatDateElements === 'function') {
-            formatDateElements();
-        }
-    });
-</script>
-{% endblock %}
+<!-- Bootstrap tooltips and datetime formatting are auto-initialized by main.js -->

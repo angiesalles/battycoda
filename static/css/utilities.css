@@ -1,0 +1,269 @@
+/**
+ * BattyCoda CSS Utility Classes
+ *
+ * These utility classes replace common inline styles to improve CSP compliance.
+ * Using CSS classes instead of inline style attributes allows us to remove
+ * 'unsafe-inline' from the style-src CSP directive.
+ *
+ * Naming conventions:
+ * - .h-{value}: height utilities
+ * - .w-{value}: width utilities
+ * - .max-w-{value}: max-width utilities
+ * - .fs-{value}: font-size utilities
+ * - .bg-{name}: background color utilities
+ * - .progress-dynamic: dynamic width via --progress CSS variable
+ * - .position-dynamic-*: dynamic positioning via CSS variables
+ */
+
+/* ==========================================================================
+   Display Utilities
+   ========================================================================== */
+
+.d-hidden {
+  display: none;
+}
+
+/* ==========================================================================
+   Height Utilities
+   ========================================================================== */
+
+.h-12 {
+  height: 12px;
+}
+
+.h-20 {
+  height: 20px;
+}
+
+.h-25 {
+  height: 25px;
+}
+
+.h-30 {
+  height: 30px;
+}
+
+.h-100 {
+  height: 100%;
+}
+
+.h-150 {
+  height: 150px;
+}
+
+.h-200 {
+  height: 200px;
+}
+
+/* ==========================================================================
+   Width Utilities
+   ========================================================================== */
+
+.w-20 {
+  width: 20px;
+}
+
+.w-30 {
+  width: 30px;
+}
+
+.w-100 {
+  width: 100%;
+}
+
+.w-150 {
+  width: 150px;
+}
+
+/* ==========================================================================
+   Max-Width Utilities
+   ========================================================================== */
+
+.max-w-300 {
+  max-width: 300px;
+}
+
+.max-w-500 {
+  max-width: 500px;
+}
+
+/* ==========================================================================
+   Font Size Utilities
+   ========================================================================== */
+
+.fs-1-15 {
+  font-size: 1.15rem;
+}
+
+.fs-1-2 {
+  font-size: 1.2rem;
+}
+
+.fs-1-25 {
+  font-size: 1.25rem;
+}
+
+.fs-1-3 {
+  font-size: 1.3rem;
+}
+
+.fs-2-2 {
+  font-size: 2.2rem;
+}
+
+.fs-2-5 {
+  font-size: 2.5rem;
+}
+
+.fs-3 {
+  font-size: 3rem;
+}
+
+.fs-4 {
+  font-size: 4rem;
+}
+
+/* ==========================================================================
+   Vertical Alignment
+   ========================================================================== */
+
+.va-middle {
+  vertical-align: middle;
+}
+
+/* ==========================================================================
+   Object Fit Utilities
+   ========================================================================== */
+
+.object-cover {
+  object-fit: cover;
+}
+
+/* ==========================================================================
+   Border Radius Utilities
+   ========================================================================== */
+
+.rounded-circle {
+  border-radius: 50%;
+}
+
+/* ==========================================================================
+   Background Color Utilities (Theme-aware)
+   ========================================================================== */
+
+.bg-panel {
+  background-color: var(--bc-panel-bg, #262626);
+}
+
+.bg-section {
+  background-color: var(--bc-section-bg, #1e1e1e);
+}
+
+/* ==========================================================================
+   Spacing Utilities (additional to Bootstrap)
+   ========================================================================== */
+
+.ms-10 {
+  margin-left: 10px;
+}
+
+.mx-10 {
+  margin-left: 10px;
+  margin-right: 10px;
+}
+
+/* ==========================================================================
+   Table Utilities
+   ========================================================================== */
+
+.table-collapse {
+  border-collapse: collapse;
+}
+
+.cell-border-bottom {
+  border-bottom: 1px solid #333;
+}
+
+.cell-padding {
+  padding: 8px;
+}
+
+.cell-padding-lg {
+  padding: 12px 0;
+}
+
+/* ==========================================================================
+   Dynamic Progress Bar
+   Uses CSS custom property for dynamic width values.
+
+   Usage:
+   <div class="progress-bar progress-dynamic" style="--progress: 75%;"></div>
+
+   In Django templates:
+   <div class="progress-bar progress-dynamic" style="--progress: {{ run.progress }}%;"></div>
+   ========================================================================== */
+
+.progress-dynamic {
+  width: var(--progress, 0%);
+}
+
+/* ==========================================================================
+   Dynamic Positioning
+   Uses CSS custom properties for dynamic position values.
+
+   Usage in Django templates:
+   <div class="position-dynamic-left" style="--position-left: {{ tick.position }}%;"></div>
+   <div class="position-dynamic-top" style="--position-top: {{ tick.position }}%;"></div>
+   ========================================================================== */
+
+.position-dynamic-left {
+  left: var(--position-left, 0%);
+}
+
+.position-dynamic-top {
+  top: var(--position-top, 0%);
+}
+
+/* ==========================================================================
+   Icon/Avatar Sizing
+   ========================================================================== */
+
+.avatar-sm {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+}
+
+.avatar-md {
+  width: 30px;
+  height: 30px;
+  object-fit: cover;
+}
+
+.avatar-lg {
+  width: 150px;
+  height: 150px;
+  object-fit: cover;
+}
+
+.icon-muted {
+  color: #ddd;
+}
+
+/* ==========================================================================
+   Form & Button Styling
+   ========================================================================== */
+
+.btn-badge {
+  min-width: 150px;
+  border: 2px solid white;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+}
+
+/* ==========================================================================
+   Error/Warning Text
+   ========================================================================== */
+
+.text-error {
+  color: #e57373;
+}

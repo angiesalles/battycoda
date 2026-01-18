@@ -463,24 +463,36 @@ VITE_FEATURES = {
 # Set CSP_ENFORCE=true in .env when ready to enforce
 CSP_ENFORCE = os.environ.get("CSP_ENFORCE", "false").lower() == "true"
 
+# CSP Strict Mode: When enabled, removes 'unsafe-inline' from script-src and style-src
+# This requires all inline scripts and styles to be migrated to external files or use nonces
+# Set CSP_STRICT_MODE=true in .env after completing the migration (see battycoda-1gxd)
+#
+# Migration Status (as of battycoda-1gxd):
+# - Scripts: Core scripts migrated to external files (sentry-init.js, app-init.js, etc.)
+#            Some page-specific inline scripts remain (jobs dashboard, segmentation params)
+#            Vite template tags support nonces for strict mode
+# - Styles: CSS utility classes created (utilities.css)
+#           Many inline style attributes for dynamic values (progress bars) remain
+#           Removing 'unsafe-inline' from style-src requires JS-based styling
+#
+# IMPORTANT: Enable strict mode only after testing to ensure no functionality is broken
+CSP_STRICT_MODE = os.environ.get("CSP_STRICT_MODE", "false").lower() == "true"
+
 # Define the CSP directives
 _CSP_DIRECTIVES = {
     # Default fallback - restrict to same origin
     "default-src": ["'self'"],
-    # Scripts: self + CDNs + unsafe-inline (needed for inline scripts)
-    # TODO: Migrate to nonces to remove 'unsafe-inline' (see battycoda-xxx)
+    # Scripts: self + CDNs (+ unsafe-inline in non-strict mode)
     "script-src": [
         "'self'",
-        "'unsafe-inline'",  # Required for inline scripts - should be removed eventually
         "cdn.jsdelivr.net",  # Bootstrap, Perfect Scrollbar, Select2, Sortable.js
         "cdnjs.cloudflare.com",  # Font Awesome, Toastr
         "code.jquery.com",  # jQuery
         "js.sentry-cdn.com",  # Sentry error tracking
     ],
-    # Styles: self + CDNs + unsafe-inline (needed for inline styles)
+    # Styles: self + CDNs (+ unsafe-inline in non-strict mode)
     "style-src": [
         "'self'",
-        "'unsafe-inline'",  # Required for inline styles and some libraries
         "cdn.jsdelivr.net",  # Bootstrap CSS, Perfect Scrollbar CSS, Select2 CSS
         "cdnjs.cloudflare.com",  # Font Awesome CSS, Toastr CSS
         "fonts.googleapis.com",  # Google Fonts CSS
@@ -513,6 +525,12 @@ _CSP_DIRECTIVES = {
     # Object/embed: disable plugins (Flash, etc.)
     "object-src": ["'none'"],
 }
+
+# Non-strict mode: add 'unsafe-inline' for backwards compatibility
+# In strict mode, all inline scripts/styles must be migrated to external files
+if not CSP_STRICT_MODE:
+    _CSP_DIRECTIVES["script-src"].insert(1, "'unsafe-inline'")
+    _CSP_DIRECTIVES["style-src"].insert(1, "'unsafe-inline'")
 
 # Development mode: allow Vite dev server
 if DEBUG and VITE_DEV_MODE:

@@ -51,7 +51,7 @@
                             <span class="text-sm">Your files: {{ profile.total_storage_display }}</span>
                             <span class="text-sm">{{ profile.available_storage_gb }} GB free on disk</span>
                         </div>
-                        <div class="progress" style="height: 20px;">
+                        <div class="progress" class="h-20">
                             <div class="progress-bar {% if profile.storage_usage_percentage > 90 %}bg-danger{% elif profile.storage_usage_percentage > 75 %}bg-warning{% else %}bg-success{% endif %}"
                                  role="progressbar"
                                  style="width: {{ profile.storage_usage_percentage }}%;"
