@@ -19,8 +19,8 @@ def get_available_algorithms(user):
 
     # Add global algorithms (those without a group) that aren't already included
     user_algorithm_ids = [a.id for a in user_algorithms]
-    global_algorithms = ClusteringAlgorithm.objects.filter(
-        is_active=True, group__isnull=True
-    ).exclude(id__in=user_algorithm_ids)
+    global_algorithms = ClusteringAlgorithm.objects.filter(is_active=True, group__isnull=True).exclude(
+        id__in=user_algorithm_ids
+    )
 
     return list(user_algorithms) + list(global_algorithms)
