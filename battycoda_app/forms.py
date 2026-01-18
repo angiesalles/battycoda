@@ -59,8 +59,8 @@ class UserProfileForm(forms.ModelForm):
         fields = ["theme", "profile_image", "management_features_enabled"]
 
     def __init__(self, *args, **kwargs):
-        # Get the user making the request
-        user = kwargs.pop("user", None)
+        # Remove user from kwargs before passing to parent (not needed in this form)
+        kwargs.pop("user", None)
         super().__init__(*args, **kwargs)
 
         # Add styling to the theme select field
@@ -401,7 +401,7 @@ class SegmentForm(forms.ModelForm):
         }
 
     def __init__(self, *args, **kwargs):
-        recording = kwargs.pop("recording", None)
+        kwargs.pop("recording", None)  # Remove recording from kwargs before passing to parent
         super().__init__(*args, **kwargs)
 
     def clean(self):
@@ -421,7 +421,7 @@ class SegmentFormSet(forms.BaseModelFormSet):
     """Formset for managing multiple segments"""
 
     def __init__(self, *args, **kwargs):
-        recording = kwargs.pop("recording", None)
+        kwargs.pop("recording", None)  # Remove recording from kwargs before passing to parent
         super().__init__(*args, **kwargs)
 
     def clean(self):

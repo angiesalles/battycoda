@@ -198,8 +198,8 @@ def create_preview_recording_view(request, recording_id):
             segmentation_future = executor.submit(run_segmentation_task)
 
             # Wait for both to complete
-            spectrogram_success = spectrogram_future.result(timeout=60)
-            segmentation_result = segmentation_future.result(timeout=60)
+            spectrogram_future.result(timeout=60)
+            segmentation_future.result(timeout=60)
 
         # Redirect to the segmentation detail view
         segmentation_url = reverse(

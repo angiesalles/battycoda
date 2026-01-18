@@ -106,9 +106,6 @@ def auto_segment_recording_view(request, recording_id, algorithm_id=None):
         # Use the first available algorithm (usually Standard Threshold)
         algorithm = algorithms.first()
 
-    # Check for existing segmentations, but we no longer need to warn since we support multiple segmentations
-    # Get the count of existing segmentations for information purposes
-    existing_segmentations_count = Segmentation.objects.filter(recording=recording).count()
     existing_segmentation = None
 
     if request.method == "POST":

@@ -79,10 +79,6 @@ def create_group_view(request):
                 # Get the current user's profile
                 user_profile = request.user.profile
 
-                # Store the user's current group and admin status
-                old_group = user_profile.group
-                was_admin = user_profile.is_current_group_admin
-
                 # Create GroupMembership record for the new group
                 membership, created = GroupMembership.objects.get_or_create(
                     user=request.user,
@@ -243,13 +239,10 @@ def switch_group_view(request, group_id):
     # Get user profile
     user_profile = request.user.profile
 
-    # Try to get membership
-    try:
-        membership = GroupMembership.objects.get(user=request.user, group=group)
-    except GroupMembership.DoesNotExist:
-        # Create membership if not exists (fallback for legacy users)
+    # Create membership if not exists (fallback for legacy users)
+    if not GroupMembership.objects.filter(user=request.user, group=group).exists():
         is_admin = group.name.startswith(f"{request.user.username}'s Group")
-        membership = GroupMembership.objects.create(user=request.user, group=group, is_admin=is_admin)
+        GroupMembership.objects.create(user=request.user, group=group, is_admin=is_admin)
 
     # Update the user's active group
     user_profile.group = group

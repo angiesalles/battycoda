@@ -27,7 +27,7 @@ def ensure_hdf5_exists(recording, user):
         existing_job = SpectrogramJob.objects.filter(recording=recording, status__in=["pending", "in_progress"]).first()
 
         if not existing_job:
-            job = SpectrogramJob.objects.create(
+            SpectrogramJob.objects.create(
                 recording=recording,
                 status="pending",
                 name=f"Spectrogram for {recording.name}",
@@ -49,7 +49,7 @@ def ensure_hdf5_exists(recording, user):
 
         from .hdf5_generation import generate_hdf5_spectrogram
 
-        job = SpectrogramJob.objects.create(
+        SpectrogramJob.objects.create(
             recording=recording,
             status="pending",
             name=f"Spectrogram for {recording.name}",

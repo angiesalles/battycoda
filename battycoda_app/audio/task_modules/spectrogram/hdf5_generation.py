@@ -78,7 +78,7 @@ def generate_hdf5_spectrogram(recording_id, celery_task_id=None):
         # Use chunked processing to avoid loading entire file into memory
         from .hdf5_generation_chunked import generate_hdf5_spectrogram_chunked
 
-        result = generate_hdf5_spectrogram_chunked(wav_path, output_path, progress_callback=update_job_progress)
+        generate_hdf5_spectrogram_chunked(wav_path, output_path, progress_callback=update_job_progress)
 
         update_job_progress(90)
 

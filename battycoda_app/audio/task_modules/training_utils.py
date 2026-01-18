@@ -254,8 +254,7 @@ def train_and_create_classifier(
     # Create classifier
     name = f"{algorithm_type.upper()} Classifier: {name_suffix}"
     description = (
-        f"{algorithm_desc} classifier trained on {name_suffix} "
-        f"with {sample_count} samples. Accuracy: {accuracy:.1f}%"
+        f"{algorithm_desc} classifier trained on {name_suffix} with {sample_count} samples. Accuracy: {accuracy:.1f}%"
     )
 
     success, classifier_or_error = create_classifier_from_training(

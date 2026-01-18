@@ -48,7 +48,7 @@ def create_user_profile(sender, instance, created, **kwargs):
         if invitation:
             # This user was invited to join an existing group
             # Create the profile with the invited group
-            profile = UserProfile.objects.create(user=instance, group=invitation.group)
+            UserProfile.objects.create(user=instance, group=invitation.group)
 
             # Create group membership record
             GroupMembership.objects.create(user=instance, group=invitation.group, is_admin=False)
@@ -62,7 +62,7 @@ def create_user_profile(sender, instance, created, **kwargs):
 
             # Create profile with the new group and make user an admin
             # Enable management features by default for new users
-            profile = UserProfile.objects.create(user=instance, group=group, management_features_enabled=True)
+            UserProfile.objects.create(user=instance, group=group, management_features_enabled=True)
 
             # Create group membership record
             GroupMembership.objects.create(user=instance, group=group, is_admin=True)
@@ -84,12 +84,12 @@ def create_user_profile(sender, instance, created, **kwargs):
             # Import default species
             from ...utils_modules.species_utils import import_default_species
 
-            created_species = import_default_species(instance)
+            import_default_species(instance)
 
             # Create a demo task batch with sample bat calls
             from ...utils_modules.demo_utils import create_demo_task_batch
 
-            batch = create_demo_task_batch(instance)
+            create_demo_task_batch(instance)
 
             # Create welcome notification with demo data message
             from django.urls import reverse

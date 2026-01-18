@@ -23,6 +23,12 @@ exclude = [
     "data",
     "training_data",
     "batch_0_168",
+    # One-off utility scripts (untracked)
+    "label_rousettus_training_data.py",
+    "check_task_segment.py",
+    "format_training_folder.py",
+    "test_hdf5_methods.py",
+    "scripts/create_clustering_algorithms.py",
 ]
 
 [tool.ruff.lint]
@@ -41,7 +47,6 @@ ignore = [
     "E203",   # whitespace before ':' (conflicts with formatter)
     "E501",   # line too long (handled by formatter)
     # Temporarily ignored - tracked in beads for incremental fixes:
-    "F841",   # unused variable (battycoda-lrf)
     "B007",   # unused loop variable (battycoda-aoj)
     "B905",   # zip without strict (battycoda-1lc)
     "C401",   # unnecessary list comprehension (battycoda-afs)

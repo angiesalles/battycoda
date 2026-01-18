@@ -28,8 +28,6 @@ def export_clusters(request, run_id):
         messages.error(request, "Clustering run is not yet completed")
         return redirect("battycoda_app:clustering_run_detail", run_id=clustering_run.id)
 
-    clusters = Cluster.objects.filter(clustering_run=clustering_run).order_by("cluster_id")
-
     # Include segment__segmentation__recording for project-level runs
     segment_clusters = SegmentCluster.objects.filter(cluster__clustering_run=clustering_run).select_related(
         "segment", "segment__segmentation__recording", "cluster"

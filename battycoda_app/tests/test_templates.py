@@ -176,7 +176,7 @@ class TemplateBlockStructureTestCase(TestCase):
         Returns (is_valid, error_message).
         """
         try:
-            template = get_template(template_path)
+            get_template(template_path)
             # If it loads without TemplateSyntaxError, blocks are valid
             return True, None
         except TemplateSyntaxError as e:

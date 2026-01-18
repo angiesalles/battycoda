@@ -89,18 +89,15 @@ def segmentation_jobs_status_view(request):
 
                     # Success with segments
                     if task_result.get("status") == "success":
-                        segments_created = task_result.get("segments_created", 0)
                         segmentation.status = "completed"
                         segmentation.progress = 100
                         segmentation.save()
                     else:
                         # Task returned error status
-                        error_message = task_result.get("message", "Unknown error in segmentation task")
                         segmentation.status = "failed"
                         segmentation.save()
                 else:
                     # Task failed with exception
-                    error_info = str(result.result)
                     segmentation.status = "failed"
                     segmentation.save()
 

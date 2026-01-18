@@ -135,7 +135,7 @@ class DashboardViewsTest(BattycodaTestCase):
         )
 
         # Create and complete a task
-        task = Task.objects.create(
+        Task.objects.create(
             project=self.project,
             species=self.species,
             batch=batch,

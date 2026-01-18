@@ -48,7 +48,6 @@ def task_spectrogram_view(request, task_id):
     try:
         from .audio.task_modules.spectrogram.utils import ensure_hdf5_exists
 
-        wav_path = task.batch.wav_file.path
         logger.info(f"Task {task_id}: Looking for recording with wav_file={task.batch.wav_file.name}")
         recording = Recording.all_objects.filter(wav_file=task.batch.wav_file.name).first()
 
@@ -75,10 +74,6 @@ def task_spectrogram_view(request, task_id):
 
             # Calculate frames per second
             time_per_frame = hop_length / sample_rate
-
-            # Calculate how many frames the full requested window needs
-            requested_duration = end_time - start_time
-            requested_frames = int(requested_duration / time_per_frame)
 
             # Clamp times to valid recording boundaries
             clamped_start_time = max(0, start_time)

@@ -37,7 +37,7 @@ def password_reset_request(request):
 
         token_obj = PasswordResetToken.generate_token(user)
 
-        success = send_password_reset_email(user=user, token=token_obj.token, expires_at=token_obj.expires_at)
+        send_password_reset_email(user=user, token=token_obj.token, expires_at=token_obj.expires_at)
 
         messages.success(
             request,

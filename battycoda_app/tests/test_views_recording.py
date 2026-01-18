@@ -116,7 +116,7 @@ class RecordingListViewTest(BattycodaTestCase):
         self.client.login(username="testuser", password="password123")
 
         # Create a recording
-        recording = Recording.objects.create(
+        Recording.objects.create(
             name="Test Recording",
             project=self.project,
             species=self.species,

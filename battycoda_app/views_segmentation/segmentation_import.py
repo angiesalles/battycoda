@@ -70,10 +70,6 @@ def upload_pickle_segments_view(request, recording_id):
                     created_by=request.user,
                 )
 
-                # We no longer need to delete existing segments since we support multiple segmentations
-                # Just counting for logging purposes
-                existing_count = Segment.objects.filter(recording=recording).count()
-
                 # Create new segments
                 for i in range(len(onsets)):
                     try:

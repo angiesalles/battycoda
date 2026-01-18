@@ -64,8 +64,6 @@ def get_spectrogram_status(recording):
 @login_required
 def segment_recording_view(request, segmentation_id=None):
     """View for segmenting - handles list, create, and detail views"""
-    profile = request.user.profile
-
     # Handle different URL patterns
     if segmentation_id is None:
         # /segmentations/ - list view
