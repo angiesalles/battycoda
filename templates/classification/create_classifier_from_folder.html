@@ -74,7 +74,7 @@
 
                         <div class="mb-3">
                             <label for="species_id" class="form-label">Species <span class="text-danger">*</span></label>
-                            <select class="form-select" id="species_id" name="species_id" required onchange="validateFolder()">
+                            <select class="form-select" id="species_id" name="species_id" required>
                                 <option value="">Select a species...</option>
                                 {% for species in available_species %}
                                 <option value="{{ species.id }}" {% if selected_species_id == species.id|stringformat:"s" %}selected{% endif %}>{{ species.name }}</option>
@@ -220,15 +220,9 @@
         </div>
     </div>
 </div>
+{% endblock %}
 
-<script>
-function validateFolder() {
-    const speciesId = document.getElementById('species_id').value;
-    if (speciesId) {
-        const currentUrl = new URL(window.location.href);
-        currentUrl.searchParams.set('species_id', speciesId);
-        window.location.href = currentUrl.toString();
-    }
-}
-</script>
+{% block extra_js %}
+{% load static %}
+<script src="{% static 'js/pages/classification-folder-validation.js' %}"></script>
 {% endblock %}

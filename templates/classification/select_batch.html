@@ -87,24 +87,11 @@
 {% endblock %}
 
 {% block extra_js %}
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-    // Search functionality for batches table
-    const searchInput = document.getElementById('batchSearch');
-    const batchesTable = document.getElementById('batchesTable');
-    
-    if (searchInput && batchesTable) {
-        searchInput.addEventListener('keyup', function() {
-            const searchTerm = this.value.toLowerCase();
-            const rows = batchesTable.querySelectorAll('tbody tr');
-            
-            rows.forEach(function(row) {
-                const text = row.textContent.toLowerCase();
-                const display = text.includes(searchTerm) ? '' : 'none';
-                row.style.display = display;
-            });
-        });
-    }
-});
-</script>
+{% load static %}
+<div id="table-search-data"
+     data-search-input-id="batchSearch"
+     data-search-table-id="batchesTable"
+     hidden>
+</div>
+<script src="{% static 'js/utils/table-search.js' %}"></script>
 {% endblock %}

@@ -88,24 +88,11 @@
 {% endblock %}
 
 {% block extra_js %}
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-    // Search functionality for entity table
-    const searchInput = document.getElementById('entitySearch');
-    const entityTable = document.getElementById('entityTable');
-    
-    if (searchInput && entityTable) {
-        searchInput.addEventListener('keyup', function() {
-            const searchTerm = this.value.toLowerCase();
-            const rows = entityTable.querySelectorAll('tbody tr');
-            
-            rows.forEach(function(row) {
-                const text = row.textContent.toLowerCase();
-                const display = text.includes(searchTerm) ? '' : 'none';
-                row.style.display = display;
-            });
-        });
-    }
-});
-</script>
+{% load static %}
+<div id="table-search-data"
+     data-search-input-id="entitySearch"
+     data-search-table-id="entityTable"
+     hidden>
+</div>
+<script src="{% static 'js/utils/table-search.js' %}"></script>
 {% endblock %}
