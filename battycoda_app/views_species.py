@@ -10,11 +10,68 @@ from django.shortcuts import get_object_or_404, redirect, render
 from django.views.decorators.http import require_POST
 
 from .forms import SpeciesForm
+from .models.classification import Classifier
 from .models.organization import Call, Species
 from .models.recording import Recording
 from .models.task import Task, TaskBatch
 
-# Set up logging
+
+def _sync_calls_from_json(species, call_types_json):
+    """
+    Sync call types for a species from JSON data.
+
+    Handles both create (no existing calls) and edit (existing calls to sync) cases.
+    - Adds new calls
+    - Updates existing calls if long_name changed
+    - Deletes calls no longer in the list
+
+    Args:
+        species: Species instance to sync calls for
+        call_types_json: JSON string of call types, e.g. '[{"short_name": "A", "long_name": "Call A"}]'
+                        Empty string or "[]" will delete all existing calls.
+
+    Returns:
+        None
+    """
+    call_types_json = (call_types_json or "").strip()
+
+    # Empty or "[]" means delete all calls
+    if not call_types_json or call_types_json == "[]":
+        Call.objects.filter(species=species).delete()
+        return
+
+    try:
+        new_call_types = json.loads(call_types_json)
+    except json.JSONDecodeError:
+        return
+
+    # Get existing calls indexed by short_name
+    existing_calls = {call.short_name: call for call in Call.objects.filter(species=species)}
+    seen_short_names = set()
+
+    for call_data in new_call_types:
+        short_name = call_data.get("short_name", "").strip()
+        long_name = call_data.get("long_name", "").strip()
+
+        if not short_name:
+            continue
+
+        seen_short_names.add(short_name)
+
+        if short_name in existing_calls:
+            # Update existing call if long_name changed
+            existing_call = existing_calls[short_name]
+            if existing_call.long_name != long_name:
+                existing_call.long_name = long_name
+                existing_call.save()
+        else:
+            # Create new call
+            Call.objects.create(species=species, short_name=short_name, long_name=long_name)
+
+    # Delete calls no longer in the list
+    for short_name, call in existing_calls.items():
+        if short_name not in seen_short_names:
+            call.delete()
 
 
 @login_required
@@ -103,25 +160,7 @@ def create_species_view(request):
             species.save()
 
             # Process call types from JSON
-            call_types_json = request.POST.get("call_types_json", "[]")
-
-            # If the JSON is empty or whitespace, use an empty list
-            call_types_json = call_types_json.strip()
-            if call_types_json and call_types_json != "[]":
-                call_types = json.loads(call_types_json)
-
-                for call_data in call_types:
-                    # Create the call
-                    short_name = call_data.get("short_name", "").strip()
-                    long_name = call_data.get("long_name", "").strip()
-
-                    if short_name:
-                        # Check for duplicates
-                        if not Call.objects.filter(species=species, short_name=short_name).exists():
-                            call = Call(species=species, short_name=short_name, long_name=long_name)
-                            call.save()
-                        # Skip duplicates silently
-                    # Skip calls with empty short_name silently
+            _sync_calls_from_json(species, request.POST.get("call_types_json", ""))
 
             messages.success(request, "Species created successfully.")
             return redirect("battycoda_app:species_detail", species_id=species.id)
@@ -170,50 +209,9 @@ def edit_species_view(request, species_id):
                 # Save species basic info
                 species = form.save()
 
-                # Process call types from JSON (same pattern as create)
+                # Process call types from JSON
                 if can_modify_calls:
-                    call_types_json = request.POST.get("call_types_json", "").strip()
-                    if call_types_json and call_types_json != "[]":
-                        try:
-                            new_call_types = json.loads(call_types_json)
-
-                            # Get existing calls
-                            existing_calls = {call.short_name: call for call in Call.objects.filter(species=species)}
-
-                            # Track which calls we've seen in the new list
-                            seen_short_names = set()
-
-                            # Add new calls or update existing ones
-                            for call_data in new_call_types:
-                                short_name = call_data.get("short_name", "").strip()
-                                long_name = call_data.get("long_name", "").strip()
-
-                                if not short_name:
-                                    continue
-
-                                seen_short_names.add(short_name)
-
-                                if short_name in existing_calls:
-                                    # Update existing call if long_name changed
-                                    existing_call = existing_calls[short_name]
-                                    if existing_call.long_name != long_name:
-                                        existing_call.long_name = long_name
-                                        existing_call.save()
-                                else:
-                                    # Create new call
-                                    Call.objects.create(species=species, short_name=short_name, long_name=long_name)
-
-                            # Delete calls that are no longer in the list
-                            for short_name, call in existing_calls.items():
-                                if short_name not in seen_short_names:
-                                    call.delete()
-
-                        except json.JSONDecodeError:
-                            # If JSON is invalid, just skip call type processing
-                            pass
-                    elif call_types_json == "[]":
-                        # User explicitly cleared all calls
-                        Call.objects.filter(species=species).delete()
+                    _sync_calls_from_json(species, request.POST.get("call_types_json", ""))
 
             messages.success(request, "Species updated successfully.")
             return redirect("battycoda_app:species_detail", species_id=species.id)
@@ -262,8 +260,6 @@ def delete_species_view(request, species_id):
     recording_count = Recording.objects.filter(species=species).count()
 
     # Check if this species has classifiers
-    from .models.classification import Classifier
-
     classifier_count = Classifier.objects.filter(species=species).count()
 
     # Check if deletion is allowed (no tasks, batches, recordings, or classifiers associated)
