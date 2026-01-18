@@ -1,4 +1,5 @@
 {% extends 'base.html' %}
+{% load static %}
 {% load battycoda_tags %}
 
 {% block title %}BattyCoda - Task Batch Details{% endblock %}
@@ -190,27 +191,6 @@
     </div>
 </div>
 
-<script>
-// Delete batch functionality
-document.addEventListener('DOMContentLoaded', function() {
-    const deleteBtn = document.getElementById('delete-batch-btn');
-    const modal = new bootstrap.Modal(document.getElementById('deleteBatchModal'));
-    const batchNameDisplay = document.getElementById('batch-name-display');
-    const deleteForm = document.getElementById('delete-batch-form');
-
-    if (deleteBtn && deleteForm) {
-        deleteBtn.addEventListener('click', function() {
-            const batchId = this.getAttribute('data-batch-id');
-            const batchName = this.getAttribute('data-batch-name');
-
-            // Update modal content and form action
-            batchNameDisplay.textContent = batchName;
-            deleteForm.action = `/tasks/batches/${batchId}/delete/`;
-
-            modal.show();
-        });
-    }
-});
-</script>
+<script src="{% static 'js/pages/batch-detail.js' %}"></script>
 
 {% endblock %}

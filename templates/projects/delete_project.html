@@ -83,23 +83,5 @@
     </div>
 </div>
 
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-    // Enable delete button only when checkbox is checked
-    const forceDeleteCheck = document.getElementById('forceDeleteCheck');
-    const deleteBtn = document.getElementById('deleteBtn');
-
-    console.log('Force delete checkbox:', forceDeleteCheck);
-    console.log('Delete button:', deleteBtn);
-
-    if (forceDeleteCheck && deleteBtn) {
-        forceDeleteCheck.addEventListener('change', function() {
-            console.log('Checkbox changed, checked:', this.checked);
-            deleteBtn.disabled = !this.checked;
-        });
-    } else {
-        console.error('Could not find elements for force delete');
-    }
-});
-</script>
+<script src="{% static 'js/pages/delete-project.js' %}"></script>
 {% endblock %}

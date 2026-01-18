@@ -185,30 +185,10 @@
 {% if VITE_FEATURES.file_upload %}
 {% vite_asset 'static/js/file_upload/index.js' %}
 {% endif %}
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-    // Add Bootstrap classes to form inputs
-    const formInputs = document.querySelectorAll('input, select, textarea');
-    formInputs.forEach(input => {
-        if (!input.classList.contains('form-check-input')) {
-            input.classList.add('form-control');
-        }
-    });
-
-    // Only run legacy validation if Vite file_upload is not active
-    if (!window.advancedUploadInitialized) {
-        const form = document.getElementById('recording-form');
-        form.addEventListener('submit', function(event) {
-            const wavFileInput = document.getElementById('{{ form.wav_file.id_for_label }}');
-            if (wavFileInput.files.length === 0) {
-                event.preventDefault();
-                alert('Please select a WAV file to upload.');
-                return false;
-            }
-        });
-    }
-});
+<script id="recording-form-data" type="application/json">
+{"wavFileInputId": "{{ form.wav_file.id_for_label }}"}
 </script>
+<script src="{% static 'js/recordings/create-form.js' %}"></script>
 {% endblock %}
 
 {% endblock %}

@@ -141,65 +141,13 @@
 </div>
 
 {% block extra_scripts %}
-
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-    const createSpectrogramBtn = document.getElementById('createSpectrogramJobBtn');
-    
-    if (createSpectrogramBtn) {
-        createSpectrogramBtn.addEventListener('click', function() {
-            const recordingId = this.dataset.recordingId;
-            const btnIcon = this.querySelector('#spectrogramJobIcon');
-            const btnText = this;
-            
-            // Disable button and show loading state
-            btnText.disabled = true;
-            btnIcon.className = 'fas fa-spinner fa-spin me-1';
-            btnText.innerHTML = '<span class="fas fa-spinner fa-spin me-1"></span> Creating Job...';
-            
-            // Create the spectrogram job
-            fetch(`{% url 'battycoda_app:create_spectrogram_job' recording_id=0 %}`.replace('0', recordingId), {
-                method: 'POST',
-                headers: {
-                    'X-CSRFToken': '{{ csrf_token }}',
-                    'Content-Type': 'application/json',
-                },
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    // Show success message
-                    toastr.success(data.message);
-                    
-                    // Update button to show success state temporarily
-                    btnText.innerHTML = '<span class="fas fa-check me-1"></span> Job Created!';
-                    
-                    // Reset button after 3 seconds
-                    setTimeout(() => {
-                        btnText.disabled = false;
-                        btnText.innerHTML = '<span class="fas fa-chart-line me-1"></span> Generate Spectrogram';
-                    }, 3000);
-                } else {
-                    // Show error message
-                    toastr.error(data.error || 'Failed to create spectrogram job');
-                    
-                    // Reset button
-                    btnText.disabled = false;
-                    btnText.innerHTML = '<span class="fas fa-chart-line me-1"></span> Generate Spectrogram';
-                }
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                toastr.error('Failed to create spectrogram job');
-                
-                // Reset button
-                btnText.disabled = false;
-                btnText.innerHTML = '<span class="fas fa-chart-line me-1"></span> Generate Spectrogram';
-            });
-        });
-    }
-});
+<script id="spectrogram-job-data" type="application/json">
+{
+  "createJobUrlTemplate": "{% url 'battycoda_app:create_spectrogram_job' recording_id=0 %}",
+  "csrfToken": "{{ csrf_token }}"
+}
 </script>
+<script src="{% static 'js/recordings/spectrogram-job.js' %}"></script>
 {% endblock %}
 
 {% endblock %}

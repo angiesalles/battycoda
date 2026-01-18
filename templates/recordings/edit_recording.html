@@ -146,17 +146,7 @@
 </div>
 
 {% block extra_scripts %}
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-    // Add Bootstrap classes to form inputs
-    const formInputs = document.querySelectorAll('input, select, textarea');
-    formInputs.forEach(input => {
-        if (!input.classList.contains('form-check-input')) {
-            input.classList.add('form-control');
-        }
-    });
-});
-</script>
+<script src="{% static 'js/forms/bootstrap-form-styling.js' %}"></script>
 {% endblock %}
 
 {% endblock %}

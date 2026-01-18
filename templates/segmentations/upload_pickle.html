@@ -79,71 +79,11 @@
 {% if VITE_FEATURES.file_upload %}
 {% vite_asset 'static/js/file_upload/index.js' %}
 {% endif %}
-<script>
-$(document).ready(function() {
-    // Skip legacy handler if Vite file_upload module is active
-    if (window.advancedUploadInitialized) {
-        return;
-    }
-
-    // Legacy jQuery-based upload handler
-    // Handle form submission
-    $('#pickle-upload-form').on('submit', function(e) {
-        e.preventDefault();
-
-        // No need to confirm since we now support multiple segmentations
-        // Just proceed with uploading the pickle file
-
-        // Show loading indicator
-        const submitBtn = $(this).find('button[type="submit"]');
-        const originalText = submitBtn.text();
-        submitBtn.prop('disabled', true).html('<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Processing...');
-
-        // Create FormData object
-        const formData = new FormData(this);
-
-        // Submit form via AJAX
-        $.ajax({
-            url: "{% url 'battycoda_app:upload_pickle_segments' recording.id %}",
-            type: 'POST',
-            data: formData,
-            processData: false,
-            contentType: false,
-            success: function(response) {
-                if (response.success) {
-                    // Show success message
-                    const message = response.message || 'Pickle file processed successfully.';
-                    const alert = `<div class="alert alert-success">${message}</div>`;
-                    $('#pickle-upload-form').before(alert);
-
-                    // Redirect after short delay
-                    setTimeout(function() {
-                        window.location.href = response.redirect_url || "{% if recording.segmentation %}{% url 'battycoda_app:segmentation_detail' segmentation_id=recording.segmentation.id %}{% else %}{% url 'battycoda_app:recording_detail' recording_id=recording.id %}{% endif %}";
-                    }, 1500);
-                } else {
-                    // Show error message
-                    const errorMsg = response.error || 'An unknown error occurred.';
-                    const alert = `<div class="alert alert-danger">Error: ${errorMsg}</div>`;
-                    $('#pickle-upload-form').before(alert);
-                    submitBtn.prop('disabled', false).text(originalText);
-                }
-            },
-            error: function(xhr, status, error) {
-                // Show error message
-                let errorMsg = 'Server error occurred.';
-                try {
-                    const response = JSON.parse(xhr.responseText);
-                    errorMsg = response.error || errorMsg;
-                } catch (e) {
-                    console.error('Error parsing response:', e);
-                }
-
-                const alert = `<div class="alert alert-danger">Error: ${errorMsg}</div>`;
-                $('#pickle-upload-form').before(alert);
-                submitBtn.prop('disabled', false).text(originalText);
-            }
-        });
-    });
-});
+<script id="pickle-upload-data" type="application/json">
+{
+  "uploadUrl": "{% url 'battycoda_app:upload_pickle_segments' recording.id %}",
+  "redirectUrl": "{% if recording.segmentation %}{% url 'battycoda_app:segmentation_detail' segmentation_id=recording.segmentation.id %}{% else %}{% url 'battycoda_app:recording_detail' recording_id=recording.id %}{% endif %}"
+}
 </script>
+<script src="{% static 'js/pages/pickle-upload.js' %}"></script>
 {% endblock %}
