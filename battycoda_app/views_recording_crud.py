@@ -16,7 +16,7 @@ from django.urls import reverse
 from .audio.utils import get_audio_duration, split_audio_file
 from .forms import RecordingForm
 from .forms_edit import RecordingEditForm
-from .models import Recording, Segment
+from .models import Recording
 from .models.user import UserProfile
 from .utils_modules.cleanup import safe_remove_file
 
@@ -205,10 +205,8 @@ def delete_recording_view(request, recording_id):
         return redirect("battycoda_app:recording_list")
 
     if request.method == "POST":
-        # Delete segments first
-        Segment.objects.filter(recording=recording).delete()
         recording_name = recording.name
-        recording.delete()
+        recording.delete()  # CASCADE handles related segments, segmentations, etc.
         messages.success(request, f"Successfully deleted recording: {recording_name}")
         return redirect("battycoda_app:recording_list")
 

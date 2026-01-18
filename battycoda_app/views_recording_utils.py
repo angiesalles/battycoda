@@ -48,7 +48,7 @@ def recalculate_audio_info_view(request, recording_id):
         recording.save(update_fields=["duration", "sample_rate"])
 
         messages.success(request, "Audio information has been recalculated successfully.")
-    except Exception as e:
+    except (OSError, sf.SoundFileError) as e:
         messages.error(request, f"Failed to recalculate audio information: {str(e)}")
 
     return redirect("battycoda_app:recording_detail", recording_id=recording.id)
