@@ -11,10 +11,18 @@ import numpy as np
 
 from ....models import Project, Segment, Segmentation
 
-# Configure librosa cache to avoid permission issues
-os.environ["LIBROSA_CACHE_DIR"] = "/tmp/librosa_cache"
-
 logger = logging.getLogger(__name__)
+
+# Flag to track if librosa cache has been configured
+_librosa_cache_configured = False
+
+
+def _configure_librosa_cache():
+    """Configure librosa cache directory on first use (avoids module-level side effects)."""
+    global _librosa_cache_configured
+    if not _librosa_cache_configured:
+        os.environ["LIBROSA_CACHE_DIR"] = "/tmp/librosa_cache"
+        _librosa_cache_configured = True
 
 # Standard sample rate for project-level clustering (ensures feature comparability)
 STANDARD_SAMPLE_RATE = 22050
@@ -35,6 +43,8 @@ def extract_features(audio_path, start_time, end_time, method="mfcc", params=Non
     Returns:
         features: Extracted features as a numpy array
     """
+    _configure_librosa_cache()
+
     if params is None:
         params = {}
 
@@ -86,8 +96,9 @@ def get_segments_features(segmentation_id, feature_method="mfcc", feature_params
         feature_params: Parameters for feature extraction
 
     Returns:
-        segment_ids: List of segment IDs
+        segment_ids: List of segment IDs that were successfully processed
         features: Matrix of features (n_segments x n_features)
+        failed_segments: List of (segment_id, error_message) tuples for segments that failed
     """
     segmentation = Segmentation.objects.get(id=segmentation_id)
     recording = segmentation.recording
@@ -95,9 +106,11 @@ def get_segments_features(segmentation_id, feature_method="mfcc", feature_params
 
     # Get all segments
     segments = Segment.objects.filter(segmentation=segmentation)
+    total_segments = segments.count()
 
     segment_ids = []
     features_list = []
+    failed_segments = []
 
     # Extract features for each segment
     for segment in segments:
@@ -109,14 +122,23 @@ def get_segments_features(segmentation_id, feature_method="mfcc", feature_params
             segment_ids.append(segment.id)
             features_list.append(features)
         except Exception as e:
+            error_msg = str(e)
+            failed_segments.append((segment.id, error_msg))
             logger.warning(f"Error extracting features for segment {segment.id}: {e}")
+
+    # Log summary if there were failures
+    if failed_segments:
+        logger.warning(
+            f"Feature extraction completed with {len(failed_segments)}/{total_segments} failures "
+            f"for segmentation {segmentation_id}"
+        )
 
     # Convert to numpy array
     if features_list:
         features = np.vstack(features_list)
-        return segment_ids, features
+        return segment_ids, features, failed_segments
     else:
-        return [], np.array([])
+        return [], np.array([]), failed_segments
 
 
 def get_project_segments_features(
@@ -138,10 +160,11 @@ def get_project_segments_features(
         progress_callback: Optional callback function(processed, total) for progress updates
 
     Returns:
-        segment_ids: List of segment IDs
+        segment_ids: List of segment IDs that were successfully processed
         features: Matrix of features (n_segments x n_features)
         segment_metadata: Dict mapping segment_id -> {recording_id, recording_name, segmentation_id}
         skipped_recordings: List of recording names that were skipped (no completed segmentation)
+        failed_segments: List of (segment_id, recording_name, error_message) tuples for failures
     """
     project = Project.objects.get(id=project_id)
 
@@ -152,6 +175,7 @@ def get_project_segments_features(
     all_features = []
     segment_metadata = {}
     skipped_recordings = []
+    failed_segments = []
 
     # Count total segments first (for progress reporting)
     total_segments = Segment.objects.filter(
@@ -207,20 +231,28 @@ def get_project_segments_features(
                     logger.debug(f"Processed {processed}/{total_segments} segments")
 
             except Exception as e:
-                logger.warning(f"Skipping segment {segment.id}: {e}")
+                error_msg = str(e)
+                failed_segments.append((segment.id, recording.name, error_msg))
+                logger.warning(f"Skipping segment {segment.id} from '{recording.name}': {e}")
                 continue
 
     # Final progress update
     if progress_callback:
         progress_callback(processed, total_segments)
 
-    logger.info(
-        f"Feature extraction complete: {len(all_segment_ids)} segments processed, "
-        f"{len(skipped_recordings)} recordings skipped"
-    )
+    # Log summary with failure info
+    log_msg = f"Feature extraction complete: {len(all_segment_ids)} segments processed"
+    if skipped_recordings:
+        log_msg += f", {len(skipped_recordings)} recordings skipped (no segmentation)"
+    if failed_segments:
+        log_msg += f", {len(failed_segments)} segments failed"
+        logger.warning(
+            f"Feature extraction had {len(failed_segments)}/{total_segments} segment failures in project {project_id}"
+        )
+    logger.info(log_msg)
 
     if all_features:
         features = np.vstack(all_features)
-        return all_segment_ids, features, segment_metadata, skipped_recordings
+        return all_segment_ids, features, segment_metadata, skipped_recordings, failed_segments
     else:
-        return [], np.array([]), {}, skipped_recordings
+        return [], np.array([]), {}, skipped_recordings, failed_segments

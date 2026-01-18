@@ -83,7 +83,7 @@ class BaseClusteringRunner:
                 pct = 15 + (25 * processed / total) if total > 0 else 15
                 self._update_progress(pct, message=f"Extracting features: {processed}/{total} segments")
 
-            segment_ids, features, segment_metadata, skipped = get_project_segments_features(
+            segment_ids, features, segment_metadata, skipped, failed = get_project_segments_features(
                 self.clustering_run.project.id,
                 self.clustering_run.species.id,
                 feature_method,
@@ -98,6 +98,12 @@ class BaseClusteringRunner:
             if skipped:
                 logger.info(f"Skipped {len(skipped)} recordings without segmentations")
 
+            if failed:
+                logger.warning(
+                    f"Failed to extract features from {len(failed)} segments. "
+                    f"First few failures: {failed[:3]}"
+                )
+
             return features
 
         else:
@@ -107,12 +113,18 @@ class BaseClusteringRunner:
 
             self._update_progress(15, message="Extracting features...")
 
-            segment_ids, features = get_segments_features(
+            segment_ids, features, failed = get_segments_features(
                 self.clustering_run.segmentation.id, feature_method, feature_params
             )
 
             self.segment_ids = segment_ids
             self.segment_metadata = None
+
+            if failed:
+                logger.warning(
+                    f"Failed to extract features from {len(failed)} segments. "
+                    f"First few failures: {failed[:3]}"
+                )
 
             return features
 
