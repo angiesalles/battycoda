@@ -9,8 +9,9 @@
  * - Bootstrap 4/5 JS (for modals)
  * - Toastr (for notifications, optional)
  *
- * Global data expected from Django template:
- * - existingMappings: Array of existing mapping objects
+ * Expected page data (from Django template):
+ * - JSON script tag with id="existing-mappings-data" containing mappings array
+ * - CSRF token available via csrf_data.html include or page-data element
  */
 
 // Import all modules
@@ -28,6 +29,7 @@ import {
 } from './drag_drop.js';
 import { filterClusters, sortClusters, filterSpecies } from './filtering.js';
 import { initializeClusterPreviewModal, loadClusterDetails } from './modal_handlers.js';
+import { getJsonData, setupJQueryCsrf } from '../utils/page-data.js';
 
 /**
  * Initialize the cluster mapping interface
@@ -94,6 +96,27 @@ export function initClusterMapping(existingMappings) {
 }
 
 /**
+ * Load existing mappings from JSON data element
+ * Converts camelCase keys to snake_case for backward compatibility
+ * @returns {Array} Array of mapping objects with snake_case keys
+ */
+function loadExistingMappingsData() {
+  const existingMappingsData = getJsonData('existing-mappings-data');
+  if (existingMappingsData && Array.isArray(existingMappingsData)) {
+    // Convert camelCase to snake_case for backward compatibility
+    return existingMappingsData.map((m) => ({
+      id: m.id,
+      cluster_id: m.clusterId,
+      call_id: m.callId,
+      confidence: m.confidence,
+      species_name: m.speciesName,
+      call_name: m.callName,
+    }));
+  }
+  return [];
+}
+
+/**
  * Auto-initialize if existingMappings data is available on page load
  */
 function autoInitialize() {
@@ -103,13 +126,17 @@ function autoInitialize() {
     return;
   }
 
-  // Check if existingMappings data is available
-  if (typeof window.existingMappings !== 'undefined') {
-    initClusterMapping(window.existingMappings);
-  } else {
-    // Still initialize without existing mappings
-    initClusterMapping([]);
-  }
+  // Set up CSRF for jQuery AJAX requests
+  setupJQueryCsrf();
+
+  // Load existing mappings from JSON data element
+  const existingMappings = loadExistingMappingsData();
+
+  // Also set on window for backward compatibility with other scripts
+  window.existingMappings = existingMappings;
+
+  // Initialize the mapping interface
+  initClusterMapping(existingMappings);
 }
 
 // Auto-initialize on DOMContentLoaded
