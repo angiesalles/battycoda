@@ -268,6 +268,76 @@ class EditSpeciesViewTest(BattycodaTestCase):
         response = self.client.get(edit_url)
         self.assertEqual(response.status_code, 302)  # Redirects
 
+    def test_edit_species_with_call_types_json(self):
+        """POST with call_types_json should add, update, and delete calls"""
+        # First add some existing calls
+        Call.objects.create(species=self.species, short_name="C1", long_name="Call One")
+        Call.objects.create(species=self.species, short_name="C2", long_name="Call Two")
+        Call.objects.create(species=self.species, short_name="C3", long_name="Call Three")
+
+        self.client.login(username="testuser", password="password123")
+
+        # Submit with updated calls:
+        # - C1: Keep (with updated long_name)
+        # - C2: Delete (not in list)
+        # - C3: Delete (not in list)
+        # - C4: Add new
+        species_data = {
+            "name": "Test Species",
+            "description": "Updated description",
+            "call_types_json": json.dumps(
+                [
+                    {"short_name": "C1", "long_name": "Call One Updated"},
+                    {"short_name": "C4", "long_name": "Call Four"},
+                ]
+            ),
+            "detail_padding_start_ms": 8,
+            "detail_padding_end_ms": 8,
+            "overview_padding_start_ms": 500,
+            "overview_padding_end_ms": 500,
+        }
+        response = self.client.post(self.edit_species_url, species_data)
+        self.assertEqual(response.status_code, 302)  # Redirects to detail
+
+        # Verify the calls
+        calls = Call.objects.filter(species=self.species)
+        self.assertEqual(calls.count(), 2)
+
+        # C1 should be updated
+        c1 = calls.get(short_name="C1")
+        self.assertEqual(c1.long_name, "Call One Updated")
+
+        # C4 should be added
+        self.assertTrue(calls.filter(short_name="C4").exists())
+
+        # C2 and C3 should be deleted
+        self.assertFalse(calls.filter(short_name="C2").exists())
+        self.assertFalse(calls.filter(short_name="C3").exists())
+
+    def test_edit_species_clear_all_calls(self):
+        """POST with empty call_types_json should delete all calls"""
+        # Add some existing calls
+        Call.objects.create(species=self.species, short_name="C1", long_name="Call One")
+        Call.objects.create(species=self.species, short_name="C2", long_name="Call Two")
+
+        self.client.login(username="testuser", password="password123")
+
+        species_data = {
+            "name": "Test Species",
+            "description": "Updated description",
+            "call_types_json": "[]",  # Empty list
+            "detail_padding_start_ms": 8,
+            "detail_padding_end_ms": 8,
+            "overview_padding_start_ms": 500,
+            "overview_padding_end_ms": 500,
+        }
+        response = self.client.post(self.edit_species_url, species_data)
+        self.assertEqual(response.status_code, 302)
+
+        # All calls should be deleted
+        calls = Call.objects.filter(species=self.species)
+        self.assertEqual(calls.count(), 0)
+
 
 class DeleteSpeciesViewTest(BattycodaTestCase):
     def setUp(self):

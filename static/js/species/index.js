@@ -1,17 +1,23 @@
 /**
- * Species Creation Module
+ * Species Management Module
  *
- * Handles species creation form functionality including:
+ * Handles species create and edit form functionality including:
  * - Managing call types (add, delete, parse from file)
- * - Species name validation against existing names
- * - Form submission handling
+ * - Species name validation against existing names (create mode)
+ * - Form submission handling with JSON call types
  *
  * Usage:
- * Include this module on the create species page with required data:
+ * Include this module on the species page with required data:
  *
  * ```html
  * <script id="species-page-data" type="application/json">
- * {"existingSpeciesNames": ["Species 1", "Species 2"]}
+ * {
+ *   "mode": "create" | "edit",
+ *   "existingSpeciesNames": ["Species 1", "Species 2"],  // for create mode
+ *   "currentSpeciesName": "My Species",                  // for edit mode
+ *   "existingCalls": [{"short_name": "FM", "long_name": "Frequency Modulated"}],  // for edit mode
+ *   "canModifyCalls": true  // for edit mode - false if species has classifiers
+ * }
  * </script>
  * ```
  */
@@ -21,6 +27,7 @@ import { escapeHtml } from '../utils/html.js';
 
 // Module state
 let callTypes = [];
+let canModifyCalls = true;
 
 /**
  * Show a message in the specified element
@@ -71,46 +78,56 @@ function renderCallsTable() {
     return;
   }
 
-  // Create table HTML
+  // Create table HTML using Bootstrap styles for consistency
   let tableHtml = `
-    <table style="width: 100%; border-collapse: collapse; margin-bottom: 15px;">
-      <thead>
-        <tr>
-          <th style="text-align: left; padding: 8px; border-bottom: 1px solid #333;">Short Name</th>
-          <th style="text-align: left; padding: 8px; border-bottom: 1px solid #333;">Long Name</th>
-          <th style="text-align: center; padding: 8px; border-bottom: 1px solid #333;">Actions</th>
-        </tr>
-      </thead>
-      <tbody>
+    <div class="table-responsive">
+      <table class="table table-hover">
+        <thead>
+          <tr>
+            <th>Short Name</th>
+            <th>Long Name</th>
+            <th class="text-center" style="width: 100px;">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
   `;
 
   // Add rows for each call type
   callTypes.forEach((call, index) => {
+    const deleteButton = canModifyCalls
+      ? `<button type="button" class="btn btn-sm btn-danger delete-call-btn" data-index="${index}">
+           <i class="fas fa-trash"></i> Delete
+         </button>`
+      : `<button type="button" class="btn btn-sm btn-secondary" disabled title="Cannot delete call types when species is used by classifiers">
+           <i class="fas fa-lock"></i> Locked
+         </button>`;
+
     tableHtml += `
-      <tr data-index="${index}">
-        <td style="padding: 8px; border-bottom: 1px solid #333;">${escapeHtml(call.short_name)}</td>
-        <td style="padding: 8px; border-bottom: 1px solid #333;">${escapeHtml(call.long_name || '')}</td>
-        <td style="padding: 8px; border-bottom: 1px solid #333; text-align: center;">
-          <button type="button" class="button button-small button-danger delete-call-btn" data-index="${index}">Delete</button>
-        </td>
+      <tr class="call-item" data-index="${index}">
+        <td>${escapeHtml(call.short_name)}</td>
+        <td>${escapeHtml(call.long_name || '')}</td>
+        <td class="text-center">${deleteButton}</td>
       </tr>
     `;
   });
 
   tableHtml += `
-      </tbody>
-    </table>
+        </tbody>
+      </table>
+    </div>
   `;
 
   callsTableContainer.innerHTML = tableHtml;
 
-  // Add event listeners to delete buttons
-  document.querySelectorAll('.delete-call-btn').forEach((button) => {
-    button.addEventListener('click', function () {
-      const index = parseInt(this.dataset.index, 10);
-      deleteCall(index);
+  // Add event listeners to delete buttons (only if modification is allowed)
+  if (canModifyCalls) {
+    document.querySelectorAll('.delete-call-btn').forEach((button) => {
+      button.addEventListener('click', function () {
+        const index = parseInt(this.dataset.index, 10);
+        deleteCall(index);
+      });
     });
-  });
+  }
 }
 
 /**
@@ -121,6 +138,16 @@ function renderCallsTable() {
  */
 function addCall(shortName, longName) {
   const addCallMessages = document.getElementById('add-call-messages');
+
+  // Check if modifications are allowed
+  if (!canModifyCalls) {
+    showMessage(
+      addCallMessages,
+      'Cannot modify call types because this species is used by classifiers.',
+      'error'
+    );
+    return false;
+  }
 
   // Check if a call with this short name already exists
   const existing = callTypes.find(
@@ -149,6 +176,17 @@ function addCall(shortName, longName) {
  * @param {number} index - Index of the call to delete
  */
 function deleteCall(index) {
+  // Check if modifications are allowed
+  if (!canModifyCalls) {
+    const addCallMessages = document.getElementById('add-call-messages');
+    showMessage(
+      addCallMessages,
+      'Cannot modify call types because this species is used by classifiers.',
+      'error'
+    );
+    return;
+  }
+
   // Remove from the array
   callTypes.splice(index, 1);
 
@@ -420,6 +458,10 @@ export function initSpeciesCreate() {
   const pageData = getJsonData('species-page-data');
   const existingSpeciesNames = pageData?.existingSpeciesNames || [];
 
+  // Set module state
+  canModifyCalls = true;
+  callTypes = [];
+
   // Initialize the table
   renderCallsTable();
 
@@ -431,17 +473,66 @@ export function initSpeciesCreate() {
 }
 
 /**
+ * Initialize the species edit page functionality
+ */
+export function initSpeciesEdit() {
+  // Get page data from JSON
+  const pageData = getJsonData('species-page-data');
+  const existingCalls = pageData?.existingCalls || [];
+  canModifyCalls = pageData?.canModifyCalls !== false; // default to true if not specified
+
+  // Set module state
+  callTypes = existingCalls.map((call) => ({
+    short_name: call.short_name,
+    long_name: call.long_name || '',
+  }));
+
+  // Initialize the table with existing calls
+  renderCallsTable();
+
+  // Setup functionality if modification is allowed
+  if (canModifyCalls) {
+    setupCallTypeManagement();
+    setupFileParsing();
+  } else {
+    // Show a message that calls are locked
+    const addCallSection = document.getElementById('add-call-section');
+    if (addCallSection) {
+      addCallSection.innerHTML = `
+        <div class="alert alert-warning">
+          <i class="fas fa-lock"></i> Call types cannot be modified because this species is used by one or more classifiers.
+          Classifiers are tied to the call types of their species.
+        </div>
+      `;
+    }
+    // Hide file import section if it exists
+    const fileImportSection = document.getElementById('file-import-section');
+    if (fileImportSection) {
+      fileImportSection.style.display = 'none';
+    }
+  }
+
+  // Setup form submission (no name validation needed for edit mode)
+  setupFormSubmission(null);
+}
+
+/**
  * Auto-initialize when DOM is ready
  */
 export function autoInit() {
-  // Only initialize if we're on the species create page
+  // Only initialize if we're on a species page
   const speciesPageData = document.getElementById('species-page-data');
   if (!speciesPageData) return;
 
+  const pageData = getJsonData('species-page-data');
+  const mode = pageData?.mode || 'create';
+
+  const initFn = mode === 'edit' ? initSpeciesEdit : initSpeciesCreate;
+
   if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', initSpeciesCreate);
+    document.addEventListener('DOMContentLoaded', initFn);
   } else {
-    initSpeciesCreate();
+    initFn();
   }
 }
 

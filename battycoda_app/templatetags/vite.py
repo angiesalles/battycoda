@@ -53,6 +53,7 @@ def make_inline_script_tag(content, nonce=None):
     nonce_attr = f' nonce="{nonce}"' if nonce else ""
     return f"<script{nonce_attr}>{content}</script>"
 
+
 # Cache for manifest to avoid repeated file reads
 _manifest_cache = None
 

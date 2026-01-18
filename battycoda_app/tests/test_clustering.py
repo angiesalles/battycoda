@@ -730,9 +730,7 @@ class ClusteringPermissionsTest(BattycodaTestCase):
         )
 
         # Create a cluster
-        self.cluster = Cluster.objects.create(
-            clustering_run=self.clustering_run, cluster_id=0, size=5, coherence=0.8
-        )
+        self.cluster = Cluster.objects.create(clustering_run=self.clustering_run, cluster_id=0, size=5, coherence=0.8)
 
         # Create a segment
         self.segment = create_test_segment(self.segmentation, 0.0, 1.0, self.regular_user)

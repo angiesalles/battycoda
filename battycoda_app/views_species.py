@@ -146,7 +146,7 @@ def create_species_view(request):
 
 @login_required
 def edit_species_view(request, species_id):
-    """Handle editing of a species"""
+    """Handle editing of a species with unified call types management"""
     species = get_object_or_404(Species, id=species_id)
 
     # Prevent editing of system species
@@ -160,30 +160,77 @@ def edit_species_view(request, species_id):
         messages.error(request, "You don't have permission to edit this species.")
         return redirect("battycoda_app:species_list")
 
-    # Get calls for this species
-    calls = Call.objects.filter(species=species)
+    # Check if this species has classifiers (which would prevent modifying call types)
+    can_modify_calls = species.can_modify_calls()
 
     if request.method == "POST":
         form = SpeciesForm(request.POST, request.FILES, instance=species)
 
         if form.is_valid():
-            # Save species (basic info only)
-            species = form.save()
+            with transaction.atomic():
+                # Save species basic info
+                species = form.save()
+
+                # Process call types from JSON (same pattern as create)
+                if can_modify_calls:
+                    call_types_json = request.POST.get("call_types_json", "").strip()
+                    if call_types_json and call_types_json != "[]":
+                        try:
+                            new_call_types = json.loads(call_types_json)
+
+                            # Get existing calls
+                            existing_calls = {call.short_name: call for call in Call.objects.filter(species=species)}
+
+                            # Track which calls we've seen in the new list
+                            seen_short_names = set()
+
+                            # Add new calls or update existing ones
+                            for call_data in new_call_types:
+                                short_name = call_data.get("short_name", "").strip()
+                                long_name = call_data.get("long_name", "").strip()
+
+                                if not short_name:
+                                    continue
+
+                                seen_short_names.add(short_name)
+
+                                if short_name in existing_calls:
+                                    # Update existing call if long_name changed
+                                    existing_call = existing_calls[short_name]
+                                    if existing_call.long_name != long_name:
+                                        existing_call.long_name = long_name
+                                        existing_call.save()
+                                else:
+                                    # Create new call
+                                    Call.objects.create(species=species, short_name=short_name, long_name=long_name)
+
+                            # Delete calls that are no longer in the list
+                            for short_name, call in existing_calls.items():
+                                if short_name not in seen_short_names:
+                                    call.delete()
+
+                        except json.JSONDecodeError:
+                            # If JSON is invalid, just skip call type processing
+                            pass
+                    elif call_types_json == "[]":
+                        # User explicitly cleared all calls
+                        Call.objects.filter(species=species).delete()
+
             messages.success(request, "Species updated successfully.")
             return redirect("battycoda_app:species_detail", species_id=species.id)
     else:
         form = SpeciesForm(instance=species)
 
-    # Get calls again to ensure they're in the context
+    # Get calls for this species (as JSON string for template)
     calls = Call.objects.filter(species=species)
-
-    # Check if this species has classifiers (which would prevent modifying call types)
-    can_modify_calls = species.can_modify_calls()
+    existing_calls_list = [{"short_name": c.short_name, "long_name": c.long_name or ""} for c in calls]
+    existing_calls_json = json.dumps(existing_calls_list)
 
     context = {
         "form": form,
         "species": species,
-        "calls": calls,  # Explicitly add calls to context
+        "calls": calls,
+        "existing_calls_json": existing_calls_json,
         "can_modify": can_modify_calls,
         "has_classifiers": not can_modify_calls,
     }
