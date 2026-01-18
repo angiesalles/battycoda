@@ -178,8 +178,8 @@
                         <h5 class="mb-0">Call Types</h5>
                     </div>
                     <div class="card-body">
-                        <!-- Hidden field to store call types as JSON -->
-                        <input type="hidden" id="call_types_json" name="call_types_json" value="[]">
+                        <!-- Hidden field to store call types as JSON (empty = preserve existing calls if JS fails) -->
+                        <input type="hidden" id="call_types_json" name="call_types_json" value="">
 
                         {% if can_modify %}
                         <!-- Import from file section -->

@@ -7,7 +7,6 @@ from django.db import transaction
 from django.db.models import Count, Q
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
-from django.template.loader import render_to_string
 from django.views.decorators.http import require_POST
 
 from .forms import SpeciesForm
@@ -302,115 +301,6 @@ def delete_species_view(request, species_id):
     }
 
     return render(request, "species/delete_species.html", context)
-
-
-@login_required
-@require_POST
-def add_call_view(request, species_id):
-    """Add a new call to a species and return the updated calls list HTML"""
-    species = get_object_or_404(Species, id=species_id)
-
-    # Prevent modifying system species
-    if species.is_system:
-        return JsonResponse(
-            {"success": False, "error": "System species cannot be modified. They are available to all users."}
-        )
-
-    # Check if user has permission to edit this species
-    profile = request.user.profile
-    if species.group != profile.group:
-        return JsonResponse({"success": False, "error": "You don't have permission to modify this species."})
-
-    # Check if species has classifiers (which would prevent modifying call types)
-    if not species.can_modify_calls():
-        return JsonResponse(
-            {
-                "success": False,
-                "error": "Cannot modify call types for this species because it is used by one or more classifiers. "
-                "Classifiers are tied to the call types of their species.",
-            }
-        )
-
-    # Get the call data from the request
-    try:
-        data = json.loads(request.body)
-        short_name = data.get("short_name", "").strip()
-        long_name = data.get("long_name", "").strip()
-
-        if not short_name:
-            return JsonResponse({"success": False, "error": "Short name is required."})
-
-        # Check if a call with this name already exists
-        if Call.objects.filter(species=species, short_name=short_name).exists():
-            return JsonResponse({"success": False, "error": f"A call with short name '{short_name}' already exists."})
-
-        # Create the new call
-        call = Call(species=species, short_name=short_name, long_name=long_name)
-        call.save()
-
-        # Get updated list of calls
-        calls = Call.objects.filter(species=species)
-
-        # Render the updated calls table HTML
-        calls_html = render_to_string(
-            "species/includes/calls_table.html", {"calls": calls, "can_modify": species.can_modify_calls()}
-        )
-
-        return JsonResponse(
-            {"success": True, "calls_html": calls_html, "message": f"Call '{short_name}' added successfully."}
-        )
-
-    except Exception as e:
-        return JsonResponse({"success": False, "error": str(e)})
-
-
-@login_required
-@require_POST
-def delete_call_view(request, species_id, call_id):
-    """Delete a call from a species and return the updated calls list HTML"""
-    species = get_object_or_404(Species, id=species_id)
-    call = get_object_or_404(Call, id=call_id, species=species)
-
-    # Prevent modifying system species
-    if species.is_system:
-        return JsonResponse(
-            {"success": False, "error": "System species cannot be modified. They are available to all users."}
-        )
-
-    # Check if user has permission to edit this species
-    profile = request.user.profile
-    if species.group != profile.group:
-        return JsonResponse({"success": False, "error": "You don't have permission to modify this species."})
-
-    # Check if call can be deleted (species must not have classifiers)
-    if not call.can_be_deleted():
-        return JsonResponse(
-            {
-                "success": False,
-                "error": "Cannot delete call types for this species because it is used by one or more classifiers. "
-                "Classifiers are tied to the call types of their species.",
-            }
-        )
-
-    try:
-        # Delete the call
-        call_short_name = call.short_name
-        call.delete()
-
-        # Get updated list of calls
-        calls = Call.objects.filter(species=species)
-
-        # Render the updated calls table HTML
-        calls_html = render_to_string(
-            "species/includes/calls_table.html", {"calls": calls, "can_modify": species.can_modify_calls()}
-        )
-
-        return JsonResponse(
-            {"success": True, "calls_html": calls_html, "message": f"Call '{call_short_name}' deleted successfully."}
-        )
-
-    except Exception as e:
-        return JsonResponse({"success": False, "error": str(e)})
 
 
 @login_required
