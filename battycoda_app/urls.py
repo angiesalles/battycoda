@@ -6,7 +6,7 @@ URL patterns are organized into feature-specific modules for better maintainabil
 
 from django.urls import include, path
 
-from . import views_audio, views_chess, views_dashboard, views_landing
+from . import views_audio, views_dashboard, views_landing
 
 app_name = "battycoda_app"
 
@@ -18,9 +18,6 @@ urlpatterns = [
     path("audio/task/<int:task_id>/snippet/", views_audio.task_audio_snippet_view, name="task_audio_snippet"),
     path("audio/task/<int:task_id>/spectrogram/", views_audio.task_spectrogram_view, name="task_spectrogram"),
     path("audio/bit/", views_audio.simple_audio_bit_view, name="simple_audio_bit"),
-    # Chess proxy routes (authenticated users only)
-    path("chess/", views_chess.chess_home_view, name="chess_home"),
-    path("chess/<path:path>", views_chess.chess_proxy_view, name="chess_proxy"),
     # Feature-specific URL modules
     path("", include("battycoda_app.auth_urls")),
     path("", include("battycoda_app.task_urls")),
