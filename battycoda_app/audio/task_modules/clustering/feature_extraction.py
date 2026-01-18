@@ -109,7 +109,7 @@ def get_segments_features(segmentation_id, feature_method="mfcc", feature_params
             segment_ids.append(segment.id)
             features_list.append(features)
         except Exception as e:
-            print(f"Error extracting features for segment {segment.id}: {str(e)}")
+            logger.warning(f"Error extracting features for segment {segment.id}: {e}")
 
     # Convert to numpy array
     if features_list:
@@ -117,25 +117,6 @@ def get_segments_features(segmentation_id, feature_method="mfcc", feature_params
         return segment_ids, features
     else:
         return [], np.array([])
-
-
-def extract_features_from_segments(segmentation, feature_method="mfcc", feature_params=None):
-    """
-    Extract features from all segments in a segmentation (alternative interface).
-
-    This function was missing from the original clustering_tasks.py and was being called
-    by automatic clustering algorithms.
-
-    Args:
-        segmentation: Segmentation object
-        feature_method: Method to use for feature extraction
-        feature_params: Parameters for feature extraction
-
-    Returns:
-        features: Matrix of features (n_segments x n_features)
-    """
-    _, features = get_segments_features(segmentation.id, feature_method, feature_params)
-    return features
 
 
 def get_project_segments_features(
