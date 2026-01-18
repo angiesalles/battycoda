@@ -104,7 +104,8 @@ def task_annotation_view(request, task_id):
     species_obj = task.species
 
     # If the task has a pre-selected label from classification, put it first in the list
-    if task.label:
+    # (but skip "Unknown" since the template always shows it at the bottom)
+    if task.label and task.label != "Unknown":
         call_types.append(task.label)
         call_descriptions[task.label] = "Automatic classification result"
 
@@ -122,11 +123,10 @@ def task_annotation_view(request, task_id):
             description = call.long_name if call.long_name else ""
             call_descriptions[call.short_name] = description
 
-    # If no call types were loaded from the database
-    if not call_types:
-        # Add a default "Unknown" call type to ensure the interface has at least one option
-        call_types.append("Unknown")
-        call_descriptions["Unknown"] = "Unspecified call type"
+    # Note: We don't need to add a fallback "Unknown" here because the template
+    # always renders an "Unknown" option at the bottom of the call type list.
+    # This ensures annotators always have an option even for species with no
+    # defined call types.
 
     # Check if HDF5 spectrogram file exists for the recording
     from .models.recording import Recording
