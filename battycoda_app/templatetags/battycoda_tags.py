@@ -32,9 +32,8 @@ def url_template(url_name, placeholders="", **kwargs):
     # Parse placeholder names
     placeholder_names = [p.strip() for p in placeholders.split(",") if p.strip()]
 
-    # Build kwargs with placeholder values (use a marker we can replace)
+    # Build kwargs with placeholder values
     url_kwargs = dict(kwargs)
-    placeholder_marker = "__PLACEHOLDER_{}__"
 
     for name in placeholder_names:
         # Use 0 as a dummy value that will be replaced

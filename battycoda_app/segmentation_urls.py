@@ -16,11 +16,11 @@ from .views_segmentation.segment_management import (
 )
 from .views_segmentation.segmentation_batches import batch_segmentation_view, segmentation_jobs_status_view
 from .views_segmentation.segmentation_execution import auto_segment_recording_view
-from .views_segmentation.segmentation_selection import select_recording_for_segmentation_view
-from .views_segmentation.segmentation_status import auto_segment_status_view
 from .views_segmentation.segmentation_import import upload_pickle_segments_view
 from .views_segmentation.segmentation_preview import create_preview_recording_view
+from .views_segmentation.segmentation_selection import select_recording_for_segmentation_view
 from .views_segmentation.segmentation_settings import activate_segmentation_view
+from .views_segmentation.segmentation_status import auto_segment_status_view
 from .views_segmentation.spectrogram_data import get_spectrogram_data_view
 
 urlpatterns = [

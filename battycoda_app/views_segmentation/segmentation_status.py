@@ -27,9 +27,7 @@ def auto_segment_status_view(request, recording_id):
     )
 
     if not segmentation or not segmentation.task_id:
-        return JsonResponse(
-            {"success": False, "status": "not_found", "message": "No active segmentation task found"}
-        )
+        return JsonResponse({"success": False, "status": "not_found", "message": "No active segmentation task found"})
 
     try:
         from celery.result import AsyncResult
