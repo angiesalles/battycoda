@@ -4,7 +4,10 @@
  * Handles the delete batch modal functionality.
  *
  * Usage:
- * Include this script on the batch detail page:
+ * Include this script on the batch detail page with data attributes on the delete button:
+ * <button id="delete-batch-btn"
+ *         data-batch-name="{{ batch.name }}"
+ *         data-delete-url="{% url 'battycoda_app:delete_task_batch' batch.id %}">
  * <script src="{% static 'js/pages/batch-detail.js' %}"></script>
  */
 
@@ -19,14 +22,14 @@ function setupDeleteBatchModal() {
   const modal = new bootstrap.Modal(modalElement);
 
   deleteBtn.addEventListener('click', function () {
-    const batchId = this.getAttribute('data-batch-id');
     const batchName = this.getAttribute('data-batch-name');
+    const deleteUrl = this.getAttribute('data-delete-url');
 
     // Update modal content and form action
     if (batchNameDisplay) {
       batchNameDisplay.textContent = batchName;
     }
-    deleteForm.action = `/tasks/batches/${batchId}/delete/`;
+    deleteForm.action = deleteUrl;
 
     modal.show();
   });

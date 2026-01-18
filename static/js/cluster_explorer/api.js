@@ -2,25 +2,52 @@
  * Cluster Explorer API Configuration
  *
  * Centralizes all API endpoint URLs used by the cluster explorer.
- * This makes it easier to maintain, test, and potentially configure endpoints.
+ * URLs are read from data attributes in the template for flexibility.
  */
 
 /**
- * API endpoints for cluster explorer operations
+ * Get API endpoints from the config element
+ * Falls back to hardcoded values if config element is not found (for tests)
+ * @returns {Object} API endpoints
  */
-export const API_ENDPOINTS = {
-  /** Update cluster label and description */
-  UPDATE_CLUSTER_LABEL: '/clustering/update-cluster-label/',
+function getApiEndpoints() {
+  const configElement = document.getElementById('cluster-explorer-config');
 
-  /** Get cluster details (size, coherence, mappings, representative sample) */
-  GET_CLUSTER_DATA: '/clustering/get-cluster-data/',
+  if (configElement) {
+    return {
+      UPDATE_CLUSTER_LABEL: configElement.dataset.apiUpdateClusterLabel,
+      GET_CLUSTER_DATA: configElement.dataset.apiGetClusterData,
+      GET_CLUSTER_MEMBERS: configElement.dataset.apiGetClusterMembers,
+      GET_SEGMENT_DATA: configElement.dataset.apiGetSegmentData,
+    };
+  }
 
-  /** Get cluster members (segments in a cluster) */
-  GET_CLUSTER_MEMBERS: '/clustering/get-cluster-members/',
+  // Fallback for tests or if config element is missing
+  console.warn('cluster-explorer-config element not found, using fallback URLs');
+  return {
+    UPDATE_CLUSTER_LABEL: '/clustering/update-cluster-label/',
+    GET_CLUSTER_DATA: '/clustering/get-cluster-data/',
+    GET_CLUSTER_MEMBERS: '/clustering/get-cluster-members/',
+    GET_SEGMENT_DATA: '/clustering/get-segment-data/',
+  };
+}
 
-  /** Get segment details (spectrogram, audio, timing) */
-  GET_SEGMENT_DATA: '/clustering/get-segment-data/',
-};
+/**
+ * API endpoints for cluster explorer operations
+ * Lazily initialized on first access
+ */
+let _endpoints = null;
+export const API_ENDPOINTS = new Proxy(
+  {},
+  {
+    get(target, prop) {
+      if (!_endpoints) {
+        _endpoints = getApiEndpoints();
+      }
+      return _endpoints[prop];
+    },
+  }
+);
 
 /**
  * Build a URL with query parameters

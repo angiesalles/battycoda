@@ -4,7 +4,7 @@
  * Handles drag and drop functionality for cluster-to-call mapping.
  */
 
-import { setSelectedClusterId } from './state.js';
+import { setSelectedClusterId, getApiUrls } from './state.js';
 import { addMappingToContainer, updateCallBadgeCount } from './initialization.js';
 import { getCsrfToken } from '../utils/page-data.js';
 
@@ -123,10 +123,11 @@ export function createMapping(clusterId, callId) {
 
   const confidence = 0.7;
   const csrfToken = getCsrfToken();
+  const apiUrls = getApiUrls();
   console.log('CSRF Token present: ' + (csrfToken ? 'Yes' : 'No'));
 
   $.ajax({
-    url: '/clustering/create-mapping/',
+    url: apiUrls.createMapping,
     type: 'POST',
     headers: { 'X-CSRFToken': csrfToken },
     data: {
@@ -186,8 +187,9 @@ export function updateMappingConfidence(mappingId, confidence) {
     return;
   }
 
+  const apiUrls = getApiUrls();
   $.ajax({
-    url: '/clustering/update-mapping-confidence/',
+    url: apiUrls.updateMappingConfidence,
     type: 'POST',
     headers: { 'X-CSRFToken': getCsrfToken() },
     data: {
@@ -220,8 +222,9 @@ export function deleteMapping(mappingId) {
     return;
   }
 
+  const apiUrls = getApiUrls();
   $.ajax({
-    url: '/clustering/delete-mapping/',
+    url: apiUrls.deleteMapping,
     type: 'POST',
     headers: { 'X-CSRFToken': getCsrfToken() },
     data: {

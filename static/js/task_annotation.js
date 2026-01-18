@@ -201,12 +201,12 @@ function checkBatchSwitchNotification() {
     if (batchSwitchData) {
       const fromBatchName = batchSwitchData.fromBatchName;
       const toBatchName = batchSwitchData.toBatchName;
-      const toBatchId = batchSwitchData.toBatchId;
+      const toBatchUrl = batchSwitchData.toBatchUrl;
       const sameProject = batchSwitchData.sameProject;
       const projectName = batchSwitchData.projectName;
 
       // Create message with link to batch
-      const batchLink = `<a href="/tasks/batches/${toBatchId}/" class="text-white text-decoration-underline">view batch</a>`;
+      const batchLink = `<a href="${toBatchUrl}" class="text-white text-decoration-underline">view batch</a>`;
       let message = `You completed all tasks in batch "${fromBatchName}" and are now working on "${toBatchName}" (${batchLink})`;
 
       // Add project context if switching within same project

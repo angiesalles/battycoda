@@ -4,7 +4,7 @@
  * Modal and preview logic for cluster mapping interface.
  */
 
-import { getSelectedClusterId } from './state.js';
+import { getSelectedClusterId, getApiUrls } from './state.js';
 import { escapeHtml } from '../utils/html.js';
 
 /**
@@ -96,7 +96,8 @@ export function loadClusterDetails(clusterId) {
     $('.cluster-preview-coherence').text(coherenceText.split(':')[1].trim());
   }
 
-  $.getJSON('/clustering/get-cluster-data/?cluster_id=' + clusterId, function (data) {
+  const apiUrls = getApiUrls();
+  $.getJSON(apiUrls.getClusterData + '?cluster_id=' + clusterId, function (data) {
     if (data.status === 'success') {
       $('.cluster-preview-id').text(data.label || 'Cluster ' + data.cluster_id);
       $('.cluster-preview-description').text(data.description || '');

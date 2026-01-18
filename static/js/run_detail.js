@@ -4,11 +4,17 @@ document.addEventListener('DOMContentLoaded', function () {
   const statusBadge = document.querySelector('.badge');
 
   if (statusBadge && statusBadge.classList.contains('bg-info')) {
-    const runId = document.getElementById('run-id').value;
+    const runConfig = document.getElementById('run-config');
+    const statusUrl = runConfig?.dataset.statusUrl;
     const progressBar = document.querySelector('.progress-bar');
 
+    if (!statusUrl) {
+      console.warn('Status URL not found in run-config');
+      return;
+    }
+
     const refreshInterval = setInterval(function () {
-      fetch(`/classification/runs/${runId}/status/`)
+      fetch(statusUrl)
         .then((response) => response.json())
         .then((data) => {
           if (data.success) {

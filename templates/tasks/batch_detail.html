@@ -85,7 +85,7 @@
                                 <a href="{% url 'battycoda_app:export_task_batch' batch.id %}" class="btn btn-success">
                                     <i class="fas fa-file-export"></i> Export Results
                                 </a>
-                                <button type="button" class="btn btn-danger" id="delete-batch-btn" data-batch-id="{{ batch.id }}" data-batch-name="{{ batch.name }}">
+                                <button type="button" class="btn btn-danger" id="delete-batch-btn" data-batch-name="{{ batch.name }}" data-delete-url="{% url 'battycoda_app:delete_task_batch' batch.id %}">
                                     <i class="fas fa-trash"></i> Delete Batch
                                 </button>
                             </div>

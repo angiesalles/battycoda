@@ -241,6 +241,10 @@
 <!-- Configuration element for cluster explorer (read via data attributes) -->
 <div id="cluster-explorer-config"
      data-is-project-scope="{% if is_project_scope %}true{% else %}false{% endif %}"
+     data-api-update-cluster-label="{% url 'battycoda_app:update_cluster_label' %}"
+     data-api-get-cluster-data="{% url 'battycoda_app:get_cluster_data' %}"
+     data-api-get-cluster-members="{% url 'battycoda_app:get_cluster_members' %}"
+     data-api-get-segment-data="{% url 'battycoda_app:get_segment_data' %}"
      style="display: none;"></div>
 
 <!-- Cluster data as JSON (safely serialized by Django's json_script) -->

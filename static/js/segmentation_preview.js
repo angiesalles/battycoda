@@ -15,7 +15,6 @@ document.addEventListener('DOMContentLoaded', function () {
       return;
     }
 
-    const recordingId = previewBtn.dataset.recordingId;
     const startTime = document.getElementById('preview_start_time').value || 0;
     const minDuration = document.getElementById('min_duration_ms')?.value || 5;
     const smoothWindow = document.getElementById('smooth_window')?.value || 10;
@@ -37,10 +36,16 @@ document.addEventListener('DOMContentLoaded', function () {
       document.querySelector('[name=csrfmiddlewaretoken]').value
     );
 
+    const previewUrl = previewBtn.dataset.previewUrl;
+    if (!previewUrl) {
+      console.error('Preview URL not found in data attributes');
+      return;
+    }
+
     previewBtn.disabled = true;
     previewBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Creating Preview...';
 
-    fetch(`/recordings/${recordingId}/create-preview/`, {
+    fetch(previewUrl, {
       method: 'POST',
       body: formData,
     })

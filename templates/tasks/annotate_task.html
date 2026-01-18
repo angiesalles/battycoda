@@ -264,6 +264,7 @@
     "fromBatchId": {{ batch_switch_data.from_batch_id }},
     "toBatchName": "{{ batch_switch_data.to_batch_name|escapejs }}",
     "toBatchId": {{ batch_switch_data.to_batch_id }},
+    "toBatchUrl": "{% url 'battycoda_app:task_batch_detail' batch_switch_data.to_batch_id %}",
     "sameProject": {{ batch_switch_data.same_project|lower }},
     "projectName": "{{ batch_switch_data.project_name|escapejs }}"
 }

@@ -268,8 +268,11 @@
 {% endblock %}
 
 {% block extra_js %}
-<!-- Add a hidden input with the run ID for the JavaScript -->
-<input type="hidden" id="run-id" value="{{ run.id }}">
+<!-- Configuration for run detail page -->
+<div id="run-config"
+     data-run-id="{{ run.id }}"
+     data-status-url="{% url 'battycoda_app:classification_run_status' run_id=run.id %}"
+     hidden></div>
 <!-- Link to the external JavaScript file -->
 <script src="{% static 'js/run_detail.js' %}?v=1"></script>
 {% endblock %}
