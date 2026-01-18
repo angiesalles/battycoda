@@ -238,9 +238,10 @@ def get_project_segment_count(request, project_id):
     """Return segment stats for a project, including species breakdown."""
     project = get_object_or_404(Project, id=project_id)
 
-    # Permission check
-    if project.group != request.user.profile.group:
-        return JsonResponse({"error": "Permission denied"}, status=403)
+    # Permission check (using consistent pattern with staff bypass)
+    error = check_clustering_permission(request, project, json_response=True)
+    if error:
+        return error
 
     # Optional species filter
     species_id = request.GET.get("species")

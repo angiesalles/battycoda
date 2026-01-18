@@ -10,6 +10,7 @@ from django.urls import reverse
 from battycoda_app.models import Group, Project, Recording, Segment, Segmentation, SegmentationAlgorithm, Species
 from battycoda_app.models.clustering import (
     Cluster,
+    ClusterCallMapping,
     ClusteringAlgorithm,
     ClusteringRun,
     ClusteringRunSegmentation,
@@ -653,3 +654,224 @@ class ClusteringExportTest(BattycodaTestCase):
         if len(lines) > 1:
             data_row = lines[1]
             self.assertIn("Test Recording", data_row)
+
+
+class ClusteringPermissionsTest(BattycodaTestCase):
+    """Tests for the clustering permissions helper functions."""
+
+    def setUp(self):
+        from battycoda_app.models import UserProfile
+
+        # Create users
+        self.staff_user = User.objects.create_user(
+            username="staffuser", email="staff@example.com", password="password123", is_staff=True
+        )
+        self.regular_user = User.objects.create_user(
+            username="regularuser", email="regular@example.com", password="password123"
+        )
+        self.other_user = User.objects.create_user(
+            username="otheruser", email="other@example.com", password="password123"
+        )
+
+        # Create groups
+        self.group1 = Group.objects.create(name="Group 1", description="First group")
+        self.group2 = Group.objects.create(name="Group 2", description="Second group")
+
+        # Set up user profiles with groups
+        UserProfile.objects.filter(user=self.regular_user).update(group=self.group1)
+        UserProfile.objects.filter(user=self.other_user).update(group=self.group2)
+
+        # Refresh from DB to get updated profiles
+        self.regular_user.refresh_from_db()
+        self.other_user.refresh_from_db()
+
+        # Create species and project
+        self.species = Species.objects.create(
+            name="Test Species", description="A test species", created_by=self.regular_user, group=self.group1
+        )
+        self.project = Project.objects.create(
+            name="Test Project", description="A test project", created_by=self.regular_user, group=self.group1
+        )
+
+        # Create clustering algorithm
+        self.algorithm = ClusteringAlgorithm.objects.create(
+            name="K-means Test",
+            algorithm_type="kmeans",
+            description="Test algorithm",
+            created_by=self.regular_user,
+        )
+
+        # Create segmentation algorithm
+        self.seg_algorithm = create_test_segmentation_algorithm(self.group1)
+
+        # Create recording and segmentation
+        self.recording = Recording.objects.create(
+            name="Test Recording",
+            project=self.project,
+            species=self.species,
+            created_by=self.regular_user,
+            group=self.group1,
+        )
+        self.segmentation = Segmentation.objects.create(
+            recording=self.recording,
+            algorithm=self.seg_algorithm,
+            status="completed",
+            created_by=self.regular_user,
+        )
+
+        # Create clustering run owned by group1
+        self.clustering_run = ClusteringRun.objects.create(
+            name="Test Run",
+            segmentation=self.segmentation,
+            algorithm=self.algorithm,
+            status="completed",
+            created_by=self.regular_user,
+            group=self.group1,
+        )
+
+        # Create a cluster
+        self.cluster = Cluster.objects.create(
+            clustering_run=self.clustering_run, cluster_id=0, size=5, coherence=0.8
+        )
+
+        # Create a segment
+        self.segment = create_test_segment(self.segmentation, 0.0, 1.0, self.regular_user)
+
+    def test_has_clustering_permission_staff_always_allowed(self):
+        """Staff users should always have permission."""
+        from battycoda_app.views_clustering.permissions import has_clustering_permission
+
+        # Staff can access any object regardless of group
+        self.assertTrue(has_clustering_permission(self.staff_user, self.clustering_run))
+        self.assertTrue(has_clustering_permission(self.staff_user, self.cluster))
+        self.assertTrue(has_clustering_permission(self.staff_user, self.segment))
+        self.assertTrue(has_clustering_permission(self.staff_user, self.project))
+
+    def test_has_clustering_permission_same_group_allowed(self):
+        """Users in the same group should have permission."""
+        from battycoda_app.views_clustering.permissions import has_clustering_permission
+
+        self.assertTrue(has_clustering_permission(self.regular_user, self.clustering_run))
+        self.assertTrue(has_clustering_permission(self.regular_user, self.cluster))
+        self.assertTrue(has_clustering_permission(self.regular_user, self.segment))
+        self.assertTrue(has_clustering_permission(self.regular_user, self.project))
+
+    def test_has_clustering_permission_different_group_denied(self):
+        """Users in different groups should be denied."""
+        from battycoda_app.views_clustering.permissions import has_clustering_permission
+
+        self.assertFalse(has_clustering_permission(self.other_user, self.clustering_run))
+        self.assertFalse(has_clustering_permission(self.other_user, self.cluster))
+        self.assertFalse(has_clustering_permission(self.other_user, self.segment))
+        self.assertFalse(has_clustering_permission(self.other_user, self.project))
+
+    def test_has_clustering_permission_no_group_creator_allowed(self):
+        """When object has no group, creator should have permission."""
+        from battycoda_app.views_clustering.permissions import has_clustering_permission
+
+        # Create a clustering run with no group
+        run_no_group = ClusteringRun.objects.create(
+            name="No Group Run",
+            segmentation=self.segmentation,
+            algorithm=self.algorithm,
+            status="completed",
+            created_by=self.regular_user,
+            group=None,
+        )
+
+        # Creator should have permission
+        self.assertTrue(has_clustering_permission(self.regular_user, run_no_group))
+        # Other user should not
+        self.assertFalse(has_clustering_permission(self.other_user, run_no_group))
+
+    def test_get_group_and_creator_clustering_run(self):
+        """Test _get_group_and_creator with ClusteringRun."""
+        from battycoda_app.views_clustering.permissions import _get_group_and_creator
+
+        group, creator = _get_group_and_creator(self.clustering_run)
+        self.assertEqual(group, self.group1)
+        self.assertEqual(creator, self.regular_user)
+
+    def test_get_group_and_creator_cluster(self):
+        """Test _get_group_and_creator with Cluster."""
+        from battycoda_app.views_clustering.permissions import _get_group_and_creator
+
+        group, creator = _get_group_and_creator(self.cluster)
+        self.assertEqual(group, self.group1)
+        self.assertEqual(creator, self.regular_user)
+
+    def test_get_group_and_creator_segment(self):
+        """Test _get_group_and_creator with Segment."""
+        from battycoda_app.views_clustering.permissions import _get_group_and_creator
+
+        group, creator = _get_group_and_creator(self.segment)
+        self.assertEqual(group, self.group1)
+        self.assertEqual(creator, self.regular_user)
+
+    def test_get_group_and_creator_project(self):
+        """Test _get_group_and_creator with Project."""
+        from battycoda_app.views_clustering.permissions import _get_group_and_creator
+
+        group, creator = _get_group_and_creator(self.project)
+        self.assertEqual(group, self.group1)
+        self.assertEqual(creator, self.regular_user)
+
+    def test_get_group_and_creator_cluster_call_mapping(self):
+        """Test _get_group_and_creator with ClusterCallMapping."""
+        from battycoda_app.models import Call
+        from battycoda_app.views_clustering.permissions import _get_group_and_creator
+
+        # Create a call type (Call model doesn't have created_by field)
+        call = Call.objects.create(species=self.species, short_name="Test Call")
+
+        # Create a mapping
+        mapping = ClusterCallMapping.objects.create(
+            cluster=self.cluster, call=call, confidence=0.9, created_by=self.regular_user
+        )
+
+        group, creator = _get_group_and_creator(mapping)
+        self.assertEqual(group, self.group1)
+        self.assertEqual(creator, self.regular_user)
+
+    def test_get_group_and_creator_unsupported_type(self):
+        """Test _get_group_and_creator raises TypeError for unsupported types."""
+        from battycoda_app.views_clustering.permissions import _get_group_and_creator
+
+        with self.assertRaises(TypeError) as context:
+            _get_group_and_creator("not a model")
+
+        self.assertIn("Unsupported object type", str(context.exception))
+        self.assertIn("str", str(context.exception))
+
+    def test_check_clustering_permission_json_response(self):
+        """Test check_clustering_permission returns JsonResponse when denied."""
+        from django.test import RequestFactory
+
+        from battycoda_app.views_clustering.permissions import check_clustering_permission
+
+        factory = RequestFactory()
+        request = factory.get("/")
+        request.user = self.other_user
+
+        result = check_clustering_permission(
+            request, self.clustering_run, json_response=True, error_message="Access denied"
+        )
+
+        self.assertIsNotNone(result)
+        self.assertEqual(result.status_code, 403)
+        data = json.loads(result.content)
+        self.assertEqual(data["status"], "error")
+        self.assertEqual(data["message"], "Access denied")
+
+    def test_check_clustering_permission_returns_none_when_allowed(self):
+        """Test check_clustering_permission returns None when permission granted."""
+        from django.test import RequestFactory
+
+        from battycoda_app.views_clustering.permissions import check_clustering_permission
+
+        factory = RequestFactory()
+        request = factory.get("/")
+        request.user = self.regular_user
+
+        result = check_clustering_permission(request, self.clustering_run)
+        self.assertIsNone(result)

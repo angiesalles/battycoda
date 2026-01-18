@@ -8,46 +8,60 @@ Centralizes the repeated permission check pattern:
             return error_response
 
 This module provides helper functions that handle various clustering-related
-objects (ClusteringRun, Cluster, ClusterCallMapping, Segment) and response
-types (HTML redirect vs JSON).
+objects (ClusteringRun, Cluster, ClusterCallMapping, Segment, Project) and
+response types (HTML redirect vs JSON).
 """
 
 from django.contrib import messages
 from django.http import JsonResponse
 from django.shortcuts import redirect
 
+from ..models import Project, Segment
+from ..models.clustering import Cluster, ClusterCallMapping, ClusteringRun
+
 
 def _get_group_and_creator(obj):
     """Extract group and created_by from various clustering-related objects.
 
-    Handles:
+    Uses explicit isinstance() checks for type safety. Supported types:
     - ClusteringRun: direct .group, .created_by
+    - Project: direct .group, .created_by
     - Cluster: .clustering_run.group, .clustering_run.created_by
     - ClusterCallMapping: .cluster.clustering_run.group, .cluster.clustering_run.created_by
     - Segment: .recording.group, .recording.created_by
 
     Returns:
         tuple: (group, created_by) - either may be None
+
+    Raises:
+        TypeError: If obj is not a supported type
     """
-    # Check for direct group attribute first (ClusteringRun, Project, etc.)
-    # This must come before checking for 'recording' because ClusteringRun
-    # has a 'recording' property that can return None
-    if hasattr(obj, "group") and hasattr(obj, "created_by"):
+    # ClusteringRun - direct access
+    if isinstance(obj, ClusteringRun):
+        return obj.group, obj.created_by
+
+    # Project - direct access
+    if isinstance(obj, Project):
         return obj.group, obj.created_by
 
     # Cluster - via clustering_run
-    if hasattr(obj, "clustering_run"):
+    if isinstance(obj, Cluster):
         return obj.clustering_run.group, obj.clustering_run.created_by
 
     # ClusterCallMapping - via cluster.clustering_run
-    if hasattr(obj, "cluster") and hasattr(obj.cluster, "clustering_run"):
+    if isinstance(obj, ClusterCallMapping):
         return obj.cluster.clustering_run.group, obj.cluster.clustering_run.created_by
 
     # Segment - via recording
-    if hasattr(obj, "recording") and obj.recording is not None:
+    if isinstance(obj, Segment):
+        if obj.recording is None:
+            raise ValueError("Segment has no associated recording")
         return obj.recording.group, obj.recording.created_by
 
-    raise ValueError(f"Cannot determine group/creator for object type: {type(obj).__name__}")
+    raise TypeError(
+        f"Unsupported object type: {type(obj).__name__}. "
+        f"Expected ClusteringRun, Project, Cluster, ClusterCallMapping, or Segment."
+    )
 
 
 def has_clustering_permission(user, obj):
