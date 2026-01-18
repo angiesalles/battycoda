@@ -20,7 +20,6 @@ urlpatterns = [
     path("tasks/batches/<int:batch_id>/review/", views_task_batch.task_batch_review_view, name="task_batch_review"),
     path("tasks/batches/<int:batch_id>/delete/", delete_task_batch_view, name="delete_task_batch"),
     path("tasks/batches/export-completed/", export_completed_batches, name="export_completed_batches"),
-    path("tasks/batches/create/", views_task_batch.create_task_batch_view, name="create_task_batch"),
     path("tasks/batches/check-name/", views_task_batch.check_taskbatch_name, name="check_taskbatch_name"),
     path("tasks/relabel-ajax/", views_task_batch.relabel_task_ajax, name="relabel_task_ajax"),
     path("tasks/next/", views_task_navigation.get_next_task_view, name="get_next_task"),

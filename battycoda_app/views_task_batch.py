@@ -1,7 +1,10 @@
+import hashlib
+import os
 from datetime import datetime
 
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
+from django.core.paginator import EmptyPage, PageNotAnInteger, Paginator
 from django.db import models
 from django.http import HttpResponse, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
@@ -12,14 +15,21 @@ from .models.organization import Project
 from .models.task import Task, TaskBatch
 from .utils_modules.task_export_utils import generate_tasks_csv
 
-# Set up logging
+
+def user_can_access_batch(user, batch):
+    """Check if user has permission to access a task batch.
+
+    Returns True if user created the batch OR user is in the same group.
+    """
+    if batch.created_by == user:
+        return True
+    profile = user.profile
+    return profile.group and batch.group == profile.group
 
 
 @login_required
 def task_batch_list_view(request):
     """Display list of all task batches with pagination and project filtering"""
-    from django.core.paginator import EmptyPage, PageNotAnInteger, Paginator
-
     # Get user profile
     profile = request.user.profile
 
@@ -80,15 +90,11 @@ def task_batch_detail_view(request, batch_id):
     # Get the batch by ID
     batch = get_object_or_404(TaskBatch, id=batch_id)
 
-    # Check if the user has permission to view this batch
-    # Either they created it or they're in the same group
-    profile = request.user.profile
-    if batch.created_by != request.user and (not profile.group or batch.group != profile.group):
+    if not user_can_access_batch(request.user, batch):
         messages.error(request, "You don't have permission to view this batch.")
         return redirect("battycoda_app:task_batch_list")
 
-    # Get tasks with ascending ID order
-    tasks = Task.objects.filter(batch=batch).order_by("id")  # Ordering by ID in ascending order
+    tasks = Task.objects.filter(batch=batch).order_by("id")
 
     context = {
         "batch": batch,
@@ -104,10 +110,7 @@ def export_task_batch_view(request, batch_id):
     # Get the batch by ID
     batch = get_object_or_404(TaskBatch, id=batch_id)
 
-    # Check if the user has permission to export this batch
-    # Either they created it or they're in the same group
-    profile = request.user.profile
-    if batch.created_by != request.user and (not profile.group or batch.group != profile.group):
+    if not user_can_access_batch(request.user, batch):
         messages.error(request, "You don't have permission to export this batch.")
         return redirect("battycoda_app:task_batch_list")
 
@@ -125,21 +128,6 @@ def export_task_batch_view(request, batch_id):
     response.write(csv_content)
 
     return response
-
-
-@login_required
-def create_task_batch_view(request):
-    """Direct creation of task batches now disabled - redirect to explanation"""
-    # Create an informational message
-    messages.info(
-        request,
-        "Task batches can now only be created from classification results. "
-        "Please create a recording, segment it, run classification, and then create a task batch "
-        "from the classification results for manual review.",
-    )
-
-    # Redirect to the task batch list
-    return redirect("battycoda_app:task_batch_list")
 
 
 @login_required
@@ -166,9 +154,7 @@ def task_batch_review_view(request, batch_id):
     # Get the batch by ID
     batch = get_object_or_404(TaskBatch, id=batch_id)
 
-    # Check if the user has permission to view this batch
-    profile = request.user.profile
-    if batch.created_by != request.user and (not profile.group or batch.group != profile.group):
+    if not user_can_access_batch(request.user, batch):
         messages.error(request, "You don't have permission to view this batch.")
         return redirect("battycoda_app:task_batch_list")
 
@@ -196,13 +182,13 @@ def task_batch_review_view(request, batch_id):
         call_types_from_species = list(species.calls.values_list("short_name", flat=True))
         available_call_types.extend(call_types_from_species)
 
-    # Add any additional call types found in the tasks
+    # Add any additional call types found in the tasks (efficient query for just these columns)
     task_call_types = set()
-    for task in Task.objects.filter(batch=batch):
-        if task.label:
-            task_call_types.add(task.label)
-        if task.classification_result:
-            task_call_types.add(task.classification_result)
+    for label, classification_result in batch.tasks.values_list("label", "classification_result"):
+        if label:
+            task_call_types.add(label)
+        if classification_result:
+            task_call_types.add(classification_result)
 
     # Add any call types not already in the list
     for call_type in task_call_types:
@@ -216,10 +202,6 @@ def task_batch_review_view(request, batch_id):
     # Get spectrogram URLs for each task
     tasks_with_spectrograms = []
     for task in tasks:
-        # Get spectrogram URL
-        import hashlib
-        import os
-
         # Get file path
         if task.batch and task.batch.wav_file:
             full_path = task.batch.wav_file.path
@@ -274,9 +256,7 @@ def relabel_task_ajax(request):
         try:
             task = get_object_or_404(Task, id=task_id)
 
-            # Check if the user has permission to modify this task
-            profile = request.user.profile
-            if task.batch.created_by != request.user and (not profile.group or task.batch.group != profile.group):
+            if not user_can_access_batch(request.user, task.batch):
                 return JsonResponse({"success": False, "error": "Permission denied"})
 
             # Update the task

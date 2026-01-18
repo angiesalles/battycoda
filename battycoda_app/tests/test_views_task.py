@@ -77,8 +77,6 @@ class TaskViewsTest(BattycodaTestCase):
         # URL paths
         self.task_list_url = reverse("battycoda_app:task_list")
         self.task_detail_url = reverse("battycoda_app:task_detail", args=[self.task.id])
-        # Note: Individual task creation was removed - tasks are now created through batches
-        self.create_batch_url = reverse("battycoda_app:create_task_batch")
         self.batch_list_url = reverse("battycoda_app:task_batch_list")
         self.batch_detail_url = reverse("battycoda_app:task_batch_detail", args=[self.batch.id])
 
@@ -148,16 +146,6 @@ class TaskViewsTest(BattycodaTestCase):
         self.assertTrue(self.task.is_done)
         self.assertEqual(self.task.label, "Test Label")
         self.assertEqual(self.task.notes, "Test notes")
-
-    # Note: Direct task batch creation was removed - users now create batches from classification results
-    def test_create_batch_view_redirects(self):
-        # Login
-        self.client.login(username="testuser", password="password123")
-
-        # This view now redirects to batch list with an informational message
-        response = self.client.get(self.create_batch_url)
-        self.assertEqual(response.status_code, 302)
-        self.assertRedirects(response, self.batch_list_url)
 
     def test_batch_list_view(self):
         # Login

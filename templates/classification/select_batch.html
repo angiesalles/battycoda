@@ -73,9 +73,9 @@
                     {% else %}
                     <div class="alert alert-warning">
                         <p class="mb-0">
-                            No task batches available. 
-                            <a href="{% url 'battycoda_app:create_task_batch' %}" class="alert-link">Create a task batch</a> 
-                            first to use the automated classification.
+                            No task batches available. Task batches are created from classification results.
+                            First <a href="{% url 'battycoda_app:recording_list' %}" class="alert-link">upload a recording</a>,
+                            run segmentation and classification, then create a task batch from the results.
                         </p>
                     </div>
                     {% endif %}
