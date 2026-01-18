@@ -1,64 +1,16 @@
 """
-Views for managing individual recording segments (CRUD operations).
+Views for managing segmentations (list, create, detail, delete).
+
+Individual segment CRUD operations are in segment_crud.py.
 """
 
 import json
-import os
 
-from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
-from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 
-from battycoda_app.forms import SegmentForm
-from battycoda_app.models import Recording, Segment, Segmentation, SpectrogramJob
-
-
-def get_spectrogram_status(recording):
-    """
-    Get comprehensive spectrogram status for a recording.
-
-    Returns:
-        dict: Contains 'status', 'url', 'job', 'progress' information
-    """
-    try:
-        # Check if recording has spectrogram file stored in database
-        if recording.spectrogram_file:
-            spectrogram_path = os.path.join(
-                settings.MEDIA_ROOT, "spectrograms", "recordings", recording.spectrogram_file
-            )
-
-            # Check if spectrogram file actually exists
-            if os.path.exists(spectrogram_path) and os.path.getsize(spectrogram_path) > 0:
-                return {
-                    "status": "available",
-                    "url": f"/media/spectrograms/recordings/{recording.spectrogram_file}",
-                    "job": None,
-                    "progress": 100,
-                }
-
-        # Check for existing jobs
-        active_job = SpectrogramJob.objects.filter(recording=recording, status__in=["pending", "in_progress"]).first()
-
-        if active_job:
-            return {"status": "generating", "url": None, "job": active_job, "progress": active_job.progress}
-
-        # Check for completed jobs with file
-        completed_job = (
-            SpectrogramJob.objects.filter(recording=recording, status="completed").order_by("-created_at").first()
-        )
-
-        if completed_job and completed_job.output_file_path and os.path.exists(completed_job.output_file_path):
-            # Extract the relative URL from the full path
-            relative_path = str(completed_job.output_file_path).replace(settings.MEDIA_ROOT, "").lstrip("/")
-            return {"status": "available", "url": f"/media/{relative_path}", "job": completed_job, "progress": 100}
-
-        # No spectrogram available, no active jobs
-        return {"status": "not_available", "url": None, "job": None, "progress": 0}
-
-    except Exception as e:
-        return {"status": "error", "url": None, "job": None, "progress": 0, "error": str(e)}
+from battycoda_app.models import Recording, Segment, Segmentation
 
 
 @login_required
@@ -225,79 +177,3 @@ def delete_segmentation_view(request, segmentation_id):
 
     # If GET request, show confirmation page (though we'll use JS confirmation instead)
     return redirect("battycoda_app:segmentation_detail", segmentation_id=segmentation_id)
-
-
-@login_required
-def add_segment_view(request, segmentation_id):
-    """Add a segment to a segmentation via AJAX"""
-    segmentation = get_object_or_404(Segmentation, id=segmentation_id)
-    recording = segmentation.recording
-
-    # Check if the user has permission
-    profile = request.user.profile
-    if recording.created_by != request.user and (not profile.group or recording.group != profile.group):
-        return JsonResponse({"success": False, "error": "Permission denied"}, status=403)
-
-    if request.method == "POST":
-        form = SegmentForm(request.POST, recording=recording)
-        if form.is_valid():
-            segment = form.save(commit=False)
-            segment.recording = recording
-            segment.segmentation = segmentation
-            segment.created_by = request.user
-            segment.save(manual_edit=True)  # Mark as manually edited
-
-            return JsonResponse({"success": True, "segment": segment.to_dict()})
-        else:
-            return JsonResponse({"success": False, "errors": form.errors}, status=400)
-
-    return JsonResponse({"success": False, "error": "Invalid request method"}, status=405)
-
-
-@login_required
-def edit_segment_view(request, segmentation_id, segment_id):
-    """Edit a segment via AJAX"""
-    segment = get_object_or_404(Segment, id=segment_id)
-    recording = segment.recording
-
-    # Check if the user has permission
-    profile = request.user.profile
-    if segment.created_by != request.user and (not profile.group or recording.group != profile.group):
-        return JsonResponse({"success": False, "error": "Permission denied"}, status=403)
-
-    if request.method == "POST":
-        form = SegmentForm(request.POST, instance=segment, recording=recording)
-        if form.is_valid():
-            segment = form.save(commit=False)
-            segment.save(manual_edit=True)  # Mark as manually edited
-
-            return JsonResponse({"success": True, "segment": segment.to_dict()})
-        else:
-            return JsonResponse({"success": False, "errors": form.errors}, status=400)
-
-    return JsonResponse({"success": False, "error": "Invalid request method"}, status=405)
-
-
-@login_required
-def delete_segment_view(request, segmentation_id, segment_id):
-    """Delete a segment via AJAX"""
-    segment = get_object_or_404(Segment, id=segment_id)
-    recording = segment.recording
-
-    # Check if the user has permission
-    profile = request.user.profile
-    if segment.created_by != request.user and (not profile.group or recording.group != profile.group):
-        return JsonResponse({"success": False, "error": "Permission denied"}, status=403)
-
-    if request.method == "POST":
-        # Get the segmentation to mark as manually edited
-        segmentation = segment.segmentation
-        if segmentation:
-            segmentation.manually_edited = True
-            segmentation.save()
-
-        segment_id = segment.id
-        segment.delete()
-        return JsonResponse({"success": True, "segment_id": segment_id})
-
-    return JsonResponse({"success": False, "error": "Invalid request method"}, status=405)

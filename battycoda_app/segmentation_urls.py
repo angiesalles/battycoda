@@ -7,11 +7,13 @@ batch segmentation, and spectrogram data.
 
 from django.urls import path
 
-from .views_segmentation.segment_management import (
+from .views_segmentation.segment_crud import (
     add_segment_view,
     delete_segment_view,
-    delete_segmentation_view,
     edit_segment_view,
+)
+from .views_segmentation.segment_management import (
+    delete_segmentation_view,
     segment_recording_view,
 )
 from .views_segmentation.segmentation_batches import batch_segmentation_view, segmentation_jobs_status_view

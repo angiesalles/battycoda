@@ -1,5 +1,5 @@
 """
-Views for serving spectrogram data for client-side rendering.
+Views and utilities for spectrogram data.
 """
 
 import json
@@ -11,7 +11,54 @@ from django.contrib.auth.decorators import login_required
 from django.http import HttpResponse, JsonResponse
 from django.shortcuts import get_object_or_404
 
+from battycoda_app.models import SpectrogramJob
 from battycoda_app.models.recording import Recording
+
+
+def get_spectrogram_status(recording):
+    """
+    Get comprehensive spectrogram status for a recording.
+
+    Returns:
+        dict: Contains 'status', 'url', 'job', 'progress' information
+    """
+    try:
+        # Check if recording has spectrogram file stored in database
+        if recording.spectrogram_file:
+            spectrogram_path = os.path.join(
+                settings.MEDIA_ROOT, "spectrograms", "recordings", recording.spectrogram_file
+            )
+
+            # Check if spectrogram file actually exists
+            if os.path.exists(spectrogram_path) and os.path.getsize(spectrogram_path) > 0:
+                return {
+                    "status": "available",
+                    "url": f"/media/spectrograms/recordings/{recording.spectrogram_file}",
+                    "job": None,
+                    "progress": 100,
+                }
+
+        # Check for existing jobs
+        active_job = SpectrogramJob.objects.filter(recording=recording, status__in=["pending", "in_progress"]).first()
+
+        if active_job:
+            return {"status": "generating", "url": None, "job": active_job, "progress": active_job.progress}
+
+        # Check for completed jobs with file
+        completed_job = (
+            SpectrogramJob.objects.filter(recording=recording, status="completed").order_by("-created_at").first()
+        )
+
+        if completed_job and completed_job.output_file_path and os.path.exists(completed_job.output_file_path):
+            # Extract the relative URL from the full path
+            relative_path = str(completed_job.output_file_path).replace(settings.MEDIA_ROOT, "").lstrip("/")
+            return {"status": "available", "url": f"/media/{relative_path}", "job": completed_job, "progress": 100}
+
+        # No spectrogram available, no active jobs
+        return {"status": "not_available", "url": None, "job": None, "progress": 0}
+
+    except Exception as e:
+        return {"status": "error", "url": None, "job": None, "progress": 0, "error": str(e)}
 
 
 @login_required

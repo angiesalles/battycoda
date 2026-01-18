@@ -83,7 +83,7 @@ def recording_detail_view(request, recording_id):
         return redirect("battycoda_app:recording_list")
 
     # Import the spectrogram status function
-    from .views_segmentation.segment_management import get_spectrogram_status
+    from .views_segmentation.spectrogram_data import get_spectrogram_status
 
     # Check spectrogram status and jobs
     spectrogram_info = get_spectrogram_status(recording)
