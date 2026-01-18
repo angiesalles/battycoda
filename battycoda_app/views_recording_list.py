@@ -9,6 +9,7 @@ from django.shortcuts import get_object_or_404, redirect, render
 from .models import Recording
 from .models.organization import Project
 from .views_recordings_duplicates import has_duplicate_recordings
+from .views_segmentation.spectrogram_data import get_spectrogram_status
 
 
 @login_required
@@ -81,9 +82,6 @@ def recording_detail_view(request, recording_id):
     if recording.created_by != request.user and (not profile.group or recording.group != profile.group):
         messages.error(request, "You don't have permission to view this recording.")
         return redirect("battycoda_app:recording_list")
-
-    # Import the spectrogram status function
-    from .views_segmentation.spectrogram_data import get_spectrogram_status
 
     # Check spectrogram status and jobs
     spectrogram_info = get_spectrogram_status(recording)

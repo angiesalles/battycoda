@@ -14,29 +14,6 @@ from battycoda_app.models import Recording, Segment, Segmentation
 
 
 @login_required
-def segment_recording_view(request, segmentation_id=None):
-    """View for segmenting - handles list, create, and detail views"""
-    # Handle different URL patterns
-    if segmentation_id is None:
-        # /segmentations/ - list view
-        if request.path == "/segmentations/":
-            return segmentation_list_view(request)
-        # /segmentations/create/ - create view
-        elif request.path == "/segmentations/create/":
-            return create_segmentation_view(request)
-        else:
-            # Fallback for old recording-based URLs - extract recording_id from kwargs
-            recording_id = request.resolver_match.kwargs.get("recording_id")
-            if recording_id:
-                return segment_recording_legacy_view(request, recording_id)
-            else:
-                return redirect("battycoda_app:segmentation_list")
-    else:
-        # /segmentations/<segmentation_id>/ - detail view
-        return segmentation_detail_view(request, segmentation_id)
-
-
-@login_required
 def segment_recording_legacy_view(request, recording_id):
     """Legacy view for segmenting a recording (marking regions) - redirects to new URL"""
     recording = get_object_or_404(Recording, id=recording_id)

@@ -13,8 +13,10 @@ from .views_segmentation.segment_crud import (
     edit_segment_view,
 )
 from .views_segmentation.segment_management import (
+    create_segmentation_view,
     delete_segmentation_view,
-    segment_recording_view,
+    segmentation_detail_view,
+    segmentation_list_view,
 )
 from .views_segmentation.segmentation_batches import batch_segmentation_view, segmentation_jobs_status_view
 from .views_segmentation.segmentation_execution import auto_segment_recording_view
@@ -26,9 +28,9 @@ from .views_segmentation.segmentation_status import auto_segment_status_view
 from .views_segmentation.spectrogram_data import get_spectrogram_data_view
 
 urlpatterns = [
-    path("segmentations/", segment_recording_view, name="segmentation_list"),
-    path("segmentations/create/", segment_recording_view, name="create_segmentation"),
-    path("segmentations/<int:segmentation_id>/", segment_recording_view, name="segmentation_detail"),
+    path("segmentations/", segmentation_list_view, name="segmentation_list"),
+    path("segmentations/create/", create_segmentation_view, name="create_segmentation"),
+    path("segmentations/<int:segmentation_id>/", segmentation_detail_view, name="segmentation_detail"),
     path(
         "segmentations/<int:segmentation_id>/auto-segment/",
         auto_segment_recording_view,
