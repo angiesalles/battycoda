@@ -7,6 +7,7 @@ from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.db import models
+from django.http import Http404
 from django.shortcuts import get_object_or_404, redirect, render
 
 from battycoda_app.models.classification import ClassifierTrainingJob
@@ -16,6 +17,43 @@ from battycoda_app.models.organization import Call, Species
 def _get_training_data_base():
     """Get the base path for training data folders."""
     return os.path.join(settings.BASE_DIR, "training_data")
+
+
+def _validate_folder_name(folder_name):
+    """
+    Validate folder name to prevent path traversal attacks.
+
+    Raises Http404 if the folder name is invalid.
+    """
+    if not folder_name:
+        raise Http404("Folder name is required")
+
+    # Reject path traversal attempts
+    if ".." in folder_name or folder_name.startswith("/") or folder_name.startswith("\\"):
+        raise Http404("Invalid folder name")
+
+    # Reject names with path separators
+    if "/" in folder_name or "\\" in folder_name:
+        raise Http404("Invalid folder name")
+
+    return folder_name
+
+
+def _parse_label_from_filename(filename):
+    """
+    Parse label from a WAV filename.
+
+    Expected format: NUMBER_LABEL.wav (e.g., 001_echolocation.wav)
+
+    Returns:
+        str or None: The label if successfully parsed, None otherwise
+    """
+    parts = filename.rsplit("_", 1)
+    if len(parts) != 2:
+        return None
+
+    label = parts[1].replace(".wav", "").replace(".WAV", "")
+    return label if label else None
 
 
 def _extract_labels_from_folder(folder_path):
@@ -32,11 +70,9 @@ def _extract_labels_from_folder(folder_path):
     labels = set()
 
     for wav_file in wav_files:
-        parts = wav_file.rsplit("_", 1)
-        if len(parts) == 2:
-            label = parts[1].replace(".wav", "").replace(".WAV", "")
-            if label:
-                labels.add(label)
+        label = _parse_label_from_filename(wav_file)
+        if label:
+            labels.add(label)
 
     return wav_files, labels
 
@@ -93,13 +129,7 @@ def validate_training_folder(folder_path, species):
     for wav_file in wav_files:
         file_path = os.path.join(folder_path, wav_file)
 
-        parts = wav_file.rsplit("_", 1)
-        if len(parts) != 2:
-            stats["unlabeled_files"].append(wav_file)
-            continue
-
-        label = parts[1].replace(".wav", "").replace(".WAV", "")
-
+        label = _parse_label_from_filename(wav_file)
         if not label:
             stats["unlabeled_files"].append(wav_file)
             continue
@@ -194,6 +224,7 @@ def select_training_folder_view(request):
 @login_required
 def training_folder_details_view(request, folder_name):
     """Display folder details and validation results for a training data folder."""
+    _validate_folder_name(folder_name)
     training_data_base = _get_training_data_base()
     folder_path = os.path.join(training_data_base, folder_name)
 
@@ -236,6 +267,7 @@ def training_folder_details_view(request, folder_name):
 @login_required
 def create_training_job_view(request, folder_name):
     """Create a new classifier training job from a training data folder (POST only)."""
+    _validate_folder_name(folder_name)
     if request.method != "POST":
         return redirect("battycoda_app:training_folder_details", folder_name=folder_name)
 
