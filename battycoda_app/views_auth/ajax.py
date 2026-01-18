@@ -44,16 +44,13 @@ def check_username(request):
                 response["message"] = "Username can only contain letters, numbers, and the characters ._-"
                 return JsonResponse(response)
 
-            user_exists = User.objects.filter(username=username).exists()
-            if user_exists:
+            if User.objects.filter(username=username).exists():
                 response["exists"] = True
                 response["message"] = "This username is already taken."
 
-            if email:
-                email_exists = User.objects.filter(email=email).exists()
-                if email_exists:
-                    response["email_exists"] = True
-                    response["email_message"] = "This email is already in use."
+            if email and User.objects.filter(email=email).exists():
+                response["email_exists"] = True
+                response["email_message"] = "This email is already in use."
 
             return JsonResponse(response)
         except Exception as e:
@@ -84,8 +81,7 @@ def check_email(request):
                 response["exists"] = False
                 return JsonResponse(response)
 
-            email_exists = User.objects.filter(email=email).exists()
-            if email_exists:
+            if User.objects.filter(email=email).exists():
                 response["exists"] = True
                 response["message"] = "This email is already in use."
 

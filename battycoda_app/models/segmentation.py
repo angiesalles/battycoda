@@ -177,7 +177,7 @@ class Segment(models.Model):
             "onset": self.onset,
             "offset": self.offset,
             "duration": self.duration,
-            "notes": self.notes or "",
+            "notes": self.notes,
         }
 
     def save(self, *args, **kwargs):

@@ -38,7 +38,7 @@ def simple_classifiers_list(request):
             {
                 "id": classifier.id,
                 "name": classifier.name,
-                "description": classifier.description or "",
+                "description": classifier.description,
                 "species_name": classifier.species.name if classifier.species else "Multi-species",
                 "species_id": classifier.species.id if classifier.species else None,
                 "response_format": classifier.response_format,

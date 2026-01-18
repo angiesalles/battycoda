@@ -36,7 +36,7 @@ def simple_segmentation_algorithms(request):
             {
                 "id": alg.id,
                 "name": alg.name,
-                "description": alg.description or "",
+                "description": alg.description,
                 "algorithm_type": alg.algorithm_type,
                 "default_min_duration_ms": alg.default_min_duration_ms,
                 "default_smooth_window": alg.default_smooth_window,

@@ -227,7 +227,7 @@ def clustering_run_status(request, run_id):
         {
             "status": clustering_run.status,
             "progress": clustering_run.progress,
-            "progress_message": clustering_run.progress_message or "",
+            "progress_message": clustering_run.progress_message,
             "clusters_created": clustering_run.num_clusters_created,
         }
     )

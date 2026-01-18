@@ -182,7 +182,7 @@ def simple_task_batches_list(request):
             {
                 "id": batch.id,
                 "name": batch.name,
-                "description": batch.description or "",
+                "description": batch.description,
                 "species_name": batch.species.name if batch.species else None,
                 "species_id": batch.species.id if batch.species else None,
                 "project_name": batch.project.name if batch.project else None,

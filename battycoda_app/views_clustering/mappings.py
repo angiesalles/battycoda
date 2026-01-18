@@ -50,10 +50,10 @@ def export_clusters(request, run_id):
             recording_name = recording.name if recording else ""
             csv_data += f'{segment.id},{recording_id},"{recording_name}",'
             csv_data += f"{segment.onset},{segment.offset},{cluster.cluster_id},"
-            csv_data += f'"{cluster.label or ""}",{sc.confidence}\n'
+            csv_data += f'"{cluster.label}",{sc.confidence}\n'
         else:
             csv_data += f"{segment.id},{segment.onset},{segment.offset},{cluster.cluster_id},"
-            csv_data += f'"{cluster.label or ""}",{sc.confidence}\n'
+            csv_data += f'"{cluster.label}",{sc.confidence}\n'
 
     response = HttpResponse(csv_data, content_type="text/csv")
     response["Content-Disposition"] = f'attachment; filename="clusters_{run_id}.csv"'
@@ -79,7 +79,7 @@ def export_mappings(request, run_id):
     for mapping in mappings:
         cluster = mapping.cluster
         call = mapping.call
-        csv_data += f'{cluster.cluster_id},"{cluster.label or ""}",'
+        csv_data += f'{cluster.cluster_id},"{cluster.label}",'
         csv_data += f'"{call.species.name}","{call.short_name}",{mapping.confidence}\n'
 
     response = HttpResponse(csv_data, content_type="text/csv")

@@ -28,7 +28,7 @@ def simple_species_list(request):
     # Convert to simple format
     species_data = []
     for s in species:
-        species_data.append({"id": s.id, "name": s.name, "description": s.description or ""})
+        species_data.append({"id": s.id, "name": s.name, "description": s.description})
 
     return JsonResponse({"success": True, "species": species_data, "count": len(species_data)})
 
@@ -52,13 +52,13 @@ def simple_projects_list(request):
             p.recordings.values("species__id", "species__name").annotate(count=Count("id")).order_by("-count")
         )
 
-        primary_species = species_counts.first() if species_counts else None
+        primary_species = species_counts.first()
 
         projects_data.append(
             {
                 "id": p.id,
                 "name": p.name,
-                "description": p.description or "",
+                "description": p.description,
                 "species_name": primary_species["species__name"] if primary_species else "No recordings",
                 "species_id": primary_species["species__id"] if primary_species else None,
                 "recording_count": p.recordings.count(),
@@ -99,7 +99,7 @@ def simple_recordings_list(request):
                 "id": r.id,
                 "name": r.name,
                 "duration": r.duration,
-                "location": r.location or "",
+                "location": r.location,
                 "recorded_date": r.recorded_date.isoformat() if r.recorded_date else None,
                 "species_name": r.species.name,
                 "species_id": r.species.id,

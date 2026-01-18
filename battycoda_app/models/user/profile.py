@@ -71,7 +71,7 @@ class UserProfile(models.Model):
 
     def is_admin_of_group(self, group=None):
         """Check if user is admin of the specified group (defaults to current group)"""
-        target_group = group if group else self.group
+        target_group = group or self.group
         if not target_group:
             return False
         return GroupMembership.objects.filter(user=self.user, group=target_group, is_admin=True).exists()

@@ -33,15 +33,16 @@ class Command(BaseCommand):
         # Filter users based on username argument
         username = options.get("username")
         if username:
-            users = User.objects.filter(username=username)
-            if not users.exists():
+            user = User.objects.filter(username=username).first()
+            if not user:
                 self.stdout.write(self.style.ERROR(f"User {username} not found"))
                 return
+            users = [user]
+            self.stdout.write("Processing 1 user")
         else:
             # Get all users
             users = User.objects.all()
-
-        self.stdout.write(f"Found {users.count()} users to process")
+            self.stdout.write(f"Found {users.count()} users to process")
 
         # Import species for each user
         success_count = 0
