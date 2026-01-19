@@ -6,7 +6,6 @@ from django.contrib.auth.models import User
 from django.test import TestCase
 
 from battycoda_app.audio.modules.file_utils import (
-    RestrictedUnpickler,
     safe_pickle_load,
     safe_pickle_loads,
 )

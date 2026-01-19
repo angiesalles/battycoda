@@ -76,9 +76,7 @@ def build_task_spectrogram_url(task, fallback_username):
     if task.batch and task.batch.wav_file:
         wav_path = task.batch.wav_file.path
     else:
-        wav_path = os.path.join(
-            "home", fallback_username, task.species.name, task.project.name, task.wav_file_name
-        )
+        wav_path = os.path.join("home", fallback_username, task.species.name, task.project.name, task.wav_file_name)
 
     file_hash = hashlib.md5(wav_path.encode()).hexdigest()
 

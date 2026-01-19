@@ -338,9 +338,7 @@ def process_pickle_file(pickle_file, max_duration=None):
         raise
     except Exception as e:
         # Wrap other exceptions with filename information
-        logger.error(
-            f"Error processing pickle file '{os.path.basename(filename)}': {str(e)}\n{traceback.format_exc()}"
-        )
+        logger.error(f"Error processing pickle file '{os.path.basename(filename)}': {str(e)}\n{traceback.format_exc()}")
         raise PickleProcessingError(f"Error processing pickle file '{os.path.basename(filename)}': {str(e)}") from e
 
 

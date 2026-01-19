@@ -100,8 +100,7 @@ class BaseClusteringRunner:
 
             if failed:
                 logger.warning(
-                    f"Failed to extract features from {len(failed)} segments. "
-                    f"First few failures: {failed[:3]}"
+                    f"Failed to extract features from {len(failed)} segments. First few failures: {failed[:3]}"
                 )
 
             return features
@@ -122,8 +121,7 @@ class BaseClusteringRunner:
 
             if failed:
                 logger.warning(
-                    f"Failed to extract features from {len(failed)} segments. "
-                    f"First few failures: {failed[:3]}"
+                    f"Failed to extract features from {len(failed)} segments. First few failures: {failed[:3]}"
                 )
 
             return features

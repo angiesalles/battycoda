@@ -11,6 +11,13 @@ from .views_classification.batch_operations import (
     classify_unclassified_segments_view,
     create_classification_for_species_view,
 )
+from .views_classification.dashboard import classification_home_view
+from .views_classification.folder_training import (
+    create_classifier_from_folder_view,
+    create_training_job_view,
+    select_training_folder_view,
+    training_folder_details_view,
+)
 from .views_classification.job_creation import (
     classifier_list_view,
     create_classifier_training_job_view,
@@ -19,13 +26,6 @@ from .views_classification.job_status import (
     classifier_training_job_detail_view,
     classifier_training_job_status_view,
     delete_classifier_training_job_view,
-)
-from .views_classification.dashboard import classification_home_view
-from .views_classification.folder_training import (
-    create_classifier_from_folder_view,
-    create_training_job_view,
-    select_training_folder_view,
-    training_folder_details_view,
 )
 from .views_classification.results_application import apply_detection_results_view
 from .views_classification.run_creation import create_detection_run_view, delete_detection_run_view

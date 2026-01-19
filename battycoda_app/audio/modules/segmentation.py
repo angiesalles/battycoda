@@ -195,11 +195,7 @@ def energy_based_segment_audio(
         energy[i] = np.sum(frame**2) / len(frame)
 
     # Interpolate energy back to signal length
-    energy_full = np.interp(
-        np.linspace(0, len(energy), len(audio_data)),
-        np.arange(len(energy)),
-        energy
-    )
+    energy_full = np.interp(np.linspace(0, len(energy), len(audio_data)), np.arange(len(energy)), energy)
 
     # Smooth the energy curve
     if smooth_window > 1:

@@ -81,9 +81,7 @@ def _get_available_species(user):
     """Get species available to a user based on their group membership."""
     profile = user.profile
     if profile.group:
-        return Species.objects.filter(
-            models.Q(group=profile.group) | models.Q(is_system=True)
-        ).order_by("name")
+        return Species.objects.filter(models.Q(group=profile.group) | models.Q(is_system=True)).order_by("name")
     return Species.objects.filter(is_system=True).order_by("name")
 
 
@@ -207,18 +205,24 @@ def select_training_folder_view(request):
         item_path = os.path.join(training_data_base, item)
         if os.path.isdir(item_path):
             wav_files, labels = _extract_labels_from_folder(item_path)
-            folders.append({
-                "name": item,
-                "file_count": len(wav_files),
-                "label_count": len(labels),
-            })
+            folders.append(
+                {
+                    "name": item,
+                    "file_count": len(wav_files),
+                    "label_count": len(labels),
+                }
+            )
 
     folders.sort(key=lambda x: x["name"])
 
-    return render(request, "classification/select_training_folder.html", {
-        "folders": folders,
-        "training_data_base": training_data_base,
-    })
+    return render(
+        request,
+        "classification/select_training_folder.html",
+        {
+            "folders": folders,
+            "training_data_base": training_data_base,
+        },
+    )
 
 
 @login_required
@@ -252,16 +256,20 @@ def training_folder_details_view(request, folder_name):
         except Species.DoesNotExist:
             pass
 
-    return render(request, "classification/create_classifier_from_folder.html", {
-        "folder_name": folder_name,
-        "folder_path": folder_path,
-        "file_count": len(wav_files),
-        "label_count": len(labels),
-        "labels": sorted(labels),
-        "available_species": available_species,
-        "selected_species_id": selected_species_id,
-        "validation_results": validation_results,
-    })
+    return render(
+        request,
+        "classification/create_classifier_from_folder.html",
+        {
+            "folder_name": folder_name,
+            "folder_path": folder_path,
+            "file_count": len(wav_files),
+            "label_count": len(labels),
+            "labels": sorted(labels),
+            "available_species": available_species,
+            "selected_species_id": selected_species_id,
+            "validation_results": validation_results,
+        },
+    )
 
 
 @login_required

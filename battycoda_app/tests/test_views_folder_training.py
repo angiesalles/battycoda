@@ -89,9 +89,7 @@ class SelectTrainingFolderViewTest(BattycodaTestCase):
         self.client = Client()
 
         # Create test user
-        self.user = User.objects.create_user(
-            username="testuser", email="test@example.com", password="password123"
-        )
+        self.user = User.objects.create_user(username="testuser", email="test@example.com", password="password123")
         self.profile = UserProfile.objects.get(user=self.user)
 
         # Create a test group
@@ -131,9 +129,7 @@ class TrainingFolderDetailsViewTest(BattycodaTestCase):
         self.client = Client()
 
         # Create test user
-        self.user = User.objects.create_user(
-            username="testuser", email="test@example.com", password="password123"
-        )
+        self.user = User.objects.create_user(username="testuser", email="test@example.com", password="password123")
         self.profile = UserProfile.objects.get(user=self.user)
 
         # Create a test group
@@ -180,9 +176,7 @@ class TrainingFolderDetailsViewTest(BattycodaTestCase):
         for attempt in traversal_attempts:
             url = reverse("battycoda_app:training_folder_details", kwargs={"folder_name": attempt})
             response = self.client.get(url)
-            self.assertEqual(
-                response.status_code, 404, f"Path traversal '{attempt}' should return 404"
-            )
+            self.assertEqual(response.status_code, 404, f"Path traversal '{attempt}' should return 404")
 
         # Test that URL patterns with slashes are blocked by Django's routing
         # (can't use reverse() for these, so test directly)
@@ -193,9 +187,7 @@ class TrainingFolderDetailsViewTest(BattycodaTestCase):
         """Non-existent folder should redirect with error message."""
         self.client.login(username="testuser", password="password123")
         with override_settings(BASE_DIR=self.tmpdir):
-            url = reverse(
-                "battycoda_app:training_folder_details", kwargs={"folder_name": "nonexistent"}
-            )
+            url = reverse("battycoda_app:training_folder_details", kwargs={"folder_name": "nonexistent"})
             response = self.client.get(url)
             self.assertEqual(response.status_code, 302)
 
@@ -203,9 +195,7 @@ class TrainingFolderDetailsViewTest(BattycodaTestCase):
         """Valid folder should return 200 with correct template."""
         self.client.login(username="testuser", password="password123")
         with override_settings(BASE_DIR=self.tmpdir):
-            url = reverse(
-                "battycoda_app:training_folder_details", kwargs={"folder_name": "test_folder"}
-            )
+            url = reverse("battycoda_app:training_folder_details", kwargs={"folder_name": "test_folder"})
             response = self.client.get(url)
             self.assertEqual(response.status_code, 200)
             self.assertTemplateUsed(response, "classification/create_classifier_from_folder.html")
@@ -219,9 +209,7 @@ class CreateTrainingJobViewTest(BattycodaTestCase):
         self.client = Client()
 
         # Create test user
-        self.user = User.objects.create_user(
-            username="testuser", email="test@example.com", password="password123"
-        )
+        self.user = User.objects.create_user(username="testuser", email="test@example.com", password="password123")
         self.profile = UserProfile.objects.get(user=self.user)
 
         # Create a test group
@@ -235,9 +223,7 @@ class CreateTrainingJobViewTest(BattycodaTestCase):
         self.profile.save()
 
         # Create a species
-        self.species = Species.objects.create(
-            name="Test Species", group=self.group, created_by=self.user
-        )
+        self.species = Species.objects.create(name="Test Species", group=self.group, created_by=self.user)
 
     def test_unauthenticated_user_redirected(self):
         """Unauthenticated users should be redirected to login."""
@@ -266,9 +252,7 @@ class CreateTrainingJobViewTest(BattycodaTestCase):
         for attempt in traversal_attempts:
             url = reverse("battycoda_app:create_training_job", kwargs={"folder_name": attempt})
             response = self.client.post(url, {"species_id": self.species.id})
-            self.assertEqual(
-                response.status_code, 404, f"Path traversal '{attempt}' should return 404"
-            )
+            self.assertEqual(response.status_code, 404, f"Path traversal '{attempt}' should return 404")
 
     def test_missing_species_redirects_with_error(self):
         """Missing species_id should redirect with error."""
@@ -281,8 +265,6 @@ class CreateTrainingJobViewTest(BattycodaTestCase):
             os.makedirs(test_folder)
 
             with override_settings(BASE_DIR=tmpdir):
-                url = reverse(
-                    "battycoda_app:create_training_job", kwargs={"folder_name": "test_folder"}
-                )
+                url = reverse("battycoda_app:create_training_job", kwargs={"folder_name": "test_folder"})
                 response = self.client.post(url, {})
                 self.assertEqual(response.status_code, 302)
