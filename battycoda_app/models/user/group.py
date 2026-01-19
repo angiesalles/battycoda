@@ -14,6 +14,34 @@ class Group(models.Model):
     def __str__(self):
         return self.name
 
+    @property
+    def admin_count(self):
+        """Count of admin members in this group."""
+        return self.group_memberships.filter(is_admin=True).count()
+
+    def is_last_admin(self, user):
+        """Check if user is the only admin of this group."""
+        membership = self.group_memberships.filter(user=user, is_admin=True).first()
+        return membership is not None and self.admin_count == 1
+
+    def can_remove_member(self, user):
+        """Check if a member can be removed from this group.
+
+        Returns (can_remove, error_message) tuple.
+        """
+        if self.is_last_admin(user):
+            return False, "Cannot remove the last admin from the group."
+        return True, None
+
+    def can_demote_admin(self, user):
+        """Check if an admin can be demoted to regular member.
+
+        Returns (can_demote, error_message) tuple.
+        """
+        if self.is_last_admin(user):
+            return False, "Cannot remove admin status from the last admin."
+        return True, None
+
 
 class GroupInvitation(models.Model):
     """Group invitation model for inviting users via email."""

@@ -10,7 +10,89 @@ from .models.organization import Project, Species
 from .models.task import TaskBatch
 from .models.user import Group, GroupMembership
 
-# Set up logging
+
+def _require_group_admin(request, group):
+    """Check if user is admin of the specified group.
+
+    Returns (is_admin, redirect_response) tuple.
+    If user is admin, returns (True, None).
+    If not, returns (False, redirect_response) with error message set.
+    """
+    if not request.user.profile.is_admin_of_group(group):
+        messages.error(request, "You do not have permission to perform this action.")
+        return False, redirect("battycoda_app:group_list")
+    return True, None
+
+
+def _handle_add_member(request, group):
+    """Handle adding a user to a group."""
+    user_id = request.POST.get("user_id")
+    if not user_id:
+        return
+
+    user = get_object_or_404(User, id=user_id)
+    GroupMembership.objects.get_or_create(user=user, group=group, defaults={"is_admin": False})
+
+    # Set as active group if user doesn't have one
+    if not user.profile.group:
+        user.profile.group = group
+        user.profile.save()
+
+    messages.success(request, f"User {user.username} added to the group.")
+
+
+def _handle_remove_member(request, group):
+    """Handle removing a user from a group.
+
+    Returns redirect response if action should be aborted, None otherwise.
+    """
+    user_id = request.POST.get("user_id")
+    if not user_id:
+        return None
+
+    user = get_object_or_404(User, id=user_id)
+
+    can_remove, error_msg = group.can_remove_member(user)
+    if not can_remove:
+        messages.error(request, error_msg)
+        return redirect("battycoda_app:manage_group_members", group_id=group.id)
+
+    GroupMembership.objects.filter(user=user, group=group).delete()
+
+    # Clear active group if this was it
+    if user.profile.group == group:
+        user.profile.group = None
+        user.profile.save()
+
+    messages.success(request, f"User {user.username} removed from the group.")
+    return None
+
+
+def _handle_toggle_admin(request, group):
+    """Handle toggling admin status for a group member.
+
+    Returns redirect response if action should be aborted, None otherwise.
+    """
+    user_id = request.POST.get("user_id")
+    if not user_id:
+        return None
+
+    user = get_object_or_404(User, id=user_id)
+    membership = get_object_or_404(GroupMembership, user=user, group=group)
+
+    # Check if demoting the last admin
+    if membership.is_admin:
+        can_demote, error_msg = group.can_demote_admin(user)
+        if not can_demote:
+            messages.error(request, error_msg)
+            return redirect("battycoda_app:manage_group_members", group_id=group.id)
+
+    membership.is_admin = not membership.is_admin
+    membership.save()
+
+    status = "granted" if membership.is_admin else "revoked"
+    messages.success(request, f"Admin status {status} for user {user.username}.")
+    return None
 
 
 @login_required
@@ -105,13 +187,11 @@ def create_group_view(request):
 @login_required
 def edit_group_view(request, group_id):
     """Handle editing of a group (group admin only)"""
-    # Only group admins can edit their group
     group = get_object_or_404(Group, id=group_id)
 
-    # Check if user is admin of this group
-    if not request.user.profile.is_current_group_admin or request.user.profile.group != group:
-        messages.error(request, "You do not have permission to edit this group.")
-        return redirect("battycoda_app:group_list")
+    is_admin, error_response = _require_group_admin(request, group)
+    if not is_admin:
+        return error_response
 
     if request.method == "POST":
         form = GroupForm(request.POST, instance=group)
@@ -133,93 +213,32 @@ def edit_group_view(request, group_id):
 
 @login_required
 def manage_group_members_view(request, group_id):
-    """Handle assigning users to groups (group admin only)"""
-    # Only group admins can manage their group members
+    """Handle managing group members (group admin only)."""
     group = get_object_or_404(Group, id=group_id)
 
-    # Get the current user's GroupMembership for this group
-    try:
-        user_membership = GroupMembership.objects.get(user=request.user, group=group)
-        is_admin = user_membership.is_admin
-    except GroupMembership.DoesNotExist:
-        is_admin = False
-
-    # Check if user is admin of this group
+    is_admin, error_response = _require_group_admin(request, group)
     if not is_admin:
-        messages.error(request, "You do not have permission to manage group members.")
-        return redirect("battycoda_app:group_list")
-
-    # Get all members of this group via GroupMembership
-    group_memberships = GroupMembership.objects.filter(group=group).select_related("user", "user__profile")
-
-    # Get all users not in this group
-    users_in_group = group_memberships.values_list("user__id", flat=True)
-    non_group_users = User.objects.exclude(id__in=users_in_group)
+        return error_response
 
     if request.method == "POST":
-        # Handle adding a user to the group
+        # Dispatch to appropriate handler based on action
         if "add_user" in request.POST:
-            user_id = request.POST.get("user_id")
-            if user_id:
-                user = get_object_or_404(User, id=user_id)
-                # Create group membership
-                membership, created = GroupMembership.objects.get_or_create(
-                    user=user, group=group, defaults={"is_admin": False}
-                )
-
-                # Update active group if the user doesn't have one
-                if not user.profile.group:
-                    user.profile.group = group
-                    user.profile.save()
-
-                messages.success(request, f"User {user.username} added to the group.")
-
-        # Handle removing a user from the group
+            _handle_add_member(request, group)
         elif "remove_user" in request.POST:
-            user_id = request.POST.get("user_id")
-            if user_id:
-                user = get_object_or_404(User, id=user_id)
-
-                # Don't allow removing the last admin
-                if GroupMembership.objects.filter(group=group, is_admin=True).count() <= 1:
-                    membership = GroupMembership.objects.get(user=user, group=group)
-                    if membership.is_admin:
-                        messages.error(request, "Cannot remove the last admin from the group.")
-                        return redirect("battycoda_app:manage_group_members", group_id=group.id)
-
-                # Delete the membership
-                GroupMembership.objects.filter(user=user, group=group).delete()
-
-                # If this was the user's active group, set to None
-                if user.profile.group == group:
-                    user.profile.group = None
-                    user.profile.save()
-
-                messages.success(request, f"User {user.username} removed from the group.")
-
-        # Handle toggling admin status
+            abort_response = _handle_remove_member(request, group)
+            if abort_response:
+                return abort_response
         elif "toggle_admin" in request.POST:
-            user_id = request.POST.get("user_id")
-            if user_id:
-                user = get_object_or_404(User, id=user_id)
-                membership = get_object_or_404(GroupMembership, user=user, group=group)
-
-                # Check if we're trying to demote the last admin
-                if membership.is_admin and GroupMembership.objects.filter(group=group, is_admin=True).count() <= 1:
-                    messages.error(request, "Cannot remove admin status from the last admin.")
-                    return redirect("battycoda_app:manage_group_members", group_id=group.id)
-
-                # Toggle admin status
-                membership.is_admin = not membership.is_admin
-                membership.save()
-
-                # If this is the user's active group, profile will automatically reflect the admin status change
-                # No need to manually update is_current_group_admin as it's calculated dynamically
-
-                status = "granted" if membership.is_admin else "revoked"
-                messages.success(request, f"Admin status {status} for user {user.username}.")
+            abort_response = _handle_toggle_admin(request, group)
+            if abort_response:
+                return abort_response
 
         return redirect("battycoda_app:manage_group_members", group_id=group.id)
+
+    # GET request - show member management page
+    group_memberships = GroupMembership.objects.filter(group=group).select_related("user", "user__profile")
+    users_in_group = group_memberships.values_list("user__id", flat=True)
+    non_group_users = User.objects.exclude(id__in=users_in_group)
 
     context = {
         "group": group,
