@@ -18,6 +18,35 @@ logger = logging.getLogger(__name__)
 
 
 # =============================================================================
+# Custom Exceptions
+# =============================================================================
+
+
+class AudioFileError(Exception):
+    """Base exception for audio file operations."""
+
+    pass
+
+
+class PickleProcessingError(AudioFileError):
+    """Raised when processing a pickle file fails."""
+
+    pass
+
+
+class AudioDurationError(AudioFileError):
+    """Raised when getting audio duration fails."""
+
+    pass
+
+
+class AudioSplitError(AudioFileError):
+    """Raised when splitting an audio file fails."""
+
+    pass
+
+
+# =============================================================================
 # Restricted Pickle Unpickler for Security
 # =============================================================================
 
@@ -304,17 +333,15 @@ def process_pickle_file(pickle_file, max_duration=None):
 
         return onsets, offsets
 
+    except ValueError:
+        # Re-raise ValueError as-is (already has filename context)
+        raise
     except Exception as e:
-        # Create a more informative error message that includes the filename
-        if isinstance(e, ValueError):
-            # Re-raise with the existing message that already includes the filename
-            raise
-        else:
-            # Wrap other exceptions with filename information
-            logger.error(
-                f"Error processing pickle file '{os.path.basename(filename)}': {str(e)}\n{traceback.format_exc()}"
-            )
-            raise Exception(f"Error processing pickle file '{os.path.basename(filename)}': {str(e)}") from e
+        # Wrap other exceptions with filename information
+        logger.error(
+            f"Error processing pickle file '{os.path.basename(filename)}': {str(e)}\n{traceback.format_exc()}"
+        )
+        raise PickleProcessingError(f"Error processing pickle file '{os.path.basename(filename)}': {str(e)}") from e
 
 
 def get_audio_duration(audio_file_path):
@@ -328,13 +355,13 @@ def get_audio_duration(audio_file_path):
         float: Duration in seconds
 
     Raises:
-        Exception: If the file cannot be read
+        AudioDurationError: If the file cannot be read
     """
     try:
         info = sf.info(audio_file_path)
         return info.duration
     except Exception as e:
-        raise Exception(f"Error getting audio duration: {str(e)}") from e
+        raise AudioDurationError(f"Error getting audio duration for '{audio_file_path}': {str(e)}") from e
 
 
 def split_audio_file(audio_file_path, chunk_duration_seconds=60):
@@ -349,7 +376,7 @@ def split_audio_file(audio_file_path, chunk_duration_seconds=60):
         list: List of paths to the chunk files (temporary files that should be cleaned up by caller)
 
     Raises:
-        Exception: If the file cannot be split
+        AudioSplitError: If the file cannot be split
     """
     try:
         # Read the audio file
@@ -395,5 +422,5 @@ def split_audio_file(audio_file_path, chunk_duration_seconds=60):
         return chunk_paths
 
     except Exception as e:
-        logger.error(f"Error splitting audio file: {str(e)}")
-        raise Exception(f"Error splitting audio file: {str(e)}") from e
+        logger.error(f"Error splitting audio file '{audio_file_path}': {str(e)}")
+        raise AudioSplitError(f"Error splitting audio file '{audio_file_path}': {str(e)}") from e
