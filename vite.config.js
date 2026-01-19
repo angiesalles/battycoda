@@ -59,19 +59,21 @@ export default defineConfig({
     environment: 'jsdom',
 
     // Test file patterns - place tests next to source files
-    include: ['static/js/**/*.test.js', 'static/js/**/*.spec.js'],
+    include: ['static/js/**/*.test.{js,ts}', 'static/js/**/*.spec.{js,ts}'],
 
     // Coverage settings
     coverage: {
       provider: 'v8',
       reporter: ['text', 'json', 'html'],
       reportsDirectory: '.coverage-js',
-      include: ['static/js/**/*.js'],
+      include: ['static/js/**/*.{js,ts}'],
       exclude: [
-        'static/js/**/*.test.js',
-        'static/js/**/*.spec.js',
+        'static/js/**/*.test.{js,ts}',
+        'static/js/**/*.spec.{js,ts}',
+        'static/js/**/*.d.ts',
         'static/js/app.js', // Third-party Maisonnette
         'static/js/test/**',
+        'static/js/types/**',
         'node_modules/**',
       ],
     },
