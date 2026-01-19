@@ -3,8 +3,8 @@
  *
  * Handles playing a specific region (start to end time) of audio
  *
- * Dependencies (injected via constructor):
- * - audioPlayer: HTMLAudioElement - The audio element to control
+ * Required dependencies (injected via constructor):
+ * - getAudioPlayer: () => HTMLAudioElement - Returns the audio element
  * - getDuration: () => number - Returns audio duration
  * - getZoomLevel: () => number - Returns current zoom level
  * - setZoomLevel: (level: number) => void - Sets zoom level
@@ -18,52 +18,27 @@
 export class PlayRegionHandler {
   /**
    * Create a PlayRegionHandler instance
-   * @param {Object} deps - Dependencies object or legacy player object
-   * @param {HTMLAudioElement} [deps.audioPlayer] - Audio element
-   * @param {Function} [deps.getDuration] - Returns audio duration
-   * @param {Function} [deps.getZoomLevel] - Returns zoom level
-   * @param {Function} [deps.setZoomLevel] - Sets zoom level
-   * @param {Function} [deps.setZoomOffset] - Sets zoom offset
-   * @param {Function} [deps.seek] - Seek to time
-   * @param {Function} [deps.redrawCurrentView] - Redraw view callback
-   * @param {Function} [deps.drawTimeline] - Draw timeline callback
-   * @param {Function} [deps.updateTimeDisplay] - Update time display callback
+   * @param {Object} deps - Dependencies object
+   * @param {Function} deps.getAudioPlayer - Returns audio element
+   * @param {Function} deps.getDuration - Returns audio duration
+   * @param {Function} deps.getZoomLevel - Returns zoom level
+   * @param {Function} deps.setZoomLevel - Sets zoom level
+   * @param {Function} deps.setZoomOffset - Sets zoom offset
+   * @param {Function} deps.seek - Seek to time
+   * @param {Function} deps.redrawCurrentView - Redraw view callback
+   * @param {Function} deps.drawTimeline - Draw timeline callback
+   * @param {Function} deps.updateTimeDisplay - Update time display callback
    */
   constructor(deps) {
-    // Detect if this is the new dependency injection style or legacy player object
-    const isLegacy = deps && typeof deps.redrawCurrentView === 'function' && !deps.getDuration;
-
-    if (isLegacy) {
-      // Legacy mode: deps is actually a player object
-      const player = deps;
-      // Use getter to access audioPlayer dynamically (allows tests to modify it)
-      this._getAudioPlayer = () => player.audioPlayer;
-      this._getDuration = () => player.duration;
-      this._getZoomLevel = () => player.zoomLevel;
-      this._setZoomLevel = (level) => {
-        player.zoomLevel = level;
-      };
-      this._setZoomOffset = (offset) => {
-        player.zoomOffset = offset;
-      };
-      this._seek = (time) => player.seek(time);
-      this._redrawCurrentView = () => player.redrawCurrentView();
-      this._drawTimeline = () => player.drawTimeline();
-      this._updateTimeDisplay = () => player.updateTimeDisplay();
-      // Keep player reference for backward compatibility in tests
-      this.player = player;
-    } else {
-      // New dependency injection style
-      this._getAudioPlayer = () => deps.audioPlayer;
-      this._getDuration = deps.getDuration;
-      this._getZoomLevel = deps.getZoomLevel;
-      this._setZoomLevel = deps.setZoomLevel;
-      this._setZoomOffset = deps.setZoomOffset;
-      this._seek = deps.seek;
-      this._redrawCurrentView = deps.redrawCurrentView;
-      this._drawTimeline = deps.drawTimeline;
-      this._updateTimeDisplay = deps.updateTimeDisplay;
-    }
+    this._getAudioPlayer = deps.getAudioPlayer;
+    this._getDuration = deps.getDuration;
+    this._getZoomLevel = deps.getZoomLevel;
+    this._setZoomLevel = deps.setZoomLevel;
+    this._setZoomOffset = deps.setZoomOffset;
+    this._seek = deps.seek;
+    this._redrawCurrentView = deps.redrawCurrentView;
+    this._drawTimeline = deps.drawTimeline;
+    this._updateTimeDisplay = deps.updateTimeDisplay;
 
     this._stopAtEndListener = null;
   }

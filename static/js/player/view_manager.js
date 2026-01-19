@@ -3,7 +3,7 @@
  *
  * Handles switching between waveform and spectrogram views
  *
- * Dependencies (injected via constructor):
+ * Required dependencies (injected via constructor):
  * - spectrogramDataRenderer: object with initialize(), show(), hide(), updateView(), render()
  * - waveformRenderer: object with show(), hide()
  * - overlayRenderer: object with draw()
@@ -22,52 +22,35 @@
 export class ViewManager {
   /**
    * Create a new ViewManager
-   * @param {Object} deps - Dependencies object or legacy player object
+   * @param {Object} deps - Dependencies object
+   * @param {Object} deps.spectrogramDataRenderer - Spectrogram renderer
+   * @param {Object} deps.waveformRenderer - Waveform renderer
+   * @param {Object} deps.overlayRenderer - Overlay renderer
+   * @param {Function} deps.getWaveformContainer - Returns waveform container element
+   * @param {Function} deps.getDuration - Returns audio duration
+   * @param {Function} deps.getZoomLevel - Returns zoom level
+   * @param {Function} deps.getZoomOffset - Returns zoom offset
+   * @param {Function} deps.setZoomLevel - Sets zoom level
+   * @param {Function} deps.setZoomOffset - Sets zoom offset
+   * @param {Function} deps.drawWaveform - Draw waveform callback
+   * @param {Function} deps.drawTimeline - Draw timeline callback
+   * @param {Function} deps.updateSelectionDisplay - Update selection display callback
+   * @param {Function} deps.updateTimeDisplay - Update time display callback
    */
   constructor(deps) {
-    // Detect if this is the new dependency injection style or legacy player object
-    // Legacy player objects have drawWaveform/drawTimeline methods directly on them
-    // New DI style has getDuration, getZoomLevel, etc.
-    const isLegacy = deps && typeof deps.drawWaveform === 'function' && !deps.getDuration;
-
-    if (isLegacy) {
-      // Legacy mode: deps is actually a player object
-      const player = deps;
-      this._spectrogramDataRenderer = player.spectrogramDataRenderer;
-      this._waveformRenderer = player.waveformRenderer;
-      this._overlayRenderer = player.overlayRenderer;
-      this._getWaveformContainer = () => player.waveformContainer;
-      this._getDuration = () => player.duration;
-      this._getZoomLevel = () => player.zoomLevel;
-      this._getZoomOffset = () => player.zoomOffset;
-      this._setZoomLevel = (level) => {
-        player.zoomLevel = level;
-      };
-      this._setZoomOffset = (offset) => {
-        player.zoomOffset = offset;
-      };
-      this._drawWaveform = () => player.drawWaveform();
-      this._drawTimeline = () => player.drawTimeline();
-      this._updateSelectionDisplay = () => player.updateSelectionDisplay();
-      this._updateTimeDisplay = () => player.updateTimeDisplay();
-      // Keep player reference for backward compatibility in tests
-      this.player = player;
-    } else {
-      // New dependency injection style
-      this._spectrogramDataRenderer = deps.spectrogramDataRenderer;
-      this._waveformRenderer = deps.waveformRenderer;
-      this._overlayRenderer = deps.overlayRenderer;
-      this._getWaveformContainer = deps.getWaveformContainer;
-      this._getDuration = deps.getDuration;
-      this._getZoomLevel = deps.getZoomLevel;
-      this._getZoomOffset = deps.getZoomOffset;
-      this._setZoomLevel = deps.setZoomLevel;
-      this._setZoomOffset = deps.setZoomOffset;
-      this._drawWaveform = deps.drawWaveform;
-      this._drawTimeline = deps.drawTimeline;
-      this._updateSelectionDisplay = deps.updateSelectionDisplay;
-      this._updateTimeDisplay = deps.updateTimeDisplay;
-    }
+    this._spectrogramDataRenderer = deps.spectrogramDataRenderer;
+    this._waveformRenderer = deps.waveformRenderer;
+    this._overlayRenderer = deps.overlayRenderer;
+    this._getWaveformContainer = deps.getWaveformContainer;
+    this._getDuration = deps.getDuration;
+    this._getZoomLevel = deps.getZoomLevel;
+    this._getZoomOffset = deps.getZoomOffset;
+    this._setZoomLevel = deps.setZoomLevel;
+    this._setZoomOffset = deps.setZoomOffset;
+    this._drawWaveform = deps.drawWaveform;
+    this._drawTimeline = deps.drawTimeline;
+    this._updateSelectionDisplay = deps.updateSelectionDisplay;
+    this._updateTimeDisplay = deps.updateTimeDisplay;
 
     this.viewMode = 'waveform'; // Initial mode (will be switched by view toggle)
     this.spectrogramInitialized = false;

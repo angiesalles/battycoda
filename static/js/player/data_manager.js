@@ -3,7 +3,7 @@
  *
  * Handles segments, selection, and time calculations
  *
- * Dependencies (injected via constructor):
+ * Required dependencies (injected via constructor):
  * - getSelectionStart: () => number - Returns current selection start time
  * - getSelectionEnd: () => number - Returns current selection end time
  * - getSegments: () => Array - Returns current segments array
@@ -15,40 +15,21 @@
 export class DataManager {
   /**
    * Create a DataManager instance
-   * @param {Object} deps - Dependencies object or legacy player object
-   * @param {Function} [deps.getSelectionStart] - Returns selection start time
-   * @param {Function} [deps.getSelectionEnd] - Returns selection end time
-   * @param {Function} [deps.getSegments] - Returns segments array
-   * @param {Function} [deps.setSegmentsData] - Sets segments array
-   * @param {Function} [deps.redrawCurrentView] - Callback to redraw view
-   * @param {Function} [deps.drawTimeline] - Callback to redraw timeline
+   * @param {Object} deps - Dependencies object
+   * @param {Function} deps.getSelectionStart - Returns selection start time
+   * @param {Function} deps.getSelectionEnd - Returns selection end time
+   * @param {Function} deps.getSegments - Returns segments array
+   * @param {Function} deps.setSegmentsData - Sets segments array
+   * @param {Function} deps.redrawCurrentView - Callback to redraw view
+   * @param {Function} deps.drawTimeline - Callback to redraw timeline
    */
   constructor(deps) {
-    // Detect if this is the new dependency injection style or legacy player object
-    const isLegacy = deps && typeof deps.redrawCurrentView === 'function' && !deps.getSegments;
-
-    if (isLegacy) {
-      // Legacy mode: deps is actually a player object
-      const player = deps;
-      this._getSelectionStart = () => player.selectionStart;
-      this._getSelectionEnd = () => player.selectionEnd;
-      this._getSegments = () => player.segments;
-      this._setSegmentsData = (segments) => {
-        player.segments = segments;
-      };
-      this._redrawCurrentView = () => player.redrawCurrentView();
-      this._drawTimeline = () => player.drawTimeline();
-      // Keep player reference for backward compatibility in tests
-      this.player = player;
-    } else {
-      // New dependency injection style
-      this._getSelectionStart = deps.getSelectionStart;
-      this._getSelectionEnd = deps.getSelectionEnd;
-      this._getSegments = deps.getSegments;
-      this._setSegmentsData = deps.setSegmentsData;
-      this._redrawCurrentView = deps.redrawCurrentView;
-      this._drawTimeline = deps.drawTimeline;
-    }
+    this._getSelectionStart = deps.getSelectionStart;
+    this._getSelectionEnd = deps.getSelectionEnd;
+    this._getSegments = deps.getSegments;
+    this._setSegmentsData = deps.setSegmentsData;
+    this._redrawCurrentView = deps.redrawCurrentView;
+    this._drawTimeline = deps.drawTimeline;
   }
 
   /**

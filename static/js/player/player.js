@@ -67,15 +67,72 @@ export class WaveformPlayer {
     });
     this.overlayRenderer = new OverlayRenderer(this);
 
-    // View manager
-    this.viewManager = new ViewManager(this);
+    // View manager - explicit dependencies
+    this.viewManager = new ViewManager({
+      spectrogramDataRenderer: this.spectrogramDataRenderer,
+      waveformRenderer: this.waveformRenderer,
+      overlayRenderer: this.overlayRenderer,
+      getWaveformContainer: () => this.waveformContainer,
+      getDuration: () => this.duration,
+      getZoomLevel: () => this.zoomLevel,
+      getZoomOffset: () => this.zoomOffset,
+      setZoomLevel: (level) => {
+        this.zoomLevel = level;
+      },
+      setZoomOffset: (offset) => {
+        this.zoomOffset = offset;
+      },
+      drawWaveform: () => this.drawWaveform(),
+      drawTimeline: () => this.drawTimeline(),
+      updateSelectionDisplay: () => this.updateSelectionDisplay(),
+      updateTimeDisplay: () => this.updateTimeDisplay(),
+    });
 
-    // Modules
+    // Modules - explicit dependencies
     this.eventHandlers = new EventHandlers(this);
     this.uiState = new UIState(this);
-    this.dataManager = new DataManager(this);
-    this.seekHandler = new SeekHandler(this);
-    this.playRegionHandler = new PlayRegionHandler(this);
+
+    this.dataManager = new DataManager({
+      getSelectionStart: () => this.selectionStart,
+      getSelectionEnd: () => this.selectionEnd,
+      getSegments: () => this.segments,
+      setSegmentsData: (segments) => {
+        this.segments = segments;
+      },
+      redrawCurrentView: () => this.redrawCurrentView(),
+      drawTimeline: () => this.drawTimeline(),
+    });
+
+    this.seekHandler = new SeekHandler({
+      audioPlayer: this.audioPlayer,
+      getDuration: () => this.duration,
+      getZoomLevel: () => this.zoomLevel,
+      setCurrentTime: (time) => {
+        this.currentTime = time;
+      },
+      setZoomOffset: (offset) => {
+        this.zoomOffset = offset;
+      },
+      updateTimeDisplay: () => this.updateTimeDisplay(),
+      redrawCurrentView: () => this.redrawCurrentView(),
+      drawTimeline: () => this.drawTimeline(),
+    });
+
+    this.playRegionHandler = new PlayRegionHandler({
+      getAudioPlayer: () => this.audioPlayer,
+      getDuration: () => this.duration,
+      getZoomLevel: () => this.zoomLevel,
+      setZoomLevel: (level) => {
+        this.zoomLevel = level;
+      },
+      setZoomOffset: (offset) => {
+        this.zoomOffset = offset;
+      },
+      seek: (time) => this.seek(time),
+      redrawCurrentView: () => this.redrawCurrentView(),
+      drawTimeline: () => this.drawTimeline(),
+      updateTimeDisplay: () => this.updateTimeDisplay(),
+    });
   }
 
   /**
