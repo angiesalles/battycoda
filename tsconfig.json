@@ -1,0 +1,26 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "strict": false,
+    "allowJs": true,
+    "checkJs": false,
+    "noEmit": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "types": ["vite/client"],
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["static/js/*"]
+    }
+  },
+  "include": [
+    "static/js/**/*.ts",
+    "static/js/**/*.js"
+  ],
+  "exclude": [
+    "node_modules",
+    "static/dist"
+  ]
+}

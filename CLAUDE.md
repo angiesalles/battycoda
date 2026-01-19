@@ -792,8 +792,14 @@ BattyCoda uses Vite for JavaScript bundling and development.
 static/
 ├── js/
 │   ├── main.js              # Main entry point
+│   ├── types/               # TypeScript type definitions
+│   │   ├── global.d.ts      # Window, jQuery, Bootstrap types
+│   │   ├── models.d.ts      # Domain model types
+│   │   ├── api.d.ts         # API response types
+│   │   └── index.ts         # Central export
 │   ├── utils/               # Shared utilities
 │   │   ├── page-data.js     # Django template data access
+│   │   ├── api.ts           # Type-safe API utilities
 │   │   └── colormaps.js     # Color utilities
 │   ├── player/              # Waveform player module
 │   ├── cluster_explorer/    # Clustering visualization
@@ -883,6 +889,109 @@ BattyCoda uses a hybrid approach for JavaScript dependencies:
 | D3.js | Heavy usage in cluster visualization, tree-shaking removes unused modules |
 
 The Vite config marks jQuery as external so modules can reference `window.jQuery` without bundling it. D3 is imported as ES6 modules (e.g., `import { scaleLinear } from 'd3'`).
+
+## TypeScript Support
+
+BattyCoda supports TypeScript for new code. Vite handles TypeScript compilation automatically.
+
+### Strategy: Gradual Adoption
+
+- **New files**: Write in TypeScript (`.ts` extension)
+- **Existing files**: Keep as JavaScript unless refactoring
+- **Strictness**: Start permissive, increase over time
+
+### Type Checking
+
+```bash
+# Check types (no output, just validation)
+npm run typecheck
+
+# Watch mode for development
+npm run typecheck:watch
+```
+
+### Configuration
+
+TypeScript is configured in `tsconfig.json` with permissive settings:
+- `strict: false` - Not enforcing strict type checking yet
+- `allowJs: true` - Mix JavaScript and TypeScript freely
+- `checkJs: false` - Don't type-check JavaScript files
+- `noEmit: true` - Vite handles compilation
+
+### Type Definitions
+
+Types are organized in `static/js/types/`:
+
+```
+static/js/types/
+├── global.d.ts    # Window extensions, jQuery, Bootstrap, Toastr
+├── models.d.ts    # Domain model types (Recording, Cluster, etc.)
+├── api.d.ts       # API response types
+└── index.ts       # Central export point
+```
+
+Import types from the central export:
+```typescript
+import type { Cluster, Recording, ApiResponse } from '@/types';
+```
+
+### Writing TypeScript
+
+**New utility module:**
+```typescript
+// static/js/utils/myutil.ts
+import type { Recording } from '@/types';
+
+export function processRecording(recording: Recording): string {
+  return `${recording.name} (${recording.duration}s)`;
+}
+```
+
+**Import in other modules:**
+```typescript
+import { processRecording } from '@/utils/myutil';
+// or from JavaScript:
+import { processRecording } from './myutil.ts';
+```
+
+### When to Use TypeScript
+
+**Use TypeScript for:**
+- New utility modules (`utils/*.ts`)
+- Complex data transformations
+- Shared interfaces and types
+- New features with complex state
+- API client code
+
+**Keep JavaScript for:**
+- Simple scripts or one-off files
+- Heavily DOM-dependent code (less benefit)
+- Existing code (unless refactoring)
+
+### Adding Types for Existing Modules
+
+Create declaration files (`.d.ts`) alongside modules:
+```typescript
+// static/js/player/types.d.ts
+export interface PlayerOptions {
+  container: HTMLElement;
+  audioUrl: string;
+  spectrogramUrl?: string;
+}
+```
+
+### Increasing Strictness
+
+As the team becomes comfortable, enable stricter checks in `tsconfig.json`:
+```json
+{
+  "compilerOptions": {
+    "strict": true,
+    "noImplicitAny": true,
+    "strictNullChecks": true
+  }
+}
+```
 
 ## JavaScript Testing
 
