@@ -131,7 +131,7 @@ def _process_pickle_segmentation(pickle_file, recording, user):
 
         # Create individual segments
         segments_created = 0
-        for i, (onset, offset) in enumerate(zip(onsets, offsets)):
+        for i, (onset, offset) in enumerate(zip(onsets, offsets, strict=True)):
             Segment.objects.create(
                 recording=recording,
                 segmentation=segmentation,

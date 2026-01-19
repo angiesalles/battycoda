@@ -307,7 +307,7 @@ def process_pickle_file(pickle_file, max_duration=None):
 
         # Validate segments against recording duration if provided
         if max_duration is not None:
-            for i, (onset, offset) in enumerate(zip(onsets, offsets)):
+            for i, (onset, offset) in enumerate(zip(onsets, offsets, strict=True)):
                 # Check if onset is valid
                 if onset < 0:
                     raise ValueError(
