@@ -39,9 +39,7 @@ def get_next_task_from_batch_view(request, batch_id):
     profile = request.user.profile
 
     # Check if user has access to this batch
-    has_access = (
-        (profile.group and batch.group == profile.group) or batch.created_by == request.user
-    )
+    has_access = (profile.group and batch.group == profile.group) or batch.created_by == request.user
     if not has_access:
         messages.error(request, "You don't have permission to annotate tasks from this batch.")
         return redirect("battycoda_app:task_batch_list")
@@ -164,9 +162,7 @@ def skip_to_next_batch_view(request, current_task_id):
         return redirect("battycoda_app:get_next_task")
 
     # Build query for batches with undone tasks, filtered by user access
-    batches_query = _filter_by_user_access(
-        TaskBatch.objects.filter(tasks__is_done=False).distinct(), request.user
-    )
+    batches_query = _filter_by_user_access(TaskBatch.objects.filter(tasks__is_done=False).distinct(), request.user)
 
     # Exclude the current batch
     batches_query = batches_query.exclude(id=current_batch.id)

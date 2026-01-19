@@ -90,17 +90,23 @@ class Classifier(models.Model):
         help_text="Group that owns this classifier. If null, it's available to all groups",
     )
 
+    class Meta:
+        ordering = ["name"]
+
     def __str__(self):
         return self.name
+
+    def save(self, *args, **kwargs):
+        """Override save to enforce validation"""
+        self.clean()
+        super().save(*args, **kwargs)
 
     def clean(self):
         """Validate the model before saving"""
         # If this is an existing classifier with a species already set
         if self.pk:
             # Only fetch the species_id, not the full object
-            original_species_id = (
-                Classifier.objects.filter(pk=self.pk).values_list("species_id", flat=True).first()
-            )
+            original_species_id = Classifier.objects.filter(pk=self.pk).values_list("species_id", flat=True).first()
             # Check if species is being changed and was previously set
             if original_species_id and self.species_id != original_species_id:
                 raise ValidationError(
@@ -109,14 +115,6 @@ class Classifier(models.Model):
                         "The classifier is tied to the call types of its species."
                     }
                 )
-
-    def save(self, *args, **kwargs):
-        """Override save to enforce validation"""
-        self.clean()
-        super().save(*args, **kwargs)
-
-    class Meta:
-        ordering = ["name"]
 
 
 class ClassificationRun(models.Model):

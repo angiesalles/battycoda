@@ -46,10 +46,6 @@ select = [
 ignore = [
     "E203",   # whitespace before ':' (conflicts with formatter)
     "E501",   # line too long (handled by formatter)
-    # Temporarily ignored - tracked in beads for incremental fixes:
-    "E741",   # ambiguous variable name (battycoda-uvm)
-    "DJ012",  # model class ordering (battycoda-5xa)
-    "DJ008",  # models missing __str__ (battycoda-c2i)
 ]
 
 # Allow autofix for all enabled rules

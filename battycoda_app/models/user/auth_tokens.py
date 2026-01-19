@@ -17,6 +17,9 @@ class LoginCode(models.Model):
     expires_at = models.DateTimeField()
     used = models.BooleanField(default=False)
 
+    def __str__(self):
+        return f"LoginCode for {self.user.username} ({self.code})"
+
     @classmethod
     def generate_code(cls, user, expiry_hours=24):
         """Generate a new login code for a user"""
@@ -45,6 +48,9 @@ class PasswordResetToken(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     expires_at = models.DateTimeField()
     used = models.BooleanField(default=False)
+
+    def __str__(self):
+        return f"PasswordResetToken for {self.user.username}"
 
     @classmethod
     def generate_token(cls, user, expiry_hours=24):

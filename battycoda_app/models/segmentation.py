@@ -51,11 +51,11 @@ class SegmentationAlgorithm(models.Model):
         help_text="Group that owns this algorithm. If null, it's available to all groups",
     )
 
-    def __str__(self):
-        return self.name
-
     class Meta:
         ordering = ["name"]
+
+    def __str__(self):
+        return self.name
 
 
 class Segmentation(models.Model):
@@ -159,27 +159,6 @@ class Segment(models.Model):
     def __str__(self):
         return f"{self.recording.name} ({self.onset:.2f}s - {self.offset:.2f}s)"
 
-    @property
-    def duration(self):
-        """Calculate segment duration"""
-        return self.offset - self.onset
-
-    @property
-    def duration_ms(self):
-        """Calculate segment duration in milliseconds"""
-        return (self.offset - self.onset) * 1000
-
-    def to_dict(self):
-        """Return segment data as a dictionary for JSON responses"""
-        return {
-            "id": self.id,
-            "name": self.name or f"Segment {self.id}",
-            "onset": self.onset,
-            "offset": self.offset,
-            "duration": self.duration,
-            "notes": self.notes,
-        }
-
     def save(self, *args, **kwargs):
         """Override save to handle segmentation relationship"""
         manual_edit = kwargs.pop("manual_edit", True)
@@ -200,3 +179,24 @@ class Segment(models.Model):
             self.segmentation.save()
 
         super().delete(*args, **kwargs)
+
+    @property
+    def duration(self):
+        """Calculate segment duration"""
+        return self.offset - self.onset
+
+    @property
+    def duration_ms(self):
+        """Calculate segment duration in milliseconds"""
+        return (self.offset - self.onset) * 1000
+
+    def to_dict(self):
+        """Return segment data as a dictionary for JSON responses"""
+        return {
+            "id": self.id,
+            "name": self.name or f"Segment {self.id}",
+            "onset": self.onset,
+            "offset": self.offset,
+            "duration": self.duration,
+            "notes": self.notes,
+        }
