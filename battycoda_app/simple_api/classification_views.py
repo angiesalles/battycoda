@@ -2,13 +2,41 @@
 Classification API views for the core classification workflow.
 """
 
-from django.db.models import Q
+from django.db.models import OuterRef, Q, Subquery
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_http_methods
 
 from ..models.classification import CallProbability, ClassificationResult, ClassificationRun, Classifier
 from .auth import api_key_required
+
+
+def _get_result_summary(run):
+    """Get call type counts for a completed classification run."""
+    if run.status != "completed":
+        return {}
+
+    # Subquery to get the top probability call for each result
+    top_prob = (
+        CallProbability.objects.filter(classification_result=OuterRef("pk"))
+        .order_by("-probability")
+        .values("call__short_name")[:1]
+    )
+
+    # Get all results with their top call type
+    results_with_top = (
+        ClassificationResult.objects.filter(classification_run=run)
+        .annotate(top_call_name=Subquery(top_prob))
+        .values_list("top_call_name", flat=True)
+    )
+
+    # Count occurrences
+    call_counts = {}
+    for call_name in results_with_top:
+        if call_name:  # Skip None values
+            call_counts[call_name] = call_counts.get(call_name, 0) + 1
+
+    return call_counts
 
 
 @require_http_methods(["GET"])
@@ -183,34 +211,6 @@ def simple_classification_runs_list(request):
 
     runs_data = []
     for run in runs:
-        # Get result counts if completed
-        result_summary = {}
-        if run.status == "completed":
-            # Get the top predicted call types and their counts using aggregation
-            from django.db.models import OuterRef, Subquery
-
-            # Subquery to get the top probability for each result
-            top_prob = (
-                CallProbability.objects.filter(classification_result=OuterRef("pk"))
-                .order_by("-probability")
-                .values("call__short_name")[:1]
-            )
-
-            # Get all results with their top call type
-            results_with_top = (
-                ClassificationResult.objects.filter(classification_run=run)
-                .annotate(top_call_name=Subquery(top_prob))
-                .values_list("top_call_name", flat=True)
-            )
-
-            # Count occurrences
-            call_counts = {}
-            for call_name in results_with_top:
-                if call_name:  # Skip None values (broken foreign keys)
-                    call_counts[call_name] = call_counts.get(call_name, 0) + 1
-
-            result_summary = call_counts
-
         runs_data.append(
             {
                 "id": run.id,
@@ -238,7 +238,7 @@ def simple_classification_runs_list(request):
                 "created_at": run.created_at.isoformat(),
                 "created_by": run.created_by.username,
                 "error_message": run.error_message,
-                "result_summary": result_summary,
+                "result_summary": _get_result_summary(run),
             }
         )
 
