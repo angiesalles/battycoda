@@ -1,0 +1,374 @@
+{
+  "files": {
+    "ANGIE2_20230429_003610.wav": {
+      "segments": 100,
+      "call_types": {
+        "aggressive warbles": 2,
+        "noise": 10,
+        "echolocation calls": 88
+      }
+    },
+    "ANGIE1_20230410_145335": {
+      "segments": 177,
+      "call_types": {
+        "echolocation calls": 166,
+        "aggressive warbles": 1,
+        "distress calls": 7,
+        "noise": 1,
+        "Unsure": 1,
+        "V-shaped calls": 1
+      }
+    },
+    "ANGIE2_20230429_003216.wav": {
+      "segments": 175,
+      "call_types": {
+        "noise": 56,
+        "aggressive warbles": 8,
+        "echolocation calls": 111
+      }
+    },
+    "0808 sp trial 4 F4": {
+      "segments": 308,
+      "call_types": {
+        "aggressive warbles": 53,
+        "echolocation calls": 159,
+        "noise": 3,
+        "Unsure": 4,
+        "distress calls": 89
+      }
+    },
+    "0808 sp trial 4 F3": {
+      "segments": 344,
+      "call_types": {
+        "noise": 38,
+        "echolocation calls": 286,
+        "aggressive down-sweeps (A)": 9,
+        "male aggressive trills": 1,
+        "Unsure": 2,
+        "distress calls": 6,
+        "flat down-sweeps": 1,
+        "aggressive warbles": 1
+      }
+    },
+    "0810 sp trial 8 F2": {
+      "segments": 784,
+      "call_types": {
+        "noise": 18,
+        "aggressive warbles": 126,
+        "echolocation calls": 629,
+        "Unsure": 5,
+        "male aggressive trills": 4,
+        "aggressive down-sweeps (A)": 2
+      }
+    },
+    "ANGIE1_20230410_125213": {
+      "segments": 335,
+      "call_types": {
+        "echolocation calls": 262,
+        "noise": 53,
+        "Unsure": 8,
+        "distress calls": 4,
+        "aggressive down-sweeps (A)": 8
+      }
+    },
+    "ANGIE2_20230429_003429.wav": {
+      "segments": 100,
+      "call_types": {
+        "noise": 26,
+        "aggressive warbles": 2,
+        "echolocation calls": 51,
+        "aggressive down-sweeps (A)": 21
+      }
+    },
+    "ANGIE1_20230410_170506": {
+      "segments": 13,
+      "call_types": {
+        "male aggressive trills": 1,
+        "aggressive down-sweeps (A)": 1,
+        "distress calls": 4,
+        "Unsure": 1,
+        "echolocation calls": 6
+      }
+    },
+    "ANGIE2_20230429_002829.wav": {
+      "segments": 75,
+      "call_types": {
+        "echolocation calls": 14,
+        "noise": 61
+      }
+    },
+    "0801 sp trial 4 green": {
+      "segments": 1143,
+      "call_types": {
+        "echolocation calls": 1013,
+        "distress calls": 39,
+        "noise": 87,
+        "male aggressive trills": 1,
+        "Unsure": 3
+      }
+    },
+    "ANGIE1_20230410_182032": {
+      "segments": 188,
+      "call_types": {
+        "echolocation calls": 123,
+        "aggressive down-sweeps (A)": 49,
+        "Unsure": 8,
+        "distress calls": 8
+      }
+    },
+    "0801 sp trial 4 coral": {
+      "segments": 226,
+      "call_types": {
+        "Unsure": 2,
+        "echolocation calls": 206,
+        "noise": 11,
+        "distress calls": 1,
+        "aggressive down-sweeps (A)": 6
+      }
+    },
+    "ANGIE1_20230410_170916": {
+      "segments": 81,
+      "call_types": {
+        "echolocation calls": 60,
+        "Unsure": 5,
+        "aggressive warbles": 1,
+        "distress calls": 8,
+        "noise": 7
+      }
+    },
+    "ANGIE2_20230429_003507.wav": {
+      "segments": 258,
+      "call_types": {
+        "echolocation calls": 225,
+        "aggressive warbles": 27,
+        "noise": 6
+      }
+    },
+    "0809 sp trial 5 F1": {
+      "segments": 333,
+      "call_types": {
+        "distress calls": 7,
+        "aggressive warbles": 45,
+        "echolocation calls": 271,
+        "Unsure": 9,
+        "noise": 1
+      }
+    },
+    "ANGIE2_20230429_003301.wav": {
+      "segments": 49,
+      "call_types": {
+        "echolocation calls": 46,
+        "noise": 3
+      }
+    },
+    "ANGIE2_20230429_002751.wav": {
+      "segments": 99,
+      "call_types": {
+        "noise": 23,
+        "echolocation calls": 76
+      }
+    },
+    "ANGIE1_20230410_133953": {
+      "segments": 20,
+      "call_types": {
+        "noise": 20
+      }
+    },
+    "ANGIE2_20230429_002810.wav": {
+      "segments": 134,
+      "call_types": {
+        "echolocation calls": 64,
+        "noise": 70
+      }
+    },
+    "ANGIE1_20230410_170458": {
+      "segments": 68,
+      "call_types": {
+        "echolocation calls": 61,
+        "noise": 7
+      }
+    },
+    "ANGIE1_20230410_143608": {
+      "segments": 14,
+      "call_types": {
+        "flat down-sweeps": 5,
+        "echolocation calls": 7,
+        "benign wobbles": 1,
+        "V-shaped calls": 1
+      }
+    },
+    "ANGIE2_20230429_003518.wav": {
+      "segments": 189,
+      "call_types": {
+        "echolocation calls": 165,
+        "aggressive warbles": 16,
+        "distress calls": 8
+      }
+    },
+    "0810 sp trial 8 F1": {
+      "segments": 659,
+      "call_types": {
+        "aggressive warbles": 99,
+        "distress calls": 1,
+        "echolocation calls": 554,
+        "Unsure": 1,
+        "aggressive down-sweeps (A)": 3,
+        "noise": 1
+      }
+    },
+    "ANGIE2_20230429_003335.wav": {
+      "segments": 187,
+      "call_types": {
+        "echolocation calls": 104,
+        "noise": 73,
+        "aggressive warbles": 10
+      }
+    },
+    "ANGIE2_20230429_003453.wav": {
+      "segments": 195,
+      "call_types": {
+        "echolocation calls": 146,
+        "noise": 12,
+        "aggressive warbles": 26,
+        "aggressive down-sweeps (A)": 11
+      }
+    },
+    "ANGIE2_20230429_002238.wav": {
+      "segments": 21,
+      "call_types": {
+        "echolocation calls": 5,
+        "noise": 16
+      }
+    },
+    "ANGIE1_20230410_145627": {
+      "segments": 82,
+      "call_types": {
+        "echolocation calls": 70,
+        "noise": 6,
+        "aggressive down-sweeps (A)": 5,
+        "distress calls": 1
+      }
+    },
+    "ANGIE2_20230429_002843.wav": {
+      "segments": 58,
+      "call_types": {
+        "noise": 47,
+        "echolocation calls": 11
+      }
+    },
+    "0809 sp trial 5 F3": {
+      "segments": 790,
+      "call_types": {
+        "echolocation calls": 527,
+        "noise": 69,
+        "aggressive down-sweeps (A)": 77,
+        "aggressive warbles": 92,
+        "Unsure": 13,
+        "pup isolation calls": 8,
+        "male aggressive trills": 2,
+        "V-shaped calls": 2
+      }
+    },
+    "0809 sp trial 5 F4": {
+      "segments": 207,
+      "call_types": {
+        "noise": 11,
+        "echolocation calls": 112,
+        "aggressive warbles": 81,
+        "Unsure": 3
+      }
+    },
+    "ANGIE2_20230429_003341.wav": {
+      "segments": 39,
+      "call_types": {
+        "echolocation calls": 22,
+        "distress calls": 4,
+        "aggressive warbles": 3,
+        "noise": 7,
+        "Unsure": 3
+      }
+    },
+    "ANGIE2_20230429_002856.wav": {
+      "segments": 79,
+      "call_types": {
+        "echolocation calls": 49,
+        "Unsure": 3,
+        "noise": 27
+      }
+    },
+    "ANGIE2_20230429_003545.wav": {
+      "segments": 219,
+      "call_types": {
+        "echolocation calls": 178,
+        "noise": 27,
+        "aggressive warbles": 14
+      }
+    },
+    "ANGIE2_20230429_003140.wav": {
+      "segments": 49,
+      "call_types": {
+        "noise": 30,
+        "echolocation calls": 18,
+        "aggressive warbles": 1
+      }
+    },
+    "ANGIE2_20230429_002909.wav": {
+      "segments": 86,
+      "call_types": {
+        "echolocation calls": 40,
+        "noise": 43,
+        "Unsure": 3
+      }
+    },
+    "0802 sp trial 5 red": {
+      "segments": 272,
+      "call_types": {
+        "echolocation calls": 205,
+        "Unsure": 38,
+        "noise": 16,
+        "aggressive down-sweeps (A)": 9,
+        "aggressive warbles": 1,
+        "distress calls": 3
+      }
+    },
+    "ANGIE1_20230410_181932": {
+      "segments": 561,
+      "call_types": {
+        "echolocation calls": 490,
+        "noise": 19,
+        "aggressive warbles": 3,
+        "aggressive down-sweeps (A)": 28,
+        "Unsure": 8,
+        "distress calls": 13
+      }
+    },
+    "ANGIE2_20230429_003422.wav": {
+      "segments": 46,
+      "call_types": {
+        "noise": 35,
+        "echolocation calls": 11
+      }
+    },
+    "ANGIE2_20230429_002310.wav": {
+      "segments": 92,
+      "call_types": {
+        "echolocation calls": 76,
+        "noise": 16
+      }
+    }
+  },
+  "total_files_moved": 8855,
+  "call_types": {
+    "echolocation calls": 6707,
+    "noise": 956,
+    "Unsure": 120,
+    "distress calls": 203,
+    "aggressive down-sweeps (A)": 229,
+    "flat down-sweeps": 6,
+    "benign wobbles": 1,
+    "V-shaped calls": 4,
+    "aggressive warbles": 612,
+    "male aggressive trills": 9,
+    "pup isolation calls": 8
+  }
+}
