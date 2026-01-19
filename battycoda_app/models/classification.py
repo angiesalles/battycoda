@@ -98,9 +98,12 @@ class Classifier(models.Model):
         """Validate the model before saving"""
         # If this is an existing classifier with a species already set
         if self.pk:
-            original = Classifier.objects.get(pk=self.pk)
+            # Only fetch the species_id, not the full object
+            original_species_id = (
+                Classifier.objects.filter(pk=self.pk).values_list("species_id", flat=True).first()
+            )
             # Check if species is being changed and was previously set
-            if original.species and self.species != original.species:
+            if original_species_id and self.species_id != original_species_id:
                 raise ValidationError(
                     {
                         "species": "Cannot change the species of an existing classifier. "
