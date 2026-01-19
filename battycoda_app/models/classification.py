@@ -7,7 +7,6 @@ from django.db import models
 from .organization import Call, Species
 from .user import Group
 
-
 # Shared status choices for job-tracking models
 # ClassificationRun extends this with "queued" status
 BASE_JOB_STATUS_CHOICES = (

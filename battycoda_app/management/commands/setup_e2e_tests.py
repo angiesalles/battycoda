@@ -169,12 +169,12 @@ class Command(BaseCommand):
 
             # Add some call types
             call_types = [
-                ("E2E_A", "E2E Call Type A", "Test call type A for E2E testing"),
-                ("E2E_B", "E2E Call Type B", "Test call type B for E2E testing"),
-                ("E2E_C", "E2E Call Type C", "Test call type C for E2E testing"),
+                ("E2E_A", "E2E Call Type A"),
+                ("E2E_B", "E2E Call Type B"),
+                ("E2E_C", "E2E Call Type C"),
             ]
 
-            for short_name, long_name, _description in call_types:
+            for short_name, long_name in call_types:
                 Call.objects.get_or_create(
                     species=species,
                     short_name=short_name,
