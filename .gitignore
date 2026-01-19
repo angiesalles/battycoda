@@ -19,3 +19,13 @@ static/dist/
 playwright-report/
 test-results/
 .playwright/
+
+# Classification/ML output files (generated artifacts)
+batch_*/
+data/*_results.txt
+data/*_predictions.csv
+data/*_report.txt
+
+# Generated model files (keep only committed models)
+data/models/*_new*.RData
+data/models/*_metrics.RData
