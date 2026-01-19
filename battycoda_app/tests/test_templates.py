@@ -48,7 +48,7 @@ class TemplateValidationTestCase(TestCase):
         templates = []
         templates_dir = os.path.join(settings.BASE_DIR, "templates")
 
-        for root, dirs, files in os.walk(templates_dir):
+        for root, _dirs, files in os.walk(templates_dir):
             for filename in files:
                 if filename.endswith(".html"):
                     full_path = os.path.join(root, filename)

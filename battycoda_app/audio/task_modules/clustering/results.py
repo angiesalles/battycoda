@@ -150,7 +150,7 @@ def _record_included_segmentations(clustering_run, segment_metadata):
     """Record which segmentations were included in a project-level clustering run."""
     # Count segments per segmentation
     segmentation_counts = Counter()
-    for seg_id, meta in segment_metadata.items():
+    for _seg_id, meta in segment_metadata.items():
         segmentation_counts[meta["segmentation_id"]] += 1
 
     # Create ClusteringRunSegmentation records

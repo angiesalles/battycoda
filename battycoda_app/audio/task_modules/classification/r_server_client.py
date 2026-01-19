@@ -58,7 +58,7 @@ def process_classification_batch(
     try:
         segment_map = {}
 
-        for i, segment in enumerate(batch_segments):
+        for segment in batch_segments:
             segment_data, sample_rate = extract_audio_segment(recording.wav_file.path, segment.onset, segment.offset)
 
             segment_filename = f"segment_{segment.id}.wav"

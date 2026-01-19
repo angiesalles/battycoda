@@ -49,7 +49,7 @@ def combine_features_files(all_features_files, all_segment_metadata, classificat
             combined_features = pd.concat(all_features_data, ignore_index=True)
 
             enhanced_columns = []
-            for index, row in combined_features.iterrows():
+            for _index, row in combined_features.iterrows():
                 sound_file = row["sound.files"]
                 if sound_file in all_segment_metadata:
                     metadata = all_segment_metadata[sound_file]

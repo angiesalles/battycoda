@@ -174,7 +174,7 @@ class Command(BaseCommand):
                 ("E2E_C", "E2E Call Type C", "Test call type C for E2E testing"),
             ]
 
-            for short_name, long_name, description in call_types:
+            for short_name, long_name, _description in call_types:
                 Call.objects.get_or_create(
                     species=species,
                     short_name=short_name,
