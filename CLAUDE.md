@@ -218,6 +218,7 @@ Long audio files (>60s) automatically split into 1-minute chunks on upload.
 - **Error Handling**: Don't use bare `except: pass` - handle properly or remove try block
 - **Frontend**: Prefer Django server-side rendering; Bootstrap 5
 - **Comments**: Be sparse, especially when removing code
+- **Segment timing**: Use `onset`/`offset` (NOT `start`/`end`) for segment boundaries in seconds. This convention is consistent across backend models, API responses, and frontend TypeScript types (`static/js/types/models.d.ts`)
 
 ## Useful Paths
 

@@ -73,12 +73,18 @@ export interface Segmentation {
 
 /**
  * Individual segment within a recording
+ *
+ * Note: Segment boundaries use onset/offset (not start/end) consistently
+ * across the backend models, API, and frontend.
  */
 export interface Segment {
   id: number;
   segmentation: Segmentation | number;
+  /** Start time in seconds */
   onset: number;
+  /** End time in seconds */
   offset: number;
+  /** Duration in seconds (offset - onset) */
   duration?: number;
   label?: string;
 }
