@@ -84,6 +84,10 @@ def _find_segments_from_mask(binary_mask, sample_rate, min_duration_ms):
     Returns:
         tuple: (onsets, offsets) as lists of floats in seconds
     """
+    # Guard against empty input
+    if len(binary_mask) == 0:
+        return [], []
+
     # Find transitions in the binary mask (0->1 and 1->0)
     transitions = np.diff(binary_mask.astype(int))
     onset_samples = np.where(transitions == 1)[0] + 1
