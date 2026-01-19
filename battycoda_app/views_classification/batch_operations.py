@@ -1,5 +1,7 @@
 """Batch classification operations views."""
 
+import logging
+
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.db import models
@@ -8,9 +10,12 @@ from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
 from django.utils import timezone
 
+from battycoda_app.audio.task_modules.queue_processor import queue_classification_run
 from battycoda_app.models import Segment
 from battycoda_app.models.classification import ClassificationRun, Classifier
 from battycoda_app.models.organization import Species
+
+logger = logging.getLogger(__name__)
 
 
 def _get_segment_filter(profile, species=None, project_id=None, unclassified_only=False):
@@ -185,18 +190,16 @@ def create_classification_for_species_view(request, species_id):
             messages.error(request, msg + ".")
             return _redirect_with_project(request, "battycoda_app:classify_unclassified_segments", project_id)
 
-        try:
-            # Group segments by recording+segmentation to create one run per segmentation
-            recording_segmentation_map = {}
-            for segment in segments:
-                key = (segment.recording.id, segment.segmentation.id)
-                if key not in recording_segmentation_map:
-                    recording_segmentation_map[key] = segment.segmentation
+        # Group segments by recording+segmentation to create one run per segmentation
+        recording_segmentation_map = {}
+        for segment in segments:
+            key = (segment.recording.id, segment.segmentation.id)
+            if key not in recording_segmentation_map:
+                recording_segmentation_map[key] = segment.segmentation
 
-            from battycoda_app.audio.task_modules.queue_processor import queue_classification_run
-
-            run_count = 0
-            for segmentation in recording_segmentation_map.values():
+        run_count = 0
+        for segmentation in recording_segmentation_map.values():
+            try:
                 run = ClassificationRun.objects.create(
                     name=f"{run_name} - {segmentation.recording.name}",
                     segmentation=segmentation,
@@ -209,17 +212,24 @@ def create_classification_for_species_view(request, species_id):
                 )
                 queue_classification_run.delay(run.id)
                 run_count += 1
+            except Exception:
+                logger.exception(
+                    "Failed to create classification run for segmentation %s (recording: %s)",
+                    segmentation.id,
+                    segmentation.recording.name,
+                )
+                # Continue with other segmentations rather than failing entirely
 
-            messages.success(
-                request,
-                f"Created {run_count} classification runs for {segments.count()} segments across {run_count} recordings. "
-                f"Runs have been queued and will be processed sequentially to prevent resource conflicts.",
-            )
-            return _redirect_with_project(request, "battycoda_app:classification_home", project_id)
-
-        except Exception as e:
-            messages.error(request, f"Error creating classification runs: {str(e)}")
+        if run_count == 0:
+            messages.error(request, "Failed to create any classification runs. Check logs for details.")
             return _redirect_with_project(request, "battycoda_app:classify_unclassified_segments", project_id)
+
+        messages.success(
+            request,
+            f"Created {run_count} classification runs for {segments.count()} segments across {run_count} recordings. "
+            f"Runs have been queued and will be processed sequentially to prevent resource conflicts.",
+        )
+        return _redirect_with_project(request, "battycoda_app:classification_home", project_id)
 
     # GET request: show classifier selection form
     if profile.group:
