@@ -5,11 +5,13 @@
 import { getPageData, getCsrfToken } from './utils/page-data.js';
 import { escapeHtml } from './utils/html.js';
 
-// Get page data
-const pageData = getPageData();
-const relabelTaskUrl = pageData.relabelTaskUrl;
+// Module state (initialized lazily)
+let relabelTaskUrl = null;
 
-function filterByCallType() {
+/**
+ * Filter tasks by call type - redirects to URL with call_type parameter
+ */
+export function filterByCallType() {
   const select = document.getElementById('call-type-filter');
   const selectedCallType = select.value;
 
@@ -19,12 +21,22 @@ function filterByCallType() {
   window.location.href = url.toString();
 }
 
-function relabelTask(selectElement) {
+/**
+ * Relabel a task with a new call type
+ * @param {HTMLSelectElement} selectElement - The select element triggering the relabel
+ */
+export function relabelTask(selectElement) {
   const taskId = selectElement.getAttribute('data-task-id');
   const newLabel = selectElement.value;
 
   if (!newLabel) {
     return;
+  }
+
+  // Lazy-initialize relabelTaskUrl if not set
+  if (!relabelTaskUrl) {
+    const pageData = getPageData();
+    relabelTaskUrl = pageData.relabelTaskUrl;
   }
 
   // Show loading
@@ -64,7 +76,12 @@ function relabelTask(selectElement) {
     });
 }
 
-function showToast(message, type) {
+/**
+ * Show a toast notification
+ * @param {string} message - The message to display
+ * @param {string} type - The type of toast ('success' or 'error')
+ */
+export function showToast(message, type) {
   // Create toast element
   const toast = document.createElement('div');
   toast.className = `alert alert-${type === 'success' ? 'success' : 'danger'} alert-dismissible fade show position-fixed`;
@@ -84,7 +101,24 @@ function showToast(message, type) {
   }, 5000);
 }
 
-// Export functions globally for inline onclick handlers
-window.filterByCallType = filterByCallType;
-window.relabelTask = relabelTask;
-window.showToast = showToast;
+/**
+ * Initialize the batch review module
+ * Sets up global functions for inline onclick handlers
+ */
+export function initialize() {
+  // Pre-fetch page data for relabel URL
+  const pageData = getPageData();
+  relabelTaskUrl = pageData.relabelTaskUrl;
+
+  // Export functions globally for inline onclick handlers in templates
+  window.filterByCallType = filterByCallType;
+  window.relabelTask = relabelTask;
+  window.showToast = showToast;
+}
+
+// Auto-initialize when DOM is ready
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', initialize);
+} else {
+  initialize();
+}

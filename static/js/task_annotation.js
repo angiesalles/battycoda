@@ -11,7 +11,10 @@ import { getJsonData } from './utils/page-data.js';
 const taskConfig = getJsonData('task-config-data');
 const batchSwitchData = getJsonData('batch-switch-data');
 
-document.addEventListener('DOMContentLoaded', function () {
+/**
+ * Initialize all task annotation functionality
+ */
+export function initialize() {
   // Initialize spectrogram viewer functionality
   initSpectrogramViewer();
 
@@ -20,12 +23,19 @@ document.addEventListener('DOMContentLoaded', function () {
 
   // Check for batch switch notification
   checkBatchSwitchNotification();
-});
+}
+
+// Auto-initialize when DOM is ready
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', initialize);
+} else {
+  initialize();
+}
 
 /**
  * Initialize the spectrogram viewer with channel and view switching
  */
-function initSpectrogramViewer() {
+export function initSpectrogramViewer() {
   // Find all UI elements needed
   const mainSpectrogram = document.getElementById('main-spectrogram');
   const detailViewBtn = document.getElementById('detail-view-btn');
@@ -177,7 +187,7 @@ function initSpectrogramViewer() {
 /**
  * Initialize form behavior for the task annotation
  */
-function initFormBehavior() {
+export function initFormBehavior() {
   // Previously handled the "Other" option which has been removed
   // Add any other form-related behavior here
 }
@@ -185,7 +195,7 @@ function initFormBehavior() {
 /**
  * Check if we need to show a notification about switching batches
  */
-function checkBatchSwitchNotification() {
+export function checkBatchSwitchNotification() {
   // Check if toastr is available
   if (typeof toastr !== 'undefined') {
     // Configure toastr
