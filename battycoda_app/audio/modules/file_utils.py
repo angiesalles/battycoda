@@ -7,7 +7,10 @@ import logging
 import os
 import pickle
 import tempfile
+import traceback
 
+import numpy as np
+import soundfile as sf
 from django.conf import settings
 
 # Configure logging
@@ -201,9 +204,18 @@ def appropriate_file(path, args, folder_only=False):
     filename = f"{args_string}{ext}"
 
     # Log the cache path for debugging
-    logging.debug(f"Cache path for {path}: {os.path.join(cache_dir, filename)}")
+    logger.debug(f"Cache path for {path}: {os.path.join(cache_dir, filename)}")
 
     return os.path.join(cache_dir, filename)
+
+
+def _to_float_list(data):
+    """Convert numpy array or iterable to a list of floats."""
+    if isinstance(data, np.ndarray):
+        data = data.tolist()
+    elif not isinstance(data, list):
+        data = list(data)
+    return [float(x) for x in data]
 
 
 def process_pickle_file(pickle_file, max_duration=None):
@@ -226,8 +238,6 @@ def process_pickle_file(pickle_file, max_duration=None):
     filename = getattr(pickle_file, "name", "unknown")
 
     try:
-        import numpy as np
-
         # Load the pickle file using restricted unpickler for security
         # This prevents arbitrary code execution from malicious pickle files
         pickle_data = safe_pickle_load(pickle_file)
@@ -250,16 +260,9 @@ def process_pickle_file(pickle_file, max_duration=None):
                 f"Pickle file '{os.path.basename(filename)}' format not recognized. Expected a dictionary with 'onsets' and 'offsets' keys, or a list/tuple with at least 2 elements."
             )
 
-        # Convert to lists if they're NumPy arrays or other iterables
-        if isinstance(onsets, np.ndarray):
-            onsets = onsets.tolist()
-        elif not isinstance(onsets, list):
-            onsets = list(onsets)
-
-        if isinstance(offsets, np.ndarray):
-            offsets = offsets.tolist()
-        elif not isinstance(offsets, list):
-            offsets = list(offsets)
+        # Convert to lists of floats
+        onsets = _to_float_list(onsets)
+        offsets = _to_float_list(offsets)
 
         # Validate data
         if len(onsets) == 0 or len(offsets) == 0:
@@ -272,10 +275,6 @@ def process_pickle_file(pickle_file, max_duration=None):
             raise ValueError(
                 f"In pickle file '{os.path.basename(filename)}': Onsets and offsets lists must have the same length."
             )
-
-        # Convert numpy types to Python native types if needed
-        onsets = [float(onset) for onset in onsets]
-        offsets = [float(offset) for offset in offsets]
 
         # Validate segments against recording duration if provided
         if max_duration is not None:
@@ -312,9 +311,7 @@ def process_pickle_file(pickle_file, max_duration=None):
             raise
         else:
             # Wrap other exceptions with filename information
-            import traceback
-
-            logging.error(
+            logger.error(
                 f"Error processing pickle file '{os.path.basename(filename)}': {str(e)}\n{traceback.format_exc()}"
             )
             raise Exception(f"Error processing pickle file '{os.path.basename(filename)}': {str(e)}") from e
@@ -333,8 +330,6 @@ def get_audio_duration(audio_file_path):
     Raises:
         Exception: If the file cannot be read
     """
-    import soundfile as sf
-
     try:
         info = sf.info(audio_file_path)
         return info.duration
@@ -356,9 +351,6 @@ def split_audio_file(audio_file_path, chunk_duration_seconds=60):
     Raises:
         Exception: If the file cannot be split
     """
-    import numpy as np
-    import soundfile as sf
-
     try:
         # Read the audio file
         data, samplerate = sf.read(audio_file_path)
@@ -398,10 +390,10 @@ def split_audio_file(audio_file_path, chunk_duration_seconds=60):
             sf.write(chunk_path, chunk_data, samplerate)
             chunk_paths.append(chunk_path)
 
-            logging.info(f"Created chunk {i + 1}/{num_chunks}: {chunk_filename} ({len(chunk_data) / samplerate:.2f}s)")
+            logger.info(f"Created chunk {i + 1}/{num_chunks}: {chunk_filename} ({len(chunk_data) / samplerate:.2f}s)")
 
         return chunk_paths
 
     except Exception as e:
-        logging.error(f"Error splitting audio file: {str(e)}")
+        logger.error(f"Error splitting audio file: {str(e)}")
         raise Exception(f"Error splitting audio file: {str(e)}") from e
