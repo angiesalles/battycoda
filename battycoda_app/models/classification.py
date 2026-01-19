@@ -8,6 +8,16 @@ from .organization import Call, Species
 from .user import Group
 
 
+# Shared status choices for job-tracking models
+# ClassificationRun extends this with "queued" status
+BASE_JOB_STATUS_CHOICES = (
+    ("pending", "Pending"),
+    ("in_progress", "In Progress"),
+    ("completed", "Completed"),
+    ("failed", "Failed"),
+)
+
+
 class Classifier(models.Model):
     """Classifier model for storing algorithm information."""
 
@@ -118,14 +128,10 @@ class ClassificationRun(models.Model):
     created_by = models.ForeignKey(User, on_delete=models.CASCADE, related_name="classification_runs")
     group = models.ForeignKey(Group, on_delete=models.CASCADE, related_name="classification_runs", null=True)
 
-    # Algorithm type choices (for backward compatibility)
-    ALGORITHM_TYPE_CHOICES = (
-        ("full_probability", "Full Probability Distribution"),
-        ("highest_only", "Highest Probability Only"),
-    )
+    # Algorithm type - uses same choices as Classifier.response_format
     algorithm_type = models.CharField(
         max_length=20,
-        choices=ALGORITHM_TYPE_CHOICES,
+        choices=Classifier.RESPONSE_FORMAT_CHOICES,
         default="highest_only",
         help_text="Whether the algorithm returns full probability distributions or only the highest probability",
     )
@@ -140,13 +146,8 @@ class ClassificationRun(models.Model):
         help_text="The classifier algorithm used for this classification run",
     )
 
-    STATUS_CHOICES = (
-        ("queued", "Queued"),
-        ("pending", "Pending"),
-        ("in_progress", "In Progress"),
-        ("completed", "Completed"),
-        ("failed", "Failed"),
-    )
+    # Extends BASE_JOB_STATUS_CHOICES with "queued" for queue-based processing
+    STATUS_CHOICES = (("queued", "Queued"),) + BASE_JOB_STATUS_CHOICES
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default="pending")
     progress = models.FloatField(default=0.0, help_text="Progress percentage from 0-100")
     error_message = models.TextField(blank=True, default="")
@@ -231,13 +232,8 @@ class ClassifierTrainingJob(models.Model):
     # Training parameters (can be extended as needed)
     parameters = models.JSONField(blank=True, null=True, help_text="JSON with training parameters")
 
-    # Status tracking
-    STATUS_CHOICES = (
-        ("pending", "Pending"),
-        ("in_progress", "In Progress"),
-        ("completed", "Completed"),
-        ("failed", "Failed"),
-    )
+    # Status tracking - uses shared base choices
+    STATUS_CHOICES = BASE_JOB_STATUS_CHOICES
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default="pending")
     progress = models.FloatField(default=0.0, help_text="Progress percentage from 0-100")
     error_message = models.TextField(blank=True, default="")
