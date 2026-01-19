@@ -6,7 +6,7 @@ import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { DataManager } from './data_manager.js';
 
 /**
- * Create a mock player object
+ * Create a mock player object (legacy style)
  */
 function createMockPlayer(options = {}) {
   return {
@@ -15,6 +15,37 @@ function createMockPlayer(options = {}) {
     segments: options.segments ?? [],
     redrawCurrentView: vi.fn(),
     drawTimeline: vi.fn(),
+  };
+}
+
+/**
+ * Create explicit dependencies (new DI style)
+ * This demonstrates the cleaner testing approach
+ */
+function createDependencies(options = {}) {
+  let selectionStart = options.selectionStart ?? 0;
+  let selectionEnd = options.selectionEnd ?? 0;
+  let segments = options.segments ?? [];
+
+  return {
+    getSelectionStart: vi.fn(() => selectionStart),
+    getSelectionEnd: vi.fn(() => selectionEnd),
+    getSegments: vi.fn(() => segments),
+    setSegmentsData: vi.fn((newSegments) => {
+      segments = newSegments;
+    }),
+    redrawCurrentView: vi.fn(),
+    drawTimeline: vi.fn(),
+    // Helpers for testing
+    _setSelectionStart: (val) => {
+      selectionStart = val;
+    },
+    _setSelectionEnd: (val) => {
+      selectionEnd = val;
+    },
+    _setSegments: (val) => {
+      segments = val;
+    },
   };
 }
 
@@ -206,6 +237,70 @@ describe('DataManager', () => {
       dataManager.redrawSegments();
 
       expect(mockPlayer.redrawCurrentView).toHaveBeenCalledTimes(1);
+    });
+  });
+});
+
+/**
+ * Tests using new dependency injection style
+ * Demonstrates cleaner, more explicit testing
+ */
+describe('DataManager (Dependency Injection)', () => {
+  let dataManager;
+  let deps;
+
+  beforeEach(() => {
+    deps = createDependencies();
+    dataManager = new DataManager(deps);
+  });
+
+  describe('constructor', () => {
+    it('should not have player reference in DI mode', () => {
+      expect(dataManager.player).toBeUndefined();
+    });
+  });
+
+  describe('getSelection', () => {
+    it('should call dependency getters', () => {
+      deps._setSelectionStart(2.5);
+      deps._setSelectionEnd(4.0);
+
+      const selection = dataManager.getSelection();
+
+      expect(deps.getSelectionStart).toHaveBeenCalled();
+      expect(deps.getSelectionEnd).toHaveBeenCalled();
+      expect(selection).toEqual({ start: 2.5, end: 4.0 });
+    });
+  });
+
+  describe('isTimeInSegment', () => {
+    it('should use getSegments dependency', () => {
+      deps._setSegments([{ onset: 1.0, offset: 2.0 }]);
+
+      const result = dataManager.isTimeInSegment(1.5);
+
+      expect(deps.getSegments).toHaveBeenCalled();
+      expect(result).toBe(true);
+    });
+  });
+
+  describe('setSegments', () => {
+    it('should call setSegmentsData and callbacks', () => {
+      const newSegments = [{ onset: 0, offset: 1.0 }];
+
+      dataManager.setSegments(newSegments);
+
+      expect(deps.setSegmentsData).toHaveBeenCalledWith(newSegments);
+      expect(deps.redrawCurrentView).toHaveBeenCalled();
+      expect(deps.drawTimeline).toHaveBeenCalled();
+    });
+  });
+
+  describe('redrawSegments', () => {
+    it('should call redrawCurrentView callback', () => {
+      dataManager.redrawSegments();
+
+      expect(deps.redrawCurrentView).toHaveBeenCalledTimes(1);
     });
   });
 });

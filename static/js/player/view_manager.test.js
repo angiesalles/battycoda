@@ -317,3 +317,133 @@ describe('ViewManager', () => {
     });
   });
 });
+
+/**
+ * Create explicit dependencies (new DI style)
+ */
+function createDependencies(options = {}) {
+  let duration = options.duration ?? 60;
+  let zoomLevel = options.zoomLevel ?? 1;
+  let zoomOffset = options.zoomOffset ?? 0;
+
+  const waveformContainer = {
+    style: { display: 'block' },
+    clientWidth: 800,
+    clientHeight: 200,
+  };
+
+  return {
+    spectrogramDataRenderer: {
+      initialize: vi.fn().mockResolvedValue(true),
+      show: vi.fn(),
+      hide: vi.fn(),
+      updateView: vi.fn(),
+      render: vi.fn(),
+    },
+    waveformRenderer: {
+      show: vi.fn(),
+      hide: vi.fn(),
+    },
+    overlayRenderer: {
+      draw: vi.fn(),
+    },
+    getWaveformContainer: vi.fn(() => waveformContainer),
+    getDuration: vi.fn(() => duration),
+    getZoomLevel: vi.fn(() => zoomLevel),
+    getZoomOffset: vi.fn(() => zoomOffset),
+    setZoomLevel: vi.fn((level) => {
+      zoomLevel = level;
+    }),
+    setZoomOffset: vi.fn((offset) => {
+      zoomOffset = offset;
+    }),
+    drawWaveform: vi.fn(),
+    drawTimeline: vi.fn(),
+    updateSelectionDisplay: vi.fn(),
+    updateTimeDisplay: vi.fn(),
+    // Helpers for testing
+    _setDuration: (val) => {
+      duration = val;
+    },
+    _setZoomLevel: (val) => {
+      zoomLevel = val;
+    },
+    _setZoomOffset: (val) => {
+      zoomOffset = val;
+    },
+    _waveformContainer: waveformContainer,
+  };
+}
+
+/**
+ * Tests using new dependency injection style
+ */
+describe('ViewManager (Dependency Injection)', () => {
+  let viewManager;
+  let deps;
+
+  beforeEach(() => {
+    deps = createDependencies();
+    viewManager = new ViewManager(deps);
+  });
+
+  describe('constructor', () => {
+    it('should not have player reference in DI mode', () => {
+      expect(viewManager.player).toBeUndefined();
+    });
+  });
+
+  describe('redraw', () => {
+    it('should use dependency getters', () => {
+      viewManager.redraw();
+
+      expect(deps.getDuration).toHaveBeenCalled();
+      expect(deps.getZoomLevel).toHaveBeenCalled();
+      expect(deps.getZoomOffset).toHaveBeenCalled();
+    });
+
+    it('should call drawWaveform when in waveform mode', () => {
+      viewManager.viewMode = 'waveform';
+
+      viewManager.redraw();
+
+      expect(deps.drawWaveform).toHaveBeenCalled();
+      expect(deps.drawTimeline).toHaveBeenCalled();
+    });
+
+    it('should update spectrogram view when in spectrogram mode', () => {
+      viewManager.viewMode = 'spectrogram';
+      viewManager.spectrogramInitialized = true;
+
+      viewManager.redraw();
+
+      expect(deps.spectrogramDataRenderer.updateView).toHaveBeenCalled();
+      expect(deps.drawTimeline).toHaveBeenCalled();
+    });
+  });
+
+  describe('handleZoomChange', () => {
+    it('should call setZoomLevel and setZoomOffset', () => {
+      viewManager.handleZoomChange(4, 0.5);
+
+      expect(deps.setZoomLevel).toHaveBeenCalledWith(4);
+      expect(deps.setZoomOffset).toHaveBeenCalledWith(0.5);
+    });
+  });
+
+  describe('handleSelectionChange', () => {
+    it('should call updateSelectionDisplay', () => {
+      viewManager.handleSelectionChange();
+
+      expect(deps.updateSelectionDisplay).toHaveBeenCalled();
+    });
+  });
+
+  describe('handlePlaybackUpdate', () => {
+    it('should call updateTimeDisplay', () => {
+      viewManager.handlePlaybackUpdate();
+
+      expect(deps.updateTimeDisplay).toHaveBeenCalled();
+    });
+  });
+});

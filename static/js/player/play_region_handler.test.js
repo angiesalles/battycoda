@@ -298,3 +298,109 @@ describe('PlayRegionHandler', () => {
     });
   });
 });
+
+/**
+ * Create explicit dependencies (new DI style)
+ */
+function createDependencies(options = {}) {
+  let duration = options.duration ?? 60;
+  let zoomLevel = options.zoomLevel ?? 1;
+  let zoomOffset = options.zoomOffset ?? 0;
+
+  const audioPlayer = {
+    currentTime: options.audioCurrentTime ?? 0,
+    play: vi.fn(),
+    pause: vi.fn(),
+    addEventListener: vi.fn(),
+    removeEventListener: vi.fn(),
+  };
+
+  return {
+    audioPlayer,
+    getDuration: vi.fn(() => duration),
+    getZoomLevel: vi.fn(() => zoomLevel),
+    setZoomLevel: vi.fn((level) => {
+      zoomLevel = level;
+    }),
+    setZoomOffset: vi.fn((offset) => {
+      zoomOffset = offset;
+    }),
+    seek: vi.fn(),
+    redrawCurrentView: vi.fn(),
+    drawTimeline: vi.fn(),
+    updateTimeDisplay: vi.fn(),
+    // Helpers for testing
+    _setDuration: (val) => {
+      duration = val;
+    },
+    _setZoomLevel: (val) => {
+      zoomLevel = val;
+    },
+    _getZoomOffset: () => zoomOffset,
+  };
+}
+
+/**
+ * Tests using new dependency injection style
+ */
+describe('PlayRegionHandler (Dependency Injection)', () => {
+  let playRegionHandler;
+  let deps;
+
+  beforeEach(() => {
+    deps = createDependencies();
+    playRegionHandler = new PlayRegionHandler(deps);
+  });
+
+  afterEach(() => {
+    vi.clearAllMocks();
+  });
+
+  describe('constructor', () => {
+    it('should not have player reference in DI mode', () => {
+      expect(playRegionHandler.player).toBeUndefined();
+    });
+  });
+
+  describe('playRegion', () => {
+    it('should call seek dependency', () => {
+      playRegionHandler.playRegion(10, 20);
+
+      expect(deps.seek).toHaveBeenCalledWith(10);
+    });
+
+    it('should start playback via audioPlayer', () => {
+      playRegionHandler.playRegion(10, 20);
+
+      expect(deps.audioPlayer.play).toHaveBeenCalledTimes(1);
+    });
+
+    it('should add timeupdate listener', () => {
+      playRegionHandler.playRegion(10, 20);
+
+      expect(deps.audioPlayer.addEventListener).toHaveBeenCalledWith('timeupdate', expect.any(Function));
+    });
+  });
+
+  describe('_zoomToRegionIfNeeded', () => {
+    it('should use dependency getters', () => {
+      deps._setZoomLevel(1);
+      deps._setDuration(100);
+
+      playRegionHandler._zoomToRegionIfNeeded(10, 20);
+
+      expect(deps.getDuration).toHaveBeenCalled();
+      expect(deps.getZoomLevel).toHaveBeenCalled();
+    });
+
+    it('should call setZoomLevel and setZoomOffset', () => {
+      deps._setZoomLevel(1);
+      deps._setDuration(100);
+
+      playRegionHandler._zoomToRegionIfNeeded(10, 20);
+
+      expect(deps.setZoomLevel).toHaveBeenCalled();
+      expect(deps.setZoomOffset).toHaveBeenCalled();
+    });
+  });
+});

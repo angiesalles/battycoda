@@ -6,7 +6,7 @@ import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { SeekHandler } from './seek_handler.js';
 
 /**
- * Create a mock player object for SeekHandler tests
+ * Create a mock player object for SeekHandler tests (legacy style)
  */
 function createMockPlayer(options = {}) {
   return {
@@ -20,6 +20,44 @@ function createMockPlayer(options = {}) {
     updateTimeDisplay: vi.fn(),
     redrawCurrentView: vi.fn(),
     drawTimeline: vi.fn(),
+  };
+}
+
+/**
+ * Create explicit dependencies (new DI style)
+ */
+function createDependencies(options = {}) {
+  let duration = options.duration ?? 60;
+  let currentTime = options.currentTime ?? 0;
+  let zoomLevel = options.zoomLevel ?? 1;
+  let zoomOffset = options.zoomOffset ?? 0;
+
+  const audioPlayer = {
+    currentTime: options.audioCurrentTime ?? 0,
+  };
+
+  return {
+    audioPlayer,
+    getDuration: vi.fn(() => duration),
+    getZoomLevel: vi.fn(() => zoomLevel),
+    setCurrentTime: vi.fn((time) => {
+      currentTime = time;
+    }),
+    setZoomOffset: vi.fn((offset) => {
+      zoomOffset = offset;
+    }),
+    updateTimeDisplay: vi.fn(),
+    redrawCurrentView: vi.fn(),
+    drawTimeline: vi.fn(),
+    // Helpers for testing
+    _setDuration: (val) => {
+      duration = val;
+    },
+    _setZoomLevel: (val) => {
+      zoomLevel = val;
+    },
+    _getZoomOffset: () => zoomOffset,
+    _getCurrentTime: () => currentTime,
   };
 }
 
@@ -166,6 +204,61 @@ describe('SeekHandler', () => {
         // Should clamp to 0
         expect(mockPlayer.audioPlayer.currentTime).toBe(0);
       });
+    });
+  });
+});
+
+/**
+ * Tests using new dependency injection style
+ */
+describe('SeekHandler (Dependency Injection)', () => {
+  let seekHandler;
+  let deps;
+
+  beforeEach(() => {
+    deps = createDependencies();
+    seekHandler = new SeekHandler(deps);
+  });
+
+  describe('constructor', () => {
+    it('should not have player reference in DI mode', () => {
+      expect(seekHandler.player).toBeUndefined();
+    });
+  });
+
+  describe('seek', () => {
+    it('should call dependency functions', () => {
+      seekHandler.seek(30);
+
+      expect(deps.getDuration).toHaveBeenCalled();
+      expect(deps.setCurrentTime).toHaveBeenCalledWith(30);
+      expect(deps.audioPlayer.currentTime).toBe(30);
+    });
+
+    it('should update displays via callbacks', () => {
+      seekHandler.seek(30);
+
+      expect(deps.updateTimeDisplay).toHaveBeenCalledTimes(1);
+      expect(deps.redrawCurrentView).toHaveBeenCalledTimes(1);
+      expect(deps.drawTimeline).toHaveBeenCalledTimes(1);
+    });
+
+    it('should adjust zoom offset when zoomed', () => {
+      deps._setDuration(100);
+      deps._setZoomLevel(4);
+
+      seekHandler.seek(50);
+
+      expect(deps.getZoomLevel).toHaveBeenCalled();
+      expect(deps.setZoomOffset).toHaveBeenCalled();
+    });
+
+    it('should not adjust zoom offset when not zoomed', () => {
+      deps._setZoomLevel(1);
+
+      seekHandler.seek(30);
+
+      expect(deps.setZoomOffset).not.toHaveBeenCalled();
     });
   });
 });
