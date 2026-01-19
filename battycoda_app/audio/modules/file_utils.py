@@ -2,6 +2,7 @@
 Utility functions for file handling and caching in BattyCoda audio processing.
 """
 
+import io
 import logging
 import os
 import pickle
@@ -10,6 +11,145 @@ import tempfile
 from django.conf import settings
 
 # Configure logging
+logger = logging.getLogger(__name__)
+
+
+# =============================================================================
+# Restricted Pickle Unpickler for Security
+# =============================================================================
+
+# Allowlist of safe modules and their allowed classes
+# This prevents arbitrary code execution from malicious pickle files
+PICKLE_SAFE_MODULES = {
+    "builtins": {
+        "list",
+        "dict",
+        "tuple",
+        "set",
+        "frozenset",
+        "str",
+        "bytes",
+        "bytearray",
+        "int",
+        "float",
+        "complex",
+        "bool",
+        "type",  # Needed for None
+        "slice",
+        "range",
+    },
+    "numpy": {
+        "ndarray",
+        "dtype",
+        "array",
+        # Scalar types
+        "float64",
+        "float32",
+        "float16",
+        "int64",
+        "int32",
+        "int16",
+        "int8",
+        "uint64",
+        "uint32",
+        "uint16",
+        "uint8",
+        "bool_",
+        "complex64",
+        "complex128",
+        # For dtype reconstruction
+        "str_",
+        "bytes_",
+        "void",
+        "object_",
+    },
+    "numpy.core.multiarray": {
+        "_reconstruct",
+        "scalar",
+    },
+    "numpy._core.multiarray": {
+        "_reconstruct",
+        "scalar",
+    },
+    "numpy.core.numeric": {
+        "*",  # Allow all - needed for array operations
+    },
+    "numpy._core.numeric": {
+        "*",
+    },
+    "collections": {
+        "OrderedDict",
+        "defaultdict",
+        "deque",
+    },
+}
+
+
+class RestrictedUnpickler(pickle.Unpickler):
+    """
+    A restricted unpickler that only allows loading safe types.
+
+    This prevents arbitrary code execution from malicious pickle files by
+    only allowing a predefined set of safe modules and classes.
+
+    Security: This class is designed to prevent pickle-based RCE attacks
+    (CWE-502: Deserialization of Untrusted Data).
+    """
+
+    def find_class(self, module, name):
+        """
+        Override find_class to restrict which classes can be instantiated.
+
+        Only classes in the PICKLE_SAFE_MODULES allowlist are permitted.
+        """
+        # Check if module is in our allowlist
+        if module in PICKLE_SAFE_MODULES:
+            allowed_names = PICKLE_SAFE_MODULES[module]
+            if "*" in allowed_names or name in allowed_names:
+                # Module and class are allowed - use standard resolution
+                return super().find_class(module, name)
+
+        # Log the blocked attempt for security monitoring
+        logger.warning(f"Blocked pickle load attempt: {module}.{name}")
+
+        raise pickle.UnpicklingError(
+            f"Restricted unpickler blocked loading '{module}.{name}'. "
+            f"Only basic Python types and numpy arrays are allowed."
+        )
+
+
+def safe_pickle_load(file_obj):
+    """
+    Safely load a pickle file using the restricted unpickler.
+
+    Args:
+        file_obj: A file-like object containing pickle data
+
+    Returns:
+        The unpickled data
+
+    Raises:
+        pickle.UnpicklingError: If the pickle contains disallowed types
+        Exception: For other unpickling errors
+    """
+    return RestrictedUnpickler(file_obj).load()
+
+
+def safe_pickle_loads(data):
+    """
+    Safely load pickle data from bytes using the restricted unpickler.
+
+    Args:
+        data: Bytes containing pickle data
+
+    Returns:
+        The unpickled data
+
+    Raises:
+        pickle.UnpicklingError: If the pickle contains disallowed types
+        Exception: For other unpickling errors
+    """
+    return RestrictedUnpickler(io.BytesIO(data)).load()
 
 
 def appropriate_file(path, args, folder_only=False):
@@ -88,8 +228,9 @@ def process_pickle_file(pickle_file, max_duration=None):
     try:
         import numpy as np
 
-        # Load the pickle file
-        pickle_data = pickle.load(pickle_file)
+        # Load the pickle file using restricted unpickler for security
+        # This prevents arbitrary code execution from malicious pickle files
+        pickle_data = safe_pickle_load(pickle_file)
 
         # Extract onsets and offsets based on data format
         if isinstance(pickle_data, dict):
