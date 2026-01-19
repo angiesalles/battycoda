@@ -11,11 +11,13 @@ from .views_classification.batch_operations import (
     classify_unclassified_segments_view,
     create_classification_for_species_view,
 )
-from .views_classification.classifier_training import (
+from .views_classification.job_creation import (
     classifier_list_view,
+    create_classifier_training_job_view,
+)
+from .views_classification.job_status import (
     classifier_training_job_detail_view,
     classifier_training_job_status_view,
-    create_classifier_training_job_view,
     delete_classifier_training_job_view,
 )
 from .views_classification.dashboard import classification_home_view
