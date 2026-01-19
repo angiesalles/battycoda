@@ -129,7 +129,7 @@ def _calculate_streak(user, profile):
         return 0
 
     # Convert to date objects and get unique dates
-    dates = sorted(set(dt.date() for dt in completed_dates), reverse=True)
+    dates = sorted({dt.date() for dt in completed_dates}, reverse=True)
 
     if not dates:
         return 0

@@ -165,7 +165,7 @@ def validate_training_folder(folder_path, species):
 
     species_calls = Call.objects.filter(species=species)
     if species_calls.exists():
-        species_call_names = set(call.short_name for call in species_calls)
+        species_call_names = {call.short_name for call in species_calls}
         folder_labels = set(stats["files_by_label"].keys())
 
         missing_in_folder = species_call_names - folder_labels
