@@ -58,6 +58,17 @@ export default defineConfig({
     // Use jsdom for DOM testing
     environment: 'jsdom',
 
+    // Pool configuration - reuse workers to avoid jsdom startup overhead
+    pool: 'threads',
+    poolOptions: {
+      threads: {
+        // Reuse threads instead of isolating each test file
+        // This dramatically speeds up tests by avoiding repeated jsdom initialization
+        isolate: false,
+        singleThread: false,
+      },
+    },
+
     // Test file patterns - place tests next to source files
     include: ['static/js/**/*.test.{js,ts}', 'static/js/**/*.spec.{js,ts}'],
 
