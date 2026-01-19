@@ -1,247 +1,132 @@
 # BattyCoda Development Guidelines
 
-## Important: Documentation Maintenance
+## Documentation Maintenance
 **ALWAYS suggest updating this CLAUDE.md file when implementing significant new features, major changes, or new capabilities.**
 
 ## Task Tracking with Beads
 
-This repository uses [Beads](https://github.com/steveyegge/beads) for task tracking. Beads is a persistent memory system for AI coding agents. Run `bd onboard` to get started.
+This repository uses [Beads](https://github.com/steveyegge/beads) for task tracking. Run `bd onboard` to get started.
 
 ### Common Commands
-```bash
-bd ready              # Show tasks without blocking dependencies (find available work)
-bd list               # List all open issues
-bd show <id>          # View issue details
-bd create "Title" -p 1 -t task   # Create a task with priority 1
-bd create "Title" -t epic --parent <id>  # Create sub-task under epic
-bd update <id> --status in_progress      # Claim work
-bd close <id>         # Complete work
-bd sync               # Sync with git
-bd dep tree <id>      # View dependency tree
-```
+| Command | Description |
+|---------|-------------|
+| `bd ready` | Show tasks without blockers |
+| `bd list` | List all open issues |
+| `bd show <id>` | View issue details |
+| `bd create "Title" -p 1 -t task` | Create task with priority 1 |
+| `bd update <id> --status in_progress` | Claim work |
+| `bd close <id>` | Complete work |
+| `bd sync` | Sync with git |
 
 ### Workflow
-1. Before starting work: `bd ready` to see available tasks
-2. Pick a task: `bd update <id> --status in_progress`
-3. When done: `bd close <id> --reason "Description of what was done"`
+1. `bd ready` - Find available work
+2. `bd update <id> --status in_progress` - Claim it
+3. `bd close <id> --reason "Description"` - Complete it
 4. Create new tasks as you discover them
 
 ### Landing the Plane (Session Completion)
 
-**When ending a work session**, you MUST complete ALL steps below. Work is NOT complete until `git push` succeeds.
+**MANDATORY WORKFLOW** - Work is NOT complete until `git push` succeeds:
 
-**MANDATORY WORKFLOW:**
-
-1. **File issues for remaining work** - Create issues for anything that needs follow-up
-2. **Run quality gates** (if code changed) - Tests, linters, builds
-3. **Update issue status** - Close finished work, update in-progress items
-4. **PUSH TO REMOTE** - This is MANDATORY:
+1. File issues for remaining work
+2. Run quality gates (if code changed)
+3. Update issue status
+4. **PUSH TO REMOTE**:
    ```bash
-   git pull --rebase
-   bd sync
-   git push
+   git pull --rebase && bd sync && git push
    git status  # MUST show "up to date with origin"
    ```
-5. **Clean up** - Clear stashes, prune remote branches
-6. **Verify** - All changes committed AND pushed
-7. **Hand off** - Provide context for next session
-
-**CRITICAL RULES:**
-- Work is NOT complete until `git push` succeeds
-- NEVER stop before pushing - that leaves work stranded locally
-- NEVER say "ready to push when you are" - YOU must push
-- If push fails, resolve and retry until it succeeds
-
-### Current Epics
-- `battycoda-yf0`: Clustering Visualization Overhaul (see CLUSTERING_VISUALIZATION_OVERHAUL.md)
+5. Clean up stashes, verify all changes pushed
 
 ### Project Terminology
 
 **puntomatic** - When the user says "puntomatic", it means:
-1. Yes, it's OK to suppress/defer the warning or issue for now
-2. BUT you MUST add a reminder to the relevant bead (the "proper-fix-it" task) to remove the suppression when the real fix is implemented
-3. When you hear "puntomatic", read back this definition to acknowledge you remember it
+1. Yes, it's OK to suppress/defer the warning for now
+2. BUT you MUST add a reminder to the relevant bead to remove the suppression when the real fix is implemented
+3. Read back this definition to acknowledge you remember it
 
 ## Architecture Overview
 
-BattyCoda is a Django application for annotating and classifying bat call recordings. Key components:
+BattyCoda is a Django application for annotating and classifying bat call recordings.
 
-- **Django web app** - Main application (gunicorn on port 8000)
-- **Celery worker** - Async task processing (classification, segmentation, spectrograms)
-- **Celery beat** - Periodic task scheduler
-- **R server** - Plumber API for ML classification (port 8001)
-- **PostgreSQL** - Database
-- **Redis** - Celery broker
-- **Nginx** - Reverse proxy (runs on host, not in Docker)
+| Component | Description |
+|-----------|-------------|
+| Django web app | Main application (gunicorn on port 8000) |
+| Celery worker | Async task processing |
+| Celery beat | Periodic task scheduler |
+| R server | Plumber API for ML classification (port 8001) |
+| PostgreSQL | Database |
+| Redis | Celery broker |
+| Nginx | Reverse proxy (runs on host) |
 
-## Service Management
+All services run via **systemd** (NOT Docker). Service files in `systemd/`.
 
-All services run via systemd (NOT Docker). Service files are in `systemd/` folder.
+## Quick Reference
 
+### Service Management
 ```bash
-# View service status
-sudo systemctl status battycoda
-sudo systemctl status battycoda-celery
-sudo systemctl status battycoda-celery-beat
-sudo systemctl status battycoda-r-server
+# Status
+sudo systemctl status battycoda battycoda-celery battycoda-celery-beat battycoda-r-server
 
-# Restart services
-sudo systemctl restart battycoda
-sudo systemctl restart battycoda-celery
-sudo systemctl restart battycoda-celery-beat
+# Restart
+sudo systemctl restart battycoda battycoda-celery battycoda-celery-beat
 
-# View logs
+# Logs
 sudo journalctl -u battycoda-celery -f
-sudo journalctl -u battycoda -f
 
-# After modifying service files in systemd/ folder:
+# After modifying systemd files:
 sudo ./systemd/install_services.sh
 ```
 
-## Python Environment
-
-Always use the virtual environment:
+### Python Environment
 ```bash
 source venv/bin/activate
 python manage.py [command]
 ```
 
-## Node.js Environment
-
-This project requires Node.js 22.x or later for Vite and frontend tooling.
-
-**Using nvm (recommended):**
+### Development
 ```bash
-# Install nvm if not already installed
-curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.0/install.sh | bash
-
-# Install and use correct Node version (reads from .nvmrc)
-nvm install
-nvm use
-```
-
-**Using system package manager:**
-```bash
-# Ubuntu/Debian
-curl -fsSL https://deb.nodesource.com/setup_22.x | sudo -E bash -
-sudo apt-get install -y nodejs
-```
-
-**Verify installation:**
-```bash
-node --version  # Should be v22.x.x
-npm --version   # Should be v10.x.x
-```
-
-**Note:** The `.npmrc` file enforces strict engine checking. `npm install` will fail if your Node version doesn't match the requirements in `package.json`.
-
-## Development Workflow
-
-For development, you need to run multiple services: Django, Vite (for frontend assets), Celery worker, and Celery beat. Use the convenience scripts to manage these easily.
-
-### Quick Start (Recommended)
-```bash
-# Start all services with honcho (Django, Vite, Celery worker, Celery beat)
+# Quick start (recommended) - runs Django, Vite, Celery worker, Celery beat
 ./scripts/dev.sh
-```
 
-### Minimal Mode (Frontend Work)
-```bash
-# Start only Django + Vite (no Celery - async tasks won't process)
+# Minimal (Django + Vite only, no async tasks)
 ./scripts/dev-minimal.sh
+
+# Selective
+./scripts/dev.sh django vite celery
 ```
 
-### Selective Services
+**URLs:** Django: http://localhost:8000 | Vite HMR: http://localhost:5173
+
+See [Frontend Guide](docs/FRONTEND.md) for build system details.
+
+### Production Deployment
 ```bash
-# Start specific services only using honcho
-./scripts/dev.sh django vite           # Just Django and Vite
-./scripts/dev.sh django vite celery    # Django, Vite, and Celery worker
-```
-
-### Manual Individual Services
-```bash
-# Terminal 1: Django
-source venv/bin/activate && python manage.py runserver
-
-# Terminal 2: Vite (for frontend HMR)
-npm run dev
-
-# Terminal 3: Celery worker (for async tasks)
-source venv/bin/activate && celery -A config worker --loglevel=info
-
-# Terminal 4: Celery beat (for scheduled tasks)
-source venv/bin/activate && celery -A config beat --loglevel=info
-```
-
-### Development URLs
-- **Django**: http://localhost:8000
-- **Vite HMR**: http://localhost:5173 (proxied through Django in dev mode)
-
-## Production Deployment
-
-### Deployment Script
-Use the deployment script to prepare the application for production:
-
-```bash
-# Standard deployment (build assets + collect static)
-./scripts/deploy.sh
-
-# With database migrations
+# Build and deploy
 ./scripts/deploy.sh --migrate
 
-# Skip npm install (if node_modules already up to date)
-./scripts/deploy.sh --skip-npm
-```
-
-The deploy script performs:
-1. `npm ci` - Install npm dependencies (reproducible builds)
-2. `npm run build` - Build Vite frontend assets to `static/dist/`
-3. `python manage.py collectstatic` - Collect all static files
-4. Optionally run database migrations
-
-### Deployment Workflow
-
-After pulling code changes:
-
-```bash
-# 1. Pull latest code
-git pull
-
-# 2. Install Python dependencies (if requirements.txt changed)
-source venv/bin/activate
-pip install -r requirements.txt
-
-# 3. Build and deploy assets
-./scripts/deploy.sh --migrate
-
-# 4. Restart services
+# Restart services
 sudo systemctl restart battycoda battycoda-celery battycoda-celery-beat
-
-# 5. Verify services are running
-sudo systemctl status battycoda
 ```
 
-### Systemd Integration
+See [Operations Guide](docs/OPERATIONS.md) for full deployment workflow.
 
-The battycoda.service runs `collectstatic --noinput` on startup via ExecStartPre. However, you must run `./scripts/deploy.sh` manually after code changes to rebuild Vite assets.
-
-After modifying systemd service files:
+### Running Tests
 ```bash
-sudo ./systemd/install_services.sh
-sudo systemctl restart battycoda
-```
-
-## Running Tests
-```bash
-source venv/bin/activate
+# Python
 python manage.py test
 python manage.py test battycoda_app.tests.TestClassName.test_method_name
 
-# Run specific test modules
-python manage.py test battycoda_app.tests.test_clustering  # Project-level clustering tests
-python manage.py test battycoda_app.tests.test_models      # Model tests
-python manage.py test battycoda_app.tests.test_views_auth  # Auth view tests
+# JavaScript
+npm test              # Unit tests (watch mode)
+npm run e2e           # E2E tests
+
+# Linting
+./lint.sh             # Python
+npm run lint          # JavaScript
 ```
+
+See [Testing Guide](docs/TESTING.md) for full testing documentation.
 
 ## Key Models
 
@@ -274,7 +159,7 @@ python manage.py test battycoda_app.tests.test_views_auth  # Auth view tests
 ### Clustering
 - **ClusteringAlgorithm** - Algorithm config (kmeans, dbscan, hierarchical, etc.)
 - **ClusteringRun** - A clustering job (single segmentation or project-level)
-- **ClusteringRunSegmentation** - Junction table for project-level runs (tracks included recordings)
+- **ClusteringRunSegmentation** - Junction table for project-level runs
 - **Cluster** - A cluster of similar segments
 - **SegmentCluster** - Links segments to clusters with confidence scores
 - **ClusterCallMapping** - Maps clusters to call types
@@ -285,952 +170,86 @@ python manage.py test battycoda_app.tests.test_views_auth  # Auth view tests
 - **SpectrogramJob** - Tracks spectrogram generation jobs
 - **UserNotification** - User notifications
 
-## Classification System
+## Domain Systems
 
-Classification runs are processed via a queue system:
-- Runs are created with status "queued"
-- `process_classification_queue` task runs every 30 seconds
-- Picks up queued runs and processes them via R server
-- Results saved incrementally per batch to avoid memory issues
+### Classification System
+Runs are processed via queue: created with status "queued", picked up by `process_classification_queue` task (every 30s), processed via R server.
 
 Key files:
 - `battycoda_app/audio/task_modules/classification/run_classification.py`
 - `battycoda_app/audio/task_modules/queue_processor.py`
 
-## Clustering System
+### Clustering System
+Groups similar segments using unsupervised ML.
 
-Clustering groups similar segments together using unsupervised ML algorithms.
-
-### Scope Options
-- **Single Recording** - Cluster segments from one segmentation
-- **Project-Level** - Cluster all segments across all recordings in a project
-  - Requires species selection (clustering different species together is meaningless)
-  - Uses PCA instead of t-SNE for visualization when >2000 segments (memory optimization)
-  - Batched database writes for large datasets
-  - 1-hour task timeout with progress tracking
-
-### Supported Algorithms
-- **Manual** (specify cluster count): kmeans, gaussian_mixture, spectral, dbscan
-- **Automatic** (auto-determine clusters): HDBSCAN, Mean Shift, OPTICS, Affinity Propagation, DBSCAN Enhanced
-
-### Feature Extraction
-- Audio normalized to 22050 Hz sample rate for consistency
-- Methods: MFCC (default), Mel Spectrogram, Chroma Features
-
-### Key Models
-- `ClusteringRun` - A clustering job (scope: segmentation or project)
-- `ClusteringRunSegmentation` - Junction table tracking included recordings for project-level runs
-- `Cluster` - A discovered cluster with size, coherence score, optional label
-- `SegmentCluster` - Links segments to clusters with confidence scores
-- `ClusterCallMapping` - Maps clusters to known call types
-
-### API Endpoints
-- `GET /clustering/project-segments/<project_id>/` - Get segment counts by species for a project
-- `GET /clustering/get-cluster-members/?cluster_id=<id>` - Get segment members of a cluster (with recording info for project-level)
-- `GET /clustering/get-cluster-data/?cluster_id=<id>` - Get cluster details
-- `POST /clustering/update-cluster-label/` - Update cluster label
-- `GET /clustering/export/<run_id>/` - Export clusters as CSV (includes recording columns for project-level)
+**Scope:** Single recording or project-level (all recordings, filtered by species)
+**Algorithms:** Manual (kmeans, GMM, spectral, dbscan) or Automatic (HDBSCAN, Mean Shift, OPTICS)
+**Features:** MFCC (default), Mel Spectrogram, Chroma
 
 Key files:
-- `battycoda_app/audio/task_modules/clustering/` - Main clustering module
-- `battycoda_app/views_clustering/` - Views for dashboard, explorer, mappings
-- `templates/clustering/` - UI templates
+- `battycoda_app/audio/task_modules/clustering/`
+- `battycoda_app/views_clustering/`
 
-## R Server
-
-The R server runs classification models (KNN, LDA) via plumber API:
-- Runs on port 8001
-- Single-threaded (processes one request at a time)
-- Uses warbleR for acoustic feature extraction
-- Models stored in `media/models/classifiers/`
+### R Server
+ML classification models (KNN, LDA) via plumber API on port 8001.
 
 ```bash
-# Check R server status
-curl http://localhost:8001/ping
-
-# R server endpoints:
-# POST /predict/knn - KNN classification
-# POST /predict/lda - LDA classification
-# POST /train/knn - Train KNN model
-# POST /train/lda - Train LDA model
+curl http://localhost:8001/ping  # Health check
 ```
 
-Key files:
-- `R_code/server.R` - Main server
-- `R_code/api_endpoints.R` - API endpoint definitions
-- `R_code/model_functions/` - Model runner, trainer, and utilities
+Key files: `R_code/server.R`, `R_code/api_endpoints.R`
 
-## Celery Tasks & Beat Schedule
-
-### Scheduled Tasks (Celery Beat)
-| Task | Schedule | Description |
-|------|----------|-------------|
-| `process_classification_queue` | Every 30s | Processes queued classification runs |
-| `backup_database_to_s3` | Weekly | Backs up database to S3 |
-| `check_disk_usage` | Hourly | Monitors disk usage, sends alerts at 90% |
-
-### Key Tasks
-- `calculate_audio_duration` - Calculates recording duration (with retry logic)
-- `backup_database_to_s3` - Database backup to S3
-- `check_disk_usage` - Disk monitoring with email alerts
-- `process_classification_queue` - Queue processor for classification runs
-- Classification, segmentation, spectrogram, and clustering tasks in `battycoda_app/audio/task_modules/`
-
-## Management Commands
-
-```bash
-source venv/bin/activate
-
-# Database backup
-python manage.py backup_database
-
-# Generate missing HDF5 spectrogram files
-# (Pre-generates spectrograms to avoid OOM crashes with large audio files)
-python manage.py generate_missing_hdf5
-python manage.py generate_missing_hdf5 --dry-run  # Preview only
-
-# Background generation with CPU throttling (recommended for many files):
-./scripts/generate_hdf5_background.sh                    # All missing files
-./scripts/generate_hdf5_background.sh --batch-size 10    # First 10 only
-./scripts/generate_hdf5_background.sh --dry-run          # Preview
-# Logs to: /var/log/battycoda/hdf5_generation_TIMESTAMP.log
-
-# Import species from CSV
-python manage.py import_species
-
-# Initialize default data
-python manage.py initialize_defaults
-
-# Populate group memberships
-python manage.py populate_memberships
-```
-
-## Scripts
-
-Located in `scripts/`:
-- `dev.sh` - Start full development environment (Django, Vite, Celery, Beat)
-- `dev-minimal.sh` - Start minimal dev environment (Django + Vite only)
-- `notify_worker_failure.py` - Sends email alerts when workers fail (called by systemd)
-- `create_clustering_algorithms.py` - Creates default clustering algorithm entries
-- `create_automatic_clustering_algorithms.py` - Creates automatic clustering algorithms
-
-## Simple API
-
-REST API endpoints in `battycoda_app/simple_api/`:
-- `recording_upload.py` - Recording upload API (supports auto-split)
+### Simple API
+REST endpoints in `battycoda_app/simple_api/`:
+- `recording_upload.py` - Recording upload (supports auto-split)
 - `classification_views.py` - Classification endpoints
 - `segmentation_views.py` - Segmentation endpoints
-- `task_views.py` - Task management endpoints
-- `data_views.py` - Data export endpoints
-- `pickle_upload.py` - Pickle file upload for batch data
-- `auth.py` - API authentication
-- `user_views.py` - User management
+- `task_views.py` - Task management
+- `data_views.py` - Data export
 
-## Audio Auto-Split
+### Audio Auto-Split
+Long audio files (>60s) automatically split into 1-minute chunks on upload.
 
-Long audio files are automatically split on upload:
-- Files longer than 60 seconds are split into 1-minute chunks
-- Each chunk becomes a separate recording
-- Enabled by default (can be disabled via checkbox in upload UI)
-- Applies to single upload, batch upload, and API upload
+## Code Style
 
-## Memory Monitoring
-
-Celery workers have a memory monitor that dumps profiling info when memory exceeds threshold:
-- Threshold: 1.5GB (warning), 2GB (critical)
-- Dumps written to `/var/log/battycoda/memory_dump_*.txt`
-- Includes tracemalloc allocations, object counts, process info
-
-Key file: `battycoda_app/celery_memory_monitor.py`
-
-## Email Notifications
-
-Uses AWS SES for email. Key notifications:
-- Worker failure alerts (via systemd OnFailure directive)
-- Disk usage warnings (when usage exceeds 90%)
-
-Key file: `battycoda_app/utils/email_utils.py`
-
-## Content Security Policy (CSP)
-
-BattyCoda uses Content Security Policy headers as defense-in-depth against XSS attacks.
-
-### Configuration
-
-CSP is implemented via `django-csp` middleware. Configuration is in `config/settings.py`.
-
-**Modes:**
-- **Report-Only (default)**: Violations are logged but not blocked. Safe for testing.
-- **Enforcement**: Violations are blocked. Enable with `CSP_ENFORCE=true` in `.env`.
-- **Strict Mode**: Removes `'unsafe-inline'` from script-src. Enable with `CSP_STRICT_MODE=true` in `.env`.
-
-**Current Policy:**
-- Scripts allowed from: `'self'`, CDNs (jsdelivr, cloudflare, jquery, sentry), + `'unsafe-inline'` in non-strict mode
-- Styles allowed from: `'self'`, `'unsafe-inline'`, CDNs (jsdelivr, cloudflare, googleapis)
-- Images: `'self'`, `data:` (for inline images/spectrograms)
-- Fonts: `'self'`, CDNs (cloudflare, gstatic)
-- Connections: `'self'`, Sentry endpoints
-
-**Development Mode:**
-When `DEBUG=true` and `VITE_DEV_MODE=true`, the Vite dev server (localhost:5173) is automatically allowed.
-
-### Script Migration Status (battycoda-1gxd)
-
-The following inline scripts have been migrated to external files:
-- **Security utilities** (`static/js/utils/security.js`): `escapeHtml()`, `validateUrl()`
-- **Sentry initialization** (`static/js/integrations/sentry-init.js`): Reads config from `#sentry-config` data attributes
-- **App initialization** (`static/js/core/app-init.js`): Select2, toastr config, Django messages, management features
-- **Bootstrap initialization** (`static/js/utils/bootstrap-init.js`): Auto-initializes tooltips and popovers
-
-**Remaining inline scripts:**
-- Page-specific scripts in jobs dashboard, segmentation params, and other templates
-- These can use nonces in strict mode (Vite template tags support nonces)
-
-### CSS Migration Status
-
-**Completed:**
-- Created `static/css/utilities.css` with common utility classes
-- Migrated some progress bar height styles (`h-20`, `h-25` classes)
-
-**Remaining work:**
-- Dynamic progress bar widths (`style="width: {{ progress }}%;"`) still use inline styles
-- CSP nonces only work on `<style>` blocks, not `style=""` attributes
-- Fully removing `'unsafe-inline'` from style-src requires JavaScript-based styling
-
-### Enabling Strict Mode
-
-Before enabling strict mode:
-1. Test in report-only mode first (`CSP_ENFORCE=false`)
-2. Check browser console for CSP violations
-3. Fix any violations (move to external files or add nonces)
-
-```bash
-# Enable strict mode (removes 'unsafe-inline' from script-src)
-# In .env:
-CSP_STRICT_MODE=true
-CSP_ENFORCE=false  # Start in report-only mode
-
-# After testing, enable enforcement:
-CSP_ENFORCE=true
-```
-
-### Checking CSP Headers
-
-```bash
-# Check if CSP header is being sent
-curl -sI http://localhost:8000/ | grep -i "content-security-policy"
-
-# In report-only mode, you'll see:
-# Content-Security-Policy-Report-Only: ...
-
-# In enforcement mode, you'll see:
-# Content-Security-Policy: ...
-```
-
-Key files:
-- `config/settings.py` - CSP configuration
-- `battycoda_app/templatetags/vite.py` - Vite template tags with nonce support
-- `static/js/utils/security.js` - Security utility functions
-- `static/js/core/app-init.js` - Application initialization
-- `static/css/utilities.css` - CSS utility classes
-
-## Environment Configuration
-
-Configuration in `.env` file:
-
-### Required
-- `SECRET_KEY` - Django secret key
-
-### Application
-- `DOMAIN_NAME` - e.g., battycoda.com
-- `DEBUG` - Enable debug mode (default: False)
-- `DISABLE_STATIC_CACHING` - Disable whitenoise caching for development
-- `MAX_UPLOAD_SIZE_MB` - Max upload size in MB (default: 100)
-
-### Database & Redis
-- `DATABASE_URL` - PostgreSQL connection string
-- `CELERY_BROKER_URL` - Redis URL for Celery broker
-- `CELERY_RESULT_BACKEND` - Redis URL for Celery results
-
-### AWS SES (Email)
-- `AWS_SES_REGION_NAME` - AWS region (default: us-east-1)
-- `AWS_SES_ACCESS_KEY_ID` - AWS access key
-- `AWS_SES_SECRET_ACCESS_KEY` - AWS secret key
-- `AWS_SES_CONFIGURATION_SET` - SES configuration set (optional)
-- `DEFAULT_FROM_EMAIL` - From address for emails
-
-### Backups
-- `DATABASE_BACKUP_BUCKET` - S3 bucket for backups (default: backup-battycoda)
-- `DATABASE_BACKUP_PREFIX` - S3 prefix for backups (default: database-backups/)
-
-### Security (Content Security Policy)
-- `CSP_ENFORCE` - Enable CSP enforcement mode (default: false = report-only)
-  - When `false`: CSP violations are logged but not blocked (safe for testing)
-  - When `true`: CSP violations are blocked (production enforcement)
-
-### Sentry Error Tracking
-- `SENTRY_DSN` - Sentry Data Source Name (enables error tracking when set)
-- `SENTRY_ENVIRONMENT` - Environment name (default: production)
-- `SENTRY_AUTH_TOKEN` - Auth token for source map uploads (scopes: project:releases, org:read)
-- `SENTRY_ORG` - Sentry organization slug
-- `SENTRY_PROJECT` - Sentry project name
-
-When all three source map variables are set, `./scripts/deploy.sh` will automatically upload source maps to Sentry and delete them from the build output. This enables readable stack traces in production error reports while keeping source maps private.
-
-### Vite Frontend Build (Feature Flags)
-- `VITE_ENABLED` - Master switch for Vite bundles (default: false)
-- `VITE_FEATURE_THEME_SWITCHER` - Use Vite for theme switcher (default: false)
-- `VITE_FEATURE_NOTIFICATIONS` - Use Vite for notifications (default: false)
-- `VITE_FEATURE_DATETIME_FORMATTER` - Use Vite for datetime formatter (default: false)
-- `VITE_FEATURE_FILE_UPLOAD` - Use Vite for file upload (default: false)
-- `VITE_FEATURE_CLUSTER_EXPLORER` - Use Vite for cluster explorer (default: false)
-- `VITE_FEATURE_CLUSTER_MAPPING` - Use Vite for cluster mapping (default: false)
-- `VITE_FEATURE_PLAYER` - Use Vite for audio player (default: false)
-- `VITE_FEATURE_TASK_ANNOTATION` - Use Vite for task annotation (default: false)
-- `VITE_FEATURE_SEGMENTATION` - Use Vite for segmentation (default: false)
-
-## Frontend Stack (Bootstrap 5)
-
-BattyCoda uses Bootstrap 5.3 with a custom light/dark theme system.
-
-### Current State
-- **Bootstrap**: 5.3.x via CDN (migrated from 4.3.1 + Maisonnette theme in Jan 2026)
-- **Icons**: Font Awesome 6.x via CDN
-- **Themes**: Light and Dark modes using CSS custom properties
-- **Build**: Vite for JS/CSS bundling
-
-### Theme System
-
-Two themes available: `light` (default) and `dark`. Users can toggle via navbar dropdown.
-
-**Theme Files:**
-- `static/css/themes/light.css` - Light theme (teal/green accent #20c997)
-- `static/css/themes/dark.css` - Dark theme (adjusted colors for dark backgrounds)
-- `static/css/themes.css` - Theme switcher dropdown styling
-
-**How it works:**
-1. Theme CSS loaded dynamically via `{% vite_theme_css theme_name %}`
-2. Body gets class `theme-light` or `theme-dark`
-3. Theme-switcher.js handles runtime switching and localStorage persistence
-4. User preference saved to database for authenticated users
-
-**Adding theme support to new CSS:**
-```css
-/* Use CSS variables that change with theme */
-.my-component {
-  background-color: var(--bc-card-bg);
-  border-color: var(--bc-card-border);
-  color: var(--bs-body-color);
-}
-
-/* Or use theme-specific overrides */
-body.theme-dark .my-component {
-  /* dark-mode specific styles */
-}
-```
-
-### Bootstrap 5 Class Reference
-
-Common utility classes (BS5 naming):
-- **Spacing**: `me-*`, `ms-*`, `pe-*`, `ps-*` (margin/padding end/start)
-- **Floats**: `float-end`, `float-start`
-- **Text**: `text-end`, `text-start`
-- **Gaps**: `gap-*`, `row-gap-*`, `column-gap-*`
-- **Visibility**: `visually-hidden` (replaces `sr-only`)
-
-### Data Attributes
-
-BS5 uses `data-bs-*` prefix:
-```html
-data-bs-toggle="dropdown"   <!-- not data-toggle -->
-data-bs-dismiss="modal"     <!-- not data-dismiss -->
-data-bs-target="#myModal"   <!-- not data-target -->
-```
-
-### JavaScript API
-
-BS5 doesn't require jQuery. Access components via:
-```javascript
-// Modal
-const modal = new bootstrap.Modal(document.getElementById('myModal'));
-modal.show();
-
-// Tooltip
-const tooltipList = [...document.querySelectorAll('[data-bs-toggle="tooltip"]')]
-  .map(el => new bootstrap.Tooltip(el));
-```
-
-### Migration History
-- **Pre-2026**: Bootstrap 4.3.1 + Maisonnette admin theme v1.3.2
-- **Jan 2026**: Migrated to Bootstrap 5.3, removed Maisonnette (discontinued)
-- **Jan 2026**: Simplified from 7 color themes to light/dark only
-
-## Vite Frontend Migration
-
-BattyCoda uses an incremental migration strategy for moving from Django static files to Vite-bundled JavaScript.
-
-### Feature Flag System
-
-Each JavaScript feature can be migrated independently using feature flags in `settings.py`:
-
-```python
-VITE_ENABLED = True  # Master switch
-VITE_FEATURES = {
-    'theme_switcher': True,   # Migrated
-    'notifications': False,   # Not yet
-    # ...
-}
-```
-
-Templates check these flags to load either legacy scripts or Vite bundles:
-```html
-{% if not VITE_FEATURES.theme_switcher %}
-<script src="{% static 'js/theme-switcher.js' %}"></script>
-{% endif %}
-```
-
-### CSS Bundling
-
-CSS is processed through Vite with PostCSS for autoprefixing and minification:
-
-**Entry Points:**
-- `static/css/main.css` - Main CSS bundle (imports app.css, themes.css, typography.css, stroke-7)
-- `static/css/themes/light.css` - Light theme
-- `static/css/themes/dark.css` - Dark theme
-
-**Key Files:**
-- `static/css/app.css` - Minimal core styles (was 22K lines of Maisonnette, now ~10 lines)
-- `postcss.config.js` - PostCSS configuration (autoprefixer, cssnano)
-- `vite.config.js` - Vite config with CSS entry points
-- `battycoda_app/templatetags/vite.py` - Custom template tags for CSS loading
-
-**Template Tags:**
-```html
-{% load vite %}
-{% vite_css 'styles' %}           <!-- Load main CSS bundle -->
-{% vite_theme_css 'light' %}      <!-- Load light theme CSS -->
-{% vite_theme_css 'dark' %}       <!-- Load dark theme CSS -->
-{% vite_theme_urls %}             <!-- Inject theme URL mapping for JS -->
-```
-
-The `vite_theme_urls` tag generates a JavaScript object (`window.__VITE_THEME_URLS__`) that maps theme names to their correct URLs (with hashes in production). This allows the theme-switcher.js to dynamically load themes without knowing the hashed filenames.
-
-### Migration Order (Suggested)
-
-| Order | Feature | Risk | Complexity |
-|-------|---------|------|------------|
-| 1 | theme_switcher | Low | Low |
-| 2 | notifications | Low | Low |
-| 3 | datetime_formatter | Low | Low |
-| 4 | file_upload | Medium | Medium |
-| 5 | cluster_explorer | Medium | High |
-| 6 | cluster_mapping | Medium | High |
-| 7 | player | High | High |
-| 8 | task_annotation | High | High |
-| 9 | segmentation | Medium | Medium |
-
-### Rollback Procedures
-
-#### Level 1: Disable Single Feature
-Set the specific feature flag to false in `.env`:
-```bash
-VITE_FEATURE_THEME_SWITCHER=false
-```
-Then restart the service:
-```bash
-sudo systemctl restart battycoda
-```
-
-#### Level 2: Disable All Vite
-Disable the master switch in `.env`:
-```bash
-VITE_ENABLED=false
-```
-Then restart:
-```bash
-sudo systemctl restart battycoda
-```
-
-#### Level 3: Full Revert
-Revert to pre-Vite commit:
-```bash
-git log --oneline  # Find the commit before Vite changes
-git revert HEAD~n..HEAD  # Or specific commits
-sudo systemctl restart battycoda
-```
-
-### Testing Checklist Per Feature
-
-Before enabling a feature in production:
-- [ ] Unit tests pass
-- [ ] E2E tests pass for this feature
-- [ ] Manual testing on staging
-- [ ] Performance comparison (bundle size, load time)
-- [ ] No console errors
-- [ ] All browsers tested
-
-### Key Files
-- `config/settings.py` - VITE_ENABLED, VITE_FEATURES settings
-- `battycoda_app/context_processors.py` - vite_features context processor
-- `templates/base.html` - Conditional script loading
-
-## Code Style Guidelines
-
-- **Imports**: Group by standard library, Django, then project modules; alphabetize within groups
+- **Imports**: Group by standard library, Django, then project; alphabetize within groups
 - **Formatting**: PEP 8, 4-space indentation, ~120 char line limit
 - **Naming**: CamelCase for classes, snake_case for functions/variables
-- **Error Handling**: Don't use bare `except: pass` - remove the try block or handle properly
+- **Error Handling**: Don't use bare `except: pass` - handle properly or remove try block
 - **Frontend**: Prefer Django server-side rendering; Bootstrap 5
 - **Comments**: Be sparse, especially when removing code
 
-## JavaScript Build System (Vite)
-
-BattyCoda uses Vite for JavaScript bundling and development.
-
-### Directory Structure
-```
-static/
-├── js/
-│   ├── main.js              # Main entry point
-│   ├── types/               # TypeScript type definitions
-│   │   ├── global.d.ts      # Window, jQuery, Bootstrap types
-│   │   ├── models.d.ts      # Domain model types
-│   │   ├── api.d.ts         # API response types
-│   │   └── index.ts         # Central export
-│   ├── utils/               # Shared utilities
-│   │   ├── page-data.js     # Django template data access
-│   │   ├── api.ts           # Type-safe API utilities
-│   │   └── colormaps.js     # Color utilities
-│   ├── player/              # Waveform player module
-│   ├── cluster_explorer/    # Clustering visualization
-│   ├── cluster_mapping/     # Cluster-to-call mapping
-│   ├── file_upload/         # File upload handling
-│   ├── segmentation/        # Segmentation module
-│   └── test/                # Test setup, fixtures, mocks
-├── css/
-│   ├── main.css             # CSS entry point
-│   └── themes/              # Theme CSS files
-└── dist/                    # Built output (gitignored)
-```
-
-### Build Commands
-```bash
-# Start Vite dev server (port 5173)
-npm run dev
-
-# Build for production
-npm run build
-
-# Build with watch mode
-npm run build:watch
-
-# Preview production build
-npm run preview
-```
-
-### Adding New JavaScript Modules
-
-1. Create module in appropriate directory:
-   ```javascript
-   // static/js/feature/mymodule.js
-   export function myFunction() { ... }
-   ```
-
-2. Add entry point in `vite.config.js` if needed:
-   ```javascript
-   rollupOptions: {
-     input: {
-       myFeature: resolve(__dirname, 'static/js/feature/index.js'),
-     }
-   }
-   ```
-
-3. Load in Django template:
-   ```html
-   {% load vite %}
-   {% vite_asset 'myFeature.js' %}
-   ```
-
-### Accessing Django Data in JavaScript
-
-Use data attributes pattern (not inline scripts):
-
-```html
-<!-- In template -->
-<div id="app-data"
-     data-recording-id="{{ recording.id }}"
-     data-api-url="{% url 'api:endpoint' %}"
-     style="display: none;">
-</div>
-```
-
-```javascript
-// In JavaScript
-import { getPageData } from './utils/page-data.js';
-const { recordingId, apiUrl } = getPageData();
-```
-
-### External Dependencies (CDN vs Bundled)
-
-BattyCoda uses a hybrid approach for JavaScript dependencies:
-
-**CDN (External)** - Loaded via CDN in Django templates, marked as external in Vite config:
-| Library | Version | Reason |
-|---------|---------|--------|
-| jQuery | 3.3.1 | Deep integration, plugin ecosystem |
-| Bootstrap JS | 5.3.3 | Tied to jQuery, used for modals/dropdowns |
-| Toastr | latest | Simple toast notifications |
-| Select2 | 4.1.0 | jQuery-based select dropdowns |
-| Perfect Scrollbar | 1.5.0 | Minimal usage in Maisonnette theme |
-
-**Bundled (npm)** - Installed via npm, bundled by Vite with tree-shaking:
-| Library | Reason |
-|---------|--------|
-| D3.js | Heavy usage in cluster visualization, tree-shaking removes unused modules |
-
-The Vite config marks jQuery as external so modules can reference `window.jQuery` without bundling it. D3 is imported as ES6 modules (e.g., `import { scaleLinear } from 'd3'`).
-
-## TypeScript Support
-
-BattyCoda supports TypeScript for new code. Vite handles TypeScript compilation automatically.
-
-### Strategy: Gradual Adoption
-
-- **New files**: Write in TypeScript (`.ts` extension)
-- **Existing files**: Keep as JavaScript unless refactoring
-- **Strictness**: Start permissive, increase over time
-
-### Type Checking
-
-```bash
-# Check types (no output, just validation)
-npm run typecheck
-
-# Watch mode for development
-npm run typecheck:watch
-```
-
-### Configuration
-
-TypeScript is configured in `tsconfig.json` with permissive settings:
-- `strict: false` - Not enforcing strict type checking yet
-- `allowJs: true` - Mix JavaScript and TypeScript freely
-- `checkJs: false` - Don't type-check JavaScript files
-- `noEmit: true` - Vite handles compilation
-
-### Type Definitions
-
-Types are organized in `static/js/types/`:
-
-```
-static/js/types/
-├── global.d.ts    # Window extensions, jQuery, Bootstrap, Toastr
-├── models.d.ts    # Domain model types (Recording, Cluster, etc.)
-├── api.d.ts       # API response types
-└── index.ts       # Central export point
-```
-
-Import types from the central export:
-```typescript
-import type { Cluster, Recording, ApiResponse } from '@/types';
-```
-
-### Writing TypeScript
-
-**New utility module:**
-```typescript
-// static/js/utils/myutil.ts
-import type { Recording } from '@/types';
-
-export function processRecording(recording: Recording): string {
-  return `${recording.name} (${recording.duration}s)`;
-}
-```
-
-**Import in other modules:**
-```typescript
-import { processRecording } from '@/utils/myutil';
-// or from JavaScript:
-import { processRecording } from './myutil.ts';
-```
-
-### When to Use TypeScript
-
-**Use TypeScript for:**
-- New utility modules (`utils/*.ts`)
-- Complex data transformations
-- Shared interfaces and types
-- New features with complex state
-- API client code
-
-**Keep JavaScript for:**
-- Simple scripts or one-off files
-- Heavily DOM-dependent code (less benefit)
-- Existing code (unless refactoring)
-
-### Adding Types for Existing Modules
-
-Create declaration files (`.d.ts`) alongside modules:
-```typescript
-// static/js/player/types.d.ts
-export interface PlayerOptions {
-  container: HTMLElement;
-  audioUrl: string;
-  spectrogramUrl?: string;
-}
-```
-
-### Increasing Strictness
-
-As the team becomes comfortable, enable stricter checks in `tsconfig.json`:
-```json
-{
-  "compilerOptions": {
-    "strict": true,
-    "noImplicitAny": true,
-    "strictNullChecks": true
-  }
-}
-```
-
-## JavaScript Testing
-
-### Unit Tests (Vitest)
-
-Unit tests use Vitest with jsdom for DOM testing.
-
-```bash
-# Run tests in watch mode
-npm test
-
-# Run tests once
-npm run test:run
-
-# Run with coverage
-npm run test:coverage
-
-# Open Vitest UI
-npm run test:ui
-```
-
-**Test file location:** Place `.test.js` files next to the module they test:
-```
-static/js/
-├── utils/
-│   ├── page-data.js
-│   └── page-data.test.js    # Tests for page-data.js
-├── player/
-│   ├── data_manager.js
-│   └── data_manager.test.js
-```
-
-**Test setup files:** `static/js/test/` contains:
-- `setup.js` - Global test configuration
-- `fixtures/` - Test data fixtures
-- `mocks/` - Mock implementations
-
-**Writing tests:**
-```javascript
-import { describe, it, expect, vi } from 'vitest';
-import { myFunction } from './mymodule.js';
-
-describe('myFunction', () => {
-  it('should return expected value', () => {
-    expect(myFunction(input)).toBe(expected);
-  });
-});
-```
-
-### E2E Tests (Playwright)
-
-End-to-end tests for full user workflows.
-
-```bash
-# Run E2E tests
-npm run e2e
-
-# Run with browser visible
-npm run e2e:headed
-
-# Open Playwright UI
-npm run e2e:ui
-
-# View test report
-npm run e2e:report
-
-# Run specific browser
-npm run e2e:chromium
-```
-
-**Test file location:** `tests/e2e/`
-```
-tests/e2e/
-├── playwright.config.js     # Note: config is at project root
-├── global-setup.js          # Database setup before tests
-├── global-teardown.js       # Cleanup after tests
-├── fixtures/                # Test data and state
-├── helpers/                 # Shared test utilities
-│   ├── auth.js              # Login helpers
-│   └── theme.js             # Theme switching helpers
-└── specs/                   # Test files
-    ├── smoke.spec.js        # Basic smoke tests
-    ├── auth.spec.js         # Authentication tests
-    ├── visual.spec.js       # Visual regression tests
-    └── ...                  # Other feature tests
-```
-
-**Writing E2E tests:**
-```javascript
-import { test, expect } from '@playwright/test';
-import { login } from '../helpers/auth.js';
-
-test('user can view dashboard', async ({ page }) => {
-  await login(page, 'test@example.com', 'password');
-  await page.goto('/dashboard/');
-  await expect(page.locator('h1')).toContainText('Dashboard');
-});
-```
-
-**Configuration:** Playwright config is at `playwright.config.js` in project root. Tests run against `http://localhost:8000` by default.
-
-### Visual Regression Testing
-
-Visual regression tests capture screenshots of key pages and compare them against baseline images to detect unintended UI changes.
-
-**Running visual tests:**
-```bash
-# Run visual regression tests (compares against baselines)
-npx playwright test tests/e2e/specs/visual.spec.js
-
-# Update baselines after intentional UI changes
-npx playwright test tests/e2e/specs/visual.spec.js --update-snapshots
-```
-
-**Baseline screenshots location:** `tests/e2e/specs/visual.spec.js-snapshots/`
-
-**Pages covered:**
-- Login page (light + dark themes)
-- Registration page (light + dark themes)
-- Home/Dashboard (light + dark themes)
-- Recordings list (light + dark themes)
-- Projects list (light + dark themes)
-- Clustering dashboard (light + dark themes)
-- Create clustering run (light + dark themes)
-
-**Theme testing helpers:** `tests/e2e/helpers/theme.js`
-```javascript
-import { setTheme, applyTheme } from '../helpers/theme.js';
-
-// Set theme before navigation (via localStorage)
-await setTheme(page, 'dark');
-await page.goto('/some-page/');
-
-// Apply theme after page is loaded
-await applyTheme(page, 'dark');
-```
-
-**When to update baselines:**
-- After intentional CSS/styling changes
-- After layout changes
-- After component redesigns
-- Never commit baseline updates without reviewing the diffs
-
-**Adding new visual tests:**
-1. Add test to `tests/e2e/specs/visual.spec.js`
-2. Run with `--update-snapshots` to create baseline
-3. Commit the new baseline PNG files
-
-### Test Database Setup
-
-E2E tests use a separate test database (`battycoda_test`) to avoid polluting development data.
-
-**Initial Setup (one-time):**
-```bash
-# Create the test database
-sudo -u postgres psql -c "CREATE DATABASE battycoda_test OWNER battycoda;"
-```
-
-**Database Management Scripts:**
-```bash
-# Set up test database with initial data (run before first test)
-npm run e2e:setup-db
-
-# Reset test database (clears all data and re-initializes)
-npm run e2e:reset-db
-```
-
-**Environment Variable:**
-- `DJANGO_TEST_MODE=true` - Set automatically by E2E test scripts. Tells Django to use the test database instead of the main database.
-
-## JavaScript Linting
-
-```bash
-# Lint JavaScript
-npm run lint
-
-# Auto-fix lint issues
-npm run lint:fix
-
-# Format with Prettier
-npm run format
-
-# Check formatting
-npm run format:check
-```
-
-ESLint config is in `eslint.config.js` (flat config format).
-
-## Python Linting
-
-```bash
-./lint.sh         # Check code quality
-./format.sh       # Auto-format with black and isort
-```
-
-## Static Files
-
-After CSS/JS changes:
-```bash
-source venv/bin/activate
-python manage.py collectstatic --noinput
-```
-
 ## Useful Paths
 
-- Templates: `templates/`
-- Static files: `static/`
-- Media uploads: `media/`
-- Celery logs: `/var/log/battycoda/celery.log`
-- Memory dumps: `/var/log/battycoda/memory_dump_*.txt`
-- Systemd services: `systemd/`
-- R server code: `R_code/`
-- Management commands: `battycoda_app/management/commands/`
-- Simple API: `battycoda_app/simple_api/`
-- Dev scripts: `scripts/dev.sh`, `scripts/dev-minimal.sh`
-- Procfile (dev): `Procfile.dev`
+| Path | Description |
+|------|-------------|
+| `templates/` | HTML templates |
+| `static/` | Static files (CSS, JS) |
+| `media/` | Media uploads |
+| `/var/log/battycoda/` | Celery logs, memory dumps |
+| `systemd/` | Systemd service files |
+| `R_code/` | R server code |
+| `battycoda_app/management/commands/` | Management commands |
+| `battycoda_app/simple_api/` | REST API |
+| `scripts/` | Dev and deployment scripts |
 
 ## Database
 
 ```bash
-# Django shell
 source venv/bin/activate
 python manage.py shell
 
-# Example queries:
+# Example:
 from battycoda_app.models.classification import ClassificationRun
 run = ClassificationRun.objects.get(id=123)
 run.status  # queued, pending, in_progress, completed, failed
-run.results.count()
 ```
 
 ## Common Issues
 
-**Classification runs failing at ~88%**: Usually memory-related. Check:
-1. Memory dumps in `/var/log/battycoda/`
-2. Multiple large runs processing concurrently
-3. R server memory usage: `ps aux | grep R`
+**Classification runs failing at ~88%**: Memory-related. Check `/var/log/battycoda/` for dumps, R server memory (`ps aux | grep R`).
 
-**Celery OOM killed**: Check systemd logs:
+**Celery OOM killed**:
 ```bash
 sudo journalctl -u battycoda-celery | grep -i oom
 ```
@@ -1241,7 +260,13 @@ curl http://localhost:8001/ping
 ps aux | grep "R.*server"
 ```
 
-**Disk usage alerts**: Check current usage:
-```bash
-df -h / /home
-```
+**Disk usage alerts**: `df -h / /home`
+
+## Detailed Documentation
+
+| Guide | Contents |
+|-------|----------|
+| [Frontend Development](docs/FRONTEND.md) | Bootstrap 5, Vite, TypeScript, theme system, JS modules |
+| [Testing Guide](docs/TESTING.md) | Python tests, Vitest, Playwright, E2E, visual regression |
+| [Operations Guide](docs/OPERATIONS.md) | Environment config, CSP, Celery, R server, deployment |
+| [API Reference](docs/API.md) | REST API documentation |
