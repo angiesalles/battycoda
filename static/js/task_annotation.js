@@ -6,6 +6,7 @@
  */
 
 import { getJsonData } from './utils/page-data.js';
+import { escapeHtml, validateUrl } from './utils/html.js';
 
 // Get configuration from JSON script tags
 const taskConfig = getJsonData('task-config-data');
@@ -215,13 +216,23 @@ export function checkBatchSwitchNotification() {
       const sameProject = batchSwitchData.sameProject;
       const projectName = batchSwitchData.projectName;
 
-      // Create message with link to batch
-      const batchLink = `<a href="${toBatchUrl}" class="text-white text-decoration-underline">view batch</a>`;
-      let message = `You completed all tasks in batch "${fromBatchName}" and are now working on "${toBatchName}" (${batchLink})`;
+      // Validate URL and escape text content for XSS protection
+      const safeUrl = validateUrl(toBatchUrl);
+      const safeFromName = escapeHtml(fromBatchName);
+      const safeToName = escapeHtml(toBatchName);
+
+      // Create message with link to batch (only if URL is valid)
+      const batchLink = safeUrl
+        ? `<a href="${safeUrl}" class="text-white text-decoration-underline">view batch</a>`
+        : '';
+      let message = `You completed all tasks in batch "${safeFromName}" and are now working on "${safeToName}"`;
+      if (batchLink) {
+        message += ` (${batchLink})`;
+      }
 
       // Add project context if switching within same project
       if (sameProject && projectName) {
-        message += `<br><small>Continuing with project: ${projectName}</small>`;
+        message += `<br><small>Continuing with project: ${escapeHtml(projectName)}</small>`;
       }
 
       // Show success notification

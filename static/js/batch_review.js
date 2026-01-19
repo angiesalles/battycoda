@@ -103,17 +103,26 @@ export function showToast(message, type) {
 
 /**
  * Initialize the batch review module
- * Sets up global functions for inline onclick handlers
+ * Sets up event listeners for filter and relabel functionality
  */
 export function initialize() {
   // Pre-fetch page data for relabel URL
   const pageData = getPageData();
   relabelTaskUrl = pageData.relabelTaskUrl;
 
-  // Export functions globally for inline onclick handlers in templates
-  window.filterByCallType = filterByCallType;
-  window.relabelTask = relabelTask;
-  window.showToast = showToast;
+  // Set up call type filter listener
+  const callTypeFilter = document.getElementById('call-type-filter');
+  if (callTypeFilter) {
+    callTypeFilter.addEventListener('change', filterByCallType);
+  }
+
+  // Set up relabel dropdown listeners (multiple dropdowns on page)
+  const relabelDropdowns = document.querySelectorAll('.relabel-dropdown');
+  relabelDropdowns.forEach((dropdown) => {
+    dropdown.addEventListener('change', function () {
+      relabelTask(this);
+    });
+  });
 }
 
 // Auto-initialize when DOM is ready

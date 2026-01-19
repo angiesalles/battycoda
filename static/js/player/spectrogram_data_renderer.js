@@ -22,8 +22,7 @@ export class SpectrogramDataRenderer {
 
     // URL templates - use provided URLs or fall back to defaults for backwards compatibility
     this.urls = {
-      spectrogramData:
-        urls.spectrogramData || `/recordings/${recordingId}/spectrogram-data/`,
+      spectrogramData: urls.spectrogramData || `/recordings/${recordingId}/spectrogram-data/`,
     };
     this.spectrogramData = null;
     this.metadata = null;

@@ -41,7 +41,7 @@
                     <div class="row">
                         <div class="col-md-4">
                             <label for="call-type-filter" class="form-label">Filter by Call Type:</label>
-                            <select id="call-type-filter" class="form-select" onchange="filterByCallType()">
+                            <select id="call-type-filter" class="form-select">
                                 {% for call_type in available_call_types %}
                                     <option value="{{ call_type }}" {% if call_type == selected_call_type %}selected{% endif %}>
                                         {% if call_type == 'all' %}
@@ -132,9 +132,8 @@
                                 <div class="row mb-2">
                                     <div class="col-12">
                                         <label class="form-label small">Relabel as:</label>
-                                        <select class="form-select form-select-sm relabel-dropdown" 
-                                                data-task-id="{{ task_data.task.id }}"
-                                                onchange="relabelTask(this)">
+                                        <select class="form-select form-select-sm relabel-dropdown"
+                                                data-task-id="{{ task_data.task.id }}">
                                             <option value="">-- Select new label --</option>
                                             {% for call_type in all_call_types_for_dropdown %}
                                                 <option value="{{ call_type }}">{{ call_type }}</option>
