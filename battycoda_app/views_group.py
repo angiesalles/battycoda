@@ -251,21 +251,17 @@ def manage_group_members_view(request, group_id):
 
 @login_required
 def switch_group_view(request, group_id):
-    """Allow a user to switch their active group"""
-    # Get the group
+    """Allow a user to switch their active group."""
     group = get_object_or_404(Group, id=group_id)
 
-    # Get user profile
-    user_profile = request.user.profile
-
-    # Create membership if not exists (fallback for legacy users)
+    # User must be a member of the group to switch to it
     if not GroupMembership.objects.filter(user=request.user, group=group).exists():
-        is_admin = group.name.startswith(f"{request.user.username}'s Group")
-        GroupMembership.objects.create(user=request.user, group=group, is_admin=is_admin)
+        messages.error(request, "You are not a member of this group.")
+        return redirect("battycoda_app:group_list")
 
     # Update the user's active group
-    user_profile.group = group
-    user_profile.save()
+    request.user.profile.group = group
+    request.user.profile.save()
 
     messages.success(request, f'You are now working in the "{group.name}" group.')
 

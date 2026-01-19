@@ -175,3 +175,23 @@ class GroupViewsTest(BattycodaTestCase):
         self.user.profile.refresh_from_db()
         self.assertEqual(self.user.profile.group, group2)
         self.assertFalse(self.user.profile.is_current_group_admin)
+
+    def test_switch_group_non_member_rejected(self):
+        # Create a group that user is NOT a member of
+        other_group = Group.objects.create(name="Other Group", description="A group user is not in")
+
+        # Login as user1
+        self.client.login(username="testuser", password="password123")
+
+        # Store original group (refresh from db to ensure we have current state)
+        self.profile.refresh_from_db()
+        original_group = self.profile.group
+
+        # Try to switch to a group user is not a member of
+        response = self.client.get(reverse("battycoda_app:switch_group", args=[other_group.id]))
+        self.assertEqual(response.status_code, 302)  # Redirects to group list
+        self.assertRedirects(response, self.group_list_url)
+
+        # Verify group was NOT changed
+        self.profile.refresh_from_db()
+        self.assertEqual(self.profile.group, original_group)

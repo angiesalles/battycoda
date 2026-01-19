@@ -21,9 +21,73 @@ from battycoda_app.tests.test_base import BattycodaTestCase
 class GroupModelTest(BattycodaTestCase):
     def setUp(self):
         self.group = Group.objects.create(name="Test Group", description="A test group")
+        self.user1 = User.objects.create_user(username="user1", email="user1@example.com", password="password123")
+        self.user2 = User.objects.create_user(username="user2", email="user2@example.com", password="password123")
 
     def test_group_str_method(self):
         self.assertEqual(str(self.group), "Test Group")
+
+    def test_admin_count_no_admins(self):
+        # Group with no memberships has 0 admins
+        self.assertEqual(self.group.admin_count, 0)
+
+    def test_admin_count_with_admins(self):
+        GroupMembership.objects.create(user=self.user1, group=self.group, is_admin=True)
+        GroupMembership.objects.create(user=self.user2, group=self.group, is_admin=False)
+        self.assertEqual(self.group.admin_count, 1)
+
+    def test_admin_count_multiple_admins(self):
+        GroupMembership.objects.create(user=self.user1, group=self.group, is_admin=True)
+        GroupMembership.objects.create(user=self.user2, group=self.group, is_admin=True)
+        self.assertEqual(self.group.admin_count, 2)
+
+    def test_is_last_admin_true(self):
+        GroupMembership.objects.create(user=self.user1, group=self.group, is_admin=True)
+        GroupMembership.objects.create(user=self.user2, group=self.group, is_admin=False)
+        self.assertTrue(self.group.is_last_admin(self.user1))
+
+    def test_is_last_admin_false_multiple_admins(self):
+        GroupMembership.objects.create(user=self.user1, group=self.group, is_admin=True)
+        GroupMembership.objects.create(user=self.user2, group=self.group, is_admin=True)
+        self.assertFalse(self.group.is_last_admin(self.user1))
+
+    def test_is_last_admin_false_not_admin(self):
+        GroupMembership.objects.create(user=self.user1, group=self.group, is_admin=True)
+        GroupMembership.objects.create(user=self.user2, group=self.group, is_admin=False)
+        self.assertFalse(self.group.is_last_admin(self.user2))
+
+    def test_can_remove_member_regular_member(self):
+        GroupMembership.objects.create(user=self.user1, group=self.group, is_admin=True)
+        GroupMembership.objects.create(user=self.user2, group=self.group, is_admin=False)
+        can_remove, error_msg = self.group.can_remove_member(self.user2)
+        self.assertTrue(can_remove)
+        self.assertIsNone(error_msg)
+
+    def test_can_remove_member_last_admin_blocked(self):
+        GroupMembership.objects.create(user=self.user1, group=self.group, is_admin=True)
+        can_remove, error_msg = self.group.can_remove_member(self.user1)
+        self.assertFalse(can_remove)
+        self.assertIn("last admin", error_msg)
+
+    def test_can_remove_member_one_of_multiple_admins(self):
+        GroupMembership.objects.create(user=self.user1, group=self.group, is_admin=True)
+        GroupMembership.objects.create(user=self.user2, group=self.group, is_admin=True)
+        can_remove, error_msg = self.group.can_remove_member(self.user1)
+        self.assertTrue(can_remove)
+        self.assertIsNone(error_msg)
+
+    def test_can_demote_admin_last_admin_blocked(self):
+        GroupMembership.objects.create(user=self.user1, group=self.group, is_admin=True)
+        can_demote, error_msg = self.group.can_demote_admin(self.user1)
+        self.assertFalse(can_demote)
+        self.assertIn("last admin", error_msg)
+
+    def test_can_demote_admin_one_of_multiple_admins(self):
+        GroupMembership.objects.create(user=self.user1, group=self.group, is_admin=True)
+        GroupMembership.objects.create(user=self.user2, group=self.group, is_admin=True)
+        can_demote, error_msg = self.group.can_demote_admin(self.user1)
+        self.assertTrue(can_demote)
+        self.assertIsNone(error_msg)
 
 
 class UserProfileModelTest(BattycodaTestCase):
