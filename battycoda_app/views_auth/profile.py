@@ -117,15 +117,18 @@ def update_profile_ajax(request):
 
             image_file = request.FILES["profile_image"]
 
-            # Check image type by magic bytes (imghdr is deprecated in Python 3.11+)
-            header = image_file.read(8)
-            image_file.seek(0)  # Reset file position for saving
-            is_valid_image = (
-                header[:3] == b"\xff\xd8\xff"  # JPEG
-                or header[:8] == b"\x89PNG\r\n\x1a\n"  # PNG
-                or header[:6] in (b"GIF87a", b"GIF89a")  # GIF
-            )
-            if not is_valid_image:
+            # Validate image using Pillow
+            from PIL import Image, UnidentifiedImageError
+
+            try:
+                img = Image.open(image_file)
+                img.verify()  # Verify it's a valid image
+                image_format = img.format
+                image_file.seek(0)  # Reset file position for saving
+            except (UnidentifiedImageError, Exception):
+                image_format = None
+
+            if image_format not in ("JPEG", "PNG", "GIF"):
                 return JsonResponse(
                     {"success": False, "error": "Invalid image format. Please upload a JPEG, PNG, or GIF."}
                 )
