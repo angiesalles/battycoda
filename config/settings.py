@@ -78,6 +78,7 @@ SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
 _enable_https_security = not DEBUG and not DJANGO_TEST_MODE
 if _enable_https_security:
     SECURE_SSL_REDIRECT = True  # Redirect HTTP to HTTPS (nginx also does this)
+    SECURE_REDIRECT_EXEMPT = [r"^health/$"]  # Allow HTTP for health checks
     SESSION_COOKIE_SECURE = True  # Only send session cookie over HTTPS
     CSRF_COOKIE_SECURE = True  # Only send CSRF cookie over HTTPS
     SECURE_HSTS_SECONDS = 31536000  # 1 year HSTS (nginx also sends this)
