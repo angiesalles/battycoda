@@ -85,29 +85,31 @@ class Command(BaseCommand):
         """Create a test user and their profile."""
         from battycoda_app.models.user import UserProfile
 
-        user, created = User.objects.get_or_create(
-            username=user_data["username"],
-            defaults={
-                "email": user_data["email"],
-                "is_active": True,
-                "is_staff": is_admin,
-            },
-        )
-
-        if created:
+        try:
+            user = User.objects.get(username=user_data["username"])
+            created = False
+        except User.DoesNotExist:
+            # Create user with _skip_demo_data flag to prevent demo data creation
+            user = User(
+                username=user_data["username"],
+                email=user_data["email"],
+                is_active=True,
+                is_staff=is_admin,
+            )
+            user._skip_demo_data = True
             user.set_password(user_data["password"])
             user.save()
+            created = True
+
+        if created:
             self.stdout.write(f"  Created user: {user.username}")
 
-            # The post_save signal creates a personal group and profile
-            # We need to clean that up and use our test group instead
+            # The post_save signal creates a personal group and profile (but no demo data)
+            # We need to reassign the user to our test group instead
             personal_group_name = f"{user_data['username']}'s Group"
             personal_group = Group.objects.filter(name=personal_group_name).first()
 
             if personal_group:
-                # Delete demo project created by signal
-                Project.objects.filter(name="Demo Project", created_by=user).delete()
-
                 # Delete membership to personal group
                 GroupMembership.objects.filter(user=user, group=personal_group).delete()
 

@@ -33,6 +33,12 @@ def get_user_by_email(email):
 
 @receiver(post_save, sender=User)
 def create_user_profile(sender, instance, created, **kwargs):
+    """
+    Create user profile and optionally demo data for new users.
+
+    Set instance._skip_demo_data = True before saving to skip demo data creation.
+    This is useful for programmatic user creation (tests, migrations, admin scripts).
+    """
     from .group import Group, GroupInvitation, GroupMembership
     from .profile import UserProfile
 
@@ -67,49 +73,51 @@ def create_user_profile(sender, instance, created, **kwargs):
             # Create group membership record
             GroupMembership.objects.create(user=instance, group=group, is_admin=True)
 
-            # Create a demo project for the user
-            # Import here to avoid circular imports
-            Project = sender.objects.model._meta.apps.get_model("battycoda_app", "Project")
+            # Skip demo data creation if flag is set (useful for tests, migrations, etc.)
+            if not getattr(instance, "_skip_demo_data", False):
+                # Create a demo project for the user
+                # Import here to avoid circular imports
+                Project = sender.objects.model._meta.apps.get_model("battycoda_app", "Project")
 
-            # Create a standard demo project
-            project_name = "Demo Project"
+                # Create a standard demo project
+                project_name = "Demo Project"
 
-            Project.objects.create(
-                name=project_name,
-                description="Sample project for demonstration and practice",
-                created_by=instance,
-                group=group,
-            )
+                Project.objects.create(
+                    name=project_name,
+                    description="Sample project for demonstration and practice",
+                    created_by=instance,
+                    group=group,
+                )
 
-            # Import default species
-            from ...utils_modules.species_utils import import_default_species
+                # Import default species
+                from ...utils_modules.species_utils import import_default_species
 
-            import_default_species(instance)
+                import_default_species(instance)
 
-            # Create a demo task batch with sample bat calls
-            from ...utils_modules.demo_utils import create_demo_task_batch
+                # Create a demo task batch with sample bat calls
+                from ...utils_modules.demo_utils import create_demo_task_batch
 
-            create_demo_task_batch(instance)
+                create_demo_task_batch(instance)
 
-            # Create welcome notification with demo data message
-            from django.urls import reverse
+                # Create welcome notification with demo data message
+                from django.urls import reverse
 
-            from ..notification import UserNotification
+                from ..notification import UserNotification
 
-            # Generate welcome message with link to dashboard
-            dashboard_link = reverse("battycoda_app:index")
+                # Generate welcome message with link to dashboard
+                dashboard_link = reverse("battycoda_app:index")
 
-            UserNotification.add_notification(
-                user=instance,
-                title="Welcome to BattyCoda!",
-                message=(
-                    "Thanks for joining BattyCoda! We've set up a demo project and sample bat calls "
-                    "for you to explore. Check out the dashboard to get started."
-                ),
-                notification_type="system",
-                icon="s7-like",
-                link=dashboard_link,
-            )
+                UserNotification.add_notification(
+                    user=instance,
+                    title="Welcome to BattyCoda!",
+                    message=(
+                        "Thanks for joining BattyCoda! We've set up a demo project and sample bat calls "
+                        "for you to explore. Check out the dashboard to get started."
+                    ),
+                    notification_type="system",
+                    icon="s7-like",
+                    link=dashboard_link,
+                )
 
         # For all users, ensure that system species exist
         from ...utils_modules.species_utils import setup_system_species
