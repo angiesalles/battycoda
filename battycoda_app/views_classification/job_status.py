@@ -57,7 +57,7 @@ def classifier_training_job_status_view(request, job_id):
     # Check if user has permission
     profile = request.user.profile
     if job.created_by != request.user and (not profile.group or job.group != profile.group):
-        return JsonResponse({"success": False, "message": "Permission denied"})
+        return JsonResponse({"success": False, "error": "Permission denied"})
 
     # Return basic status information for the job
     data = {

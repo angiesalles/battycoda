@@ -27,7 +27,7 @@ def auto_segment_status_view(request, recording_id):
     )
 
     if not segmentation or not segmentation.task_id:
-        return JsonResponse({"success": False, "status": "not_found", "message": "No active segmentation task found"})
+        return JsonResponse({"success": False, "status": "not_found", "error": "No active segmentation task found"})
 
     try:
         from celery.result import AsyncResult
@@ -69,7 +69,7 @@ def auto_segment_status_view(request, recording_id):
                     segmentation.status = "failed"
                     segmentation.save(update_fields=["status"])
 
-                    return JsonResponse({"success": False, "status": "failed", "message": error_message})
+                    return JsonResponse({"success": False, "status": "failed", "error": error_message})
             else:
                 # Task failed with exception
                 error_info = str(result.result)
@@ -79,7 +79,7 @@ def auto_segment_status_view(request, recording_id):
                 segmentation.save(update_fields=["status"])
 
                 return JsonResponse(
-                    {"success": False, "status": "failed", "message": f"Segmentation task failed: {error_info}"}
+                    {"success": False, "status": "failed", "error": f"Segmentation task failed: {error_info}"}
                 )
         else:
             # Task is still running
@@ -92,4 +92,4 @@ def auto_segment_status_view(request, recording_id):
             )
 
     except Exception as e:
-        return JsonResponse({"success": False, "status": "error", "message": f"Error checking task status: {str(e)}"})
+        return JsonResponse({"success": False, "status": "error", "error": f"Error checking task status: {str(e)}"})

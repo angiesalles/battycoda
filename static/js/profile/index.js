@@ -120,7 +120,7 @@ function setupImageUpload(updateUrl) {
           // Clear the file input
           profileImageUpload.value = '';
         } else {
-          showStatus(imageUploadStatus, data.message || 'An error occurred.', false);
+          showStatus(imageUploadStatus, data.error || data.message || 'An error occurred.', false);
         }
       })
       .catch((error) => {
@@ -194,7 +194,7 @@ function handleRemoveImage(updateUrl) {
           }
         }
       } else {
-        showStatus(imageUploadStatus, data.message || 'An error occurred.', false);
+        showStatus(imageUploadStatus, data.error || data.message || 'An error occurred.', false);
       }
     })
     .catch((error) => {
@@ -255,7 +255,7 @@ function setupEmailUpdate(updateUrl) {
         if (data.success) {
           showStatus(emailUpdateStatus, data.message, true);
         } else {
-          showStatus(emailUpdateStatus, data.message || 'An error occurred.', false);
+          showStatus(emailUpdateStatus, data.error || data.message || 'An error occurred.', false);
         }
       })
       .catch((error) => {
@@ -307,7 +307,7 @@ function setupManagementFeaturesUpdate(updateUrl) {
         if (data.success) {
           showStatus(managementFeaturesStatus, data.message, true);
         } else {
-          showStatus(managementFeaturesStatus, data.message || 'An error occurred.', false);
+          showStatus(managementFeaturesStatus, data.error || data.message || 'An error occurred.', false);
         }
       })
       .catch((error) => {

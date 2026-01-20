@@ -74,15 +74,15 @@ def update_theme_preference(request):
 
         valid_themes = dict(UserProfile.THEME_CHOICES).keys()
         if theme not in valid_themes:
-            return JsonResponse({"status": "error", "message": "Invalid theme name"}, status=400)
+            return JsonResponse({"success": False, "error": "Invalid theme name"}, status=400)
 
         profile = request.user.profile
         profile.theme = theme
         profile.save(update_fields=["theme"])
 
-        return JsonResponse({"status": "success"})
+        return JsonResponse({"success": True})
     except Exception as e:
-        return JsonResponse({"status": "error", "message": str(e)}, status=500)
+        return JsonResponse({"success": False, "error": str(e)}, status=500)
 
 
 @login_required
@@ -96,7 +96,7 @@ def update_profile_ajax(request):
         if action == "update_email":
             email = request.POST.get("email")
             if not email:
-                return JsonResponse({"success": False, "message": "Email is required"})
+                return JsonResponse({"success": False, "error": "Email is required"})
 
             from django.core.exceptions import ValidationError
             from django.core.validators import validate_email
@@ -104,7 +104,7 @@ def update_profile_ajax(request):
             try:
                 validate_email(email)
             except ValidationError:
-                return JsonResponse({"success": False, "message": "Please enter a valid email address"})
+                return JsonResponse({"success": False, "error": "Please enter a valid email address"})
 
             request.user.email = email
             request.user.save(update_fields=["email"])
@@ -113,7 +113,7 @@ def update_profile_ajax(request):
 
         elif action == "upload_image":
             if "profile_image" not in request.FILES:
-                return JsonResponse({"success": False, "message": "No image file provided"})
+                return JsonResponse({"success": False, "error": "No image file provided"})
 
             image_file = request.FILES["profile_image"]
 
@@ -122,7 +122,7 @@ def update_profile_ajax(request):
             image_type = imghdr.what(image_file)
             if image_type not in ["jpeg", "png", "gif"]:
                 return JsonResponse(
-                    {"success": False, "message": "Invalid image format. Please upload a JPEG, PNG, or GIF."}
+                    {"success": False, "error": "Invalid image format. Please upload a JPEG, PNG, or GIF."}
                 )
 
             if profile.profile_image:
@@ -142,7 +142,7 @@ def update_profile_ajax(request):
 
         elif action == "remove_image":
             if not profile.profile_image:
-                return JsonResponse({"success": False, "message": "No profile image to remove"})
+                return JsonResponse({"success": False, "error": "No profile image to remove"})
 
             profile.profile_image.delete(save=False)
             profile.profile_image = None
@@ -164,13 +164,13 @@ def update_profile_ajax(request):
             )
 
         else:
-            return JsonResponse({"success": False, "message": "Invalid action"})
+            return JsonResponse({"success": False, "error": "Invalid action"})
 
     except Exception as e:
         import traceback
 
         traceback.print_exc()
-        return JsonResponse({"success": False, "message": f"An error occurred: {str(e)}"}, status=500)
+        return JsonResponse({"success": False, "error": f"An error occurred: {str(e)}"}, status=500)
 
 
 @login_required
