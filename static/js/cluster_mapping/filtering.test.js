@@ -2,6 +2,8 @@
  * Tests for cluster_mapping/filtering.js
  */
 
+/* global Element */
+
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { filterClusters, sortClusters, filterSpecies } from './filtering.js';
 

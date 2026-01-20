@@ -114,7 +114,7 @@ describe('cluster_mapping/modal_handlers', () => {
     it('should return early if cluster box is not found', () => {
       document.body.innerHTML = '';
 
-      const mockJQuery = (selector) => {
+      const mockJQuery = (_selector) => {
         return { length: 0 };
       };
       mockJQuery.fn = {};

@@ -2,6 +2,8 @@
  * Tests for cluster_mapping/drag_drop.js
  */
 
+/* global Element */
+
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import {
   initializeDragAndDrop,
@@ -110,7 +112,7 @@ describe('cluster_mapping/drag_drop', () => {
       const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
       const logSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
 
-      const mockJQuery = (selector) => {
+      const mockJQuery = (_selector) => {
         return {
           length: 0,
           data: () => undefined,

@@ -31,7 +31,7 @@ def api_key_required(view_func):
 
         user = get_user_from_api_key(api_key)
         if not user:
-            return JsonResponse({"error": "Invalid or missing API key"}, status=401)
+            return JsonResponse({"success": False, "error": "Invalid or missing API key"}, status=401)
         request.api_user = user
         return view_func(request, *args, **kwargs)
 

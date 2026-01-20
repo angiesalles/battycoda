@@ -2,6 +2,8 @@
  * Tests for cluster_mapping/initialization.js
  */
 
+/* global Element */
+
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import {
   initializeExistingMappings,
@@ -134,7 +136,7 @@ describe('cluster_mapping/initialization', () => {
     it('should return early if container is not found', () => {
       document.body.innerHTML = '';
 
-      const mockJQuery = (selector) => {
+      const mockJQuery = (_selector) => {
         return { length: 0 };
       };
       mockJQuery.fn = {};
@@ -160,7 +162,7 @@ describe('cluster_mapping/initialization', () => {
     it('should return early if badge is not found', () => {
       document.body.innerHTML = '';
 
-      const mockJQuery = (selector) => {
+      const mockJQuery = (_selector) => {
         return { length: 0 };
       };
       mockJQuery.fn = {};
