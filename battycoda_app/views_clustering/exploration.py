@@ -1,5 +1,7 @@
 """Cluster exploration and visualization views."""
 
+import json
+
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.db import models
@@ -86,11 +88,27 @@ def mapping_interface(request, run_id):
         "-confidence"
     )
 
+    # Serialize existing mappings for JavaScript (used by json_script template tag)
+    existing_mappings_json = json.dumps(
+        [
+            {
+                "id": m.id,
+                "clusterId": m.cluster.id,
+                "callId": m.call.id,
+                "confidence": float(m.confidence),
+                "speciesName": m.call.species.name,
+                "callName": m.call.short_name,
+            }
+            for m in existing_mappings.select_related("cluster", "call", "call__species")
+        ]
+    )
+
     context = {
         "clustering_run": clustering_run,
         "clusters": clusters,
         "available_species": available_species,
         "existing_mappings": existing_mappings,
+        "existing_mappings_json": existing_mappings_json,
     }
     return render(request, "clustering/mapping_interface.html", context)
 
@@ -100,7 +118,7 @@ def get_cluster_data(request):
     """API endpoint to get data for a specific cluster."""
     cluster_id = request.GET.get("cluster_id")
     if not cluster_id:
-        return JsonResponse({"status": "error", "message": "No cluster ID provided"})
+        return JsonResponse({"success": False, "error": "No cluster ID provided"})
 
     cluster = get_object_or_404(Cluster, id=cluster_id)
 
@@ -119,7 +137,7 @@ def get_cluster_data(request):
         representative_audio_url = reverse("segment_audio", args=[cluster.representative_segment.id])
 
     response_data = {
-        "status": "success",
+        "success": True,
         "cluster_id": cluster.cluster_id,
         "label": cluster.label,
         "description": cluster.description,
@@ -150,7 +168,7 @@ def get_segment_data(request):
     segment_id = request.GET.get("segment_id")
 
     if not segment_id:
-        return JsonResponse({"status": "error", "message": "No segment ID provided"})
+        return JsonResponse({"success": False, "error": "No segment ID provided"})
 
     segment = get_object_or_404(Segment, id=segment_id)
 
@@ -161,7 +179,7 @@ def get_segment_data(request):
         return error
 
     response_data = {
-        "status": "success",
+        "success": True,
         "segment_id": segment.id,
         "recording_id": segment.recording.id,
         "recording_name": segment.recording.name,
@@ -183,7 +201,7 @@ def get_cluster_members(request):
     offset = get_int_param(request, "offset", default=0, min_val=0)
 
     if not cluster_id:
-        return JsonResponse({"status": "error", "message": "No cluster ID provided"})
+        return JsonResponse({"success": False, "error": "No cluster ID provided"})
 
     cluster = get_object_or_404(Cluster, id=cluster_id)
 
@@ -220,7 +238,7 @@ def get_cluster_members(request):
 
     return JsonResponse(
         {
-            "status": "success",
+            "success": True,
             "cluster_id": cluster.cluster_id,
             "total_size": cluster.size,
             "is_project_scope": is_project_scope,

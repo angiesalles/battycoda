@@ -20,8 +20,6 @@ export function initializeDragAndDrop(loadClusterDetails, createMappingFn) {
     return;
   }
 
-  console.log('Initializing drag and drop functionality');
-
   // Clean up existing handlers to prevent duplicates on re-initialization
   $('.cluster-box').off('click dragstart dragend');
   $('.mapping-container').off('dragover dragleave drop');
@@ -31,9 +29,7 @@ export function initializeDragAndDrop(loadClusterDetails, createMappingFn) {
     $(this).attr('draggable', 'true');
 
     $(this).on('click', function () {
-      console.log('Cluster box clicked');
       const clusterId = $(this).data('cluster-id');
-      console.log('Cluster ID: ' + clusterId);
 
       $('.cluster-box').removeClass('selected');
       $(this).addClass('selected');
@@ -47,43 +43,33 @@ export function initializeDragAndDrop(loadClusterDetails, createMappingFn) {
     });
 
     $(this).on('dragstart', function (e) {
-      console.log('Drag started');
       e.originalEvent.dataTransfer.setData('text/plain', $(this).data('cluster-id'));
       $(this).addClass('dragging');
     });
 
     $(this).on('dragend', function () {
-      console.log('Drag ended');
       $(this).removeClass('dragging');
     });
   });
 
-  console.log('Found ' + $('.cluster-box').length + ' cluster boxes');
-  console.log('Found ' + $('.mapping-container').length + ' mapping containers');
-
   // Initialize drop areas
   $('.mapping-container').each(function () {
     const callId = $(this).data('call-id');
-    console.log('Setting up drop for call ID: ' + callId);
 
     $(this).on('dragover', function (e) {
       e.preventDefault();
-      console.log('Drag over call ID: ' + $(this).data('call-id'));
       $(this).addClass('drop-hover');
     });
 
     $(this).on('dragleave', function () {
-      console.log('Drag left call ID: ' + $(this).data('call-id'));
       $(this).removeClass('drop-hover');
     });
 
     $(this).on('drop', function (e) {
       e.preventDefault();
-      console.log('Drop on call ID: ' + $(this).data('call-id'));
       $(this).removeClass('drop-hover');
 
       const clusterId = e.originalEvent.dataTransfer.getData('text/plain');
-      console.log('Dropped cluster ID: ' + clusterId);
 
       createMappingFn(clusterId, callId);
     });
@@ -102,8 +88,6 @@ export function createMapping(clusterId, callId) {
     return;
   }
 
-  console.log('Creating mapping between cluster ' + clusterId + ' and call ' + callId);
-
   const clusterBox = $(`.cluster-box[data-cluster-id="${clusterId}"]`);
   if (clusterBox.length === 0) {
     console.error('Could not find cluster box with ID ' + clusterId);
@@ -114,17 +98,9 @@ export function createMapping(clusterId, callId) {
   const clusterLabel = clusterBox.find('h5').text().trim();
   const clusterColor = clusterBox.find('.color-indicator').css('background-color');
 
-  console.log('Cluster details: ', {
-    id: clusterId,
-    num: clusterNum,
-    label: clusterLabel,
-    color: clusterColor,
-  });
-
   const confidence = 0.7;
   const csrfToken = getCsrfToken();
   const apiUrls = getApiUrls();
-  console.log('CSRF Token present: ' + (csrfToken ? 'Yes' : 'No'));
 
   $.ajax({
     url: apiUrls.createMapping,
@@ -136,9 +112,7 @@ export function createMapping(clusterId, callId) {
       confidence: confidence,
     },
     success: function (data) {
-      console.log('AJAX success response: ', data);
-
-      if (data.status === 'success') {
+      if (data.success) {
         addMappingToContainer(
           clusterId,
           clusterNum,
@@ -156,8 +130,8 @@ export function createMapping(clusterId, callId) {
 
         window.toastr.success('Mapping created successfully');
       } else {
-        console.error('API returned error: ', data.message);
-        window.toastr.error('Failed to create mapping: ' + data.message);
+        console.error('API returned error: ', data.error);
+        window.toastr.error('Failed to create mapping: ' + data.error);
       }
     },
     error: function (xhr, status, error) {
@@ -197,8 +171,8 @@ export function updateMappingConfidence(mappingId, confidence) {
       confidence: confidence,
     },
     success: function (data) {
-      if (data.status !== 'success') {
-        window.toastr.error('Failed to update confidence: ' + data.message);
+      if (!data.success) {
+        window.toastr.error('Failed to update confidence: ' + data.error);
       }
     },
     error: function () {
@@ -231,10 +205,10 @@ export function deleteMapping(mappingId) {
       mapping_id: mappingId,
     },
     success: function (data) {
-      if (data.status === 'success') {
+      if (data.success) {
         updateCallBadgeCount(data.call_id, data.new_count);
       } else {
-        window.toastr.error('Failed to delete mapping: ' + data.message);
+        window.toastr.error('Failed to delete mapping: ' + data.error);
       }
     },
     error: function () {

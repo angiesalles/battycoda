@@ -75,7 +75,7 @@ export function loadClusterDetails(clusterId) {
 
   // Load the details from the API
   $.getJSON(buildUrl(API_ENDPOINTS.GET_CLUSTER_DATA, { cluster_id: clusterId }), function (data) {
-    if (data.status === 'success') {
+    if (data.success) {
       $('.cluster-id-display').text(`Cluster ${data.cluster_id}`);
       $('#cluster-label').val(data.label || '');
       $('#cluster-description').val(data.description || '');
@@ -118,7 +118,7 @@ export function loadClusterDetails(clusterId) {
       }
     } else {
       $('.cluster-details').html(
-        `<div class="alert alert-danger">Failed to load cluster details: ${escapeHtml(data.message)}</div>`
+        `<div class="alert alert-danger">Failed to load cluster details: ${escapeHtml(data.error)}</div>`
       );
     }
   }).fail(function () {
@@ -155,7 +155,7 @@ export function loadClusterMembers(clusterId) {
   $.getJSON(
     buildUrl(API_ENDPOINTS.GET_CLUSTER_MEMBERS, { cluster_id: clusterId, limit: 50 }),
     function (data) {
-      if (data.status === 'success') {
+      if (data.success) {
         const members = data.members;
         const isProject = data.is_project_scope;
 
@@ -206,7 +206,7 @@ export function loadClusterMembers(clusterId) {
         }
       } else {
         $('#members-table-body').html(
-          `<tr><td colspan="${colCount}" class="text-center text-danger">Failed to load members: ${escapeHtml(data.message)}</td></tr>`
+          `<tr><td colspan="${colCount}" class="text-center text-danger">Failed to load members: ${escapeHtml(data.error)}</td></tr>`
         );
       }
     }

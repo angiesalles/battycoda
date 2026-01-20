@@ -244,7 +244,7 @@
 {% block extra_js %}
 <!-- Page data for clustering create run -->
 <div id="clustering-create-run-data"
-     data-project-segments-url-template="/clustering/project-segments/{project_id}/"
+     data-project-segments-url-base="{% url 'battycoda_app:get_project_segment_count' project_id=0 %}"
      hidden></div>
 
 <script src="{% static 'js/pages/clustering-create-run.js' %}"></script>

@@ -129,7 +129,7 @@ describe('cluster_explorer/interactions', () => {
 
       const successCallback = mockGetJSON.mock.calls[0][1];
       successCallback({
-        status: 'success',
+        success: true,
         cluster_id: 1,
         label: 'Echolocation',
         description: 'Test description',
@@ -151,7 +151,7 @@ describe('cluster_explorer/interactions', () => {
 
       const successCallback = mockGetJSON.mock.calls[0][1];
       successCallback({
-        status: 'success',
+        success: true,
         cluster_id: 1,
         label: 'Test',
         description: '',
@@ -172,7 +172,7 @@ describe('cluster_explorer/interactions', () => {
 
       const successCallback = mockGetJSON.mock.calls[0][1];
       successCallback({
-        status: 'success',
+        success: true,
         cluster_id: 1,
         label: 'Test',
         description: '',
@@ -193,7 +193,7 @@ describe('cluster_explorer/interactions', () => {
 
       const successCallback = mockGetJSON.mock.calls[0][1];
       successCallback({
-        status: 'success',
+        success: true,
         cluster_id: 1,
         label: 'Test',
         description: '',
@@ -214,8 +214,8 @@ describe('cluster_explorer/interactions', () => {
 
       const successCallback = mockGetJSON.mock.calls[0][1];
       successCallback({
-        status: 'error',
-        message: 'Cluster not found',
+        success: false,
+        error: 'Cluster not found',
       });
 
       expect(mockElement.html).toHaveBeenCalledWith(
@@ -280,7 +280,7 @@ describe('cluster_explorer/interactions', () => {
 
       const successCallback = mockGetJSON.mock.calls[0][1];
       successCallback({
-        status: 'success',
+        success: true,
         members: [
           {
             segment_id: 101,
@@ -309,7 +309,7 @@ describe('cluster_explorer/interactions', () => {
 
       const successCallback = mockGetJSON.mock.calls[0][1];
       successCallback({
-        status: 'success',
+        success: true,
         members: [
           {
             segment_id: 101,
@@ -333,7 +333,7 @@ describe('cluster_explorer/interactions', () => {
 
       const successCallback = mockGetJSON.mock.calls[0][1];
       successCallback({
-        status: 'success',
+        success: true,
         members: [
           {
             segment_id: 101,
@@ -358,7 +358,7 @@ describe('cluster_explorer/interactions', () => {
 
       const successCallback = mockGetJSON.mock.calls[0][1];
       successCallback({
-        status: 'success',
+        success: true,
         members: [],
         total_size: 0,
         has_more: false,
@@ -375,7 +375,7 @@ describe('cluster_explorer/interactions', () => {
 
       const successCallback = mockGetJSON.mock.calls[0][1];
       successCallback({
-        status: 'success',
+        success: true,
         members: [
           {
             segment_id: 101,
@@ -398,8 +398,8 @@ describe('cluster_explorer/interactions', () => {
 
       const successCallback = mockGetJSON.mock.calls[0][1];
       successCallback({
-        status: 'error',
-        message: 'Cluster not found',
+        success: false,
+        error: 'Cluster not found',
       });
 
       expect(mockElement.html).toHaveBeenCalledWith(

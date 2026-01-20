@@ -86,7 +86,7 @@ describe('cluster_explorer/controls', () => {
       // Get the success callback
       const successCallback = mockGetJSON.mock.calls[0][1];
       successCallback({
-        status: 'success',
+        success: true,
         segment_id: 101,
         recording_name: 'Recording 1',
         onset: 0.5,
@@ -108,7 +108,7 @@ describe('cluster_explorer/controls', () => {
 
       const successCallback = mockGetJSON.mock.calls[0][1];
       successCallback({
-        status: 'success',
+        success: true,
         segment_id: 101,
         recording_name: 'Recording 1',
         onset: 0.5,
@@ -129,7 +129,7 @@ describe('cluster_explorer/controls', () => {
 
       const successCallback = mockGetJSON.mock.calls[0][1];
       successCallback({
-        status: 'success',
+        success: true,
         segment_id: 101,
         recording_name: 'Recording 1',
         onset: 0.5,
@@ -147,8 +147,8 @@ describe('cluster_explorer/controls', () => {
 
       const successCallback = mockGetJSON.mock.calls[0][1];
       successCallback({
-        status: 'error',
-        message: 'Segment not found',
+        success: false,
+        error: 'Segment not found',
       });
 
       expect(mockElement.html).toHaveBeenCalledWith(

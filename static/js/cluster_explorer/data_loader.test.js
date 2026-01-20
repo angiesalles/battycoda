@@ -120,7 +120,7 @@ describe('cluster_explorer/data_loader', () => {
 
       // Simulate successful response
       const successHandler = mockAjax.lastOptions.success;
-      successHandler({ status: 'success' });
+      successHandler({ success: true });
 
       expect(onSuccess).toHaveBeenCalledWith(1);
     });
@@ -136,7 +136,7 @@ describe('cluster_explorer/data_loader', () => {
       saveClusterLabel();
 
       const successHandler = mockAjax.lastOptions.success;
-      successHandler({ status: 'success' });
+      successHandler({ success: true });
 
       const clusters = getClusters();
       expect(clusters[0].label).toBe('Test Label');
@@ -150,7 +150,7 @@ describe('cluster_explorer/data_loader', () => {
       saveClusterLabel();
 
       const successHandler = mockAjax.lastOptions.success;
-      successHandler({ status: 'success' });
+      successHandler({ success: true });
 
       expect(window.toastr.success).toHaveBeenCalledWith('Cluster label updated successfully');
     });
@@ -161,7 +161,7 @@ describe('cluster_explorer/data_loader', () => {
       saveClusterLabel();
 
       const successHandler = mockAjax.lastOptions.success;
-      successHandler({ status: 'error', message: 'Invalid cluster ID' });
+      successHandler({ success: false, error: 'Invalid cluster ID' });
 
       expect(window.toastr.error).toHaveBeenCalledWith(
         'Failed to update label: Invalid cluster ID'

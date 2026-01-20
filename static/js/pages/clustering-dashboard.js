@@ -4,10 +4,20 @@
  * Handles auto-refresh of progress for in-progress clustering runs.
  *
  * Expected data attributes on #clustering-dashboard-data:
- * - data-run-status-url-template: URL template for fetching run status (with {run_id})
+ * - data-run-status-url-base: Base URL for fetching run status (with placeholder run_id=0)
  *
  * @module pages/clustering-dashboard
  */
+
+/**
+ * Build URL for run status by replacing placeholder ID
+ * @param {string} baseUrl - Base URL with /0/ placeholder
+ * @param {string|number} runId - Run ID to substitute
+ * @returns {string} URL with actual run ID
+ */
+function buildRunStatusUrl(baseUrl, runId) {
+  return baseUrl.replace('/0/', `/${runId}/`);
+}
 
 /**
  * Initialize the clustering dashboard functionality.
@@ -20,10 +30,10 @@ function initClusteringDashboard() {
     return;
   }
 
-  const runStatusUrlTemplate = pageData.dataset.runStatusUrlTemplate;
+  const runStatusUrlBase = pageData.dataset.runStatusUrlBase;
 
-  if (!runStatusUrlTemplate) {
-    console.warn('Run status URL template not configured');
+  if (!runStatusUrlBase) {
+    console.warn('Run status URL base not configured');
     return;
   }
 
@@ -47,7 +57,7 @@ function initClusteringDashboard() {
         if (!match) return;
 
         const runId = match[1];
-        const statusUrl = runStatusUrlTemplate.replace('{run_id}', runId);
+        const statusUrl = buildRunStatusUrl(runStatusUrlBase, runId);
 
         $.get(
           statusUrl,

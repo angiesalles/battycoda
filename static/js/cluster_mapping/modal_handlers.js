@@ -98,7 +98,7 @@ export function loadClusterDetails(clusterId) {
 
   const apiUrls = getApiUrls();
   $.getJSON(apiUrls.getClusterData + '?cluster_id=' + clusterId, function (data) {
-    if (data.status === 'success') {
+    if (data.success) {
       $('.cluster-preview-id').text(data.label || 'Cluster ' + data.cluster_id);
       $('.cluster-preview-description').text(data.description || '');
       $('.cluster-preview-size').text(data.size);
@@ -120,7 +120,7 @@ export function loadClusterDetails(clusterId) {
       }
     } else {
       $('.representative-spectrogram').html(
-        `<div class="alert alert-danger">Failed to load cluster details: ${escapeHtml(data.message)}</div>`
+        `<div class="alert alert-danger">Failed to load cluster details: ${escapeHtml(data.error)}</div>`
       );
     }
   }).fail(function () {

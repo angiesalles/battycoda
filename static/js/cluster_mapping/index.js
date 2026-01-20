@@ -30,6 +30,7 @@ import {
 import { filterClusters, sortClusters, filterSpecies } from './filtering.js';
 import { initializeClusterPreviewModal, loadClusterDetails } from './modal_handlers.js';
 import { getJsonData, setupJQueryCsrf } from '../utils/page-data.js';
+import { debounce } from '../utils/debounce.js';
 
 /**
  * Initialize the cluster mapping interface
@@ -41,8 +42,6 @@ export function initClusterMapping(existingMappings) {
     console.error('[ClusterMapping] jQuery is not available. Cannot initialize cluster mapping.');
     return;
   }
-
-  console.log('Initializing cluster mapping interface');
 
   // Initialize modal handlers
   initializeClusterPreviewModal(createMapping);
@@ -77,9 +76,10 @@ export function initClusterMapping(existingMappings) {
   $('#cluster-sort').off('change');
   $('#species-filter').off('change');
 
-  // Set up search input
+  // Set up search input with debouncing
+  const debouncedFilterClusters = debounce((val) => filterClusters(val), 300);
   $('#cluster-search').on('input', function () {
-    filterClusters($(this).val());
+    debouncedFilterClusters($(this).val());
   });
 
   // Set up sort dropdown
@@ -91,8 +91,6 @@ export function initClusterMapping(existingMappings) {
   $('#species-filter').on('change', function () {
     filterSpecies($(this).val());
   });
-
-  console.log('Cluster mapping interface initialized');
 }
 
 /**

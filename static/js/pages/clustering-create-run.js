@@ -5,10 +5,20 @@
  * and form validation for creating clustering runs.
  *
  * Expected data attributes on #clustering-create-run-data:
- * - data-project-segments-url-template: URL template for fetching project segment counts (with {project_id})
+ * - data-project-segments-url-base: Base URL for fetching project segment counts (with placeholder project_id=0)
  *
  * @module pages/clustering-create-run
  */
+
+/**
+ * Build URL for project segments by replacing placeholder ID
+ * @param {string} baseUrl - Base URL with /0/ placeholder
+ * @param {string|number} projectId - Project ID to substitute
+ * @returns {string} URL with actual project ID
+ */
+function buildProjectSegmentsUrl(baseUrl, projectId) {
+  return baseUrl.replace('/0/', `/${projectId}/`);
+}
 
 /**
  * Initialize the clustering create run form functionality.
@@ -21,19 +31,16 @@ function initClusteringCreateRun() {
     return;
   }
 
-  const projectSegmentsUrlTemplate = pageData.dataset.projectSegmentsUrlTemplate;
+  const projectSegmentsUrlBase = pageData.dataset.projectSegmentsUrlBase;
 
-  if (!projectSegmentsUrlTemplate) {
-    console.warn('Project segments URL template not configured');
+  if (!projectSegmentsUrlBase) {
+    console.warn('Project segments URL base not configured');
     return;
   }
-
-  console.log('jQuery is ready, clustering create run script loaded');
 
   // Toggle scope sections
   $('input[name="scope"]').change(function () {
     const scope = $(this).val();
-    console.log('Scope changed to:', scope);
 
     if (scope === 'segmentation') {
       $('#segmentation_group').slideDown(300);
@@ -53,7 +60,6 @@ function initClusteringCreateRun() {
   // Fetch project segment count when project is selected
   $('#project').change(function () {
     const projectId = $(this).val();
-    console.log('Project selected:', projectId);
 
     // Reset displays
     $('#species_group').hide();
@@ -63,10 +69,8 @@ function initClusteringCreateRun() {
 
     if (!projectId) return;
 
-    const url = projectSegmentsUrlTemplate.replace('{project_id}', projectId);
+    const url = buildProjectSegmentsUrl(projectSegmentsUrlBase, projectId);
     $.get(url, function (data) {
-      console.log('Project data:', data);
-
       // Show species selector if multiple species
       if (data.species && data.species.length > 1) {
         $('#species_group').slideDown(300);
@@ -102,7 +106,6 @@ function initClusteringCreateRun() {
   $('#species').change(function () {
     const projectId = $('#project').val();
     const speciesId = $(this).val();
-    console.log('Species selected:', speciesId);
 
     if (!projectId || !speciesId) {
       $('#project_info').hide();
@@ -110,10 +113,8 @@ function initClusteringCreateRun() {
       return;
     }
 
-    const url =
-      projectSegmentsUrlTemplate.replace('{project_id}', projectId) + '?species=' + speciesId;
+    const url = buildProjectSegmentsUrl(projectSegmentsUrlBase, projectId) + '?species=' + speciesId;
     $.get(url, function (data) {
-      console.log('Species data:', data);
       $('#project_species_name').text(data.species_name);
       $('#project_recording_count').text(data.recording_count);
       $('#project_segment_count').text(data.segment_count);
@@ -132,20 +133,11 @@ function initClusteringCreateRun() {
     const selectedOption = $(this).find(':selected');
     const isManual = selectedOption.data('manual');
 
-    console.log('Algorithm changed:', {
-      value: selectedOption.val(),
-      name: selectedOption.data('name'),
-      type: selectedOption.data('type'),
-      isManual: isManual,
-    });
-
     if (isManual === true || isManual === 'true') {
-      console.log('Showing clusters field');
       $('#n_clusters_group').slideDown(300);
       $('#n_clusters').attr('required', true);
       $('#n_clusters_group').addClass('border-start border-primary border-3 ps-3');
     } else {
-      console.log('Hiding clusters field');
       $('#n_clusters_group').slideUp(300);
       $('#n_clusters').attr('required', false);
       $('#n_clusters_group').removeClass('border-start border-primary border-3 ps-3');

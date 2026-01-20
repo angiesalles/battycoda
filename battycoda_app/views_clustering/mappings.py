@@ -96,7 +96,7 @@ def update_cluster_label(request):
     description = request.POST.get("description", "")
 
     if not cluster_id:
-        return JsonResponse({"status": "error", "message": "No cluster ID provided"})
+        return JsonResponse({"success": False, "error": "No cluster ID provided"})
 
     cluster = get_object_or_404(Cluster, id=cluster_id)
 
@@ -111,7 +111,7 @@ def update_cluster_label(request):
     cluster.is_labeled = bool(label)
     cluster.save()
 
-    return JsonResponse({"status": "success", "message": "Cluster label updated"})
+    return JsonResponse({"success": True, "message": "Cluster label updated"})
 
 
 @login_required
@@ -124,7 +124,7 @@ def create_cluster_mapping(request):
     notes = request.POST.get("notes", "")
 
     if not all([cluster_id, call_id, confidence]):
-        return JsonResponse({"status": "error", "message": "Missing required fields"})
+        return JsonResponse({"success": False, "error": "Missing required fields"})
 
     cluster = get_object_or_404(Cluster, id=cluster_id)
     call = get_object_or_404(Call, id=call_id)
@@ -143,7 +143,7 @@ def create_cluster_mapping(request):
 
         return JsonResponse(
             {
-                "status": "success",
+                "success": True,
                 "message": "Mapping updated",
                 "mapping_id": existing_mapping.id,
                 "call_id": call.id,
@@ -157,7 +157,7 @@ def create_cluster_mapping(request):
 
     return JsonResponse(
         {
-            "status": "success",
+            "success": True,
             "message": "Mapping created",
             "mapping_id": mapping.id,
             "call_id": call.id,
@@ -173,7 +173,7 @@ def delete_cluster_mapping(request):
     mapping_id = request.POST.get("mapping_id")
 
     if not mapping_id:
-        return JsonResponse({"status": "error", "message": "No mapping ID provided"})
+        return JsonResponse({"success": False, "error": "No mapping ID provided"})
 
     mapping = get_object_or_404(ClusterCallMapping, id=mapping_id)
 
@@ -189,7 +189,7 @@ def delete_cluster_mapping(request):
 
     return JsonResponse(
         {
-            "status": "success",
+            "success": True,
             "message": "Mapping deleted",
             "call_id": call_id,
             "new_count": ClusterCallMapping.objects.filter(call_id=call_id).count(),
@@ -205,7 +205,7 @@ def update_mapping_confidence(request):
     confidence = request.POST.get("confidence")
 
     if not all([mapping_id, confidence]):
-        return JsonResponse({"status": "error", "message": "Missing required fields"})
+        return JsonResponse({"success": False, "error": "Missing required fields"})
 
     mapping = get_object_or_404(ClusterCallMapping, id=mapping_id)
 
@@ -218,4 +218,4 @@ def update_mapping_confidence(request):
     mapping.confidence = float(confidence)
     mapping.save()
 
-    return JsonResponse({"status": "success", "message": "Confidence updated"})
+    return JsonResponse({"success": True, "message": "Confidence updated"})

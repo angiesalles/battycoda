@@ -5,6 +5,7 @@
  */
 
 import { escapeHtml } from '../utils/html.js';
+import { debounce } from '../utils/debounce.js';
 
 /**
  * Initialize existing mappings on page load
@@ -108,12 +109,17 @@ export function addMappingToContainer(
 
   container.find('.mapped-clusters').append(mappingElement);
 
+  // Debounce the API call for confidence updates, but keep immediate UI update
+  const debouncedUpdateConfidence = debounce((mappingId, confidence) => {
+    if (updateMappingConfidence) {
+      updateMappingConfidence(mappingId, confidence);
+    }
+  }, 300);
+
   mappingElement.find('.confidence-slider').on('input', function () {
     const newConfidence = parseFloat($(this).val());
     mappingElement.find('.confidence-value').text(Math.round(newConfidence * 100) + '%');
-    if (updateMappingConfidence) {
-      updateMappingConfidence(mappingElement.data('mapping-id'), newConfidence);
-    }
+    debouncedUpdateConfidence(mappingElement.data('mapping-id'), newConfidence);
   });
 
   mappingElement.find('.remove-mapping').on('click', function () {

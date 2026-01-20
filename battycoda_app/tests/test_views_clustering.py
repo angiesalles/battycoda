@@ -491,8 +491,8 @@ class ClusteringAPIViewTest(BattycodaTestCase):
         response = self.client.get(f"{url}?cluster_id={self.cluster.id}")
         self.assertEqual(response.status_code, 200)
         data = response.json()
-        # Check that we got cluster data (status, cluster_id, label etc)
-        self.assertEqual(data.get("status"), "success")
+        # Check that we got cluster data (success, cluster_id, label etc)
+        self.assertTrue(data.get("success"))
         self.assertIn("cluster_id", data)
 
     def test_get_cluster_data_unauthenticated(self):
@@ -613,7 +613,7 @@ class ClusterLabelUpdateViewTest(BattycodaTestCase):
         )
         self.assertEqual(response.status_code, 200)
         data = response.json()
-        self.assertEqual(data.get("status"), "success")
+        self.assertTrue(data.get("success"))
 
         self.cluster.refresh_from_db()
         self.assertEqual(self.cluster.label, "New Label")

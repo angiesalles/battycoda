@@ -32,7 +32,7 @@ export function loadSegmentDetails(segmentId) {
 
   // Load the segment details from the API
   $.getJSON(buildUrl(API_ENDPOINTS.GET_SEGMENT_DATA, { segment_id: segmentId }), function (data) {
-    if (data.status === 'success') {
+    if (data.success) {
       $('.segment-id').text(data.segment_id);
       $('.segment-recording').text(data.recording_name);
       $('.segment-onset').text(data.onset.toFixed(4));
@@ -46,7 +46,7 @@ export function loadSegmentDetails(segmentId) {
       $('.segment-audio-player').attr('src', data.audio_url);
     } else {
       $('.segment-spectrogram').html(
-        `<div class="alert alert-danger">Failed to load segment: ${escapeHtml(data.message)}</div>`
+        `<div class="alert alert-danger">Failed to load segment: ${escapeHtml(data.error)}</div>`
       );
     }
   }).fail(function () {

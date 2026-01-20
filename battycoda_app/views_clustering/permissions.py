@@ -133,7 +133,7 @@ def check_clustering_permission(
         return None
 
     if json_response:
-        return JsonResponse({"status": "error", "message": error_message}, status=status_code)
+        return JsonResponse({"success": False, "error": error_message}, status=status_code)
 
     messages.error(request, error_message)
     return redirect(redirect_url)

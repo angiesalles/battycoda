@@ -45,7 +45,7 @@ export function saveClusterLabel(onSuccess) {
       description: description,
     },
     success: function (data) {
-      if (data.status === 'success') {
+      if (data.success) {
         // Update the local data if clusters array exists
         const clusters = getClusters();
         if (clusters) {
@@ -63,7 +63,7 @@ export function saveClusterLabel(onSuccess) {
         // Call the success callback
         if (onSuccess) onSuccess(selectedId);
       } else {
-        window.toastr.error(`Failed to update label: ${data.message}`);
+        window.toastr.error(`Failed to update label: ${data.error}`);
       }
     },
     error: function () {

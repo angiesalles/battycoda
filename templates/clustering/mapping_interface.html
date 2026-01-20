@@ -223,20 +223,7 @@
 </div>
 
 <!-- Existing mappings data as JSON (loaded by cluster_mapping/index.js) -->
-<script id="existing-mappings-data" type="application/json">
-[
-    {% for mapping in existing_mappings %}
-    {
-        "id": {{ mapping.id }},
-        "clusterId": {{ mapping.cluster.id }},
-        "callId": {{ mapping.call.id }},
-        "confidence": {{ mapping.confidence }},
-        "speciesName": "{{ mapping.call.species.name }}",
-        "callName": "{{ mapping.call.short_name }}"
-    }{% if not forloop.last %},{% endif %}
-    {% endfor %}
-]
-</script>
+{{ existing_mappings_json|json_script:"existing-mappings-data" }}
 
 {% include 'includes/csrf_data.html' %}
 

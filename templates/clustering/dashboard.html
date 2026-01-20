@@ -170,7 +170,7 @@
 {% block extra_js %}
 <!-- Page data for clustering dashboard -->
 <div id="clustering-dashboard-data"
-     data-run-status-url-template="/clustering/run/{run_id}/status/"
+     data-run-status-url-base="{% url 'battycoda_app:clustering_run_status' run_id=0 %}"
      hidden></div>
 
 <script src="{% static 'js/pages/clustering-dashboard.js' %}"></script>
