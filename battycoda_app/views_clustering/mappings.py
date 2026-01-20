@@ -2,7 +2,7 @@
 
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
-from django.http import HttpResponse, JsonResponse
+from django.http import JsonResponse, StreamingHttpResponse
 from django.shortcuts import get_object_or_404, redirect
 from django.views.decorators.http import require_POST
 
@@ -11,9 +11,41 @@ from ..models.clustering import Cluster, ClusterCallMapping, ClusteringRun, Segm
 from .permissions import check_clustering_permission
 
 
+def _generate_clusters_csv(clustering_run):
+    """Generator for streaming cluster CSV data."""
+    is_project_scope = clustering_run.scope == "project"
+
+    # Yield header
+    if is_project_scope:
+        yield "segment_id,recording_id,recording_name,segment_onset,segment_offset,cluster_id,cluster_label,confidence\n"
+    else:
+        yield "segment_id,segment_onset,segment_offset,cluster_id,cluster_label,confidence\n"
+
+    # Stream data in chunks using iterator() for memory efficiency
+    segment_clusters = (
+        SegmentCluster.objects.filter(cluster__clustering_run=clustering_run)
+        .select_related("segment", "segment__segmentation__recording", "cluster")
+        .iterator(chunk_size=1000)
+    )
+
+    for sc in segment_clusters:
+        segment = sc.segment
+        cluster = sc.cluster
+        if is_project_scope:
+            recording = segment.segmentation.recording if segment.segmentation else None
+            recording_id = recording.id if recording else ""
+            recording_name = recording.name if recording else ""
+            yield f'{segment.id},{recording_id},"{recording_name}",'
+            yield f"{segment.onset},{segment.offset},{cluster.cluster_id},"
+            yield f'"{cluster.label}",{sc.confidence}\n'
+        else:
+            yield f"{segment.id},{segment.onset},{segment.offset},{cluster.cluster_id},"
+            yield f'"{cluster.label}",{sc.confidence}\n'
+
+
 @login_required
 def export_clusters(request, run_id):
-    """Export cluster data as CSV."""
+    """Export cluster data as streaming CSV."""
     clustering_run = get_object_or_404(ClusteringRun, id=run_id)
 
     error = check_clustering_permission(
@@ -26,43 +58,31 @@ def export_clusters(request, run_id):
         messages.error(request, "Clustering run is not yet completed")
         return redirect("battycoda_app:clustering_run_detail", run_id=clustering_run.id)
 
-    # Include segment__segmentation__recording for project-level runs
-    segment_clusters = SegmentCluster.objects.filter(cluster__clustering_run=clustering_run).select_related(
-        "segment", "segment__segmentation__recording", "cluster"
-    )
-
-    # Include recording columns for project-level runs
-    is_project_scope = clustering_run.scope == "project"
-
-    if is_project_scope:
-        csv_data = (
-            "segment_id,recording_id,recording_name,segment_onset,segment_offset,cluster_id,cluster_label,confidence\n"
-        )
-    else:
-        csv_data = "segment_id,segment_onset,segment_offset,cluster_id,cluster_label,confidence\n"
-
-    for sc in segment_clusters:
-        segment = sc.segment
-        cluster = sc.cluster
-        if is_project_scope:
-            recording = segment.segmentation.recording if segment.segmentation else None
-            recording_id = recording.id if recording else ""
-            recording_name = recording.name if recording else ""
-            csv_data += f'{segment.id},{recording_id},"{recording_name}",'
-            csv_data += f"{segment.onset},{segment.offset},{cluster.cluster_id},"
-            csv_data += f'"{cluster.label}",{sc.confidence}\n'
-        else:
-            csv_data += f"{segment.id},{segment.onset},{segment.offset},{cluster.cluster_id},"
-            csv_data += f'"{cluster.label}",{sc.confidence}\n'
-
-    response = HttpResponse(csv_data, content_type="text/csv")
+    response = StreamingHttpResponse(_generate_clusters_csv(clustering_run), content_type="text/csv")
     response["Content-Disposition"] = f'attachment; filename="clusters_{run_id}.csv"'
     return response
 
 
+def _generate_mappings_csv(clustering_run):
+    """Generator for streaming mappings CSV data."""
+    yield "cluster_id,cluster_label,species_name,call_name,confidence\n"
+
+    mappings = (
+        ClusterCallMapping.objects.filter(cluster__clustering_run=clustering_run)
+        .select_related("cluster", "call", "call__species")
+        .iterator(chunk_size=500)
+    )
+
+    for mapping in mappings:
+        cluster = mapping.cluster
+        call = mapping.call
+        yield f'{cluster.cluster_id},"{cluster.label}",'
+        yield f'"{call.species.name}","{call.short_name}",{mapping.confidence}\n'
+
+
 @login_required
 def export_mappings(request, run_id):
-    """Export cluster-call mappings as CSV."""
+    """Export cluster-call mappings as streaming CSV."""
     clustering_run = get_object_or_404(ClusteringRun, id=run_id)
 
     error = check_clustering_permission(
@@ -71,18 +91,7 @@ def export_mappings(request, run_id):
     if error:
         return error
 
-    mappings = ClusterCallMapping.objects.filter(cluster__clustering_run=clustering_run).select_related(
-        "cluster", "call", "call__species"
-    )
-
-    csv_data = "cluster_id,cluster_label,species_name,call_name,confidence\n"
-    for mapping in mappings:
-        cluster = mapping.cluster
-        call = mapping.call
-        csv_data += f'{cluster.cluster_id},"{cluster.label}",'
-        csv_data += f'"{call.species.name}","{call.short_name}",{mapping.confidence}\n'
-
-    response = HttpResponse(csv_data, content_type="text/csv")
+    response = StreamingHttpResponse(_generate_mappings_csv(clustering_run), content_type="text/csv")
     response["Content-Disposition"] = f'attachment; filename="mappings_{run_id}.csv"'
     return response
 

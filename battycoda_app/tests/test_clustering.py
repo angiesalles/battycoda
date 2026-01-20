@@ -609,7 +609,8 @@ class ClusteringExportTest(BattycodaTestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response["Content-Type"], "text/csv")
 
-        content = response.content.decode("utf-8")
+        # StreamingHttpResponse uses streaming_content instead of content
+        content = b"".join(response.streaming_content).decode("utf-8")
         lines = content.strip().split("\n")
         header = lines[0]
 
@@ -643,7 +644,8 @@ class ClusteringExportTest(BattycodaTestCase):
         response = self.client.get(reverse("battycoda_app:export_clusters", args=[run.id]))
         self.assertEqual(response.status_code, 200)
 
-        content = response.content.decode("utf-8")
+        # StreamingHttpResponse uses streaming_content instead of content
+        content = b"".join(response.streaming_content).decode("utf-8")
         lines = content.strip().split("\n")
         header = lines[0]
 
@@ -858,8 +860,8 @@ class ClusteringPermissionsTest(BattycodaTestCase):
         self.assertIsNotNone(result)
         self.assertEqual(result.status_code, 403)
         data = json.loads(result.content)
-        self.assertEqual(data["status"], "error")
-        self.assertEqual(data["message"], "Access denied")
+        self.assertEqual(data["success"], False)
+        self.assertEqual(data["error"], "Access denied")
 
     def test_check_clustering_permission_returns_none_when_allowed(self):
         """Test check_clustering_permission returns None when permission granted."""
