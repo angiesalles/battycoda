@@ -132,9 +132,6 @@ function autoInitialize() {
   // Load existing mappings from JSON data element
   const existingMappings = loadExistingMappingsData();
 
-  // Also set on window for backward compatibility with other scripts
-  window.existingMappings = existingMappings;
-
   // Initialize the mapping interface
   initClusterMapping(existingMappings);
 }
@@ -152,7 +149,7 @@ if (document.readyState === 'loading') {
   }
 }
 
-// Export all functions for external use
+// Export all functions for ES module consumers
 export {
   getSelectedClusterId,
   setSelectedClusterId,
@@ -168,24 +165,4 @@ export {
   filterSpecies,
   initializeClusterPreviewModal,
   loadClusterDetails,
-};
-
-// Expose key functions globally for Django template usage
-window.initClusterMapping = initClusterMapping;
-window.createMapping = createMapping;
-window.filterClusters = filterClusters;
-window.sortClusters = sortClusters;
-window.filterSpecies = filterSpecies;
-
-// Create ClusterMapping namespace for backward compatibility
-window.ClusterMapping = {
-  initClusterMapping,
-  createMapping,
-  filterClusters,
-  sortClusters,
-  filterSpecies,
-  loadClusterDetails,
-  updateCallBadgeCount,
-  getSelectedClusterId,
-  setSelectedClusterId,
 };

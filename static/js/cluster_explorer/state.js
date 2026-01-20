@@ -6,6 +6,11 @@
  */
 
 import { scaleOrdinal, schemeCategory10 } from 'd3';
+import {
+  getJQuery as sharedGetJQuery,
+  setJQuery as sharedSetJQuery,
+  resetJQuery,
+} from '../clustering/shared/jquery-utils.js';
 
 // Currently selected cluster ID
 let selectedClusterId = null;
@@ -15,9 +20,6 @@ let clusters = null;
 
 // Whether this is a project-scoped clustering run
 let isProjectScope = false;
-
-// jQuery instance (injected for testability)
-let jQueryInstance = null;
 
 /**
  * Get the currently selected cluster ID
@@ -67,22 +69,9 @@ export function setIsProjectScope(value) {
   isProjectScope = !!value;
 }
 
-/**
- * Get the jQuery instance
- * Falls back to window.jQuery if not explicitly set (for backward compatibility)
- * @returns {Function|null} jQuery function
- */
-export function getJQuery() {
-  return jQueryInstance || (typeof window !== 'undefined' ? window.jQuery : null);
-}
-
-/**
- * Set the jQuery instance (for dependency injection in tests)
- * @param {Function} $ - jQuery function
- */
-export function setJQuery($) {
-  jQueryInstance = $;
-}
+// Re-export shared jQuery utilities for backward compatibility
+export const getJQuery = sharedGetJQuery;
+export const setJQuery = sharedSetJQuery;
 
 /**
  * Reset all state (useful for testing and re-initialization)
@@ -91,7 +80,7 @@ export function resetState() {
   selectedClusterId = null;
   clusters = null;
   isProjectScope = false;
-  jQueryInstance = null;
+  resetJQuery();
 }
 
 // D3 color scale for clusters (now imported from npm module)
