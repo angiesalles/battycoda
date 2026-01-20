@@ -153,7 +153,10 @@ def get_last_task_view(request):
 
 @login_required
 def skip_to_next_batch_view(request, current_task_id):
-    """Skip the current batch and go to the first task of the next batch with undone tasks."""
+    """Skip the current batch and go to the first task of the next batch with undone tasks.
+
+    Cycles through batches in order by ID. When reaching the last batch, wraps around to the first.
+    """
     current_task = get_object_or_404(Task, id=current_task_id)
     current_batch = current_task.batch
 
@@ -167,22 +170,35 @@ def skip_to_next_batch_view(request, current_task_id):
     # Exclude the current batch
     batches_query = batches_query.exclude(id=current_batch.id)
 
-    # Prefer batches from the same project
-    if current_batch.project:
-        same_project_batch = batches_query.filter(project=current_batch.project).order_by("created_at").first()
-        if same_project_batch:
-            next_task = Task.objects.filter(batch=same_project_batch, is_done=False).order_by("created_at").first()
-            if next_task:
-                messages.info(request, f'Skipped to next batch: "{same_project_batch.name}"')
-                return redirect("battycoda_app:annotate_task", task_id=next_task.id)
+    def find_next_batch_with_available_task(query):
+        """Find the next batch with an available task, cycling through all batches.
 
-    # Fall back to any batch with undone tasks
-    next_batch = batches_query.order_by("created_at").first()
-    if next_batch:
-        next_task = Task.objects.filter(batch=next_batch, is_done=False).order_by("created_at").first()
+        Returns (batch, task) tuple, or (None, None) if no batch has available tasks.
+        """
+        # Get batches in cycling order: first those after current batch, then wrap around
+        forward_batches = list(query.filter(id__gt=current_batch.id).order_by("id"))
+        wrap_batches = list(query.filter(id__lte=current_batch.id).order_by("id"))
+
+        # Try each batch in order until we find one with an available task
+        for batch in forward_batches + wrap_batches:
+            task = _get_available_tasks(request.user).filter(batch=batch).order_by("created_at").first()
+            if task:
+                return batch, task
+        return None, None
+
+    # Prefer batches from the same project, cycling through in order
+    if current_batch.project:
+        same_project_batches = batches_query.filter(project=current_batch.project)
+        next_batch, next_task = find_next_batch_with_available_task(same_project_batches)
         if next_task:
             messages.info(request, f'Skipped to next batch: "{next_batch.name}"')
             return redirect("battycoda_app:annotate_task", task_id=next_task.id)
+
+    # Fall back to any batch with undone tasks (also cycle through)
+    next_batch, next_task = find_next_batch_with_available_task(batches_query)
+    if next_task:
+        messages.info(request, f'Skipped to next batch: "{next_batch.name}"')
+        return redirect("battycoda_app:annotate_task", task_id=next_task.id)
 
     # No other batches with undone tasks
     messages.info(
