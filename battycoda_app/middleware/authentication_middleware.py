@@ -39,7 +39,11 @@ class AuthenticationMiddleware:
             "/welcome/",  # Allow access to the landing page
             "/hijack/",  # Allow hijack functionality access
             "/simple-api/",  # Allow simple API access (uses API key auth)
-            "/health/",  # Health check endpoint for uptime monitoring
+        ]
+
+        # Exact paths to skip (with or without trailing slash)
+        skip_exact = [
+            "/health",  # Health check endpoint for uptime monitoring
         ]
 
         # Skip for Let's Encrypt ACME challenges
@@ -48,6 +52,11 @@ class AuthenticationMiddleware:
 
         # Also skip for authentication-related URLs
         if any(request.path.startswith(path) for path in skip_paths):
+            return self.get_response(request)
+
+        # Skip for exact path matches (handles with/without trailing slash)
+        path_without_slash = request.path.rstrip("/")
+        if path_without_slash in skip_exact:
             return self.get_response(request)
 
         # Check if the user is authenticated
