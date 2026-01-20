@@ -263,6 +263,11 @@ ps aux | grep "R.*server"
 
 **Disk usage alerts**: `df -h / /home`
 
+**Django template comments still parse tags**: Django's `{# ... #}` comment syntax does NOT fully prevent template tag parsing when the comment spans multiple lines. Tags like `{% include %}` inside multi-line comments are still executed, which can cause errors (e.g., infinite recursion if a template includes itself in a comment). Solutions:
+- Use `{% comment %}...{% endcomment %}` blocks for commenting out template code
+- Use HTML comments `<!-- ... -->` for documentation that shows template tag examples
+- Keep `{# ... #}` comments to single lines without template tags
+
 ## Detailed Documentation
 
 | Guide | Contents |
