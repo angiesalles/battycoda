@@ -1,13 +1,22 @@
 /**
  * Cluster Mapping State Module
  *
- * Manages shared state for the cluster mapping interface.
+ * Manages shared state for the cluster mapping interface using centralized state utilities.
  */
 
+import { createStateModule } from '../clustering/shared/create-state.js';
 import { createApiConfig } from '../clustering/shared/api-config.js';
 
-// Currently selected cluster ID
-let selectedClusterId = null;
+/**
+ * Cluster Mapping state configuration
+ * Uses createStateModule for consistent getter/setter generation
+ */
+const state = createStateModule({
+  selectedClusterId: null,
+});
+
+// Export generated getters/setters
+export const { getSelectedClusterId, setSelectedClusterId } = state;
 
 /**
  * API URLs for cluster mapping operations
@@ -45,24 +54,8 @@ export function getApiUrls() {
 }
 
 /**
- * Get the currently selected cluster ID
- * @returns {number|null} Selected cluster ID
- */
-export function getSelectedClusterId() {
-  return selectedClusterId;
-}
-
-/**
- * Set the selected cluster ID
- * @param {number|null} id - Cluster ID to select
- */
-export function setSelectedClusterId(id) {
-  selectedClusterId = id;
-}
-
-/**
  * Reset state (for testing)
  */
 export function resetState() {
-  selectedClusterId = null;
+  state.resetAll();
 }

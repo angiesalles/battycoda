@@ -1,73 +1,37 @@
 /**
  * Cluster Explorer State Module
  *
- * Manages shared state for the cluster explorer.
+ * Manages shared state for the cluster explorer using centralized state utilities.
  * All mutable state is encapsulated here to avoid polluting the global namespace.
  */
 
 import { scaleOrdinal, schemeCategory10 } from 'd3';
+import { createStateModule } from '../clustering/shared/create-state.js';
 import {
   getJQuery as sharedGetJQuery,
   setJQuery as sharedSetJQuery,
   resetJQuery,
 } from '../clustering/shared/jquery-utils.js';
 
-// Currently selected cluster ID
-let selectedClusterId = null;
-
-// Cluster data array
-let clusters = null;
-
-// Whether this is a project-scoped clustering run
-let isProjectScope = false;
-
 /**
- * Get the currently selected cluster ID
- * @returns {number|null} Selected cluster ID
+ * Cluster Explorer state configuration
+ * Uses createStateModule for consistent getter/setter generation
  */
-export function getSelectedClusterId() {
-  return selectedClusterId;
-}
+const state = createStateModule({
+  selectedClusterId: null,
+  clusters: null,
+  isProjectScope: { value: false, boolean: true },
+});
 
-/**
- * Set the selected cluster ID
- * @param {number|null} id - Cluster ID to select
- */
-export function setSelectedClusterId(id) {
-  selectedClusterId = id;
-}
-
-/**
- * Get the clusters array
- * @returns {Array|null} Array of cluster objects
- */
-export function getClusters() {
-  return clusters;
-}
-
-/**
- * Set the clusters array
- * @param {Array} data - Array of cluster objects
- */
-export function setClusters(data) {
-  clusters = data;
-}
-
-/**
- * Get whether this is a project-scoped clustering run
- * @returns {boolean} True if project scope
- */
-export function getIsProjectScope() {
-  return isProjectScope;
-}
-
-/**
- * Set whether this is a project-scoped clustering run
- * @param {boolean} value - True if project scope
- */
-export function setIsProjectScope(value) {
-  isProjectScope = !!value;
-}
+// Export generated getters/setters
+export const {
+  getSelectedClusterId,
+  setSelectedClusterId,
+  getClusters,
+  setClusters,
+  getIsProjectScope,
+  setIsProjectScope,
+} = state;
 
 // Re-export shared jQuery utilities for backward compatibility
 export const getJQuery = sharedGetJQuery;
@@ -77,9 +41,7 @@ export const setJQuery = sharedSetJQuery;
  * Reset all state (useful for testing and re-initialization)
  */
 export function resetState() {
-  selectedClusterId = null;
-  clusters = null;
-  isProjectScope = false;
+  state.resetAll();
   resetJQuery();
 }
 
