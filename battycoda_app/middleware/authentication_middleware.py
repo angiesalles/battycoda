@@ -39,6 +39,7 @@ class AuthenticationMiddleware:
             "/welcome/",  # Allow access to the landing page
             "/hijack/",  # Allow hijack functionality access
             "/simple-api/",  # Allow simple API access (uses API key auth)
+            "/health/",  # Health check endpoint for uptime monitoring
         ]
 
         # Skip for Let's Encrypt ACME challenges

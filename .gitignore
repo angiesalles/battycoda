@@ -22,3 +22,6 @@ test-results/
 
 # Training data for folder-based classifier training
 /training_data/
+
+# Sentry admin token (full access - keep separate from CI token)
+.sentry-admin-token

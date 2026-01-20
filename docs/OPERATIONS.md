@@ -260,6 +260,32 @@ Located in `scripts/`:
 | `notify_worker_failure.py` | Sends email alerts when workers fail |
 | `create_clustering_algorithms.py` | Creates default clustering algorithms |
 | `generate_hdf5_background.sh` | Background HDF5 generation |
+| `sentry_fetch.py` | Fetch Sentry issue details and stack traces |
+
+Root directory:
+| Script | Description |
+|--------|-------------|
+| `setup_nginx.sh` | Generate and install nginx config (uses `.env` for domain/settings) |
+
+## Nginx Configuration
+
+Nginx runs on the host (not in Docker) and proxies to Django on port 8000.
+
+### Regenerating Config
+```bash
+sudo ./setup_nginx.sh
+```
+
+This script:
+- Reads `DOMAIN_NAME` and `MAX_UPLOAD_SIZE_MB` from `.env`
+- Generates `/etc/nginx/sites-available/battycoda.conf`
+- Sets up HTTPS if SSL certificates exist (`/etc/letsencrypt/live/$DOMAIN_NAME/`)
+- Tests and reloads nginx
+
+### Key Settings
+- Django backend: `127.0.0.1:8000`
+- Static files: `/home/ubuntu/battycoda/staticfiles/`
+- Media files: `/home/ubuntu/battycoda/media/`
 
 ## Production Deployment
 
