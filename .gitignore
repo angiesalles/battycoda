@@ -19,3 +19,6 @@ static/dist/
 playwright-report/
 test-results/
 .playwright/
+
+# Training data for folder-based classifier training
+/training_data/
