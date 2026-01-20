@@ -2,6 +2,7 @@
 
 from .exploration import cluster_explorer, get_cluster_data, get_cluster_members, get_segment_data, mapping_interface
 from .mappings import (
+    bulk_create_mappings,
     create_cluster_mapping,
     delete_cluster_mapping,
     export_clusters,
@@ -14,6 +15,7 @@ from .run_detail import clustering_run_detail, clustering_run_status
 from .run_list import dashboard
 
 __all__ = [
+    "bulk_create_mappings",
     "cluster_explorer",
     "clustering_run_detail",
     "clustering_run_status",

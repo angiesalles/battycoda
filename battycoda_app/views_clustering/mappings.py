@@ -1,5 +1,7 @@
 """Cluster mapping and export operations."""
 
+import json
+
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse, StreamingHttpResponse
@@ -228,3 +230,64 @@ def update_mapping_confidence(request):
     mapping.save()
 
     return JsonResponse({"success": True, "message": "Confidence updated"})
+
+
+@login_required
+@require_POST
+def bulk_create_mappings(request):
+    """API endpoint to create multiple cluster-call mappings at once."""
+    try:
+        data = json.loads(request.body)
+    except json.JSONDecodeError:
+        return JsonResponse({"success": False, "error": "Invalid JSON", "error_code": "INVALID_JSON"})
+
+    cluster_ids = data.get("cluster_ids", [])
+    call_id = data.get("call_id")
+    confidence = data.get("confidence", 0.7)
+
+    if not cluster_ids:
+        return JsonResponse({"success": False, "error": "No cluster IDs provided", "error_code": "NO_CLUSTERS"})
+
+    if not call_id:
+        return JsonResponse({"success": False, "error": "No call ID provided", "error_code": "NO_CALL_ID"})
+
+    try:
+        call = Call.objects.get(id=call_id)
+    except Call.DoesNotExist:
+        return JsonResponse({"success": False, "error": "Call type not found", "error_code": "CALL_NOT_FOUND"})
+
+    created_mappings = []
+    errors = []
+
+    for cluster_id in cluster_ids:
+        try:
+            cluster = Cluster.objects.get(id=cluster_id)
+
+            # Permission check
+            error = check_clustering_permission(request, cluster, json_response=True)
+            if error:
+                errors.append({"cluster_id": cluster_id, "error": "Permission denied", "error_code": "FORBIDDEN"})
+                continue
+
+            # Create or update mapping
+            mapping, created = ClusterCallMapping.objects.update_or_create(
+                cluster=cluster,
+                call=call,
+                defaults={"confidence": float(confidence), "created_by": request.user},
+            )
+
+            created_mappings.append({"mapping_id": mapping.id, "cluster_id": cluster_id, "created": created})
+
+        except Cluster.DoesNotExist:
+            errors.append({"cluster_id": cluster_id, "error": "Cluster not found", "error_code": "CLUSTER_NOT_FOUND"})
+
+    return JsonResponse(
+        {
+            "success": True,
+            "created_count": len(created_mappings),
+            "mappings": created_mappings,
+            "errors": errors,
+            "call_id": call_id,
+            "new_count": ClusterCallMapping.objects.filter(call=call).count(),
+        }
+    )

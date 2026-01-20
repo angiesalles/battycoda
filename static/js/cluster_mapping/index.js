@@ -31,6 +31,17 @@ import { filterClusters, sortClusters, filterSpecies } from './filtering.js';
 import { initializeClusterPreviewModal, loadClusterDetails } from './modal_handlers.js';
 import { getJsonData, setupJQueryCsrf } from '../utils/page-data.js';
 import { debounce } from '../utils/debounce.js';
+import {
+  initializeBulkOperations,
+  bulkCreateMappings,
+  updateBulkToolbar,
+  cleanupBulkOperations,
+} from './bulk_operations.js';
+import {
+  getSelectedClusterIds,
+  clearClusterSelection,
+  toggleClusterSelection,
+} from './state.js';
 
 /**
  * Initialize the cluster mapping interface
@@ -90,6 +101,22 @@ export function initClusterMapping(existingMappings) {
   // Set up species filter
   $('#species-filter').on('change', function () {
     filterSpecies($(this).val());
+  });
+
+  // Initialize bulk operations
+  initializeBulkOperations();
+
+  // Set up bulk mapping modal submit handler
+  $('#bulk-mapping-submit').off('click').on('click', function () {
+    const callId = $('#bulk-mapping-call-select').val();
+    const confidence = parseFloat($('#bulk-mapping-confidence').val()) || 0.7;
+
+    if (!callId) {
+      window.toastr.warning('Please select a call type');
+      return;
+    }
+
+    bulkCreateMappings(parseInt(callId, 10), confidence);
   });
 }
 
@@ -151,6 +178,9 @@ if (document.readyState === 'loading') {
 export {
   getSelectedClusterId,
   setSelectedClusterId,
+  getSelectedClusterIds,
+  clearClusterSelection,
+  toggleClusterSelection,
   initializeExistingMappings,
   addMappingToContainer,
   updateCallBadgeCount,
@@ -163,4 +193,8 @@ export {
   filterSpecies,
   initializeClusterPreviewModal,
   loadClusterDetails,
+  initializeBulkOperations,
+  bulkCreateMappings,
+  updateBulkToolbar,
+  cleanupBulkOperations,
 };

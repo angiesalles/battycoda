@@ -19,6 +19,7 @@ import {
  */
 const state = createStateModule({
   selectedClusterId: null,
+  focusedClusterIndex: { value: -1, boolean: false },
   clusters: null,
   isProjectScope: { value: false, boolean: true },
 });
@@ -27,6 +28,8 @@ const state = createStateModule({
 export const {
   getSelectedClusterId,
   setSelectedClusterId,
+  getFocusedClusterIndex,
+  setFocusedClusterIndex,
   getClusters,
   setClusters,
   getIsProjectScope,

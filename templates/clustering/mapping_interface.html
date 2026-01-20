@@ -58,7 +58,26 @@
                                             <option value="label">Label (A-Z)</option>
                                         </select>
                                     </div>
-                                    
+
+                                    <!-- Bulk action toolbar (hidden when no clusters selected) -->
+                                    <div id="bulk-action-toolbar" class="d-none mb-2 p-2 bg-light border rounded">
+                                        <div class="d-flex align-items-center justify-content-between">
+                                            <span id="bulk-selected-count" class="text-muted small">0 selected</span>
+                                            <div class="btn-group btn-group-sm">
+                                                <button id="bulk-map-btn" class="btn btn-primary btn-sm">
+                                                    <i class="fas fa-exchange-alt"></i> Map Selected
+                                                </button>
+                                                <button id="clear-selection-btn" class="btn btn-outline-secondary btn-sm">
+                                                    <i class="fas fa-times"></i> Clear
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="small text-muted mb-2">
+                                        <i class="fas fa-info-circle"></i> Ctrl+click to select multiple clusters
+                                    </div>
+
                                     <div id="clusters-list">
                                         {% for cluster in clusters %}
                                         <div class="cluster-box" data-cluster-id="{{ cluster.id }}" data-cluster-num="{{ cluster.cluster_id }}">
@@ -207,6 +226,47 @@
         </div>
     </div>
 </div>
+<!-- Bulk Mapping Modal -->
+<div class="modal fade" id="bulkMappingModal" tabindex="-1" role="dialog" aria-labelledby="bulkMappingModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="bulkMappingModalLabel">Bulk Map Clusters</h5>
+                <button type="button" class="close" data-bs-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <p class="text-muted mb-3">Map all selected clusters to a single call type with the same confidence score.</p>
+                <div class="form-group mb-3">
+                    <label for="bulk-mapping-call-select">Select Call Type</label>
+                    <select id="bulk-mapping-call-select" class="form-control">
+                        <option value="">-- Select a call type --</option>
+                        {% for species in available_species %}
+                        <optgroup label="{{ species.name }}">
+                            {% for call in species.calls.all %}
+                            <option value="{{ call.id }}">{{ call.short_name }} - {{ call.long_name|default:"" }}</option>
+                            {% endfor %}
+                        </optgroup>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="bulk-mapping-confidence">Confidence: <span id="bulk-confidence-value">70%</span></label>
+                    <input type="range" class="form-control-range" id="bulk-mapping-confidence"
+                           min="0" max="1" step="0.05" value="0.7"
+                           oninput="document.getElementById('bulk-confidence-value').textContent = Math.round(this.value * 100) + '%'">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" id="bulk-mapping-submit" class="btn btn-primary">
+                    <i class="fas fa-exchange-alt"></i> Create Mappings
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
 {% endblock %}
 
 {% block extra_js %}
@@ -217,6 +277,7 @@
      data-clustering-run-id="{{ clustering_run.id }}"
      data-api-get-cluster-data="{% url 'battycoda_app:get_cluster_data' %}"
      data-api-create-mapping="{% url 'battycoda_app:create_cluster_mapping' %}"
+     data-api-bulk-create-mappings="{% url 'battycoda_app:bulk_create_mappings' %}"
      data-api-update-mapping-confidence="{% url 'battycoda_app:update_mapping_confidence' %}"
      data-api-delete-mapping="{% url 'battycoda_app:delete_cluster_mapping' %}"
      hidden>

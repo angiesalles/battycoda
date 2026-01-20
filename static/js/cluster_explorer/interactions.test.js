@@ -34,6 +34,9 @@ describe('cluster_explorer/interactions', () => {
       removeClass: vi.fn().mockReturnThis(),
       empty: vi.fn().mockReturnThis(),
       append: vi.fn().mockReturnThis(),
+      on: vi.fn().mockReturnThis(),
+      off: vi.fn().mockReturnThis(),
+      find: vi.fn().mockReturnThis(),
     };
 
     // Create mock getJSON with promise-like behavior
@@ -140,10 +143,16 @@ describe('cluster_explorer/interactions', () => {
         mappings: [],
       });
 
-      expect(mockElement.text).toHaveBeenCalledWith('Cluster 1');
-      expect(mockElement.val).toHaveBeenCalled();
-      expect(mockElement.text).toHaveBeenCalledWith(15);
-      expect(mockElement.text).toHaveBeenCalledWith('0.8500');
+      // New implementation renders complete HTML with all details
+      expect(mockElement.html).toHaveBeenCalledWith(
+        expect.stringContaining('Cluster 1')
+      );
+      expect(mockElement.html).toHaveBeenCalledWith(
+        expect.stringContaining('15') // size
+      );
+      expect(mockElement.html).toHaveBeenCalledWith(
+        expect.stringContaining('0.8500') // coherence
+      );
     });
 
     it('should display spectrogram when available', () => {
@@ -204,9 +213,12 @@ describe('cluster_explorer/interactions', () => {
         mappings: [{ species_name: 'Eptesicus fuscus', call_name: 'Echo', confidence: 0.95 }],
       });
 
-      expect(mockElement.addClass).toHaveBeenCalledWith('d-none');
-      expect(mockElement.empty).toHaveBeenCalled();
-      expect(mockElement.append).toHaveBeenCalled();
+      // New implementation renders mappings using append after setting main HTML
+      expect(mockElement.html).toHaveBeenCalled();
+      // Mappings are appended to the mapping list
+      expect(mockElement.append).toHaveBeenCalledWith(
+        expect.stringContaining('Eptesicus fuscus')
+      );
     });
 
     it('should show error message on API failure response', () => {
@@ -218,8 +230,9 @@ describe('cluster_explorer/interactions', () => {
         error: 'Cluster not found',
       });
 
+      // New implementation uses showErrorWithRetry which displays the error message
       expect(mockElement.html).toHaveBeenCalledWith(
-        expect.stringContaining('Failed to load cluster details: Cluster not found')
+        expect.stringContaining('Cluster not found')
       );
     });
 
@@ -230,10 +243,26 @@ describe('cluster_explorer/interactions', () => {
       loadClusterDetails(1);
 
       const failCallback = failMock.mock.calls[0][0];
-      failCallback();
+      // Pass a mock xhr object with status 500
+      failCallback({ status: 500, responseText: '' });
 
       expect(mockElement.html).toHaveBeenCalledWith(
-        expect.stringContaining('Failed to load cluster details. Please try again.')
+        expect.stringContaining('Server error')
+      );
+    });
+
+    it('should show error message on AJAX failure without xhr', () => {
+      const failMock = vi.fn();
+      mockGetJSON.mockReturnValue({ fail: failMock });
+
+      loadClusterDetails(1);
+
+      const failCallback = failMock.mock.calls[0][0];
+      // Pass undefined to simulate old behavior
+      failCallback(undefined);
+
+      expect(mockElement.html).toHaveBeenCalledWith(
+        expect.stringContaining('Failed to load cluster details')
       );
     });
   });
@@ -402,8 +431,9 @@ describe('cluster_explorer/interactions', () => {
         error: 'Cluster not found',
       });
 
+      // New implementation displays the error message directly with retry button
       expect(mockElement.html).toHaveBeenCalledWith(
-        expect.stringContaining('Failed to load members: Cluster not found')
+        expect.stringContaining('Cluster not found')
       );
     });
 
@@ -414,10 +444,26 @@ describe('cluster_explorer/interactions', () => {
       loadClusterMembers(1);
 
       const failCallback = failMock.mock.calls[0][0];
-      failCallback();
+      // Pass a mock xhr object with status 500
+      failCallback({ status: 500, responseText: '' });
 
       expect(mockElement.html).toHaveBeenCalledWith(
-        expect.stringContaining('Failed to load cluster members. Please try again.')
+        expect.stringContaining('Server error')
+      );
+    });
+
+    it('should show error message on AJAX failure without xhr', () => {
+      const failMock = vi.fn();
+      mockGetJSON.mockReturnValue({ fail: failMock });
+
+      loadClusterMembers(1);
+
+      const failCallback = failMock.mock.calls[0][0];
+      // Pass undefined to simulate fallback behavior
+      failCallback(undefined);
+
+      expect(mockElement.html).toHaveBeenCalledWith(
+        expect.stringContaining('Failed to load cluster members')
       );
     });
 

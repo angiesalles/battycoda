@@ -36,6 +36,12 @@
     stroke-width: 3px;
 }
 
+.cluster-point.focused {
+    stroke: #007bff !important;
+    stroke-width: 2px;
+    stroke-dasharray: 4 2;
+}
+
 .cluster-label {
     pointer-events: none;
     font-size: 10px;
@@ -154,6 +160,16 @@
     opacity: 0.6;
     border-color: #0d6efd;
     box-shadow: 0 0 5px rgba(13, 110, 253, 0.5);
+}
+
+.cluster-box.multi-selected {
+    background-color: #d4edda;
+    border-color: #28a745;
+    box-shadow: 0 0 0 2px rgba(40, 167, 69, 0.3);
+}
+
+.cluster-box.multi-selected:hover {
+    background-color: #c3e6cb;
 }
 
 .cluster-color-dot {
@@ -336,7 +352,41 @@
 }
 
 /* ==========================================================================
-   8. Responsive adjustments
+   8. Cluster Comparison
+   ========================================================================== */
+
+.comparison-cluster-pane {
+    padding: 15px;
+    background-color: #f8f9fa;
+    border-radius: 8px;
+    height: 100%;
+}
+
+.comparison-spectrogram {
+    text-align: center;
+    background-color: #fff;
+    border: 1px solid #eee;
+    border-radius: 4px;
+    padding: 10px;
+    min-height: 150px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.comparison-spectrogram img {
+    max-height: 200px;
+}
+
+#comparison-cluster-1,
+#comparison-cluster-2 {
+    border: 1px solid #dee2e6;
+    border-radius: 8px;
+    min-height: 400px;
+}
+
+/* ==========================================================================
+   9. Responsive adjustments
    ========================================================================== */
 
 @media (max-width: 768px) {

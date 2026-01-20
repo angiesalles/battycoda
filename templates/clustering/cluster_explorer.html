@@ -54,19 +54,27 @@
                                     </div>
                                 </div>
                                 <div class="cluster-controls mt-3">
-                                    <div class="form-row">
-                                        <div class="col-md-6 form-group">
+                                    <div class="row align-items-end">
+                                        <div class="col-md-4 form-group">
                                             <label for="point-size">Point Size</label>
                                             <input type="range" class="form-control-range" id="point-size" min="2" max="15" value="8">
                                         </div>
-                                        <div class="col-md-6 form-group">
+                                        <div class="col-md-4 form-group">
                                             <label for="cluster-opacity">Cluster Opacity</label>
                                             <input type="range" class="form-control-range" id="cluster-opacity" min="0.1" max="1" step="0.1" value="0.8">
+                                        </div>
+                                        <div class="col-md-4 form-group">
+                                            <button id="zoom-reset" class="btn btn-sm btn-outline-secondary" title="Reset zoom to default view">
+                                                <i class="fas fa-search-minus"></i> Reset Zoom
+                                            </button>
                                         </div>
                                     </div>
                                 </div>
                                 <div class="cluster-legend mt-3">
                                     <!-- Cluster legend will be dynamically generated -->
+                                </div>
+                                <div class="text-muted small mt-2">
+                                    <i class="fas fa-keyboard"></i> Keyboard: Arrow keys to navigate, Enter to select, Escape to deselect
                                 </div>
                             </div>
                         </div>
@@ -135,6 +143,9 @@
                                             <a href="{% url 'battycoda_app:map_clusters_to_calls' run_id=clustering_run.id %}" class="btn btn-sm btn-outline-primary">
                                                 <i class="fas fa-exchange-alt"></i> Map This Cluster
                                             </a>
+                                            <button id="compare-cluster-btn" class="btn btn-sm btn-outline-secondary ms-1">
+                                                <i class="fas fa-balance-scale"></i> Compare
+                                            </button>
                                         </div>
                                     </div>
                                 </div>
@@ -230,6 +241,57 @@
                 </div>
             </div>
             <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Cluster Comparison Modal -->
+<div class="modal fade" id="clusterComparisonModal" tabindex="-1" role="dialog" aria-labelledby="clusterComparisonModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-xl" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="clusterComparisonModalLabel">
+                    <i class="fas fa-balance-scale"></i> Cluster Comparison
+                </h5>
+                <button type="button" class="close" data-bs-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="row mb-3">
+                    <div class="col-md-6 offset-md-6">
+                        <label for="comparison-cluster-select" class="form-label">Compare with:</label>
+                        <select id="comparison-cluster-select" class="form-control">
+                            <option value="">-- Select a cluster to compare --</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-6" id="comparison-cluster-1">
+                        <div class="text-center text-muted py-5">
+                            <i class="fas fa-project-diagram fa-2x mb-2"></i>
+                            <p>Loading first cluster...</p>
+                        </div>
+                    </div>
+                    <div class="col-md-6" id="comparison-cluster-2">
+                        <div class="text-center text-muted py-5">
+                            <i class="fas fa-arrow-left fa-2x mb-2"></i>
+                            <p>Select a cluster to compare</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="row mt-3">
+                    <div class="col-12" id="comparison-summary">
+                        <!-- Comparison summary will be added here -->
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" id="clear-comparison-btn" class="btn btn-outline-secondary">
+                    <i class="fas fa-redo"></i> Clear
+                </button>
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
             </div>
         </div>

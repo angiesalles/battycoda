@@ -7,12 +7,16 @@
 
 import { select, selectAll } from 'd3-selection';
 import { scaleLinear, scaleOrdinal, schemeCategory10 } from 'd3';
-import { zoom } from 'd3-zoom';
+import { zoom, zoomIdentity } from 'd3-zoom';
 import { min, max } from 'd3-array';
 
 import { colorScale, getJQuery } from './state.js';
 import { selectCluster } from './interactions.js';
 import { escapeHtml } from '../utils/html.js';
+
+// Module-level references for zoom reset functionality
+let currentSvg = null;
+let currentZoomBehavior = null;
 
 /**
  * Initialize the cluster visualization
@@ -117,6 +121,10 @@ export function initializeVisualization(clusters) {
       });
 
     svg.call(zoomBehavior);
+
+    // Store references at module level for reset functionality
+    currentSvg = svg;
+    currentZoomBehavior = zoomBehavior;
   } catch (error) {
     console.error('[ClusterExplorer] Failed to set up zoom behavior:', error);
     // Continue without zoom - visualization is still usable
@@ -297,5 +305,24 @@ export function updateVisualization() {
     points.attr('r', pointSize).attr('opacity', opacity);
   } catch (error) {
     console.error('[ClusterExplorer] Failed to update cluster point attributes:', error);
+  }
+}
+
+/**
+ * Reset the zoom to the default view (identity transform)
+ * @returns {boolean} True if zoom was reset, false if zoom is not available
+ */
+export function resetZoom() {
+  if (!currentSvg || !currentZoomBehavior) {
+    console.warn('[ClusterExplorer] Zoom reset unavailable - visualization not initialized.');
+    return false;
+  }
+
+  try {
+    currentSvg.transition().duration(300).call(currentZoomBehavior.transform, zoomIdentity);
+    return true;
+  } catch (error) {
+    console.error('[ClusterExplorer] Failed to reset zoom:', error);
+    return false;
   }
 }

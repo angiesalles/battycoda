@@ -22,6 +22,7 @@ urlpatterns = [
     path("clustering/get-cluster-members/", views_clustering.get_cluster_members, name="get_cluster_members"),
     path("clustering/update-cluster-label/", views_clustering.update_cluster_label, name="update_cluster_label"),
     path("clustering/create-mapping/", views_clustering.create_cluster_mapping, name="create_cluster_mapping"),
+    path("clustering/bulk-create-mappings/", views_clustering.bulk_create_mappings, name="bulk_create_mappings"),
     path("clustering/delete-mapping/", views_clustering.delete_cluster_mapping, name="delete_cluster_mapping"),
     path(
         "clustering/update-mapping-confidence/",

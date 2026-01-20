@@ -13,10 +13,49 @@ import { createApiConfig } from '../clustering/shared/api-config.js';
  */
 const state = createStateModule({
   selectedClusterId: null,
+  selectedClusterIds: { value: [], boolean: false },
 });
 
 // Export generated getters/setters
-export const { getSelectedClusterId, setSelectedClusterId } = state;
+export const {
+  getSelectedClusterId,
+  setSelectedClusterId,
+  getSelectedClusterIds,
+  setSelectedClusterIds,
+} = state;
+
+/**
+ * Toggle a cluster's selection state for bulk operations
+ * @param {number} clusterId - Cluster ID to toggle
+ * @returns {boolean} True if cluster is now selected, false if deselected
+ */
+export function toggleClusterSelection(clusterId) {
+  const selected = getSelectedClusterIds();
+  const index = selected.indexOf(clusterId);
+  if (index === -1) {
+    setSelectedClusterIds([...selected, clusterId]);
+    return true;
+  } else {
+    setSelectedClusterIds(selected.filter((id) => id !== clusterId));
+    return false;
+  }
+}
+
+/**
+ * Clear all selected clusters
+ */
+export function clearClusterSelection() {
+  setSelectedClusterIds([]);
+}
+
+/**
+ * Check if a cluster is selected
+ * @param {number} clusterId - Cluster ID to check
+ * @returns {boolean} True if cluster is selected
+ */
+export function isClusterSelected(clusterId) {
+  return getSelectedClusterIds().includes(clusterId);
+}
 
 /**
  * API URLs for cluster mapping operations
@@ -27,6 +66,7 @@ export const API_URLS = createApiConfig(
   {
     getClusterData: 'apiGetClusterData',
     createMapping: 'apiCreateMapping',
+    bulkCreateMappings: 'apiBulkCreateMappings',
     updateMappingConfidence: 'apiUpdateMappingConfidence',
     deleteMapping: 'apiDeleteMapping',
   },
@@ -34,6 +74,7 @@ export const API_URLS = createApiConfig(
     // Fallback URLs for tests
     getClusterData: '/clustering/get-cluster-data/',
     createMapping: '/clustering/create-mapping/',
+    bulkCreateMappings: '/clustering/bulk-create-mappings/',
     updateMappingConfidence: '/clustering/update-mapping-confidence/',
     deleteMapping: '/clustering/delete-mapping/',
   }
@@ -48,6 +89,7 @@ export function getApiUrls() {
   return {
     getClusterData: API_URLS.getClusterData,
     createMapping: API_URLS.createMapping,
+    bulkCreateMappings: API_URLS.bulkCreateMappings,
     updateMappingConfidence: API_URLS.updateMappingConfidence,
     deleteMapping: API_URLS.deleteMapping,
   };

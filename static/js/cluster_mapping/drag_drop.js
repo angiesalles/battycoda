@@ -7,6 +7,7 @@
 import { setSelectedClusterId, getApiUrls } from './state.js';
 import { addMappingToContainer, updateCallBadgeCount } from './initialization.js';
 import { getCsrfToken } from '../utils/page-data.js';
+import { parseErrorResponse, showToast } from '../utils/error-handling.js';
 
 /**
  * Initialize drag and drop functionality
@@ -128,19 +129,19 @@ export function createMapping(clusterId, callId) {
 
         updateCallBadgeCount(callId, data.new_count);
 
-        window.toastr.success('Mapping created successfully');
+        showToast('Mapping created successfully', 'success');
       } else {
-        console.error('API returned error: ', data.error);
-        window.toastr.error('Failed to create mapping: ' + data.error);
+        console.error('[ClusterMapping] API returned error: ', data.error);
+        const errorMsg = data.error || 'Unknown error creating mapping';
+        const codeStr = data.error_code ? ` (${data.error_code})` : '';
+        showToast(`Failed to create mapping: ${errorMsg}${codeStr}`, 'error');
       }
     },
-    error: function (xhr, status, error) {
-      console.error('AJAX error: ', {
-        status: status,
-        error: error,
-        response: xhr.responseText,
-      });
-      window.toastr.error('Failed to create mapping. Please try again.');
+    error: function (xhr) {
+      const { message, errorCode } = parseErrorResponse(xhr, 'Failed to create mapping');
+      console.error('[ClusterMapping] AJAX error:', message, errorCode);
+      const codeStr = errorCode ? ` (${errorCode})` : '';
+      showToast(`${message}${codeStr}`, 'error');
     },
   });
 }
@@ -172,11 +173,13 @@ export function updateMappingConfidence(mappingId, confidence) {
     },
     success: function (data) {
       if (!data.success) {
-        window.toastr.error('Failed to update confidence: ' + data.error);
+        const errorMsg = data.error || 'Unknown error';
+        showToast(`Failed to update confidence: ${errorMsg}`, 'error');
       }
     },
-    error: function () {
-      window.toastr.error('Failed to update confidence. Please try again.');
+    error: function (xhr) {
+      const { message } = parseErrorResponse(xhr, 'Failed to update confidence');
+      showToast(message, 'error');
     },
   });
 }
@@ -207,12 +210,15 @@ export function deleteMapping(mappingId) {
     success: function (data) {
       if (data.success) {
         updateCallBadgeCount(data.call_id, data.new_count);
+        showToast('Mapping deleted', 'success');
       } else {
-        window.toastr.error('Failed to delete mapping: ' + data.error);
+        const errorMsg = data.error || 'Unknown error';
+        showToast(`Failed to delete mapping: ${errorMsg}`, 'error');
       }
     },
-    error: function () {
-      window.toastr.error('Failed to delete mapping. Please try again.');
+    error: function (xhr) {
+      const { message } = parseErrorResponse(xhr, 'Failed to delete mapping');
+      showToast(message, 'error');
     },
   });
 }

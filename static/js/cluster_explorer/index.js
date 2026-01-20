@@ -24,10 +24,12 @@ import {
   getJQuery,
   setJQuery,
 } from './state.js';
-import { initializeVisualization, createLegend, updateVisualization } from './visualization.js';
-import { selectCluster, loadClusterDetails, loadClusterMembers } from './interactions.js';
+import { initializeVisualization, createLegend, updateVisualization, resetZoom } from './visualization.js';
+import { selectCluster, loadClusterDetails, loadClusterMembers, deselectCluster } from './interactions.js';
 import { loadSegmentDetails, initializeControls } from './controls.js';
 import { saveClusterLabel } from './data_loader.js';
+import { initializeKeyboardNavigation, cleanupKeyboardNavigation } from './keyboard.js';
+import { initializeComparison, clearComparison, getComparisonState } from './comparison.js';
 
 /**
  * Initialize the cluster explorer
@@ -76,9 +78,21 @@ export function initClusterExplorer(clusters, options = {}) {
   // Set up control event handlers
   initializeControls();
 
+  // Initialize keyboard navigation
+  initializeKeyboardNavigation();
+
+  // Initialize cluster comparison functionality
+  initializeComparison();
+
   // Clean up any existing event handlers to prevent duplicates on re-initialization
   $('#save-cluster-label').off('click');
   $(document).off('click', '.view-segment-btn');
+  $('#zoom-reset').off('click');
+
+  // Set up zoom reset button
+  $('#zoom-reset').on('click', function () {
+    resetZoom();
+  });
 
   // Set up save button
   $('#save-cluster-label').on('click', function () {
@@ -152,9 +166,16 @@ export {
   initializeVisualization,
   createLegend,
   updateVisualization,
+  resetZoom,
   selectCluster,
+  deselectCluster,
   loadClusterDetails,
   loadClusterMembers,
   loadSegmentDetails,
   saveClusterLabel,
+  initializeKeyboardNavigation,
+  cleanupKeyboardNavigation,
+  initializeComparison,
+  clearComparison,
+  getComparisonState,
 };
