@@ -15,6 +15,7 @@ from battycoda_app.models import (
     TaskBatch,
     UserProfile,
 )
+from battycoda_app.models.notification import UserNotification
 from battycoda_app.tests.test_base import BattycodaTestCase
 
 
@@ -130,6 +131,34 @@ class UserProfileModelTest(BattycodaTestCase):
 
         # Verify demo project was created
         self.assertTrue(Project.objects.filter(created_by=new_user).exists())
+
+    def test_skip_demo_data_flag(self):
+        """Test that _skip_demo_data flag prevents demo data creation."""
+        # Create user with _skip_demo_data flag
+        user = User(username="nodemouser", email="nodemo@example.com")
+        user._skip_demo_data = True
+        user.set_password("password123")
+        user.save()
+
+        # Verify profile was still created
+        self.assertTrue(UserProfile.objects.filter(user=user).exists())
+
+        # Verify personal group was still created
+        user_profile = UserProfile.objects.get(user=user)
+        self.assertIsNotNone(user_profile.group)
+        self.assertEqual(user_profile.group.name, "nodemouser's Group")
+
+        # Verify group membership was still created
+        self.assertTrue(GroupMembership.objects.filter(user=user, group=user_profile.group).exists())
+
+        # Verify NO demo project was created
+        self.assertFalse(Project.objects.filter(created_by=user, name="Demo Project").exists())
+
+        # Verify NO task batches were created
+        self.assertFalse(TaskBatch.objects.filter(created_by=user).exists())
+
+        # Verify NO welcome notification was created
+        self.assertFalse(UserNotification.objects.filter(user=user).exists())
 
 
 class GroupInvitationModelTest(BattycodaTestCase):
