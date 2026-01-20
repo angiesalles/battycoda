@@ -60,6 +60,60 @@ export function showErrorWithRetry($container, message, options = {}) {
 }
 
 /**
+ * Display an error message with retry button inside a table row
+ * Used for errors in table bodies where the error needs to span all columns
+ * @param {jQuery} $tbody - jQuery tbody element
+ * @param {string} message - Error message to display
+ * @param {Object} options - Optional configuration
+ * @param {Function} options.onRetry - Callback for retry button
+ * @param {string} options.errorCode - Specific error code for debugging
+ * @param {number} options.colSpan - Number of columns to span (default: 6)
+ * @returns {jQuery} The error row element
+ */
+export function showTableErrorWithRetry($tbody, message, options = {}) {
+  const { onRetry, errorCode, colSpan = 6 } = options;
+
+  const errorCodeHtml = errorCode
+    ? `<small class="text-muted ms-2">(${escapeHtml(errorCode)})</small>`
+    : '';
+
+  const retryButtonHtml = onRetry
+    ? '<button class="btn btn-sm btn-outline-danger ms-2 table-error-retry-btn"><i class="fas fa-redo"></i> Retry</button>'
+    : '';
+
+  const rowHtml = `
+    <tr>
+      <td colspan="${colSpan}">
+        <div class="alert alert-danger d-flex align-items-center mb-0">
+          <div class="flex-grow-1">
+            <i class="fas fa-exclamation-triangle me-2"></i>
+            ${escapeHtml(message)}
+            ${errorCodeHtml}
+          </div>
+          ${retryButtonHtml}
+        </div>
+      </td>
+    </tr>
+  `;
+
+  $tbody.html(rowHtml);
+
+  if (onRetry) {
+    $tbody.find('.table-error-retry-btn').on('click', function () {
+      const $btn = window.jQuery(this);
+      const originalHtml = $btn.html();
+      $btn.html('<i class="fas fa-spinner fa-spin"></i> Retrying...').prop('disabled', true);
+
+      Promise.resolve(onRetry()).catch(() => {
+        $btn.html(originalHtml).prop('disabled', false);
+      });
+    });
+  }
+
+  return $tbody.find('tr');
+}
+
+/**
  * Parse AJAX error response and return user-friendly message
  * @param {jqXHR} xhr - jQuery XHR object
  * @param {string} defaultMessage - Default message if parsing fails

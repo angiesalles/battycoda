@@ -9,11 +9,12 @@ import { selectAll } from 'd3-selection';
 import { setSelectedClusterId, setFocusedClusterIndex, getIsProjectScope, getJQuery } from './state.js';
 import { escapeHtml } from '../utils/html.js';
 import { API_ENDPOINTS, buildUrl } from './api.js';
-import { showErrorWithRetry, parseErrorResponse, showLoading } from '../utils/error-handling.js';
-
-// Store last request parameters for retry functionality (reserved for future use)
-let _lastClusterDetailsRequest = null;
-let _lastClusterMembersRequest = null;
+import {
+  showErrorWithRetry,
+  showTableErrorWithRetry,
+  parseErrorResponse,
+  showLoading,
+} from '../utils/error-handling.js';
 
 /**
  * Select a cluster and display its details
@@ -68,9 +69,6 @@ export function loadClusterDetails(clusterId) {
     console.error('[ClusterExplorer] jQuery is not available. Cannot load cluster details.');
     return;
   }
-
-  // Store for retry
-  _lastClusterDetailsRequest = clusterId;
 
   // Show the details panel
   $('.initial-message').addClass('d-none');
@@ -190,9 +188,6 @@ export function loadClusterMembers(clusterId) {
     return;
   }
 
-  // Store for retry
-  _lastClusterMembersRequest = clusterId;
-
   // Show the members panel
   $('.initial-members-message').addClass('d-none');
   $('.cluster-members').removeClass('d-none');
@@ -213,41 +208,21 @@ export function loadClusterMembers(clusterId) {
         renderClusterMembers(data);
       } else {
         const errorMsg = data.error || 'Failed to load cluster members';
-        $('#members-table-body').html(
-          `<tr><td colspan="${colCount}">
-            <div class="alert alert-danger d-flex align-items-center mb-0">
-              <div class="flex-grow-1">
-                <i class="fas fa-exclamation-triangle me-2"></i>
-                ${escapeHtml(errorMsg)}
-                ${data.error_code ? `<small class="text-muted ms-2">(${escapeHtml(data.error_code)})</small>` : ''}
-              </div>
-              <button class="btn btn-sm btn-outline-danger ms-2 members-retry-btn">
-                <i class="fas fa-redo"></i> Retry
-              </button>
-            </div>
-          </td></tr>`
-        );
-        $('.members-retry-btn').on('click', () => loadClusterMembers(clusterId));
+        showTableErrorWithRetry($('#members-table-body'), errorMsg, {
+          errorCode: data.error_code,
+          colSpan: colCount,
+          onRetry: () => loadClusterMembers(clusterId),
+        });
       }
     }
   ).fail(function (xhr) {
     const cols = getIsProjectScope() ? 7 : 6;
     const { message, errorCode } = parseErrorResponse(xhr, 'Failed to load cluster members');
-    $('#members-table-body').html(
-      `<tr><td colspan="${cols}">
-        <div class="alert alert-danger d-flex align-items-center mb-0">
-          <div class="flex-grow-1">
-            <i class="fas fa-exclamation-triangle me-2"></i>
-            ${escapeHtml(message)}
-            ${errorCode ? `<small class="text-muted ms-2">(${errorCode})</small>` : ''}
-          </div>
-          <button class="btn btn-sm btn-outline-danger ms-2 members-retry-btn">
-            <i class="fas fa-redo"></i> Retry
-          </button>
-        </div>
-      </td></tr>`
-    );
-    $('.members-retry-btn').on('click', () => loadClusterMembers(clusterId));
+    showTableErrorWithRetry($('#members-table-body'), message, {
+      errorCode,
+      colSpan: cols,
+      onRetry: () => loadClusterMembers(clusterId),
+    });
   });
 }
 
