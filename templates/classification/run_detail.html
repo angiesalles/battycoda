@@ -219,19 +219,23 @@
                                     <td>{{ result_item.segment.onset|floatformat:2 }}s - {{ result_item.segment.offset|floatformat:2 }}s</td>
                                     
                                     {% for prob in result_item.probabilities %}
-                                    <td class="probability-cell" data-value="{{ prob.probability }}">
+                                    <td class="probability-cell" data-value="{{ prob.probability|default_if_none:'N/A' }}">
+                                        {% if prob.probability is None %}
+                                        <span class="text-muted">N/A</span>
+                                        {% else %}
                                         <div class="d-flex align-items-center">
                                             <div class="progress flex-grow-1 me-2" style="height: 15px;">
-                                                <div class="progress-bar bg-info" 
-                                                     role="progressbar" 
-                                                     style="width: {{ prob.probability|floatformat:2|multiply:100 }}%;" 
-                                                     aria-valuenow="{{ prob.probability|floatformat:2|multiply:100 }}" 
-                                                     aria-valuemin="0" 
+                                                <div class="progress-bar bg-info"
+                                                     role="progressbar"
+                                                     style="width: {{ prob.probability|floatformat:2|multiply:100 }}%;"
+                                                     aria-valuenow="{{ prob.probability|floatformat:2|multiply:100 }}"
+                                                     aria-valuemin="0"
                                                      aria-valuemax="100">
                                                 </div>
                                             </div>
                                             <span>{{ prob.probability|multiply:100|floatformat:1 }}%</span>
                                         </div>
+                                        {% endif %}
                                     </td>
                                     {% endfor %}
                                     

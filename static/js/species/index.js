@@ -27,7 +27,9 @@ import { escapeHtml } from '../utils/html.js';
 
 // Module state
 let callTypes = [];
-let canModifyCalls = true;
+let canModifyCalls = true; // Legacy: full modification (add + delete)
+let canAddCalls = true; // Can add new calls
+let canDeleteCalls = true; // Can delete existing calls
 
 /**
  * Show a message in the specified element
@@ -94,7 +96,7 @@ function renderCallsTable() {
 
   // Add rows for each call type
   callTypes.forEach((call, index) => {
-    const deleteButton = canModifyCalls
+    const deleteButton = canDeleteCalls
       ? `<button type="button" class="btn btn-sm btn-danger delete-call-btn" data-index="${index}">
            <i class="fas fa-trash"></i> Delete
          </button>`
@@ -119,8 +121,8 @@ function renderCallsTable() {
 
   callsTableContainer.innerHTML = tableHtml;
 
-  // Add event listeners to delete buttons (only if modification is allowed)
-  if (canModifyCalls) {
+  // Add event listeners to delete buttons (only if deletion is allowed)
+  if (canDeleteCalls) {
     document.querySelectorAll('.delete-call-btn').forEach((button) => {
       button.addEventListener('click', function () {
         const index = parseInt(this.dataset.index, 10);
@@ -139,11 +141,11 @@ function renderCallsTable() {
 function addCall(shortName, longName) {
   const addCallMessages = document.getElementById('add-call-messages');
 
-  // Check if modifications are allowed
-  if (!canModifyCalls) {
+  // Check if adding is allowed
+  if (!canAddCalls) {
     showMessage(
       addCallMessages,
-      'Cannot modify call types because this species is used by classifiers.',
+      'Cannot add call types for this species.',
       'error'
     );
     return false;
@@ -176,12 +178,12 @@ function addCall(shortName, longName) {
  * @param {number} index - Index of the call to delete
  */
 function deleteCall(index) {
-  // Check if modifications are allowed
-  if (!canModifyCalls) {
+  // Check if deletion is allowed
+  if (!canDeleteCalls) {
     const addCallMessages = document.getElementById('add-call-messages');
     showMessage(
       addCallMessages,
-      'Cannot modify call types because this species is used by classifiers.',
+      'Cannot delete call types because this species is used by classifiers.',
       'error'
     );
     return;
@@ -479,7 +481,17 @@ export function initSpeciesEdit() {
   // Get page data from JSON
   const pageData = getJsonData('species-page-data');
   const existingCalls = pageData?.existingCalls || [];
-  canModifyCalls = pageData?.canModifyCalls !== false; // default to true if not specified
+
+  // Set modification flags - support both old (canModifyCalls) and new (canAddCalls, canDeleteCalls) formats
+  canModifyCalls = pageData?.canModifyCalls !== false; // Legacy: full modification
+  canAddCalls = pageData?.canAddCalls !== false; // Default to true
+  canDeleteCalls = pageData?.canDeleteCalls !== false; // Default to true
+
+  // If only legacy flag provided, derive the new flags
+  if (pageData && 'canModifyCalls' in pageData && !('canAddCalls' in pageData)) {
+    canAddCalls = canModifyCalls;
+    canDeleteCalls = canModifyCalls;
+  }
 
   // Set module state
   callTypes = existingCalls.map((call) => ({
@@ -490,25 +502,32 @@ export function initSpeciesEdit() {
   // Initialize the table with existing calls
   renderCallsTable();
 
-  // Setup functionality if modification is allowed
-  if (canModifyCalls) {
+  // Setup functionality based on what's allowed
+  if (canAddCalls) {
+    // Setup call type management (add functionality)
     setupCallTypeManagement();
+  }
+
+  // File parsing only allowed if full modification is allowed (delete required for replace)
+  if (canDeleteCalls) {
     setupFileParsing();
   } else {
-    // Show a message that calls are locked
+    // Hide file import section if deletion is not allowed
+    const fileImportSection = document.getElementById('file-import-section');
+    if (fileImportSection) {
+      fileImportSection.style.display = 'none';
+    }
+  }
+
+  // If neither add nor delete is allowed, show locked message
+  if (!canAddCalls) {
     const addCallSection = document.getElementById('add-call-section');
     if (addCallSection) {
       addCallSection.innerHTML = `
         <div class="alert alert-warning">
-          <i class="fas fa-lock"></i> Call types cannot be modified because this species is used by one or more classifiers.
-          Classifiers are tied to the call types of their species.
+          <i class="fas fa-lock"></i> Call types cannot be modified for this species.
         </div>
       `;
-    }
-    // Hide file import section if it exists
-    const fileImportSection = document.getElementById('file-import-section');
-    if (fileImportSection) {
-      fileImportSection.style.display = 'none';
     }
   }
 

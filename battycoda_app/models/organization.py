@@ -92,7 +92,7 @@ class Species(models.Model):
 
     def can_modify_calls(self):
         """
-        Check if this species' call types can be modified.
+        Check if this species' call types can be fully modified (add AND delete).
         Returns False if there are classifiers linked to this species or if it's a system species.
         """
         # System species can't be modified
@@ -103,6 +103,23 @@ class Species(models.Model):
         from .classification import Classifier
 
         return not Classifier.objects.filter(species=self).exists()
+
+    def can_add_calls(self):
+        """
+        Check if new call types can be added to this species.
+        Returns True unless it's a system species.
+        Adding calls is always allowed because new calls will simply have NaN probabilities
+        for existing classification results.
+        """
+        return not self.is_system
+
+    def can_delete_calls(self):
+        """
+        Check if call types can be deleted from this species.
+        Returns False if there are classifiers linked to this species or if it's a system species.
+        Deletion is blocked because existing classification results reference those calls.
+        """
+        return self.can_modify_calls()
 
     @classmethod
     def get_available_for_user(cls, user):

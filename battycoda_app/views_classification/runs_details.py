@@ -55,10 +55,11 @@ def detection_run_detail_view(request, run_id):
         # Create a dictionary mapping call type ID to probability
         prob_dict = {prob.call_id: prob.probability for prob in probabilities}
 
-        # For each call type, get the probability (or default to 0)
+        # For each call type, get the probability (or None if not available)
+        # None indicates this call type was added after the classification was run
         call_probs = []
         for call in call_types:
-            call_probs.append({"call": call, "probability": prob_dict.get(call.id, 0.0)})
+            call_probs.append({"call": call, "probability": prob_dict.get(call.id)})
 
         # Add to results
         results_with_probabilities.append({"result": result, "segment": result.segment, "probabilities": call_probs})

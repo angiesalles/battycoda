@@ -16,28 +16,31 @@ from .models.recording import Recording
 from .models.task import Task, TaskBatch
 
 
-def _sync_calls_from_json(species, call_types_json):
+def _sync_calls_from_json(species, call_types_json, allow_delete=True):
     """
     Sync call types for a species from JSON data.
 
     Handles both create (no existing calls) and edit (existing calls to sync) cases.
     - Adds new calls
     - Updates existing calls if long_name changed
-    - Deletes calls no longer in the list
+    - Deletes calls no longer in the list (only if allow_delete=True)
 
     Args:
         species: Species instance to sync calls for
         call_types_json: JSON string of call types, e.g. '[{"short_name": "A", "long_name": "Call A"}]'
-                        Empty string or "[]" will delete all existing calls.
+                        Empty string or "[]" will delete all existing calls (if allow_delete=True).
+        allow_delete: If False, calls can only be added/updated, not deleted. This is used when
+                     the species has classifiers - deletion would break existing classification results.
 
     Returns:
         None
     """
     call_types_json = (call_types_json or "").strip()
 
-    # Empty or "[]" means delete all calls
+    # Empty or "[]" means delete all calls (only if allowed)
     if not call_types_json or call_types_json == "[]":
-        Call.objects.filter(species=species).delete()
+        if allow_delete:
+            Call.objects.filter(species=species).delete()
         return
 
     try:
@@ -68,10 +71,11 @@ def _sync_calls_from_json(species, call_types_json):
             # Create new call
             Call.objects.create(species=species, short_name=short_name, long_name=long_name)
 
-    # Delete calls no longer in the list
-    for short_name, call in existing_calls.items():
-        if short_name not in seen_short_names:
-            call.delete()
+    # Delete calls no longer in the list (only if allowed)
+    if allow_delete:
+        for short_name, call in existing_calls.items():
+            if short_name not in seen_short_names:
+                call.delete()
 
 
 @login_required
@@ -198,8 +202,10 @@ def edit_species_view(request, species_id):
         messages.error(request, "You don't have permission to edit this species.")
         return redirect("battycoda_app:species_list")
 
-    # Check if this species has classifiers (which would prevent modifying call types)
-    can_modify_calls = species.can_modify_calls()
+    # Check permissions for modifying call types
+    can_add_calls = species.can_add_calls()
+    can_delete_calls = species.can_delete_calls()
+    has_classifiers = not can_delete_calls and not species.is_system
 
     if request.method == "POST":
         form = SpeciesForm(request.POST, request.FILES, instance=species)
@@ -209,9 +215,9 @@ def edit_species_view(request, species_id):
                 # Save species basic info
                 species = form.save()
 
-                # Process call types from JSON
-                if can_modify_calls:
-                    _sync_calls_from_json(species, request.POST.get("call_types_json", ""))
+                # Process call types from JSON - allow adding if can_add_calls, deletion only if can_delete_calls
+                if can_add_calls:
+                    _sync_calls_from_json(species, request.POST.get("call_types_json", ""), allow_delete=can_delete_calls)
 
             messages.success(request, "Species updated successfully.")
             return redirect("battycoda_app:species_detail", species_id=species.id)
@@ -228,8 +234,10 @@ def edit_species_view(request, species_id):
         "species": species,
         "calls": calls,
         "existing_calls_json": existing_calls_json,
-        "can_modify": can_modify_calls,
-        "has_classifiers": not can_modify_calls,
+        "can_modify": can_add_calls and can_delete_calls,  # Full modification (legacy)
+        "can_add_calls": can_add_calls,
+        "can_delete_calls": can_delete_calls,
+        "has_classifiers": has_classifiers,
     }
 
     return render(request, "species/edit_species.html", context)
