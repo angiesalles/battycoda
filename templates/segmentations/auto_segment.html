@@ -12,8 +12,9 @@
 {% block card_title %}{{ recording.name }}{% endblock %}
 
 {% block action_buttons %}
-{% if recording.segmentation %}
-    <a href="{% url 'battycoda_app:segmentation_detail' segmentation_id=recording.segmentation.id %}" class="btn btn-secondary">
+{% with recording.segmentations.first as active_segmentation %}
+{% if active_segmentation %}
+    <a href="{% url 'battycoda_app:segmentation_detail' segmentation_id=active_segmentation.id %}" class="btn btn-secondary">
         <i class="fas fa-cut"></i> Manual Segmentation
     </a>
 {% else %}
@@ -21,6 +22,7 @@
         <i class="fas fa-cut"></i> Create Segmentation
     </a>
 {% endif %}
+{% endwith %}
 <a href="{% url 'battycoda_app:recording_detail' recording_id=recording.id %}" class="btn btn-outline-secondary">
     <i class="fas fa-arrow-left"></i> Back to Recording
 </a>
@@ -32,9 +34,11 @@
         <ol class="breadcrumb">
             <li class="breadcrumb-item"><a href="{% url 'battycoda_app:recording_list' %}">Recordings</a></li>
             <li class="breadcrumb-item"><a href="{% url 'battycoda_app:recording_detail' recording_id=recording.id %}">{{ recording.name }}</a></li>
-            {% if recording.segmentation %}
-                <li class="breadcrumb-item"><a href="{% url 'battycoda_app:segmentation_detail' segmentation_id=recording.segmentation.id %}">Segment</a></li>
+            {% with recording.segmentations.first as active_segmentation %}
+            {% if active_segmentation %}
+                <li class="breadcrumb-item"><a href="{% url 'battycoda_app:segmentation_detail' segmentation_id=active_segmentation.id %}">Segment</a></li>
             {% endif %}
+            {% endwith %}
             <li class="breadcrumb-item active" aria-current="page">Auto Segment</li>
         </ol>
     </nav>
@@ -276,9 +280,11 @@
             <a href="{% url 'battycoda_app:batch_segmentation' %}" class="btn btn-secondary" id="viewAllJobsBtn">
                 <i class="fas fa-tasks"></i> View All Segmentation Jobs
             </a>
-            <a href="{% if recording.segmentation %}{% url 'battycoda_app:segmentation_detail' segmentation_id=recording.segmentation.id %}{% else %}{% url 'battycoda_app:create_segmentation' %}?recording={{ recording.id }}{% endif %}" class="btn btn-primary" id="viewSegmentsBtn" style="display: none;">
+            {% with recording.segmentations.first as active_segmentation %}
+            <a href="{% if active_segmentation %}{% url 'battycoda_app:segmentation_detail' segmentation_id=active_segmentation.id %}{% else %}{% url 'battycoda_app:create_segmentation' %}?recording={{ recording.id }}{% endif %}" class="btn btn-primary" id="viewSegmentsBtn" style="display: none;">
                 <i class="fas fa-list"></i> View Segments
             </a>
+            {% endwith %}
         </div>
     </div>
 </div>

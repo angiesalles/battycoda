@@ -115,8 +115,9 @@
                         To view and manage segments for this recording, use the segmentation tool.
                     </p>
                     <div id="segmentationButtons" class="d-flex flex-wrap">
-                        {% if recording.segmentation %}
-                            <a id="segmentRecordingBtn" href="{% url 'battycoda_app:segmentation_detail' segmentation_id=recording.segmentation.id %}" class="btn btn-primary me-2 mb-2">
+                        {% with recording.segmentations.first as active_segmentation %}
+                        {% if active_segmentation %}
+                            <a id="segmentRecordingBtn" href="{% url 'battycoda_app:segmentation_detail' segmentation_id=active_segmentation.id %}" class="btn btn-primary me-2 mb-2">
                         {% else %}
                             <a id="segmentRecordingBtn" href="{% url 'battycoda_app:create_segmentation' %}?recording={{ recording.id }}" class="btn btn-primary me-2 mb-2">
                         {% endif %}
@@ -128,11 +129,12 @@
                         <a id="autoSegmentBtn" href="{% url 'battycoda_app:auto_segment_recording' recording_id=recording.id %}" class="btn btn-primary me-2 mb-2">
                             <span id="magicIcon" class="fas fa-magic me-1"></span> Auto-Segment
                         </a>
-                        {% if recording.segmentation %}
-                        <a id="runClassificationBtn" href="{% url 'battycoda_app:create_detection_run_for_segmentation' segmentation_id=recording.segmentation.id %}" class="btn btn-primary mb-2">
+                        {% if active_segmentation %}
+                        <a id="runClassificationBtn" href="{% url 'battycoda_app:create_detection_run_for_segmentation' segmentation_id=active_segmentation.id %}" class="btn btn-primary mb-2">
                             <span id="classifyIcon" class="fas fa-desktop me-1"></span> Run Classification
                         </a>
                         {% endif %}
+                        {% endwith %}
                     </div>
                 </div>
             </div>
