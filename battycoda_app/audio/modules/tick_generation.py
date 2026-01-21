@@ -2,7 +2,24 @@
 Functions for generating tick marks for spectrograms in BattyCoda.
 """
 
-# Configure logging
+
+def format_time(ms_value):
+    """Format a time value, using seconds if >= 100ms, otherwise milliseconds.
+
+    Args:
+        ms_value: Time value in milliseconds (can be negative)
+
+    Returns:
+        str: Formatted time string with appropriate unit
+    """
+    abs_val = abs(ms_value)
+    if abs_val >= 100:
+        # Show in seconds with one decimal place
+        seconds = ms_value / 1000
+        return f"{seconds:.1f}s"
+    else:
+        # Show in milliseconds with one decimal place
+        return f"{ms_value:.1f}ms"
 
 
 def get_spectrogram_ticks(task, sample_rate=None, normal_window_size=None, overview_window_size=None):
@@ -56,14 +73,14 @@ def get_spectrogram_ticks(task, sample_rate=None, normal_window_size=None, overv
         {
             "id": "left-tick-detail",
             "position": detail_left_pos,
-            "value": f"-{normal_window_size[0]:.1f} ms",
+            "value": format_time(-normal_window_size[0]),
             "type": "major",
         },
-        {"id": "zero-tick-detail", "position": detail_zero_pos, "value": "0.0 ms", "type": "major"},
+        {"id": "zero-tick-detail", "position": detail_zero_pos, "value": "0", "type": "major"},
         {
             "id": "right-tick-detail",
             "position": detail_right_pos,
-            "value": f"{call_duration_ms + normal_window_size[1]:.1f} ms",  # Include call length + padding
+            "value": format_time(call_duration_ms + normal_window_size[1]),  # Include call length + padding
             "type": "major",
         },
     ]
@@ -75,7 +92,7 @@ def get_spectrogram_ticks(task, sample_rate=None, normal_window_size=None, overv
             {
                 "id": "call-end-tick-detail",
                 "position": detail_call_end_pos,
-                "value": f"{call_duration_ms:.1f} ms",
+                "value": format_time(call_duration_ms),
                 "type": "major",
             },
         )
@@ -86,26 +103,26 @@ def get_spectrogram_ticks(task, sample_rate=None, normal_window_size=None, overv
         {
             "id": "left-tick-overview",
             "position": overview_left_pos,
-            "value": f"-{overview_window_size[0]:.1f} ms",
+            "value": format_time(-overview_window_size[0]),
             "type": "major",
         },
-        {"id": "zero-tick-overview", "position": overview_zero_pos, "value": "0.0 ms", "type": "major"},
+        {"id": "zero-tick-overview", "position": overview_zero_pos, "value": "0", "type": "major"},
         {
             "id": "right-tick-overview",
             "position": overview_right_pos,
-            "value": f"{overview_window_size[1]:.1f} ms",  # padding
+            "value": format_time(overview_window_size[1]),  # padding
             "type": "major",
         },
     ]
 
-    # Only add the call-end tick if the call duration is at least 2ms
+    # Only add the call-end tick if the call duration is at least 30ms
     if call_duration_ms >= 30.0:
         x_ticks_overview.insert(
             2,
             {
                 "id": "call-end-tick-overview",
                 "position": overview_call_end_pos,
-                "value": f"{call_duration_ms:.1f} ms",
+                "value": format_time(call_duration_ms),
                 "type": "major",
             },
         )
