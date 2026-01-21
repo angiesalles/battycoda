@@ -12,7 +12,7 @@
         </ol>
     </nav>
     
-    <div class="card bg-dark">
+    <div class="card">
         <div class="card-header">
             <h2>Create Task</h2>
         </div>
@@ -20,61 +20,61 @@
             <p class="text-muted mb-4">
                 Create a single task. Task batches are created from classification results.
             </p>
-            
+
             <form method="post">
                 {% csrf_token %}
-                
+
                 <div class="row">
                     <div class="col-md-6 mb-3">
                         <label for="{{ form.wav_file_name.id_for_label }}" class="form-label">WAV File Name</label>
-                        {{ form.wav_file_name|add_class:"form-control bg-dark text-light" }}
+                        {{ form.wav_file_name|add_class:"form-control" }}
                         <div class="form-text">The name of the WAV file associated with this task</div>
                         {% if form.wav_file_name.errors %}
                             <div class="text-danger">{{ form.wav_file_name.errors }}</div>
                         {% endif %}
                     </div>
-                    
+
                     <div class="col-md-6 mb-3">
                         <label for="{{ form.species.id_for_label }}" class="form-label">Species</label>
-                        {{ form.species|add_class:"form-control bg-dark text-light" }}
+                        {{ form.species|add_class:"form-control" }}
                         {% if form.species.errors %}
                             <div class="text-danger">{{ form.species.errors }}</div>
                         {% endif %}
                     </div>
                 </div>
-                
+
                 <div class="row">
                     <div class="col-md-6 mb-3">
                         <label for="{{ form.onset.id_for_label }}" class="form-label">Onset (seconds)</label>
-                        {{ form.onset|add_class:"form-control bg-dark text-light" }}
+                        {{ form.onset|add_class:"form-control" }}
                         <div class="form-text">Start time of the segment in seconds</div>
                         {% if form.onset.errors %}
                             <div class="text-danger">{{ form.onset.errors }}</div>
                         {% endif %}
                     </div>
-                    
+
                     <div class="col-md-6 mb-3">
                         <label for="{{ form.offset.id_for_label }}" class="form-label">Offset (seconds)</label>
-                        {{ form.offset|add_class:"form-control bg-dark text-light" }}
+                        {{ form.offset|add_class:"form-control" }}
                         <div class="form-text">End time of the segment in seconds</div>
                         {% if form.offset.errors %}
                             <div class="text-danger">{{ form.offset.errors }}</div>
                         {% endif %}
                     </div>
                 </div>
-                
+
                 <div class="row">
                     <div class="col-md-6 mb-3">
                         <label for="{{ form.project.id_for_label }}" class="form-label">Project</label>
-                        {{ form.project|add_class:"form-control bg-dark text-light" }}
+                        {{ form.project|add_class:"form-control" }}
                         {% if form.project.errors %}
                             <div class="text-danger">{{ form.project.errors }}</div>
                         {% endif %}
                     </div>
-                    
+
                     <div class="col-md-6 mb-3">
                         <label for="{{ form.status.id_for_label }}" class="form-label">Status</label>
-                        {{ form.status|add_class:"form-select bg-dark text-light" }}
+                        {{ form.status|add_class:"form-select" }}
                         {% if form.status.errors %}
                             <div class="text-danger">{{ form.status.errors }}</div>
                         {% endif %}

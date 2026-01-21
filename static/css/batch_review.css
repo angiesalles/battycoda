@@ -1,15 +1,23 @@
+/**
+ * Batch Review CSS
+ *
+ * Styles for the task batch review interface.
+ * Uses CSS variables for theme support.
+ */
+
 .task-card {
-    border: 1px solid #dee2e6;
+    border: 1px solid var(--bs-border-color, #dee2e6);
+    background-color: var(--bs-body-bg, #ffffff);
     transition: all 0.3s ease;
 }
 
 .task-card:hover {
-    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
     transform: translateY(-2px);
 }
 
 .spectrogram-container {
-    border-bottom: 1px solid #dee2e6;
+    border-bottom: 1px solid var(--bs-border-color, #dee2e6);
 }
 
 .spectrogram-image {
@@ -23,12 +31,12 @@
 .stat-number {
     font-size: 1.5rem;
     font-weight: bold;
-    color: #007bff;
+    color: var(--bs-primary, #007bff);
 }
 
 .stat-label {
     font-size: 0.875rem;
-    color: #6c757d;
+    color: var(--bs-secondary-color, #6c757d);
 }
 
 .loading-overlay {
@@ -37,7 +45,8 @@
     left: 0;
     width: 100%;
     height: 100%;
-    background-color: rgba(255, 255, 255, 0.8);
+    background-color: var(--bs-body-bg, rgba(255, 255, 255, 0.8));
+    opacity: 0.9;
     display: flex;
     justify-content: center;
     align-items: center;
@@ -48,7 +57,7 @@
     font-size: 0.875rem;
 }
 
-.card-header {
-    background-color: #f8f9fa;
-    border-bottom: 1px solid #dee2e6;
+.batch-review-page .card-header {
+    background-color: var(--bs-tertiary-bg, #f8f9fa);
+    border-bottom: 1px solid var(--bs-border-color, #dee2e6);
 }

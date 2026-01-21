@@ -15,7 +15,7 @@
     <div class="row">
         <!-- Task info sidebar -->
         <div class="col-md-2">
-            <div class="task-sidebar p-3 rounded shadow-sm" style="background-color: #262626; height: 100%;">
+            <div class="task-sidebar p-3 rounded shadow-sm">
                 <div class="d-flex align-items-center mb-2">
                     <h4 class="mb-0">Task #{{ task.id }}</h4>
                     {% if task.created_by != request.user %}
@@ -29,15 +29,15 @@
                         <img src="{{ species_obj.image.url }}" alt="{{ species_obj.name }}" class="species-image img-fluid rounded">
                     </div>
                     {% endif %}
-                    <p class="small text-light mb-1"><strong>Species:</strong> {{ species }}</p>
-                    <p class="small text-light mb-1"><strong>Recording:</strong> 
+                    <p class="small mb-1"><strong>Species:</strong> {{ species }}</p>
+                    <p class="small mb-1"><strong>Recording:</strong>
                         {% if task.batch and task.batch.detection_run and task.batch.detection_run.segmentation.recording %}
                             {{ task.batch.detection_run.segmentation.recording.name }}
                         {% else %}
                             {{ wav_path }}
                         {% endif %}
                     </p>
-                    <p class="small text-light mb-1"><strong>Segment:</strong> {{ task.onset|floatformat:4 }}s - {{ task.offset|floatformat:4 }}s ({{ task.offset|subtract:task.onset|multiply:1000|floatformat:1 }} ms)</p>
+                    <p class="small mb-1"><strong>Segment:</strong> {{ task.onset|floatformat:4 }}s - {{ task.offset|floatformat:4 }}s ({{ task.offset|subtract:task.onset|multiply:1000|floatformat:1 }} ms)</p>
                     <p class="small text-muted mb-1"><strong>Task Batch:</strong> 
                     {% if task.batch %}
                         <a href="{% url 'battycoda_app:task_batch_detail' batch_id=task.batch.id %}" class="text-info">
@@ -66,7 +66,7 @@
         
         <!-- Main content area -->
         <div class="col-md-8">
-            <div class="spectrogram-section p-3 rounded shadow-sm" style="background-color: #1e1e1e;">
+            <div class="spectrogram-section p-3 rounded shadow-sm">
                 <div id="spectrogram-container" class="mb-2">
                     <div class="spectrogram-wrapper">
                         <!-- Spectrogram with axes -->
@@ -175,7 +175,7 @@
             
         <!-- Task classification sidebar -->
         <div class="col-md-2">
-            <div class="task-classification p-3 rounded shadow-sm" style="background-color: #262626; height: 100%;">
+            <div class="task-classification p-3 rounded shadow-sm">
                 <!-- Classification header -->
                 <h4 class="mb-3">Task Classification</h4>
                 

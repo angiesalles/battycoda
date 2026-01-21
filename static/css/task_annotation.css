@@ -82,6 +82,13 @@ img {
    Spectrogram Grid & Axes
    ======================================== */
 
+/* Spectrogram section container */
+.spectrogram-section {
+    background-color: var(--ta-card-bg);
+    border: 1px solid var(--ta-card-border);
+    color: var(--ta-text);
+}
+
 /* Spectrogram styling with axis support */
 .spectrogram-wrapper {
     position: relative;
@@ -313,6 +320,9 @@ body.annotation-page.theme-dark .form-select:focus {
     top: 15px;
     height: calc(100vh - 30px);
     overflow-y: auto;
+    background-color: var(--ta-card-bg);
+    border: 1px solid var(--ta-card-border);
+    color: var(--ta-text);
 }
 
 .task-info p {
@@ -328,6 +338,9 @@ body.annotation-page.theme-dark .form-select:focus {
     top: 15px;
     height: calc(100vh - 30px);
     overflow-y: auto;
+    background-color: var(--ta-card-bg);
+    border: 1px solid var(--ta-card-border);
+    color: var(--ta-text);
 }
 
 .classification-info p {
