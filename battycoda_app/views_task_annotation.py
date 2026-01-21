@@ -129,8 +129,9 @@ def task_annotation_view(request, task_id):
     # defined call types.
 
     # Get classifier probabilities for the source segment (excluding dummy classifier ID=5)
+    # Only show to the creator of the task batch to avoid biasing other annotators
     classifier_probabilities = {}
-    if task.source_segment:
+    if task.source_segment and task.batch and task.batch.created_by == request.user:
         from .models.classification import ClassificationResult
 
         # Get the most recent classification result for this segment, excluding dummy classifier
