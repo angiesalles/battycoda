@@ -128,6 +128,24 @@ def task_annotation_view(request, task_id):
     # This ensures annotators always have an option even for species with no
     # defined call types.
 
+    # Get classifier probabilities for the source segment (excluding dummy classifier ID=5)
+    classifier_probabilities = {}
+    if task.source_segment:
+        from .models.classification import ClassificationResult
+
+        # Get the most recent classification result for this segment, excluding dummy classifier
+        classification_result = (
+            ClassificationResult.objects.filter(segment=task.source_segment)
+            .exclude(classification_run__classifier_id=5)  # Exclude Dummy Classifier
+            .order_by("-created_at")
+            .first()
+        )
+
+        if classification_result:
+            # Get all probabilities for this result
+            for prob in classification_result.probabilities.all():
+                classifier_probabilities[prob.call.short_name] = prob.probability
+
     # Check if HDF5 spectrogram file exists for the recording
     from .models.recording import Recording
 
@@ -232,6 +250,8 @@ def task_annotation_view(request, task_id):
         "y_ticks": y_ticks,
         # Add batch switch data for notification
         "batch_switch_data": batch_switch_data,
+        # Classifier probabilities for the source segment
+        "classifier_probabilities": classifier_probabilities,
     }
 
     # Return the annotation interface

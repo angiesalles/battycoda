@@ -192,6 +192,9 @@
                         <label class="form-check-label" for="{{ call_type|slugify }}">
                             {{ call_type }}
                             {% if task.label == call_type %}<span class="badge bg-info ms-1">Auto</span>{% endif %}
+                            {% with prob=classifier_probabilities|get_item:call_type %}
+                                {% if prob %}<span class="text-muted ms-1">({{ prob|multiply:100|floatformat:1 }}%)</span>{% endif %}
+                            {% endwith %}
                         </label>
                     </div>
                     {% endfor %}
