@@ -1,6 +1,6 @@
-"""Views for applying detection results to segments.
+"""Views for applying classification results to segments.
 
-Provides functionality to apply automated detection results to segments.
+Provides functionality to apply automated classification results to segments.
 """
 
 from django.contrib import messages
@@ -12,9 +12,9 @@ from battycoda_app.models.classification import CallProbability, ClassificationR
 
 
 @login_required
-def apply_detection_results_view(request, run_id, segment_id=None):
+def apply_classification_results_view(request, run_id, segment_id=None):
     """Apply classification results to segments."""
-    # Get the detection run by ID
+    # Get the classification run by ID
     run = get_object_or_404(ClassificationRun, id=run_id)
 
     # Check if the user has permission
@@ -37,7 +37,7 @@ def apply_detection_results_view(request, run_id, segment_id=None):
             messages.error(request, "Segment does not belong to this classification run's recording.")
             return redirect("battycoda_app:classification_run_detail", run_id=run_id)
 
-        # Get the detection result for this segment
+        # Get the classification result for this segment
         try:
             result = ClassificationResult.objects.get(classification_run=run, segment=segment)
 

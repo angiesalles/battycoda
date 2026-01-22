@@ -91,7 +91,7 @@
                         <h5 class="alert-heading">Classifier Created Successfully</h5>
                         <p>Your custom classifier "{{ job.classifier.name }}" has been created and is ready to use!</p>
                         <hr>
-                        <a href="{% url 'battycoda_app:create_detection_run' %}" class="btn btn-success">
+                        <a href="{% url 'battycoda_app:create_classification_run' %}" class="btn btn-success">
                             <i class="fas fa-play"></i> Use Classifier
                         </a>
                     </div>
@@ -195,7 +195,7 @@
                 <div class="card-body">
                     <div class="d-grid gap-2">
                         {% if job.status == 'completed' %}
-                        <a href="{% url 'battycoda_app:create_detection_run' %}" class="btn btn-success">
+                        <a href="{% url 'battycoda_app:create_classification_run' %}" class="btn btn-success">
                             <i class="fas fa-play"></i> Use Classifier
                         </a>
                         {% endif %}

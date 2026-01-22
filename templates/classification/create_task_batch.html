@@ -9,7 +9,7 @@
     <nav aria-label="breadcrumb">
         <ol class="breadcrumb">
             <li class="breadcrumb-item"><a href="{% url 'battycoda_app:classification_home' %}">Classification</a></li>
-            <li class="breadcrumb-item"><a href="{% url 'battycoda_app:detection_run_detail' run_id=run.id %}">{{ run.name }}</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'battycoda_app:classification_run_detail' run_id=run.id %}">{{ run.name }}</a></li>
             <li class="breadcrumb-item active" aria-current="page">Create Task Batch</li>
         </ol>
     </nav>
@@ -84,7 +84,7 @@
                 </div>
             </div>
             
-            <form method="post" action="{% url 'battycoda_app:create_task_batch_from_detection_run' run_id=run.id %}">
+            <form method="post" action="{% url 'battycoda_app:create_task_batch_from_classification_run' run_id=run.id %}">
                 {% csrf_token %}
                 
                 <div class="row mb-4">
@@ -131,7 +131,7 @@
                 </div>
                 
                 <div class="d-grid gap-2 d-md-flex justify-content-md-end mt-4">
-                    <a href="{% url 'battycoda_app:detection_run_detail' run_id=run.id %}" class="btn btn-secondary me-md-2">
+                    <a href="{% url 'battycoda_app:classification_run_detail' run_id=run.id %}" class="btn btn-secondary me-md-2">
                         <i class="fas fa-arrow-left me-1"></i> Back
                     </a>
                     <button type="submit" class="btn btn-primary">

@@ -279,12 +279,21 @@ os.chmod("/tmp/numba_cache", 0o755)
 os.chmod("/tmp/matplotlib_config", 0o755)
 
 # Logging Configuration
+LOG_DIR = "/var/log/battycoda"
+
 LOGGING = {
     "version": 1,
     "disable_existing_loggers": False,
     "formatters": {
         "verbose": {
             "format": "{levelname} {asctime} {module} {message}",
+            "style": "{",
+        },
+        "detailed": {
+            "format": "=== {levelname} {asctime} ===\n"
+            "Module: {module} | Logger: {name}\n"
+            "File: {pathname}:{lineno}\n"
+            "{message}\n",
             "style": "{",
         },
     },
@@ -305,9 +314,18 @@ LOGGING = {
         },
         "mail_admins": {
             "level": "ERROR",
-            "class": "django.utils.log.AdminEmailHandler",
+            "class": "battycoda_app.logging_handlers.UserContextAdminEmailHandler",
             "include_html": True,
             "filters": ["require_debug_false", "skip_disallowed_host"],
+        },
+        "error_file": {
+            "level": "ERROR",
+            "class": "logging.handlers.RotatingFileHandler",
+            "filename": f"{LOG_DIR}/django-errors.log",
+            "maxBytes": 10 * 1024 * 1024,  # 10 MB
+            "backupCount": 5,
+            "formatter": "detailed",
+            "filters": ["skip_disallowed_host"],
         },
     },
     "root": {
@@ -316,13 +334,18 @@ LOGGING = {
     },
     "loggers": {
         "django.request": {
-            "handlers": ["mail_admins"],
+            "handlers": ["mail_admins", "error_file"],
             "level": "ERROR",
             "propagate": False,
         },
         "django.security.DisallowedHost": {
             "handlers": ["console"],
             "level": "ERROR",
+            "propagate": False,
+        },
+        "battycoda_app": {
+            "handlers": ["console", "error_file"],
+            "level": "INFO",
             "propagate": False,
         },
     },

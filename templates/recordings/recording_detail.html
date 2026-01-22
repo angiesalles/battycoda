@@ -130,7 +130,7 @@
                             <span id="magicIcon" class="fas fa-magic me-1"></span> Auto-Segment
                         </a>
                         {% if active_segmentation %}
-                        <a id="runClassificationBtn" href="{% url 'battycoda_app:create_detection_run_for_segmentation' segmentation_id=active_segmentation.id %}" class="btn btn-primary mb-2">
+                        <a id="runClassificationBtn" href="{% url 'battycoda_app:create_classification_run_for_segmentation' segmentation_id=active_segmentation.id %}" class="btn btn-primary mb-2">
                             <span id="classifyIcon" class="fas fa-desktop me-1"></span> Run Classification
                         </a>
                         {% endif %}

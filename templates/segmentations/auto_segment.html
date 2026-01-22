@@ -182,7 +182,7 @@
                 <small class="form-text text-muted">Start time for preview window</small>
             </div>
             <div class="col-md-6 d-flex align-items-end">
-                <button type="button" class="btn btn-outline-info" id="previewBtn" data-recording-id="{{ recording.id }}" data-preview-url="{% url 'battycoda_app:create_segmentation_preview' recording_id=recording.id %}">
+                <button type="button" class="btn btn-outline-info" id="previewBtn" data-recording-id="{{ recording.id }}" data-preview-url="{% url 'battycoda_app:create_preview_recording' recording_id=recording.id %}">
                     <i class="fas fa-search"></i> Preview Segmentation
                 </button>
             </div>

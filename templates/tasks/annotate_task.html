@@ -31,8 +31,8 @@
                     {% endif %}
                     <p class="small mb-1"><strong>Species:</strong> {{ species }}</p>
                     <p class="small mb-1"><strong>Recording:</strong>
-                        {% if task.batch and task.batch.detection_run and task.batch.detection_run.segmentation.recording %}
-                            {{ task.batch.detection_run.segmentation.recording.name }}
+                        {% if task.batch and task.batch.classification_run and task.batch.classification_run.segmentation.recording %}
+                            {{ task.batch.classification_run.segmentation.recording.name }}
                         {% else %}
                             {{ wav_path }}
                         {% endif %}

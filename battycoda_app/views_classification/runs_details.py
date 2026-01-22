@@ -1,6 +1,6 @@
-"""Detail views for detection runs.
+"""Detail views for classification runs.
 
-Provides views for displaying detailed information about detection runs.
+Provides views for displaying detailed information about classification runs.
 """
 
 import logging
@@ -23,9 +23,9 @@ logger = logging.getLogger(__name__)
 
 
 @login_required
-def detection_run_detail_view(request, run_id):
+def classification_run_detail_view(request, run_id):
     """Display details of a specific classification run."""
-    # Get the detection run by ID
+    # Get the classification run by ID
     run = get_object_or_404(ClassificationRun, id=run_id)
 
     # Check if the user has permission to view this run
@@ -76,9 +76,9 @@ def detection_run_detail_view(request, run_id):
 
 
 @login_required
-def detection_run_status_view(request, run_id):
-    """AJAX view for checking status of a detection run."""
-    # Get the detection run by ID
+def classification_run_status_view(request, run_id):
+    """AJAX view for checking status of a classification run."""
+    # Get the classification run by ID
     run = get_object_or_404(ClassificationRun, id=run_id)
 
     # Check if the user has permission to view this run
@@ -99,8 +99,8 @@ def detection_run_status_view(request, run_id):
 
 @login_required
 def download_features_file_view(request, run_id):
-    """Download the features CSV file for a detection run."""
-    # Get the detection run by ID
+    """Download the features CSV file for a classification run."""
+    # Get the classification run by ID
     run = get_object_or_404(ClassificationRun, id=run_id)
 
     # Check if the user has permission to view this run
@@ -112,12 +112,12 @@ def download_features_file_view(request, run_id):
     # Check if features file exists
     if not run.features_file:
         messages.error(request, "No features file available for this run.")
-        return redirect("battycoda_app:detection_run_detail", run_id=run_id)
+        return redirect("battycoda_app:classification_run_detail", run_id=run_id)
 
     # Check if file exists on disk
     if not os.path.exists(run.features_file):
         messages.error(request, "Features file not found on disk.")
-        return redirect("battycoda_app:detection_run_detail", run_id=run_id)
+        return redirect("battycoda_app:classification_run_detail", run_id=run_id)
 
     # Generate a user-friendly filename
     filename = f"features_{run.name}_{run.id}.csv"
@@ -132,7 +132,7 @@ def download_features_file_view(request, run_id):
         return response
     except Exception as e:
         messages.error(request, f"Error downloading features file: {str(e)}")
-        return redirect("battycoda_app:detection_run_detail", run_id=run_id)
+        return redirect("battycoda_app:classification_run_detail", run_id=run_id)
 
 
 @login_required
@@ -150,14 +150,14 @@ def download_segments_zip_view(request, run_id):
     recording = run.segmentation.recording
     if not recording.wav_file or not os.path.exists(recording.wav_file.path):
         messages.error(request, "WAV file not found for recording.")
-        return redirect("battycoda_app:detection_run_detail", run_id=run_id)
+        return redirect("battycoda_app:classification_run_detail", run_id=run_id)
 
     # Get all segments
     segments = run.segmentation.segments.all().order_by("onset")
 
     if not segments.exists():
         messages.error(request, "No segments found for this classification run.")
-        return redirect("battycoda_app:detection_run_detail", run_id=run_id)
+        return redirect("battycoda_app:classification_run_detail", run_id=run_id)
 
     # Create ZIP file in memory
     zip_buffer = BytesIO()

@@ -18,7 +18,6 @@ def jobs_dashboard_view(request):
     context = {
         "segmentation_jobs": [],
         "classification_jobs": [],
-        "detection_jobs": [],
         "clustering_jobs": [],
         "training_jobs": [],
         "spectrogram_jobs": [],
@@ -55,28 +54,28 @@ def jobs_dashboard_view(request):
         context["segmentation_jobs"] = segmentations
         context["segmentation_active_count"] = segmentations_active.count()
 
-        # Get classification/detection runs
+        # Get classification runs
         if profile.is_current_group_admin:
-            detection_runs_active = ClassificationRun.objects.filter(
+            classification_runs_active = ClassificationRun.objects.filter(
                 group=profile.group, status__in=["queued", "pending", "in_progress"]
             ).order_by("-created_at")
 
-            detection_runs_recent = ClassificationRun.objects.filter(
+            classification_runs_recent = ClassificationRun.objects.filter(
                 group=profile.group, status__in=["completed", "failed"]
             ).order_by("-created_at")[:10]
         else:
-            detection_runs_active = ClassificationRun.objects.filter(
+            classification_runs_active = ClassificationRun.objects.filter(
                 created_by=request.user, status__in=["queued", "pending", "in_progress"]
             ).order_by("-created_at")
 
-            detection_runs_recent = ClassificationRun.objects.filter(
+            classification_runs_recent = ClassificationRun.objects.filter(
                 created_by=request.user, status__in=["completed", "failed"]
             ).order_by("-created_at")[:10]
 
-        detection_runs = list(detection_runs_active) + list(detection_runs_recent)
+        classification_runs = list(classification_runs_active) + list(classification_runs_recent)
 
-        context["detection_jobs"] = detection_runs
-        context["detection_active_count"] = detection_runs_active.count()
+        context["classification_jobs"] = classification_runs
+        context["classification_active_count"] = classification_runs_active.count()
 
         # Get classifier training jobs
         if profile.is_current_group_admin:

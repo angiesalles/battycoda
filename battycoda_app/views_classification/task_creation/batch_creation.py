@@ -1,6 +1,6 @@
-"""Views for creating tasks from detection runs.
+"""Views for creating tasks from classification runs.
 
-Provides functionality to convert detection run results into manual tasks for review.
+Provides functionality to convert classification run results into manual tasks for review.
 """
 
 import logging
@@ -20,9 +20,9 @@ logger = logging.getLogger(__name__)
 
 
 @login_required
-def create_task_batch_from_detection_run(request, run_id):
-    """Create a task batch from a detection run's results for manual review and correction."""
-    # Get the detection run
+def create_task_batch_from_classification_run(request, run_id):
+    """Create a task batch from a classification run's results for manual review and correction."""
+    # Get the classification run
     run = get_object_or_404(ClassificationRun, id=run_id)
 
     # Check if the user has permission
@@ -34,7 +34,7 @@ def create_task_batch_from_detection_run(request, run_id):
     # Check if the run is completed
     if run.status != "completed":
         messages.error(request, "Cannot create a task batch from an incomplete classification run.")
-        return redirect("battycoda_app:detection_run_detail", run_id=run_id)
+        return redirect("battycoda_app:classification_run_detail", run_id=run_id)
 
     if request.method == "POST":
         # Get form data
@@ -49,10 +49,10 @@ def create_task_batch_from_detection_run(request, run_id):
                 max_confidence = float(confidence_threshold)
                 if max_confidence < 0 or max_confidence > 1:
                     messages.error(request, "Confidence threshold must be between 0 and 1.")
-                    return redirect("battycoda_app:detection_run_detail", run_id=run_id)
+                    return redirect("battycoda_app:classification_run_detail", run_id=run_id)
             except ValueError:
                 messages.error(request, "Invalid confidence threshold value.")
-                return redirect("battycoda_app:detection_run_detail", run_id=run_id)
+                return redirect("battycoda_app:classification_run_detail", run_id=run_id)
 
         try:
             # Use helper function to create the batch
@@ -69,7 +69,7 @@ def create_task_batch_from_detection_run(request, run_id):
                 messages.warning(
                     request, "No tasks were created. All segments may already have tasks or were filtered out."
                 )
-                return redirect("battycoda_app:detection_run_detail", run_id=run_id)
+                return redirect("battycoda_app:classification_run_detail", run_id=run_id)
 
             # Create success message with filtering info
             success_msg = f"Created task batch '{batch.name}' with {tasks_created} tasks for review."
@@ -81,7 +81,7 @@ def create_task_batch_from_detection_run(request, run_id):
         except Exception as e:
             logger.exception(f"Error creating task batch for run {run_id}: {str(e)}")
             messages.error(request, f"Error creating task batch: {str(e)}")
-            return redirect("battycoda_app:detection_run_detail", run_id=run_id)
+            return redirect("battycoda_app:classification_run_detail", run_id=run_id)
 
     # For GET requests, show the form
     recording = run.segmentation.recording
@@ -153,7 +153,7 @@ def create_task_batches_for_species_view(request):
 
     project_id = request.GET.get("project")
 
-    # Get all species with completed detection runs
+    # Get all species with completed classification runs
     if profile.group and profile.is_current_group_admin:
         query = Species.objects.filter(
             recordings__segmentations__classification_runs__status="completed", recordings__group=profile.group

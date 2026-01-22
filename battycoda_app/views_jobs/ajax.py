@@ -18,7 +18,7 @@ def job_status_api_view(request):
     # Get all active (non-completed) jobs
     jobs_status = {
         "segmentation_jobs": [],
-        "detection_jobs": [],
+        "classification_jobs": [],
         "training_jobs": [],
         "clustering_jobs": [],
         "spectrogram_jobs": [],
@@ -33,7 +33,7 @@ def job_status_api_view(request):
                 recording__hidden=False,  # Exclude hidden recordings
                 status__in=["pending", "in_progress"],
             )
-            detection_runs = ClassificationRun.objects.filter(group=profile.group, status__in=["pending", "running"])
+            classification_runs = ClassificationRun.objects.filter(group=profile.group, status__in=["pending", "running"])
             training_jobs = ClassifierTrainingJob.objects.filter(group=profile.group, status__in=["pending", "running"])
             clustering_runs = ClusteringRun.objects.filter(group=profile.group, status__in=["pending", "running"])
 
@@ -47,7 +47,7 @@ def job_status_api_view(request):
                 recording__hidden=False,  # Exclude hidden recordings
                 status__in=["pending", "in_progress"],
             )
-            detection_runs = ClassificationRun.objects.filter(
+            classification_runs = ClassificationRun.objects.filter(
                 created_by=request.user, status__in=["pending", "running"]
             )
             training_jobs = ClassifierTrainingJob.objects.filter(
@@ -72,9 +72,9 @@ def job_status_api_view(request):
                 }
             )
 
-        # Format detection jobs
-        for run in detection_runs:
-            jobs_status["detection_jobs"].append(
+        # Format classification jobs
+        for run in classification_runs:
+            jobs_status["classification_jobs"].append(
                 {
                     "id": run.id,
                     "name": f"Classification: {run.name}",
@@ -151,7 +151,7 @@ def cancel_job_view(request, job_type, job_id):
                 job.save()
                 return JsonResponse({"success": True, "message": "Segmentation job cancelled"})
 
-        elif job_type == "detection":
+        elif job_type == "classification":
             job = ClassificationRun.objects.get(id=job_id)
             # Check permissions
             if job.created_by != request.user and not (profile.is_current_group_admin and job.group == profile.group):
@@ -161,7 +161,7 @@ def cancel_job_view(request, job_type, job_id):
             if job.status in ["pending", "running"]:
                 job.status = "cancelled"
                 job.save()
-                return JsonResponse({"success": True, "message": "Detection job cancelled"})
+                return JsonResponse({"success": True, "message": "Classification job cancelled"})
 
         elif job_type == "training":
             job = ClassifierTrainingJob.objects.get(id=job_id)

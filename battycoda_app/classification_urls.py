@@ -1,7 +1,7 @@
 """
 Classification URL patterns.
 
-Handles detection runs, classifier training, applying results,
+Handles classification runs, classifier training, applying results,
 and creating task batches from classification results.
 """
 
@@ -27,30 +27,30 @@ from .views_classification.job_status import (
     classifier_training_job_status_view,
     delete_classifier_training_job_view,
 )
-from .views_classification.results_application import apply_detection_results_view
-from .views_classification.run_creation import create_detection_run_view, delete_detection_run_view
+from .views_classification.results_application import apply_classification_results_view
+from .views_classification.run_creation import create_classification_run_view, delete_classification_run_view
 from .views_classification.runs_details import (
-    detection_run_detail_view,
-    detection_run_status_view,
+    classification_run_detail_view,
+    classification_run_status_view,
     download_features_file_view,
     download_segments_zip_view,
 )
 from .views_classification.task_creation.batch_creation import (
-    create_task_batch_from_detection_run,
+    create_task_batch_from_classification_run,
     create_task_batches_for_species_view,
 )
 from .views_classification.task_creation.species_tasks import create_tasks_for_species_view
 
 urlpatterns = [
     path("classification/", classification_home_view, name="classification_home"),
-    path("classification/runs/<int:run_id>/", detection_run_detail_view, name="detection_run_detail"),
-    path("classification/runs/create/", create_detection_run_view, name="create_detection_run"),
+    path("classification/runs/<int:run_id>/", classification_run_detail_view, name="classification_run_detail"),
+    path("classification/runs/create/", create_classification_run_view, name="create_classification_run"),
     path(
         "classification/runs/create/<int:segmentation_id>/",
-        create_detection_run_view,
-        name="create_detection_run_for_segmentation",
+        create_classification_run_view,
+        name="create_classification_run_for_segmentation",
     ),
-    path("classification/runs/<int:run_id>/status/", detection_run_status_view, name="detection_run_status"),
+    path("classification/runs/<int:run_id>/status/", classification_run_status_view, name="classification_run_status"),
     path(
         "classification/runs/<int:run_id>/download-features/",
         download_features_file_view,
@@ -61,20 +61,20 @@ urlpatterns = [
     ),
     path(
         "classification/runs/<int:run_id>/apply/",
-        apply_detection_results_view,
-        name="apply_detection_results",
+        apply_classification_results_view,
+        name="apply_classification_results",
     ),
     path(
         "classification/runs/<int:run_id>/apply/<int:segment_id>/",
-        apply_detection_results_view,
-        name="apply_detection_result_for_segment",
+        apply_classification_results_view,
+        name="apply_classification_result_for_segment",
     ),
     path(
         "classification/runs/<int:run_id>/create-tasks/",
-        create_task_batch_from_detection_run,
-        name="create_task_batch_from_detection_run",
+        create_task_batch_from_classification_run,
+        name="create_task_batch_from_classification_run",
     ),
-    path("classification/runs/<int:run_id>/delete/", delete_detection_run_view, name="delete_detection_run"),
+    path("classification/runs/<int:run_id>/delete/", delete_classification_run_view, name="delete_classification_run"),
     path("classification/unclassified/", classify_unclassified_segments_view, name="classify_unclassified_segments"),
     path(
         "classification/unclassified/<int:species_id>/classify/",

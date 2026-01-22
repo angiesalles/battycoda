@@ -25,7 +25,7 @@
                     <h4 class="mb-0">New Classification Run</h4>
                 </div>
                 <div class="card-body">
-                    <form method="post" action="{% url 'battycoda_app:create_detection_run' %}">
+                    <form method="post" action="{% url 'battycoda_app:create_classification_run' %}">
                         {% csrf_token %}
                         
                         <input type="hidden" name="segmentation_id" value="{{ segmentation.id }}">

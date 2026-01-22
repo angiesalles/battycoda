@@ -74,7 +74,7 @@ def process_classification_queue(self):
 
 
 @shared_task(bind=True, name="battycoda_app.audio.task_modules.queue_processor.queue_classification_run")
-def queue_classification_run(self, detection_run_id):
+def queue_classification_run(self, classification_run_id):
     """
     Add a ClassificationRun to the queue for processing.
 
@@ -82,12 +82,12 @@ def queue_classification_run(self, detection_run_id):
     and lets the queue processor handle the actual classification.
 
     Args:
-        detection_run_id: ID of the ClassificationRun to queue
+        classification_run_id: ID of the ClassificationRun to queue
     """
     from ...models.classification import ClassificationRun
 
     try:
-        run = ClassificationRun.objects.get(id=detection_run_id)
+        run = ClassificationRun.objects.get(id=classification_run_id)
         run.status = "queued"
         run.save(update_fields=["status"])
 
@@ -96,11 +96,11 @@ def queue_classification_run(self, detection_run_id):
         return {"status": "success", "message": f"Run {run.id} queued for processing"}
 
     except ClassificationRun.DoesNotExist:
-        error_msg = f"ClassificationRun {detection_run_id} not found"
+        error_msg = f"ClassificationRun {classification_run_id} not found"
         logger.error(error_msg)
         return {"status": "error", "message": error_msg}
     except Exception as e:
-        error_msg = f"Error queuing run {detection_run_id}: {str(e)}"
+        error_msg = f"Error queuing run {classification_run_id}: {str(e)}"
         logger.error(error_msg)
         return {"status": "error", "message": error_msg}
 

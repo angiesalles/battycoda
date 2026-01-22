@@ -11,7 +11,7 @@ from battycoda_app.models.classification import CallProbability, ClassificationR
 
 
 @login_required
-def create_detection_run_view(request, segmentation_id=None):
+def create_classification_run_view(request, segmentation_id=None):
     """Create a new classification run for a specific segmentation."""
     if request.method == "POST":
         segmentation_id = request.POST.get("segmentation_id") or segmentation_id
@@ -40,7 +40,7 @@ def create_detection_run_view(request, segmentation_id=None):
 
             except Classifier.DoesNotExist:
                 messages.error(request, "Default classifier not found. Please select a classifier.")
-                return redirect("battycoda_app:create_detection_run", segmentation_id=segmentation_id)
+                return redirect("battycoda_app:create_classification_run", segmentation_id=segmentation_id)
 
         if classifier.species and segmentation.recording.species != classifier.species:
             error_message = (
@@ -49,7 +49,7 @@ def create_detection_run_view(request, segmentation_id=None):
                 f"Please select a classifier that matches the recording's species."
             )
             messages.error(request, error_message)
-            return redirect("battycoda_app:create_detection_run", segmentation_id=segmentation_id)
+            return redirect("battycoda_app:create_classification_run", segmentation_id=segmentation_id)
 
         try:
             run = ClassificationRun.objects.create(
@@ -72,7 +72,7 @@ def create_detection_run_view(request, segmentation_id=None):
                 return JsonResponse({"success": True, "run_id": run.id})
 
             messages.success(request, "Classification run created successfully. Processing will begin shortly.")
-            return redirect("battycoda_app:detection_run_detail", run_id=run.id)
+            return redirect("battycoda_app:classification_run_detail", run_id=run.id)
 
         except Exception as e:
             if request.headers.get("x-requested-with") == "XMLHttpRequest":
@@ -171,7 +171,7 @@ def create_detection_run_view(request, segmentation_id=None):
 
 
 @login_required
-def delete_detection_run_view(request, run_id):
+def delete_classification_run_view(request, run_id):
     """Delete a classification run."""
     run = get_object_or_404(ClassificationRun, id=run_id)
 

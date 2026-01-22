@@ -19,7 +19,7 @@
 
     <!-- Action Buttons -->
     <div class="d-flex gap-2">
-        <a href="{% url 'battycoda_app:create_detection_run' %}{% if selected_project_id %}?project={{ selected_project_id }}{% endif %}" class="btn btn-primary">
+        <a href="{% url 'battycoda_app:create_classification_run' %}{% if selected_project_id %}?project={{ selected_project_id }}{% endif %}" class="btn btn-primary">
             <i class="fas fa-plus-circle me-1"></i> New Classification Run
         </a>
         <a href="{% url 'battycoda_app:classify_unclassified_segments' %}{% if selected_project_id %}?project={{ selected_project_id }}{% endif %}" class="btn btn-primary">
@@ -96,10 +96,10 @@
                         <td>{{ run.created_by.username }}</td>
                         <td>
                             <div class="d-flex">
-                                <a href="{% url 'battycoda_app:detection_run_detail' run_id=run.id %}" class="btn btn-sm btn-primary me-2">
+                                <a href="{% url 'battycoda_app:classification_run_detail' run_id=run.id %}" class="btn btn-sm btn-primary me-2">
                                     <i class="fas fa-chart-bar"></i> View Results
                                 </a>
-                                <a href="{% url 'battycoda_app:delete_detection_run' run_id=run.id %}"
+                                <a href="{% url 'battycoda_app:delete_classification_run' run_id=run.id %}"
                                    class="btn btn-sm btn-danger">
                                     <i class="fas fa-trash-alt"></i> Delete
                                 </a>
@@ -112,7 +112,7 @@
         </div>
         {% else %}
         <div class="alert alert-info">
-            <p class="mb-0">No classification runs found. <a href="{% url 'battycoda_app:create_detection_run' %}" class="alert-link">Create one</a> to get started.</p>
+            <p class="mb-0">No classification runs found. <a href="{% url 'battycoda_app:create_classification_run' %}" class="alert-link">Create one</a> to get started.</p>
         </div>
         {% endif %}
     </div>

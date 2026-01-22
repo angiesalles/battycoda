@@ -67,8 +67,8 @@
         </a>
     </td>
     <td>
-        {% if item.detection_run and item.detection_run.segmentation.recording %}
-            {{ item.detection_run.segmentation.recording.name }}
+        {% if item.classification_run and item.classification_run.segmentation.recording %}
+            {{ item.classification_run.segmentation.recording.name }}
         {% else %}
             {{ item.wav_file_name }}
         {% endif %}

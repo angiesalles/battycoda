@@ -83,12 +83,12 @@
     <!-- Jobs Tables -->
     <div class="row">
         {% include "jobs/includes/job_table.html" with jobs=segmentation_jobs title="Segmentation Jobs" icon="fas fa-scissors" detail_url_name="battycoda_app:recording_detail" job_id_param="recording_id" job_type="segmentation" cancel_statuses="pending,in_progress" show_recording=True %}
-        {% include "jobs/includes/job_table.html" with jobs=detection_jobs title="Classification Jobs" icon="fas fa-desktop" detail_url_name="battycoda_app:detection_run_detail" job_id_param="run_id" job_type="detection" cancel_statuses="pending,running" show_classifier=True %}
+        {% include "jobs/includes/job_table.html" with jobs=classification_jobs title="Classification Jobs" icon="fas fa-desktop" detail_url_name="battycoda_app:classification_run_detail" job_id_param="run_id" job_type="detection" cancel_statuses="pending,running" show_classifier=True %}
         {% include "jobs/includes/job_table.html" with jobs=training_jobs title="Training Jobs" icon="fas fa-tools" detail_url_name="battycoda_app:classifier_training_job_detail" job_id_param="job_id" job_type="training" cancel_statuses="pending,running" %}
         {% include "jobs/includes/job_table.html" with jobs=clustering_jobs title="Clustering Jobs" icon="fas fa-layer-group" detail_url_name="battycoda_app:clustering_run_detail" job_id_param="run_id" job_type="clustering" cancel_statuses="pending,running" %}
         {% include "jobs/includes/spectrogram_table.html" %}
     </div>
-    {% if not segmentation_jobs and not detection_jobs and not training_jobs and not clustering_jobs and not spectrogram_jobs %}
+    {% if not segmentation_jobs and not classification_jobs and not training_jobs and not clustering_jobs and not spectrogram_jobs %}
     <div class="text-center py-5">
         <i class="fas fa-clock text-muted" style="font-size: 4rem;"></i>
         <h3 class="text-muted mt-3">No Jobs Found</h3>

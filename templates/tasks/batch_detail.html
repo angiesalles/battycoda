@@ -57,7 +57,7 @@
                     <div class="alert alert-info mt-2">
                         <p class="mb-1"><strong>Source:</strong> This batch was created from a classification run:</p>
                         <p class="mb-0">
-                            <a href="{% url 'battycoda_app:detection_run_detail' run_id=batch.classification_run.id %}" class="btn btn-sm btn-info">
+                            <a href="{% url 'battycoda_app:classification_run_detail' run_id=batch.classification_run.id %}" class="btn btn-sm btn-info">
                                 <i class="fas fa-robot"></i> View Classification Run #{{ batch.classification_run.id }}
                             </a>
                         </p>

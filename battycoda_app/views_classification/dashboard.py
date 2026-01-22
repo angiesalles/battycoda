@@ -79,6 +79,6 @@ def classification_home_view(request):
 
 
 @login_required
-def detection_run_list_view(request):
-    """Display list of all detection runs - redirects to main automation view."""
+def classification_run_list_view(request):
+    """Display list of all classification runs - redirects to main automation view."""
     return redirect("battycoda_app:classification_home")
