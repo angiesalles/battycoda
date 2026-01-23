@@ -178,6 +178,10 @@ else:
     # Use PostgreSQL exclusively - no fallbacks
     DATABASES = {"default": _prod_db_config}
 
+# Validate database connections before use to prevent "connection already closed" errors
+# when connections in the pool become stale (e.g., after SSL drops or server restarts)
+CONN_HEALTH_CHECKS = True
+
 # Password validation
 # https://docs.djangoproject.com/en/5.1/ref/settings/#auth-password-validators
 
