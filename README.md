@@ -1,115 +1,156 @@
-1. Pre-Annotation Processing  
-2. Setting up Species and Project  
-3. Uploading Calls (with or without Segments)  
-4. From Upload to Task Batch  
-5. Annotating Calls  
-6. Exporting Data
+# BattyCoda
 
-## 1\. Pre-Annotation Processing
+BattyCoda is a web-based platform for annotating and classifying bat vocalizations. It provides tools for segmenting audio recordings, running machine learning classifiers, and managing collaborative annotation workflows.
 
-Before uploading any calls, it is wise to filter out as much noise as possible. To do this, first, you can filter for noise files. I do so using SonoBat’s Noise Scrubbing option. Once noise files have been deleted, I also like to set up a high-pass filter to reduce noise from influencing the automatic segmenter. High-pass filters will depend on the species. Keep in mind that many social calls are lower than the recommended filters for echolocation calls of that species, so it is wise to look at a couple of your social calls and make decisions on your data.
+## Table of Contents
 
-If your lab already has a way to segment calls, or calls that have been segmented in the past, those segments can be added in Battycoda. We have used SASLab to automatically segment calls. 
+1. [Pre-Annotation Processing](#1-pre-annotation-processing)
+2. [Setting up Species and Projects](#2-setting-up-species-and-projects)
+3. [Uploading Recordings](#3-uploading-recordings)
+4. [From Upload to Task Batch](#4-from-upload-to-task-batch)
+5. [Annotating Calls](#5-annotating-calls)
+6. [Exporting Data](#6-exporting-data)
+7. [FAQ](#faq)
 
-BattyCoda works best with short audio files, so it is recommended to split files if they are more than a minute long. 
+## 1. Pre-Annotation Processing
 
-## 2\. Setting up Species and Project 
+Before uploading recordings, it is recommended to filter out as much noise as possible. Tools such as SonoBat's Noise Scrubbing can help identify and remove noise files. Applying a high-pass filter can also reduce noise interference with the automatic segmenter. Filter settings will vary by species—note that many social calls are lower in frequency than echolocation calls, so review your data before setting filter thresholds.
 
-Members with admin access for their organization will be able to add new species. For each species, there needs to be a .jpeg for the repertoire and a list of the call types. These can be inputted manually or from a text file. Noise and Unknown should be added as call types for ease of annotation. 
+If your lab has existing segmentation workflows or previously segmented recordings, those segments can be imported into BattyCoda. Tools like SASLab can be used for automatic segmentation.
 
-![][image1]
+BattyCoda works best with short audio files. Files longer than one minute should be split before upload.
 
-## 3\. Uploading Calls
+## 2. Setting up Species and Projects
 
-Calls can be uploaded with or without pre-segmentation. Before you upload any files, make sure to note what group and project your files will be in. Groups are important because the people with access to your files will be based on groups. I like to have all of my files that undergrads will annotate in one group, and my test files in another group. I like to base the projects on an experiment block, so I have different projects for different years of field recordings of one experiment. How you differentiate projects is up to you, so keep in mind that the filtering of tasks is based on the project.
+Organization admins can add new species to the system. Each species requires:
+- A repertoire image (JPEG format)
+- A list of call types (entered manually or imported from a text file)
 
-	**For segmented calls**
+**Tip:** Include "Noise" and "Unknown" as call types to simplify annotation.
 
-In order to add known segments to BattyCoda, you need an Excel or CSV file with the start time and end times of the segments. You can then use the ImprovedBatPickle.py file found in the github to make associated pickle files for Excel files. There is also a [picklecheck.py](http://picklecheck.py) script to ensure that the pickle files have the correct information to be uploaded to BattyCoda. This pickle file stores the onset and offset information of the segments. Once the .wav.pickle files are in your folder, you can use the api code to upload them in conjunction with your .wav files, using \[this\] code. You can upload single files with segments in BattyCoda with the New Recording button, then go to the recording and click “upload pickle file”. You can use the batch processing button for some files, \~ 50, where it will ask you for an upload of zip files of the folder of .wav files and folder of pickle files. If you are uploading many files at once, you want to use the API implementation. Example code for single file upload for testing can be found \[here\] and batch uploading \[here\]. 
+![Species setup interface][image1]
 
-**For unsegmented calls**
+## 3. Uploading Recordings
 
-You can upload single files in BattyCoda with the New Recording button. You can use the batch processing button for some files, \~ 50\. If you are uploading many files at once, you want to use the API implementation. Example code for single file upload for testing can be found \[here\] and batch uploading \[here\]. 
+Recordings can be uploaded with or without pre-existing segmentation. Before uploading, determine the appropriate group and project:
 
-## 4\. From Upload to Task Batch
+- **Groups** control access permissions. For example, you might separate files for student annotators from test files.
+- **Projects** organize recordings by experiment, field season, or other logical groupings. Task filtering is based on project membership.
 
-Next, you need to get the calls through to the Task Batch stage. The tabs at the top are essentially the steps you will take
+### Uploading Segmented Recordings
 
-![][image2]
+To import existing segments, prepare a CSV or Excel file with segment start and end times, then convert it to a pickle file using the `ImprovedBatPickle.py` script (available in the repository). Use `picklecheck.py` to verify the pickle file format before upload.
 
-Once you have files uploaded, you will segment them. Move on to classification if you uploaded segmented files. You can click into a recording and press “Auto Segment,” and you will see this screen
+Upload options:
+- **Single file:** Use the "New Recording" button, then upload the pickle file from the recording page
+- **Small batches (~50 files):** Use the batch processing feature with ZIP archives
+- **Large batches:** Use the API for bulk uploads (see example code in the repository)
 
-![][image3]
+### Uploading Unsegmented Recordings
 
-I would recommend the minimum duration to be the length of the shortest call of your species, likely the echolocation call. Still testing the other options.
+- **Single file:** Use the "New Recording" button
+- **Small batches (~50 files):** Use the batch processing feature
+- **Large batches:** Use the API implementation
 
-For classification, you can “new classification run” for one file or “Classify Unclassified Segments” for those that have not been classified. You will then be prompted to choose your classifier. 
+## 4. From Upload to Task Batch
 
-![][image4]
+The navigation tabs reflect the processing workflow:
 
-For species without a functional classifier, choose dummy classification. Testing is done for species with classifiers to determine which mathematical model yields the most accurate results.  
-Once the files are classified, on the classifier tab, you can choose the “create task batches” button. You will be prompted to choose which species you will create task batches for. 
+![Navigation tabs][image2]
 
-![][image5]
+### Segmentation
 
-You will be prompted to choose a confidence threshold, which would exclude high-confidence calls from manual inspection. Only do this if your species has a working classifier and you wish to exclude calls based on this threshold.
+For unsegmented files, open a recording and click "Auto Segment":
 
-You now have task batches ready to be annotated\! All of these tasks can also be completed using the API, which is more relevant if you have many hundreds of files that tend to cause errors in browsers.
+![Auto segment interface][image3]
 
-## 5\. Annotating Calls
+Set the minimum duration to match the shortest expected call for your species (typically the echolocation call duration).
 
-Below is the interface you will see once you have chosen your file in BattyCoda. In the middle, we see the spectrogram of the call being annotated. The detailed view shows the spectrogram zoomed in to one specific call, which is the call you are labeling. The call you are labelling is the one right after the 0 seconds label. The overview is a zoomed-out version of the same call, to better understand the context of the call. 
+### Classification
 
-![][image6]
+Run classification on segmented recordings:
+- **Single recording:** Click "New Classification Run"
+- **Batch processing:** Use "Classify Unclassified Segments"
 
-Under the spectrogram, we have some other options. The channel observed is regarding multiple microphones in each recording. Even if you only uploaded one wav per recording, this option will persist. There is also the play audio bar. You can press play to hear a pitched-down segment of the call. This is most important for differentiating bat calls from noise.
+![Classifier selection][image4]
 
-To the left of the spectrogram is the repertoire image and information on the recording. This is a very helpful guide, but vocalizations are variable across individuals and contexts. Most annotators will want this image open in another tab while they work. Here we can also see the species, what recording this is, the segment, and the duration of the call in parentheses. Often, calls will be similar in shape but different in duration, so this is important to note. We also see the task batch and project here, and have the last task and skip task buttons.
+Select the appropriate classifier for your species. For species without a trained classifier, use "Dummy Classification."
 
-To the right of the spectrogram, we see the list of calls to label. The call that the classifier believes to be the correct label will be at the top. Once you mark a call, you can click mark as done or next task to classify the call and move to the next call.
+### Creating Task Batches
 
-## 6\. Exporting Data
+After classification, create task batches from the Classification tab:
 
-Once you have calls labelled, you can start exporting them. Go to your task batch page, filter for the specific project you want, then click “Download Completed Batches.” This will give you a zip file of the export Excel files for each file. Once is pictured below. 
+![Task batch creation][image5]
 
-![][image7]
+You can set a confidence threshold to exclude high-confidence predictions from manual review (recommended only for species with validated classifiers).
 
-The “Label” is the annotation made by hand, and “Classification” is the annotation made by the classifier. When using a dummy classifier, it is blank.
+All of these operations can also be performed via the API, which is recommended for large datasets.
 
-One can also export the parameters from files segmented on BattyCoda. On the classification tab, you can export the parameters used for classification.
+## 5. Annotating Calls
 
-![][image8]
+The annotation interface displays:
 
-This is where you would do that if it were working. That Excel file looks like this.
+![Annotation interface][image6]
 
-![][image9]
+**Center panel:** The spectrogram view with two modes:
+- **Detailed view:** Zoomed in on the segment being labeled (centered after the 0-second mark)
+- **Overview:** Zoomed out to show surrounding context
 
-With these two outputs (or the parameter files from pre-BattyCoda Segmentation), you can do analysis once you combine the Labels with the Parameters, and an example of that in code can be seen \[here\].
+**Below the spectrogram:**
+- Channel selector (for multi-microphone recordings)
+- Audio playback controls (pitch-shifted for audibility)
+
+**Left panel:**
+- Species repertoire reference image
+- Recording metadata (species, recording name, segment number, duration)
+- Task batch and project information
+- Navigation buttons (previous/skip)
+
+**Right panel:**
+- Call type buttons for labeling
+- Classifier's predicted label appears at the top
+- "Mark as Done" and "Next Task" buttons
+
+## 6. Exporting Data
+
+### Exporting Annotations
+
+From the Task Batch page, filter by project and click "Download Completed Batches" to receive a ZIP file containing Excel exports for each recording:
+
+![Export example][image7]
+
+The export includes:
+- **Label:** Human annotation
+- **Classification:** Classifier prediction (blank for dummy classification)
+
+### Exporting Parameters
+
+Classification parameters can be exported from the Classification tab:
+
+![Parameter export button][image8]
+
+The parameter export format:
+
+![Parameter export example][image9]
+
+Combine annotation labels with acoustic parameters for analysis. Example code is available in the repository.
 
 ## FAQ
 
-Q: I hit an error, help\!
+**Q: I encountered an error. What should I do?**
 
-A: Please submit an issue report on the github [\[here\]](https://github.com/angiesalles/battycoda/issues) if you encounter any type of error, we will work on resolving those as soon as possible. 
+A: Please submit an issue report on [GitHub](https://github.com/angiesalles/battycoda/issues). We actively monitor and address reported issues.
 
-Q: But my species doesn't have a known repertoire?
+**Q: My species doesn't have a documented repertoire. How do I proceed?**
 
-A: Congratulations, you get the fun job of naming all of the calls. Currently, we are constructing repertoires by hand. The clustering tab is there to hopefully be able to create these clusters and hence labels, but it is still under construction. When deciding the repertoires, it is not necessary to find every single call, you can add a “new call” call type for your species to put calls you would consider not described, and update the repertoire accordingly.
+A: You can build the repertoire as you annotate. Add a "New Call" call type to capture undescribed vocalizations, then update the repertoire as patterns emerge. The Clustering feature (currently in development) will help identify call type groupings automatically.
 
 [image1]: docs/images/image1.png
-
 [image2]: docs/images/image2.png
-
 [image3]: docs/images/image3.png
-
 [image4]: docs/images/image4.png
-
 [image5]: docs/images/image5.png
-
 [image6]: docs/images/image6.png
-
 [image7]: docs/images/image7.png
-
 [image8]: docs/images/image8.png
-
 [image9]: docs/images/image9.png
