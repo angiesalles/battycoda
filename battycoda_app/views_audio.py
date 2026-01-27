@@ -99,20 +99,16 @@ def task_spectrogram_view(request, task_id):
 
         spectrogram_float = spectrogram_data.astype(np.float32)
 
-        height, width = spectrogram_float.shape
-        img = Image.new("RGB", (width, height))
-        pixels = img.load()
-
         spec_min = spectrogram_float.min()
         spec_max = spectrogram_float.max()
         spec_range = spec_max - spec_min if spec_max > spec_min else 1
 
-        for y in range(height):
-            for x in range(width):
-                value = (spectrogram_float[height - 1 - y, x] - spec_min) / spec_range
-                index = int(np.clip(value * 255, 0, 255))
-                color = ROSEUS_COLORMAP[index]
-                pixels[x, y] = tuple(color)
+        # Vectorized colormap application (replaces slow pixel-by-pixel loop)
+        normalized = ((spectrogram_float - spec_min) / spec_range * 255).clip(0, 255).astype(np.uint8)
+        flipped = np.flipud(normalized)
+        colormap_array = np.array(ROSEUS_COLORMAP, dtype=np.uint8)
+        colored = colormap_array[flipped]
+        img = Image.fromarray(colored)
 
         buf = io.BytesIO()
         img.save(buf, format="PNG")
