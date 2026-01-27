@@ -145,12 +145,12 @@ A: Please submit an issue report on [GitHub](https://github.com/angiesalles/batt
 
 A: You can build the repertoire as you annotate. Add a "New Call" call type to capture undescribed vocalizations, then update the repertoire as patterns emerge. The Clustering feature (currently in development) will help identify call type groupings automatically.
 
-[image1]: docs/images/image1.png
-[image2]: docs/images/image2.png
-[image3]: docs/images/image3.png
-[image4]: docs/images/image4.png
-[image5]: docs/images/image5.png
-[image6]: docs/images/image6.png
-[image7]: docs/images/image7.png
-[image8]: docs/images/image8.png
-[image9]: docs/images/image9.png
+[image1]: docs/images/image1.png?v=2
+[image2]: docs/images/image2.png?v=2
+[image3]: docs/images/image3.png?v=2
+[image4]: docs/images/image4.png?v=2
+[image5]: docs/images/image5.png?v=2
+[image6]: docs/images/image6.png?v=2
+[image7]: docs/images/image7.png?v=2
+[image8]: docs/images/image8.png?v=2
+[image9]: docs/images/image9.png?v=2
