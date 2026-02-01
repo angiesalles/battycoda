@@ -1,6 +1,28 @@
 """
 Functions for generating tick marks for spectrograms in BattyCoda.
+
+Uses matplotlib's MaxNLocator for intelligent tick placement - a well-tested
+algorithm that chooses "nice" tick values automatically.
 """
+
+from matplotlib.ticker import MaxNLocator
+
+
+def get_nice_ticks(min_val, max_val, num_ticks=5):
+    """Generate nice tick values for a given range using matplotlib's algorithm.
+
+    Args:
+        min_val: Minimum value of the range
+        max_val: Maximum value of the range
+        num_ticks: Approximate number of ticks desired (default 5)
+
+    Returns:
+        list: List of tick values at "nice" positions
+    """
+    locator = MaxNLocator(nbins=num_ticks, steps=[1, 2, 2.5, 5, 10])
+    ticks = locator.tick_values(min_val, max_val)
+    # Filter to only include ticks within the range
+    return [t for t in ticks if min_val <= t <= max_val]
 
 
 def format_time(ms_value):
@@ -67,78 +89,63 @@ def get_spectrogram_ticks(task, sample_rate=None, normal_window_size=None, overv
     overview_zero_pos = (overview_left_padding / overview_total_duration) * 100  # Start of sound
     overview_right_pos = 100  # Right edge
     overview_call_end_pos = ((overview_left_padding + call_duration_ms) / overview_total_duration) * 100
-    # Generate x-axis ticks data for detail view
-    # Start with the left and right edge ticks
-    x_ticks_detail = [
-        {
-            "id": "left-tick-detail",
-            "position": detail_left_pos,
-            "value": format_time(-normal_window_size[0]),
-            "type": "major",
-        },
-        {"id": "zero-tick-detail", "position": detail_zero_pos, "value": "0", "type": "major"},
-        {
-            "id": "right-tick-detail",
-            "position": detail_right_pos,
-            "value": format_time(call_duration_ms + normal_window_size[1]),  # Include call length + padding
-            "type": "major",
-        },
-    ]
+    # Generate x-axis ticks data for detail view using matplotlib's nice tick algorithm
+    # Time range: from -left_padding to (call_duration + right_padding)
+    detail_min_time = -detail_left_padding
+    detail_max_time = call_duration_ms + detail_right_padding
 
-    # Only add the call-end tick if the call duration is at least 2ms
-    if call_duration_ms >= 2.0:
-        x_ticks_detail.insert(
-            2,
-            {
-                "id": "call-end-tick-detail",
-                "position": detail_call_end_pos,
-                "value": format_time(call_duration_ms),
-                "type": "major",
-            },
-        )
+    # Get nice tick values for the time range (aim for ~6 ticks)
+    nice_ticks_ms = get_nice_ticks(detail_min_time, detail_max_time, num_ticks=6)
 
-    # Generate x-axis ticks data for overview
-    # For overview, the total width should be just left_padding + right_padding
-    x_ticks_overview = [
-        {
-            "id": "left-tick-overview",
-            "position": overview_left_pos,
-            "value": format_time(-overview_window_size[0]),
-            "type": "major",
-        },
-        {"id": "zero-tick-overview", "position": overview_zero_pos, "value": "0", "type": "major"},
-        {
-            "id": "right-tick-overview",
-            "position": overview_right_pos,
-            "value": format_time(overview_window_size[1]),  # padding
-            "type": "major",
-        },
-    ]
+    # Always include 0 (onset) if not already present
+    if 0 not in nice_ticks_ms:
+        nice_ticks_ms.append(0)
+        nice_ticks_ms.sort()
 
-    # Only add the call-end tick if the call duration is at least 30ms
-    if call_duration_ms >= 30.0:
-        x_ticks_overview.insert(
-            2,
-            {
-                "id": "call-end-tick-overview",
-                "position": overview_call_end_pos,
-                "value": format_time(call_duration_ms),
-                "type": "major",
-            },
-        )
+    # Build tick list
+    x_ticks_detail = []
+    for i, time_ms in enumerate(nice_ticks_ms):
+        # Calculate position as percentage of total duration
+        position = ((time_ms + detail_left_padding) / detail_total_duration) * 100
 
-    # Add minor ticks for the overview at 50ms intervals
-    total_overview_ms = overview_left_padding + overview_right_padding  # Total time span in ms (including call length)
+        # Format the label
+        if time_ms == 0:
+            label = "0"
+            tick_id = "zero-tick-detail"
+        else:
+            label = format_time(time_ms)
+            tick_id = f"tick-detail-{i}"
 
-    # Start at 50ms and go up to the total overview time in 50ms steps
-    for time_ms in range(50, int(total_overview_ms), 50):
-        # Convert time to a percentage of the total overview width
-        position_percent = (time_ms / total_overview_ms) * 100
+        x_ticks_detail.append({"id": tick_id, "position": position, "value": label, "type": "major"})
 
-        # Add a minor tick at this position
-        x_ticks_overview.append(
-            {"id": f"minor-overview-{time_ms}ms", "position": position_percent, "value": "", "type": "minor"}
-        )
+    # Generate x-axis ticks data for overview using matplotlib's nice tick algorithm
+    # Time range: from -left_padding to right_padding
+    overview_min_time = -overview_left_padding
+    overview_max_time = overview_right_padding
+
+    # Get nice tick values for the overview range (aim for ~6 ticks)
+    nice_ticks_overview_ms = get_nice_ticks(overview_min_time, overview_max_time, num_ticks=6)
+
+    # Always include 0 (onset) if not already present
+    if 0 not in nice_ticks_overview_ms:
+        nice_ticks_overview_ms.append(0)
+        nice_ticks_overview_ms.sort()
+
+    # Build tick list for overview
+    x_ticks_overview = []
+    for i, time_ms in enumerate(nice_ticks_overview_ms):
+        # Calculate position as percentage of total duration
+        position = ((time_ms + overview_left_padding) / overview_total_duration) * 100
+
+        # Format the label
+        if time_ms == 0:
+            label = "0"
+            tick_id = "zero-tick-overview"
+        else:
+            label = format_time(time_ms)
+            tick_id = f"tick-overview-{i}"
+
+        x_ticks_overview.append({"id": tick_id, "position": position, "value": label, "type": "major"})
 
     # Generate y-axis ticks for frequency
     if not sample_rate:

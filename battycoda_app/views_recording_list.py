@@ -53,6 +53,24 @@ def recording_list_view(request):
         except (ValueError, TypeError):
             pass
 
+    # Apply segmentation filter if provided
+    segmentation_filter = request.GET.get("segmentation", "")
+    if segmentation_filter == "yes":
+        # Has at least one completed segmentation
+        recordings = recordings.filter(segmentations__status="completed").distinct()
+    elif segmentation_filter == "no":
+        # Has no completed segmentations
+        recordings = recordings.exclude(segmentations__status="completed").distinct()
+
+    # Apply task batch filter if provided
+    task_filter = request.GET.get("tasks", "")
+    if task_filter == "yes":
+        # Has at least one task (via segments)
+        recordings = recordings.filter(segments__tasks__isnull=False).distinct()
+    elif task_filter == "no":
+        # Has no tasks
+        recordings = recordings.exclude(segments__tasks__isnull=False).distinct()
+
     # Get available projects for the filter dropdown
     if profile.group:
         available_projects = Project.objects.filter(group=profile.group).order_by("name")
@@ -65,6 +83,8 @@ def recording_list_view(request):
         "has_duplicate_recordings": has_duplicate_recordings_flag,
         "available_projects": available_projects,
         "selected_project_id": selected_project_id,
+        "selected_segmentation_filter": segmentation_filter,
+        "selected_task_filter": task_filter,
     }
 
     return render(request, "recordings/recording_list.html", context)

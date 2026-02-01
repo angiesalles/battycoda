@@ -7,25 +7,47 @@
 {% block item_count %}{{ recordings|length }}{% endblock %}
 
 {% block action_buttons %}
-<div class="d-flex gap-2 align-items-center">
-    <!-- Project Filter -->
-    <div class="me-3">
-        <form method="get" class="d-flex align-items-center gap-2">
-            <label for="project-filter" class="form-label mb-0 small text-muted">Filter by Project:</label>
-            <select name="project" id="project-filter" class="form-select form-select-sm" onchange="this.form.submit()">
-                <option value="">All Projects</option>
+<div class="d-flex gap-2 align-items-center flex-wrap">
+    <!-- Filters -->
+    <form method="get" class="d-flex align-items-center gap-3 flex-wrap">
+        <!-- Project Filter -->
+        <div class="d-flex align-items-center gap-2">
+            <label for="project-filter" class="form-label mb-0 small text-muted">Project:</label>
+            <select name="project" id="project-filter" class="form-select form-select-sm" style="width: auto;" onchange="this.form.submit()">
+                <option value="">All</option>
                 {% for project in available_projects %}
                     <option value="{{ project.id }}" {% if project.id == selected_project_id %}selected{% endif %}>
                         {{ project.name }}
                     </option>
                 {% endfor %}
             </select>
-            {% if request.GET.page %}
-                <input type="hidden" name="page" value="{{ request.GET.page }}">
-            {% endif %}
-        </form>
-    </div>
-    
+        </div>
+
+        <!-- Segmentation Filter -->
+        <div class="d-flex align-items-center gap-2">
+            <label for="segmentation-filter" class="form-label mb-0 small text-muted">Segmented:</label>
+            <select name="segmentation" id="segmentation-filter" class="form-select form-select-sm" style="width: auto;" onchange="this.form.submit()">
+                <option value="">All</option>
+                <option value="yes" {% if selected_segmentation_filter == 'yes' %}selected{% endif %}>Yes</option>
+                <option value="no" {% if selected_segmentation_filter == 'no' %}selected{% endif %}>No</option>
+            </select>
+        </div>
+
+        <!-- Task Batch Filter -->
+        <div class="d-flex align-items-center gap-2">
+            <label for="task-filter" class="form-label mb-0 small text-muted">Has Tasks:</label>
+            <select name="tasks" id="task-filter" class="form-select form-select-sm" style="width: auto;" onchange="this.form.submit()">
+                <option value="">All</option>
+                <option value="yes" {% if selected_task_filter == 'yes' %}selected{% endif %}>Yes</option>
+                <option value="no" {% if selected_task_filter == 'no' %}selected{% endif %}>No</option>
+            </select>
+        </div>
+
+        {% if request.GET.page %}
+            <input type="hidden" name="page" value="{{ request.GET.page }}">
+        {% endif %}
+    </form>
+
     <!-- Action Buttons -->
     <a href="{% url 'battycoda_app:create_recording' %}" class="btn btn-primary" 
        data-bs-toggle="tooltip" data-bs-placement="bottom" title="Upload a single audio recording">
