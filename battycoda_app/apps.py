@@ -6,4 +6,4 @@ class BattycodaAppConfig(AppConfig):
     name = "battycoda_app"
 
     def ready(self):
-        pass
+        import battycoda_app.signals  # noqa: F401 - register signal handlers
