@@ -129,9 +129,6 @@ Parameters:
                 window.initWaveformPlayer("{{ container_id }}", {{ recording.id }}, {{ allow_selection|yesno:"true,false" }}, {{ show_zoom|yesno:"true,false" }}, {% if segments %}{{ segments|safe }}{% else %}null{% endif %}, {% if spectrogram_url %}"{{ spectrogram_url }}"{% else %}null{% endif %});
             }
 
-            // Add spectrogram generation functionality
-            {% include "recordings/includes/waveform_player/generate_button.html" %}
-
             // Add view toggle functionality
             {% include "recordings/includes/waveform_player/view_toggle.html" %}
         });

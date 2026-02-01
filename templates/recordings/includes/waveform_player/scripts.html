@@ -25,13 +25,5 @@
         {% if spectrogram_info.status == 'available' %}
         {% include "recordings/includes/waveform_player/view_toggle.html" %}
         {% endif %}
-
-        {% if spectrogram_info.status == 'not_available' %}
-        {% include "recordings/includes/waveform_player/generate_button.html" %}
-        {% endif %}
-
-        {% if spectrogram_info.status == 'generating' %}
-        {% include "recordings/includes/waveform_player/progress_monitor.html" %}
-        {% endif %}
     });
 </script>

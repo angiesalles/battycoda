@@ -85,19 +85,6 @@
                     <a id="downloadRecordingBtn" href="{{ recording.wav_file.url }}" class="btn btn-outline-primary me-2" target="_blank">
                         <span id="downloadIcon" class="fas fa-download me-1"></span> Download Recording
                     </a>
-                    {% if spectrogram_info.status == 'not_available' %}
-                    <button id="createSpectrogramJobBtn" class="btn btn-outline-secondary" data-recording-id="{{ recording.id }}">
-                        <span id="spectrogramJobIcon" class="fas fa-chart-line me-1"></span> Generate Spectrogram
-                    </button>
-                    {% elif spectrogram_info.status == 'generating' %}
-                    <span class="text-muted">
-                        <i class="fas fa-spinner fa-spin me-1"></i> Generating spectrogram... {{ spectrogram_info.progress }}%
-                    </span>
-                    {% elif spectrogram_info.status == 'available' %}
-                    <span class="text-success">
-                        <i class="fas fa-check me-1"></i> Spectrogram available
-                    </span>
-                    {% endif %}
                 </div>
             </div>
             
@@ -142,14 +129,5 @@
     </div>
 </div>
 
-{% block extra_scripts %}
-<script id="spectrogram-job-data" type="application/json">
-{
-  "createJobUrlTemplate": "{% url 'battycoda_app:create_spectrogram_job' recording_id=0 %}",
-  "csrfToken": "{{ csrf_token }}"
-}
-</script>
-<script src="{% static 'js/recordings/spectrogram-job.js' %}"></script>
-{% endblock %}
 
 {% endblock %}
