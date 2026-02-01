@@ -20,16 +20,39 @@
                         </ol>
                     </nav>
                 </div>
-                <div id="recordingActionButtons" class="d-flex">
-                    <a id="editRecordingBtn" href="{% url 'battycoda_app:edit_recording' recording_id=recording.id %}" class="btn btn-info">
-                        <span id="editRecordingIcon" class="fas fa-pen me-1"></span> Edit Recording
-                    </a>
+                <div id="recordingActionButtons" class="d-flex align-items-center">
+                    {% if recording.processing_status == 'ready' %}
+                        <a id="editRecordingBtn" href="{% url 'battycoda_app:edit_recording' recording_id=recording.id %}" class="btn btn-info">
+                            <span id="editRecordingIcon" class="fas fa-pen me-1"></span> Edit Recording
+                        </a>
+                    {% else %}
+                        <span class="badge bg-warning text-dark me-3">
+                            <i class="fas fa-spinner fa-spin me-1"></i>Processing
+                        </span>
+                        <span class="btn btn-info disabled">
+                            <span class="fas fa-pen me-1"></span> Edit Recording
+                        </span>
+                    {% endif %}
                 </div>
             </div>
         </div>
     </div>
 
     {# Messages are now handled by toastr in base.html #}
+
+    {% if recording.processing_status != 'ready' %}
+    <div class="row mb-3">
+        <div class="col-12">
+            <div class="alert alert-warning d-flex align-items-center" role="alert">
+                <i class="fas fa-spinner fa-spin me-3 fa-2x"></i>
+                <div>
+                    <h5 class="alert-heading mb-1">Recording is Processing</h5>
+                    <p class="mb-0">The spectrogram for this recording is being generated. This page will refresh automatically when complete. Some features are disabled until processing finishes.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
 
     <div id="recordingContentRow" class="row">
         <!-- Recording information card -->
@@ -98,6 +121,7 @@
                     <h5 id="segmentationTitle" class="card-title mb-0"><span class="fas fa-scissors me-2"></span>Segmentation Options</h5>
                 </div>
                 <div id="segmentationBody" class="card-body">
+                    {% if recording.processing_status == 'ready' %}
                     <p id="segmentationDescription" class="text-muted mb-3">
                         To view and manage segments for this recording, use the segmentation tool.
                     </p>
@@ -123,11 +147,27 @@
                         {% endif %}
                         {% endwith %}
                     </div>
+                    {% else %}
+                    <p class="text-warning mb-0">
+                        <i class="fas fa-spinner fa-spin me-2"></i>
+                        Segmentation options will be available once the recording finishes processing.
+                    </p>
+                    {% endif %}
                 </div>
             </div>
         </div>
     </div>
 </div>
 
+{% endblock %}
 
+{% block extra_js %}
+{% if recording.processing_status != 'ready' %}
+<script>
+    // Auto-refresh page every 5 seconds while recording is processing
+    setTimeout(function() {
+        location.reload();
+    }, 5000);
+</script>
+{% endif %}
 {% endblock %}

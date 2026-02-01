@@ -73,6 +73,9 @@ def generate_hdf5_spectrogram(recording_id, celery_task_id=None):
             if job:
                 job.output_file_path = output_path
                 job.save()
+            # Mark recording as ready
+            recording.processing_status = "ready"
+            recording.save(update_fields=["processing_status"])
             return {"status": "success", "file_path": output_path, "recording_id": recording_id, "cached": True}
 
         # Use chunked processing to avoid loading entire file into memory
@@ -87,15 +90,23 @@ def generate_hdf5_spectrogram(recording_id, celery_task_id=None):
             job.output_file_path = output_path
             job.save()
 
+        # Mark recording as ready
+        recording.processing_status = "ready"
+        recording.save(update_fields=["processing_status"])
+
         return {"status": "success", "file_path": output_path, "recording_id": recording_id, "cached": False}
 
     except Exception as e:
-        if job:
-            job.status = "failed"
-            job.error_message = str(e)
-            job.save()
+        # Delete the recording on failure - broken WAV files are unusable
+        # The SpectrogramJob will be cascade-deleted with the recording
+        logger.error(f"Spectrogram generation failed for recording {recording_id}, deleting recording: {e}")
+        try:
+            recording = Recording.all_objects.get(id=recording_id)
+            recording.delete()
+        except Recording.DoesNotExist:
+            pass
 
-        return {"status": "error", "message": str(e), "recording_id": recording_id}
+        return {"status": "error", "message": str(e), "recording_id": recording_id, "deleted": True}
 
 
 @shared_task(

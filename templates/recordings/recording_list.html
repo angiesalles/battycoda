@@ -52,6 +52,7 @@
 
 {% block table_header %}
 <th>Name</th>
+<th>Status</th>
 <th>Species</th>
 <th>Duration</th>
 <th>Sample Rate</th>
@@ -71,6 +72,15 @@
 {% block delete_url %}{% url 'battycoda_app:delete_recording' recording_id=item.id %}{% endblock %}
 
 {% block item_fields %}
+<td>
+    {% if item.processing_status == 'ready' %}
+        <span class="badge bg-success">Ready</span>
+    {% else %}
+        <span class="badge bg-warning text-dark">
+            <i class="fas fa-spinner fa-spin me-1"></i>Processing
+        </span>
+    {% endif %}
+</td>
 <td>{{ item.species.name }}</td>
 <td>{{ item.duration|default:"Unknown"|floatformat:2 }} sec</td>
 <td>{{ item.sample_rate|default:"Unknown" }} Hz</td>
@@ -78,21 +88,41 @@
 {% endblock %}
 
 {% block item_actions %}
-{{ block.super }}
-<!-- Additional segment button -->
-{% if item.segmentation %}
-    <a href="{% url 'battycoda_app:segmentation_detail' segmentation_id=item.segmentation.id %}" 
-       class="btn btn-outline-primary" 
-       data-bs-toggle="tooltip" data-bs-placement="top" 
-       title="Edit existing segmentation">
-        <i class="fas fa-cut"></i>
-    </a>
+{% if item.processing_status == 'ready' %}
+    {{ block.super }}
+    <!-- Additional segment button -->
+    {% if item.segmentation %}
+        <a href="{% url 'battycoda_app:segmentation_detail' segmentation_id=item.segmentation.id %}"
+           class="btn btn-outline-primary"
+           data-bs-toggle="tooltip" data-bs-placement="top"
+           title="Edit existing segmentation">
+            <i class="fas fa-cut"></i>
+        </a>
+    {% else %}
+        <a href="{% url 'battycoda_app:create_segmentation' %}?recording={{ item.id }}"
+           class="btn btn-outline-primary"
+           data-bs-toggle="tooltip" data-bs-placement="top"
+           title="Create segmentation to identify bat calls">
+            <i class="fas fa-cut"></i>
+        </a>
+    {% endif %}
 {% else %}
-    <a href="{% url 'battycoda_app:create_segmentation' %}?recording={{ item.id }}" 
-       class="btn btn-outline-primary" 
-       data-bs-toggle="tooltip" data-bs-placement="top" 
-       title="Create segmentation to identify bat calls">
-        <i class="fas fa-cut"></i>
+    <!-- Recording is still processing - show disabled buttons -->
+    <span class="btn btn-sm btn-primary me-1 disabled"
+          data-bs-toggle="tooltip" data-bs-placement="top"
+          title="Processing - please wait">
+        <span class="fas fa-eye"></span>
+    </span>
+    <span class="btn btn-sm btn-info me-1 disabled"
+          data-bs-toggle="tooltip" data-bs-placement="top"
+          title="Processing - please wait">
+        <span class="fas fa-pen"></span>
+    </span>
+    <a href="{% url 'battycoda_app:delete_recording' recording_id=item.id %}"
+       class="btn btn-sm btn-danger"
+       data-bs-toggle="tooltip" data-bs-placement="top"
+       title="Delete">
+        <span class="fas fa-trash"></span>
     </a>
 {% endif %}
 {% endblock %}

@@ -18,6 +18,17 @@ class MissingSpectrogramError(Exception):
     pass
 
 
+class RecordingStillProcessingError(Exception):
+    """Raised when trying to access a recording that is still processing.
+
+    This error indicates the user tried to view a recording before its
+    spectrogram generation completed. The UI should show a "processing"
+    state instead of allowing spectrogram access.
+    """
+
+    pass
+
+
 def ensure_hdf5_exists(recording, user):
     """
     Verify HDF5 spectrogram file exists for a recording.
@@ -30,9 +41,17 @@ def ensure_hdf5_exists(recording, user):
         tuple: (success: bool, error_response: HttpResponse or None)
 
     Raises:
+        RecordingStillProcessingError: If recording is still processing.
         MissingSpectrogramError: If spectrogram is missing. This indicates a bug -
             spectrograms should be created by the post_save signal on Recording.
     """
+    # Check if recording is still processing
+    if recording.processing_status != "ready":
+        raise RecordingStillProcessingError(
+            f"Recording {recording.id} ({recording.name}) is still processing "
+            f"(status={recording.processing_status}). Wait for spectrogram generation to complete."
+        )
+
     if not recording.spectrogram_file:
         raise MissingSpectrogramError(
             f"Recording {recording.id} ({recording.name}) has no spectrogram. "

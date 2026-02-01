@@ -34,6 +34,7 @@ def create_demo_recording(user, group, project, species, wav_path):
     logger.debug("Creating demo recording for user %s", user.username)
 
     # Create the recording
+    # Set processing_status="ready" for demo data - it's pre-made and expected to work immediately
     recording = Recording(
         name="Demo Bat Recording",
         description="Sample bat calls for demonstration and practice",
@@ -41,6 +42,7 @@ def create_demo_recording(user, group, project, species, wav_path):
         species=species,
         project=project,
         group=group,
+        processing_status="ready",
     )
     recording.save()
 

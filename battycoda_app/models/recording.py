@@ -6,6 +6,11 @@ from django.db import models
 from .organization import Project, Species
 from .user import Group
 
+PROCESSING_STATUS_CHOICES = [
+    ("processing", "Processing"),
+    ("ready", "Ready"),
+]
+
 
 class RecordingManager(models.Manager):
     """Manager that excludes hidden recordings by default"""
@@ -37,6 +42,12 @@ class Recording(models.Model):
     )
     hidden = models.BooleanField(
         default=False, help_text="Hidden recordings are temporary previews that don't appear in normal lists"
+    )
+    processing_status = models.CharField(
+        max_length=20,
+        choices=PROCESSING_STATUS_CHOICES,
+        default="processing",
+        help_text="Processing status: 'processing' while spectrogram is being generated, 'ready' when complete",
     )
 
     # Recording metadata
