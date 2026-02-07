@@ -46,15 +46,13 @@ def calculate_audio_duration(self, recording_id, retry_count=0):
         except Recording.DoesNotExist:
             # Recording doesn't exist yet - retry
             logger.warning(f"Recording {recording_id} does not exist yet, will retry in {retry_delay}s")
-            self.retry(countdown=retry_delay, kwargs={"retry_count": retry_count + 1})
-            return
+            raise self.retry(countdown=retry_delay, kwargs={"retry_count": retry_count + 1})
         except OperationalError as db_error:
             # Database connection issue - retry
             logger.warning(
                 f"Database error for recording {recording_id}, will retry in {retry_delay}s: {str(db_error)}"
             )
-            self.retry(countdown=retry_delay, kwargs={"retry_count": retry_count + 1})
-            return
+            raise self.retry(countdown=retry_delay, kwargs={"retry_count": retry_count + 1})
 
         # Skip if both duration and sample rate are already set
         if recording.duration and recording.sample_rate:
@@ -69,16 +67,14 @@ def calculate_audio_duration(self, recording_id, retry_count=0):
                 recording.save(update_fields=["file_ready"])
             except Exception as save_error:
                 logger.warning(f"Could not update file_ready: {str(save_error)}, will retry")
-                self.retry(countdown=retry_delay, kwargs={"retry_count": retry_count + 1})
-                return
+                raise self.retry(countdown=retry_delay, kwargs={"retry_count": retry_count + 1})
 
         # Check if file exists and retry if not
         if not os.path.exists(recording.wav_file.path):
             logger.warning(
                 f"File missing for recording {recording_id}: {recording.wav_file.path}, will retry in {retry_delay}s"
             )
-            self.retry(countdown=retry_delay, kwargs={"retry_count": retry_count + 1})
-            return
+            raise self.retry(countdown=retry_delay, kwargs={"retry_count": retry_count + 1})
 
         # Try to extract audio information from file
         try:
@@ -90,8 +86,7 @@ def calculate_audio_duration(self, recording_id, retry_count=0):
             logger.warning(
                 f"Error reading audio file for recording {recording_id}, will retry in {retry_delay}s: {str(audio_error)}"
             )
-            self.retry(countdown=retry_delay, kwargs={"retry_count": retry_count + 1})
-            return
+            raise self.retry(countdown=retry_delay, kwargs={"retry_count": retry_count + 1})
 
         logger.info(f"Audio info for recording {recording_id}: duration={duration}s, sample_rate={sample_rate}Hz")
 
@@ -117,16 +112,14 @@ def calculate_audio_duration(self, recording_id, retry_count=0):
                 )
             except Exception as save_error:
                 logger.warning(f"Error saving audio info: {str(save_error)}, will retry")
-                self.retry(countdown=retry_delay, kwargs={"retry_count": retry_count + 1})
-                return
+                raise self.retry(countdown=retry_delay, kwargs={"retry_count": retry_count + 1})
 
         return True
 
     except Exception as e:
         # Catch any other exceptions and retry
         logger.error(f"Unexpected error processing recording {recording_id}: {str(e)}")
-        self.retry(countdown=retry_delay, kwargs={"retry_count": retry_count + 1})
-        return
+        raise self.retry(countdown=retry_delay, kwargs={"retry_count": retry_count + 1})
 
 
 @shared_task(bind=True, max_retries=3)
@@ -260,3 +253,115 @@ def check_disk_usage(threshold=90, cooldown_hours=4):
             }
 
     return {"status": "ok", "all_disks": all_disk_info}
+
+
+@shared_task(bind=True)
+def remove_duplicate_recordings_task(self, group_id, user_id):
+    """
+    Background task to remove duplicate recordings from a group.
+
+    Keeps the most recent recording in each duplicate group (by name + duration)
+    and deletes the older duplicates.
+
+    Args:
+        group_id: ID of the group to process
+        user_id: ID of the user who initiated the removal (for notifications)
+    """
+    from django.contrib.auth import get_user_model
+    from django.db.models import Count
+
+    from .models.recording import Recording
+    from .models.task import Task
+    from .models.organization import Group
+
+    User = get_user_model()
+
+    try:
+        group = Group.objects.get(id=group_id)
+        user = User.objects.get(id=user_id)
+    except (Group.DoesNotExist, User.DoesNotExist) as e:
+        logger.error(f"Could not find group or user for duplicate removal: {e}")
+        return {"status": "error", "message": str(e)}
+
+    logger.info(f"Starting duplicate recording removal for group {group.name} (requested by {user.username})")
+
+    # Find duplicate groups
+    duplicate_groups = (
+        Recording.objects.filter(group=group)
+        .exclude(duration__isnull=True)
+        .values("name", "duration")
+        .annotate(count=Count("id"))
+        .filter(count__gt=1)
+    )
+
+    removed_count = 0
+    segments_removed = 0
+    tasks_removed = 0
+    total_groups = 0
+    errors = []
+
+    for dup_group in duplicate_groups:
+        total_groups += 1
+
+        recordings_in_group = Recording.objects.filter(
+            group=group, name=dup_group["name"], duration=dup_group["duration"]
+        ).order_by("-created_at")
+
+        # Keep the most recent, delete the rest
+        for recording in list(recordings_in_group)[1:]:
+            try:
+                segment_count = recording.segments.count()
+                segments_removed += segment_count
+
+                task_count = Task.objects.filter(source_segment__recording=recording).count()
+                tasks_removed += task_count
+
+                recording_name = recording.name
+                recording_id = recording.id
+                recording.delete()
+                removed_count += 1
+                logger.info(f"Removed duplicate recording: {recording_name} (ID: {recording_id})")
+
+            except Exception as e:
+                error_msg = f"Error removing recording {recording.id}: {str(e)}"
+                logger.error(error_msg)
+                errors.append(error_msg)
+
+    # Create a notification for the user
+    try:
+        from .models.task import UserNotification
+
+        if removed_count > 0:
+            message = f"Removed {removed_count} duplicate recordings from {total_groups} groups."
+            if segments_removed > 0:
+                message += f" {segments_removed} segments were also removed."
+            if tasks_removed > 0:
+                message += f" {tasks_removed} associated tasks were affected."
+        else:
+            message = "No duplicate recordings were found to remove."
+
+        if errors:
+            message += f" ({len(errors)} errors occurred)"
+
+        UserNotification.objects.create(
+            user=user,
+            notification_type="info" if not errors else "warning",
+            title="Duplicate Removal Complete",
+            message=message,
+        )
+    except Exception as e:
+        logger.error(f"Could not create notification: {e}")
+
+    logger.info(
+        f"Duplicate removal complete: {removed_count} removed, {segments_removed} segments, "
+        f"{tasks_removed} tasks, {len(errors)} errors"
+    )
+
+    return {
+        "status": "success" if not errors else "partial",
+        "removed_count": removed_count,
+        "segments_removed": segments_removed,
+        "tasks_removed": tasks_removed,
+        "total_groups": total_groups,
+        "errors": errors,
+    }

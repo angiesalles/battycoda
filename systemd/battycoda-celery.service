@@ -9,6 +9,7 @@ Type=exec
 User=ubuntu
 Group=ubuntu
 WorkingDirectory=/home/ubuntu/battycoda
+LimitNOFILE=65536
 Environment=PATH=/home/ubuntu/battycoda/venv/bin
 EnvironmentFile=/home/ubuntu/battycoda/.env
 ExecStart=/home/ubuntu/battycoda/venv/bin/celery -A config worker --loglevel=info

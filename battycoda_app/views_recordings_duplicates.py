@@ -78,65 +78,16 @@ def remove_duplicate_recordings(request):
         messages.error(request, "You must be assigned to a group to perform this action.")
         return redirect("battycoda_app:recording_list")
 
-    # Find duplicate recordings
-    # Get duplicate groups
-    duplicate_groups = (
-        Recording.objects.filter(group=profile.group)
-        .exclude(duration__isnull=True)  # Skip recordings without duration
-        .values("name", "duration")  # Group by name and duration
-        .annotate(count=Count("id"))  # Count occurrences
-        .filter(count__gt=1)  # Keep only groups with more than one recording
+    # Queue the background task
+    from .tasks import remove_duplicate_recordings_task
+
+    remove_duplicate_recordings_task.delay(profile.group.id, request.user.id)
+
+    messages.info(
+        request,
+        "Duplicate removal has been started in the background. "
+        "You will receive a notification when it completes.",
     )
-
-    # Track statistics
-    removed_count = 0
-    segments_removed = 0
-    tasks_removed = 0
-    total_groups = 0
-
-    # Process each duplicate group
-    for group in duplicate_groups:
-        total_groups += 1
-
-        # Get recordings in this group, ordered by created date (most recent first)
-        recordings_in_group = Recording.objects.filter(
-            group=profile.group, name=group["name"], duration=group["duration"]
-        ).order_by("-created_at")
-
-        # Keep the most recent recording, delete the rest
-        # Note: we use a list slice to skip the first item (most recent)
-        for recording in list(recordings_in_group)[1:]:
-            try:
-                # Count segments for reporting purposes
-                segment_count = recording.segments.count()
-                segments_removed += segment_count
-
-                # Count tasks associated with this recording's segments
-                from .models.task import Task
-
-                task_count = Task.objects.filter(source_segment__recording=recording).count()
-                tasks_removed += task_count
-
-                # Delete the recording (will cascade delete segmentations, segments, etc.)
-                recording.delete()
-                removed_count += 1
-
-            except Exception as e:
-                # Log the error but continue with other recordings
-                import logging
-
-                logger = logging.getLogger(__name__)
-                logger.error(f"Error removing duplicate recording {recording.id}: {str(e)}")
-
-    if removed_count > 0:
-        message = f"Successfully removed {removed_count} duplicate recordings from {total_groups} groups."
-        if segments_removed > 0:
-            message += f" {segments_removed} segments were also removed."
-        if tasks_removed > 0:
-            message += f" {tasks_removed} associated tasks were affected."
-        messages.success(request, message)
-    else:
-        messages.info(request, "No duplicate recordings were removed.")
 
     return redirect("battycoda_app:recording_list")
 
