@@ -63,6 +63,33 @@ All services run via **systemd** (NOT Docker). Service files in `systemd/`.
 
 ## Quick Reference
 
+### Error Logs
+
+**Production errors are logged to `/var/log/battycoda/django-errors.log`** - this file captures all errors that are also emailed to admins. Check here first when debugging production issues.
+
+```bash
+# View recent errors
+sudo tail -100 /var/log/battycoda/django-errors.log
+
+# Follow errors in real-time
+sudo tail -f /var/log/battycoda/django-errors.log
+
+# View compressed rotated logs
+zcat /var/log/battycoda/django-errors.log.1.gz | less
+```
+
+**Log rotation:** All logs in `/var/log/battycoda/` rotate at 1MB with 5 compressed backups.
+- System logrotate config: `/etc/logrotate.d/battycoda`
+- Django handler config: `config/settings.py` (LOGGING section)
+
+**Log files:**
+| File | Source |
+|------|--------|
+| `django-errors.log` | Django request errors (also emailed to admins) |
+| `celery-error.log` | Celery worker stderr |
+| `celery-beat-error.log` | Celery beat stderr |
+| `gunicorn-error.log` | Gunicorn stderr |
+
 ### Service Management
 ```bash
 # Status
@@ -227,7 +254,7 @@ Long audio files (>60s) automatically split into 1-minute chunks on upload.
 | `templates/` | HTML templates |
 | `static/` | Static files (CSS, JS) |
 | `media/` | Media uploads |
-| `/var/log/battycoda/` | Celery logs, memory dumps |
+| `/var/log/battycoda/` | **django-errors.log** (errors sent to admins), Celery logs, memory dumps |
 | `systemd/` | Systemd service files |
 | `R_code/` | R server code |
 | `battycoda_app/management/commands/` | Management commands |

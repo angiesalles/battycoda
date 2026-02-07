@@ -326,7 +326,7 @@ LOGGING = {
             "level": "ERROR",
             "class": "logging.handlers.RotatingFileHandler",
             "filename": f"{LOG_DIR}/django-errors.log",
-            "maxBytes": 10 * 1024 * 1024,  # 10 MB
+            "maxBytes": 1 * 1024 * 1024,  # 1 MB
             "backupCount": 5,
             "formatter": "detailed",
             "filters": ["skip_disallowed_host"],
@@ -348,7 +348,7 @@ LOGGING = {
             "propagate": False,
         },
         "battycoda_app": {
-            "handlers": ["console", "error_file"],
+            "handlers": ["console", "error_file", "mail_admins"],
             "level": "INFO",
             "propagate": False,
         },
