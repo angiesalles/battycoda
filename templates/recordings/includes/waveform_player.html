@@ -126,7 +126,9 @@ Parameters:
 
             // Initialize waveform player for {{ container_id }}
             if (window.initWaveformPlayer) {
-                window.initWaveformPlayer("{{ container_id }}", {{ recording.id }}, {{ allow_selection|yesno:"true,false" }}, {{ show_zoom|yesno:"true,false" }}, {% if segments %}{{ segments|safe }}{% else %}null{% endif %}, {% if spectrogram_url %}"{{ spectrogram_url }}"{% else %}null{% endif %});
+                // Note: urls parameter should be an object or undefined, not null
+                // Passing null causes "Cannot read properties of null" errors
+                window.initWaveformPlayer("{{ container_id }}", {{ recording.id }}, {{ allow_selection|yesno:"true,false" }}, {{ show_zoom|yesno:"true,false" }}, {% if segments %}{{ segments|safe }}{% else %}null{% endif %}, undefined);
             }
 
             // Add view toggle functionality

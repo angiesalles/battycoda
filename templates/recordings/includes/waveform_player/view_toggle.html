@@ -55,13 +55,30 @@ function setupViewToggle() {
     spectrogramRadio.addEventListener('change', toggleView);
 
     // Wait for spectrogram to be available before setting default view
+    // Maximum wait time: 30 seconds (150 retries at 200ms each)
+    const MAX_RETRIES = 150;
+    let retryCount = 0;
+
     function trySetDefaultView() {
         if (playerInstance.isSpectrogramAvailable()) {
             console.log('Spectrogram available, setting default view to spectrogram');
             toggleView();
         } else {
-            console.log('Spectrogram not available yet, retrying in 200ms...');
-            setTimeout(trySetDefaultView, 200);
+            retryCount++;
+            if (retryCount < MAX_RETRIES) {
+                // Only log every 10 retries to reduce console spam
+                if (retryCount % 10 === 0) {
+                    console.log(`Spectrogram not available yet, retrying... (attempt ${retryCount}/${MAX_RETRIES})`);
+                }
+                setTimeout(trySetDefaultView, 200);
+            } else {
+                console.warn('Spectrogram not available after 30 seconds, staying on waveform view');
+                // Ensure waveform is selected in the UI
+                if (waveformRadio) {
+                    waveformRadio.checked = true;
+                    viewLabel.textContent = 'Waveform';
+                }
+            }
         }
     }
 
