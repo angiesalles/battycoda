@@ -1,30 +1,24 @@
 /**
  * BattyCoda Theme: Light
- * Clean, modern light theme with teal/green accent
+ * Minimal overrides - Bootstrap's data-bs-theme="light" is the default.
+ * We only customize the brand accent color (teal/green).
  */
 
 :root {
-  /* Primary brand color - teal/green */
+  /* Tell browser to use native light widgets */
+  color-scheme: light;
+}
+
+/* Custom teal/green brand color */
+[data-bs-theme="light"] {
   --bs-primary: #20c997;
   --bs-primary-rgb: 32, 201, 151;
   --bs-link-color: #20c997;
   --bs-link-hover-color: #1aa179;
-
-  /* Background colors */
-  --bs-body-bg: #f8f9fa;
-  --bs-body-color: #212529;
-
-  /* Card/surface colors */
-  --bc-card-bg: #ffffff;
-  --bc-card-border: #dee2e6;
 }
 
-body {
-  background-color: var(--bs-body-bg);
-  color: var(--bs-body-color);
-}
-
-.btn-primary {
+/* Primary buttons with brand color */
+[data-bs-theme="light"] .btn-primary {
   --bs-btn-bg: #20c997;
   --bs-btn-border-color: #20c997;
   --bs-btn-hover-bg: #1aa179;
@@ -35,7 +29,7 @@ body {
   --bs-btn-disabled-border-color: #20c997;
 }
 
-.btn-outline-primary {
+[data-bs-theme="light"] .btn-outline-primary {
   --bs-btn-color: #20c997;
   --bs-btn-border-color: #20c997;
   --bs-btn-hover-bg: #20c997;
@@ -44,44 +38,54 @@ body {
   --bs-btn-active-border-color: #20c997;
 }
 
-.text-primary {
+/* Text and background utilities with brand color */
+[data-bs-theme="light"] .text-primary {
   color: #20c997 !important;
 }
 
-.bg-primary {
+[data-bs-theme="light"] .bg-primary {
   background-color: #20c997 !important;
 }
 
-.border-primary {
+[data-bs-theme="light"] .border-primary {
   border-color: #20c997 !important;
 }
 
-.badge.bg-primary {
+[data-bs-theme="light"] .badge.bg-primary {
   background-color: #20c997 !important;
 }
 
-a {
+/* Links with brand color */
+[data-bs-theme="light"] a {
   color: #20c997;
 }
 
-a:hover {
+[data-bs-theme="light"] a:hover {
   color: #1aa179;
 }
 
-/* Cards and surfaces */
-.card {
-  background-color: var(--bc-card-bg);
-  border-color: var(--bc-card-border);
-}
-
-/* Form controls */
-.form-control, .form-select {
-  background-color: #ffffff;
-  border-color: #ced4da;
-  color: #212529;
-}
-
-.form-control:focus, .form-select:focus {
+/* Form focus states with brand color */
+[data-bs-theme="light"] .form-control:focus,
+[data-bs-theme="light"] .form-select:focus {
   border-color: #20c997;
   box-shadow: 0 0 0 0.25rem rgba(32, 201, 151, 0.25);
+}
+
+/* Pagination with brand color */
+[data-bs-theme="light"] .page-link {
+  color: #20c997;
+}
+
+[data-bs-theme="light"] .page-link:hover {
+  color: #1aa179;
+}
+
+[data-bs-theme="light"] .page-item.active .page-link {
+  background-color: #20c997;
+  border-color: #20c997;
+}
+
+/* Breadcrumb links */
+[data-bs-theme="light"] .breadcrumb-item a {
+  color: #20c997;
 }

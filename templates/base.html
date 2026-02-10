@@ -2,7 +2,7 @@
 {% load static %}
 {% load django_vite %}
 {% load vite %}
-<html id="html-root" lang="en">
+<html id="html-root" lang="en" data-bs-theme="{% if user.is_authenticated and user.profile.theme == 'dark' %}dark{% else %}light{% endif %}">
 <head id="head">
     <title id="pageTitle">{% block title %}BattyCoda{% endblock %}</title>
     <!-- Favicons -->

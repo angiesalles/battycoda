@@ -32,6 +32,29 @@ describe('theme-switcher', () => {
       expect(mainBody.classList.contains('theme-dark')).toBe(true);
     });
 
+    it('should set data-bs-theme attribute on html-root element', () => {
+      // Create html-root element (normally the <html> tag)
+      const htmlRoot = document.createElement('div');
+      htmlRoot.id = 'html-root';
+      document.body.appendChild(htmlRoot);
+      document.body.innerHTML += '<div id="main-body"></div>';
+
+      applyTheme('dark');
+
+      expect(document.getElementById('html-root').getAttribute('data-bs-theme')).toBe('dark');
+    });
+
+    it('should set data-bs-theme to light for non-dark themes', () => {
+      const htmlRoot = document.createElement('div');
+      htmlRoot.id = 'html-root';
+      document.body.appendChild(htmlRoot);
+      document.body.innerHTML += '<div id="main-body"></div>';
+
+      applyTheme('light');
+
+      expect(document.getElementById('html-root').getAttribute('data-bs-theme')).toBe('light');
+    });
+
     it('should remove existing theme classes when applying new theme', () => {
       document.body.innerHTML = '<div id="main-body" class="theme-light some-other-class"></div>';
 

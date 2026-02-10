@@ -186,7 +186,7 @@ def vite_theme_urls(context):
 
     if is_vite_dev_mode():
         # In dev mode, use static URLs
-        themes = ["blue-sky", "little-fox", "night-city", "orange-juice", "passion", "pink-love"]
+        themes = ["light", "dark"]
         for theme in themes:
             theme_urls[theme] = static(f"css/themes/{theme}.css")
     else:
@@ -200,7 +200,7 @@ def vite_theme_urls(context):
                     theme_urls[theme_name] = static(f"dist/{entry['file']}")
         else:
             # Fallback to static URLs
-            themes = ["blue-sky", "little-fox", "night-city", "orange-juice", "passion", "pink-love"]
+            themes = ["light", "dark"]
             for theme in themes:
                 theme_urls[theme] = static(f"css/themes/{theme}.css")
 

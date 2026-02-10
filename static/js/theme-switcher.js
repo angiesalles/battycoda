@@ -70,7 +70,13 @@ function getThemeUrl(themeName) {
  */
 export function applyTheme(themeName) {
   const mainBody = document.getElementById('main-body');
+  const htmlRoot = document.getElementById('html-root');
   if (!mainBody) return;
+
+  // Set Bootstrap's data-bs-theme attribute for native dark mode support
+  if (htmlRoot) {
+    htmlRoot.setAttribute('data-bs-theme', themeName === 'dark' ? 'dark' : 'light');
+  }
 
   // Remove all theme classes from body
   mainBody.className = mainBody.className.replace(/theme-[a-z-]+/g, '').trim();
