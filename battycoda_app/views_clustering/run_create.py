@@ -135,12 +135,15 @@ def create_clustering_run(request):
 
         task_name = algorithm.celery_task
         task_func = current_app.tasks.get(task_name)
-        if task_func:
-            task = task_func.delay(clustering_run.id)
-        else:
-            from ..audio.task_modules.clustering.tasks import run_clustering
+        if not task_func:
+            # Don't silently fall back - this masks configuration errors
+            clustering_run.status = "failed"
+            clustering_run.error_message = f"Celery task '{task_name}' not registered"
+            clustering_run.save()
+            messages.error(request, f"Configuration error: task '{task_name}' not found. Please contact admin.")
+            return redirect("battycoda_app:clustering_run_detail", run_id=clustering_run.id)
 
-            task = run_clustering.delay(clustering_run.id)
+        task = task_func.delay(clustering_run.id)
 
         clustering_run.task_id = task.id
         clustering_run.save()
