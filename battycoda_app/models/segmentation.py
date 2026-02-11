@@ -35,7 +35,7 @@ class SegmentationAlgorithm(models.Model):
     endpoint = models.CharField(max_length=255, blank=True, default="", help_text="Endpoint path for the service")
 
     # Default parameters
-    default_min_duration_ms = models.IntegerField(default=10, help_text="Default minimum duration in milliseconds")
+    default_min_duration_ms = models.FloatField(default=10, help_text="Default minimum duration in milliseconds")
     default_smooth_window = models.IntegerField(default=3, help_text="Default smoothing window size")
     default_threshold_factor = models.FloatField(default=0.5, help_text="Default threshold factor (0-10)")
 
@@ -96,7 +96,7 @@ class Segmentation(models.Model):
     error_message = models.TextField(blank=True, default="")
 
     # Store segmentation parameters
-    min_duration_ms = models.IntegerField(default=10)
+    min_duration_ms = models.FloatField(default=10)
     smooth_window = models.IntegerField(default=3)
     threshold_factor = models.FloatField(default=0.5)
 

@@ -94,7 +94,7 @@ def auto_segment_recording_view(request, recording_id, algorithm_id=None):
 
         # Convert to appropriate types
         try:
-            min_duration_ms = int(min_duration_ms)
+            min_duration_ms = float(min_duration_ms)
             smooth_window = int(smooth_window)
             threshold_factor = float(threshold_factor)
 
@@ -110,8 +110,8 @@ def auto_segment_recording_view(request, recording_id, algorithm_id=None):
                 high_freq = None
 
             # Validate parameters
-            if min_duration_ms < 1:
-                raise ValueError("Minimum duration must be at least 1ms")
+            if min_duration_ms <= 0:
+                raise ValueError("Minimum duration must be positive")
             if smooth_window < 1:
                 raise ValueError("Smooth window must be at least 1 sample")
             if threshold_factor <= 0 or threshold_factor > 10:

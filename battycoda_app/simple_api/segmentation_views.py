@@ -115,12 +115,12 @@ def simple_start_segmentation(request, recording_id):
 
     # Validate parameters
     try:
-        min_duration_ms = int(min_duration_ms)
+        min_duration_ms = float(min_duration_ms)
         smooth_window = int(smooth_window)
         threshold_factor = float(threshold_factor)
 
-        if min_duration_ms < 1:
-            raise ValueError("Minimum duration must be at least 1ms")
+        if min_duration_ms <= 0:
+            raise ValueError("Minimum duration must be positive")
         if smooth_window < 1:
             raise ValueError("Smooth window must be at least 1 sample")
         if threshold_factor <= 0 or threshold_factor > 10:

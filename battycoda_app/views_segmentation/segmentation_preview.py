@@ -15,7 +15,7 @@ from django.shortcuts import get_object_or_404
 from django.urls import reverse
 
 from battycoda_app.models import Recording
-from battycoda_app.utils_modules.validation import safe_int
+from battycoda_app.utils_modules.validation import safe_float, safe_int
 
 # Cache directories are configured in settings.py
 
@@ -44,7 +44,7 @@ def create_preview_recording_view(request, recording_id):
 
         # Get segmentation parameters
         algorithm_id = request.POST.get("algorithm")
-        min_duration_ms = safe_int(request.POST.get("min_duration_ms"), default=10)
+        min_duration_ms = safe_float(request.POST.get("min_duration_ms"), default=10)
         smooth_window = safe_int(request.POST.get("smooth_window"), default=3)
         threshold_factor = float(request.POST.get("threshold_factor", 0.5))
 
@@ -57,8 +57,8 @@ def create_preview_recording_view(request, recording_id):
             raise ValueError("Start time must be non-negative")
         if duration <= 0 or duration > 60:
             raise ValueError("Duration must be between 0 and 60 seconds")
-        if min_duration_ms < 1:
-            raise ValueError("Minimum duration must be at least 1ms")
+        if min_duration_ms <= 0:
+            raise ValueError("Minimum duration must be positive")
         if smooth_window < 1:
             raise ValueError("Smooth window must be at least 1 sample")
         if threshold_factor <= 0 or threshold_factor > 10:

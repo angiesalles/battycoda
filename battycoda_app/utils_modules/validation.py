@@ -48,3 +48,22 @@ def safe_int(value, default=None):
         return int(value)
     except (ValueError, TypeError):
         return default
+
+
+def safe_float(value, default=None):
+    """
+    Safely convert a value to a float.
+
+    Args:
+        value: Value to convert
+        default: Default value if conversion fails
+
+    Returns:
+        The float value, or default if conversion fails.
+    """
+    if value is None:
+        return default
+    try:
+        return float(value)
+    except (ValueError, TypeError):
+        return default
