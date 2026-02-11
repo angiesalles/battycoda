@@ -23,6 +23,7 @@ from .algorithms.manual import ManualClusteringRunner
 
 @shared_task(
     bind=True,
+    name="battycoda_app.audio.task_modules.clustering_tasks.run_clustering",
     time_limit=3600,  # 1 hour hard limit
     soft_time_limit=3300,  # 55 min soft limit (allows graceful cleanup)
 )

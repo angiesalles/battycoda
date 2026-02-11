@@ -12,7 +12,7 @@ WorkingDirectory=/home/ubuntu/battycoda
 LimitNOFILE=65536
 Environment=PATH=/home/ubuntu/battycoda/venv/bin
 EnvironmentFile=/home/ubuntu/battycoda/.env
-ExecStart=/home/ubuntu/battycoda/venv/bin/celery -A config worker --loglevel=info
+ExecStart=/home/ubuntu/battycoda/venv/bin/celery -A config worker --loglevel=info --concurrency=2
 Restart=always
 RestartSec=3
 StandardOutput=append:/var/log/battycoda/celery.log
