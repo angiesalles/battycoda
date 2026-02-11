@@ -1,91 +1,9 @@
 /**
  * BattyCoda Theme: Light
- * Minimal overrides - Bootstrap's data-bs-theme="light" is the default.
- * We only customize the brand accent color (teal/green).
+ * Bootstrap's data-bs-theme="light" handles all styling.
+ * We only set color-scheme for native browser widgets.
  */
 
 :root {
-  /* Tell browser to use native light widgets */
   color-scheme: light;
-}
-
-/* Custom teal/green brand color */
-[data-bs-theme="light"] {
-  --bs-primary: #20c997;
-  --bs-primary-rgb: 32, 201, 151;
-  --bs-link-color: #20c997;
-  --bs-link-hover-color: #1aa179;
-}
-
-/* Primary buttons with brand color */
-[data-bs-theme="light"] .btn-primary {
-  --bs-btn-bg: #20c997;
-  --bs-btn-border-color: #20c997;
-  --bs-btn-hover-bg: #1aa179;
-  --bs-btn-hover-border-color: #198b69;
-  --bs-btn-active-bg: #198b69;
-  --bs-btn-active-border-color: #198b69;
-  --bs-btn-disabled-bg: #20c997;
-  --bs-btn-disabled-border-color: #20c997;
-}
-
-[data-bs-theme="light"] .btn-outline-primary {
-  --bs-btn-color: #20c997;
-  --bs-btn-border-color: #20c997;
-  --bs-btn-hover-bg: #20c997;
-  --bs-btn-hover-border-color: #20c997;
-  --bs-btn-active-bg: #20c997;
-  --bs-btn-active-border-color: #20c997;
-}
-
-/* Text and background utilities with brand color */
-[data-bs-theme="light"] .text-primary {
-  color: #20c997 !important;
-}
-
-[data-bs-theme="light"] .bg-primary {
-  background-color: #20c997 !important;
-}
-
-[data-bs-theme="light"] .border-primary {
-  border-color: #20c997 !important;
-}
-
-[data-bs-theme="light"] .badge.bg-primary {
-  background-color: #20c997 !important;
-}
-
-/* Links with brand color */
-[data-bs-theme="light"] a {
-  color: #20c997;
-}
-
-[data-bs-theme="light"] a:hover {
-  color: #1aa179;
-}
-
-/* Form focus states with brand color */
-[data-bs-theme="light"] .form-control:focus,
-[data-bs-theme="light"] .form-select:focus {
-  border-color: #20c997;
-  box-shadow: 0 0 0 0.25rem rgba(32, 201, 151, 0.25);
-}
-
-/* Pagination with brand color */
-[data-bs-theme="light"] .page-link {
-  color: #20c997;
-}
-
-[data-bs-theme="light"] .page-link:hover {
-  color: #1aa179;
-}
-
-[data-bs-theme="light"] .page-item.active .page-link {
-  background-color: #20c997;
-  border-color: #20c997;
-}
-
-/* Breadcrumb links */
-[data-bs-theme="light"] .breadcrumb-item a {
-  color: #20c997;
 }

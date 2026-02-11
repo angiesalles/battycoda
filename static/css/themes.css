@@ -6,12 +6,3 @@
 .theme-switcher-link.active .theme-name {
     font-weight: bold;
 }
-
-/* Theme color indicators for dropdown */
-.theme-color-light {
-    color: #20c997 !important;
-}
-
-.theme-color-dark {
-    color: #3dd9ad !important;
-}

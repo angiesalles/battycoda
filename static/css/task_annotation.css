@@ -21,7 +21,6 @@ body.annotation-page {
     --ta-card-shadow: rgba(0, 0, 0, 0.1);
     --ta-input-bg: #ffffff;
     --ta-input-border: #ced4da;
-    --ta-input-focus-border: #20c997;
     --ta-tick-color: #495057;
     --ta-tick-minor: #6c757d;
     --ta-axis-label: #212529;
@@ -40,7 +39,6 @@ body.annotation-page.theme-dark {
     --ta-card-shadow: rgba(0, 0, 0, 0.3);
     --ta-input-bg: #2d2d2d;
     --ta-input-border: #444444;
-    --ta-input-focus-border: #3dd9ad;
     --ta-tick-color: #aaaaaa;
     --ta-tick-minor: #888888;
     --ta-axis-label: #dddddd;
