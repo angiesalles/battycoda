@@ -79,16 +79,15 @@ export class SegmentRenderer {
    * Scroll to a segment in the segment list
    */
   scrollToSegmentInList(segmentId) {
+    // Clear previous selection
+    const prev = document.querySelector('tr.segment-row-selected');
+    if (prev) prev.classList.remove('segment-row-selected');
+
     const segmentRow = document.getElementById(`segment-row-${segmentId}`);
 
     if (segmentRow) {
       segmentRow.scrollIntoView({ behavior: 'smooth', block: 'center' });
-
-      // Briefly highlight the row
-      segmentRow.style.backgroundColor = '#fff3cd';
-      setTimeout(() => {
-        segmentRow.style.backgroundColor = '';
-      }, 1000);
+      segmentRow.classList.add('segment-row-selected');
     } else {
       // Segment not visible in current page/filter - try to navigate to it
       const segmentManager = window.battycoda?.segmentation;
@@ -141,10 +140,7 @@ export class SegmentRenderer {
         const segmentRow = document.getElementById(`segment-row-${segmentId}`);
         if (segmentRow) {
           segmentRow.scrollIntoView({ behavior: 'smooth', block: 'center' });
-          segmentRow.style.backgroundColor = '#fff3cd';
-          setTimeout(() => {
-            segmentRow.style.backgroundColor = '';
-          }, 1000);
+          segmentRow.classList.add('segment-row-selected');
         }
       }, 100);
     }

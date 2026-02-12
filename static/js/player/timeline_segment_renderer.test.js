@@ -339,9 +339,9 @@ describe('SegmentRenderer', () => {
   });
 
   describe('scrollToSegmentInList', () => {
-    it('should scroll to existing segment row', () => {
+    it('should scroll to existing segment row and highlight it', () => {
       // Create a mock segment row
-      const segmentRow = document.createElement('div');
+      const segmentRow = document.createElement('tr');
       segmentRow.id = 'segment-row-42';
       segmentRow.scrollIntoView = vi.fn();
       document.body.appendChild(segmentRow);
@@ -352,9 +352,32 @@ describe('SegmentRenderer', () => {
         behavior: 'smooth',
         block: 'center',
       });
+      expect(segmentRow.classList.contains('segment-row-selected')).toBe(true);
 
       // Cleanup
       document.body.removeChild(segmentRow);
+    });
+
+    it('should clear previous selection when selecting a new segment', () => {
+      const row1 = document.createElement('tr');
+      row1.id = 'segment-row-1';
+      row1.classList.add('segment-row-selected');
+      row1.scrollIntoView = vi.fn();
+      document.body.appendChild(row1);
+
+      const row2 = document.createElement('tr');
+      row2.id = 'segment-row-2';
+      row2.scrollIntoView = vi.fn();
+      document.body.appendChild(row2);
+
+      segmentRenderer.scrollToSegmentInList(2);
+
+      expect(row1.classList.contains('segment-row-selected')).toBe(false);
+      expect(row2.classList.contains('segment-row-selected')).toBe(true);
+
+      // Cleanup
+      document.body.removeChild(row1);
+      document.body.removeChild(row2);
     });
 
     it('should handle missing segment row gracefully', () => {

@@ -267,3 +267,13 @@
 .text-error {
   color: #e57373;
 }
+
+/* ==========================================================================
+   Segment List Selection
+   ========================================================================== */
+
+.table tr.segment-row-selected {
+  --bs-table-bg: var(--bs-warning-bg-subtle);
+  --bs-table-striped-bg: var(--bs-warning-bg-subtle);
+  --bs-table-hover-bg: var(--bs-warning-bg-subtle);
+}
