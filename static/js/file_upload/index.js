@@ -29,7 +29,8 @@ export {
   showError,
   showCancelled,
 } from './progress.js';
-export { createUploadHandler, hasRequiredFiles } from './upload-handler.js';
+export { createUploadHandler, createUploadHandlerAuto, hasRequiredFiles } from './upload-handler.js';
+export { isTusSupported, createTusUploadHandler, extractFormMetadata } from './tus-handler.js';
 export { isValidWavFile, isValidPickleFile, validateFiles, formatFileSize } from './validation.js';
 export { initFileUpload, autoInit } from './initialization.js';
 

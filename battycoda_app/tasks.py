@@ -255,6 +255,32 @@ def check_disk_usage(threshold=90, cooldown_hours=4):
     return {"status": "ok", "all_disks": all_disk_info}
 
 
+@shared_task
+def cleanup_stale_tus_uploads():
+    """Remove TUS upload records and temp files older than TUS_EXPIRY_HOURS."""
+    from datetime import timedelta
+
+    from django.utils import timezone
+
+    from .models.tus_upload import TusUpload
+    from .utils_modules.cleanup import safe_remove_file
+
+    expiry_hours = getattr(settings, "TUS_EXPIRY_HOURS", 24)
+    cutoff = timezone.now() - timedelta(hours=expiry_hours)
+
+    stale = TusUpload.objects.filter(created_at__lt=cutoff)
+    count = stale.count()
+
+    for upload in stale:
+        safe_remove_file(upload.temp_file_path, f"stale TUS upload {upload.upload_id}")
+
+    stale.delete()
+
+    if count:
+        logger.info(f"Cleaned up {count} stale TUS upload(s)")
+    return {"cleaned": count}
+
+
 @shared_task(bind=True)
 def remove_duplicate_recordings_task(self, group_id, user_id):
     """

@@ -99,6 +99,26 @@ cat >> /etc/nginx/sites-available/battycoda.conf << EOF
         alias /home/ubuntu/battycoda/media/;
     }
 
+    # TUS resumable uploads: per-chunk limit, streaming, extended timeouts
+    location /tus/ {
+        client_max_body_size 20M;
+        proxy_request_buffering off;
+        proxy_read_timeout 300s;
+        proxy_send_timeout 300s;
+
+        proxy_pass http://127.0.0.1:8000;
+        proxy_set_header Host \$host;
+        proxy_set_header X-Real-IP \$remote_addr;
+        proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto \$scheme;
+
+        # Forward TUS-specific headers
+        proxy_set_header Upload-Offset \$http_upload_offset;
+        proxy_set_header Upload-Length \$http_upload_length;
+        proxy_set_header Upload-Metadata \$http_upload_metadata;
+        proxy_set_header Tus-Resumable \$http_tus_resumable;
+    }
+
     location / {
         proxy_pass http://127.0.0.1:8000;
         proxy_set_header Host \$host;

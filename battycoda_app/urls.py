@@ -30,6 +30,8 @@ urlpatterns = [
     path("", include("battycoda_app.notification_urls")),
     path("", include("battycoda_app.clustering_urls")),
     path("", include("battycoda_app.job_urls")),
+    # TUS resumable upload protocol
+    path("tus/", include("battycoda_app.tus_urls")),
     # Simple API routes (API key authentication)
     path("simple-api/", include("battycoda_app.simple_api_urls")),
 ]

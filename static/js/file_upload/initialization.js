@@ -7,7 +7,11 @@
 
 import { setupDropzone } from './dropzone.js';
 import { getFileInfo, updateFileInfoDisplay } from './progress.js';
-import { createUploadHandler, hasRequiredFiles } from './upload-handler.js';
+import {
+  createUploadHandler,
+  createUploadHandlerAuto,
+  hasRequiredFiles,
+} from './upload-handler.js';
 
 /**
  * @typedef {Object} FileUploadElements
@@ -155,12 +159,16 @@ export function initFileUpload() {
     // Prevent default form submission
     e.preventDefault();
 
-    // Create and start upload
-    uploadHandler = createUploadHandler({
-      form: elements.form,
-      progressBar: elements.progressBar,
-      statusText: elements.statusText,
-    });
+    // Create and start upload (TUS for single WAV, XHR for batch/other)
+    uploadHandler = createUploadHandlerAuto(
+      {
+        form: elements.form,
+        progressBar: elements.progressBar,
+        statusText: elements.statusText,
+      },
+      inputs,
+      isBatchUpload,
+    );
 
     uploadHandler.start();
   });

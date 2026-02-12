@@ -253,6 +253,12 @@ MAX_UPLOAD_SIZE_MB = int(os.environ.get("MAX_UPLOAD_SIZE_MB", 100))
 DATA_UPLOAD_MAX_MEMORY_SIZE = MAX_UPLOAD_SIZE_MB * 1024 * 1024  # Convert MB to bytes
 FILE_UPLOAD_MAX_MEMORY_SIZE = DATA_UPLOAD_MAX_MEMORY_SIZE
 
+# TUS resumable upload settings
+TUS_UPLOAD_DIR = os.path.join(str(MEDIA_ROOT), "tus_uploads")
+os.makedirs(TUS_UPLOAD_DIR, exist_ok=True)
+TUS_MAX_SIZE = int(os.environ.get("TUS_MAX_SIZE_MB", 2048)) * 1024 * 1024  # Default 2 GB
+TUS_EXPIRY_HOURS = int(os.environ.get("TUS_EXPIRY_HOURS", 24))
+
 # Celery configuration
 CELERY_BROKER_URL = os.environ.get("CELERY_BROKER_URL", "redis://redis:6379/0")
 CELERY_RESULT_BACKEND = os.environ.get("CELERY_RESULT_BACKEND", "redis://redis:6379/0")

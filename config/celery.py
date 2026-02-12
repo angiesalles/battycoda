@@ -84,6 +84,10 @@ app.conf.beat_schedule = {
         "task": "battycoda_app.tasks.check_disk_usage",
         "schedule": 3600.0,  # Run every hour
     },
+    "cleanup-stale-tus-uploads": {
+        "task": "battycoda_app.tasks.cleanup_stale_tus_uploads",
+        "schedule": 3600.0,  # Run every hour
+    },
 }
 app.conf.timezone = "UTC"
 

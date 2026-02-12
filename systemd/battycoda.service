@@ -17,7 +17,7 @@ EnvironmentFile=/home/ubuntu/battycoda/.env
 # to build Vite assets (npm run build)
 ExecStartPre=/home/ubuntu/battycoda/venv/bin/python manage.py collectstatic --noinput
 
-ExecStart=/home/ubuntu/battycoda/venv/bin/gunicorn --workers 3 --bind 0.0.0.0:8000 config.wsgi:application
+ExecStart=/home/ubuntu/battycoda/venv/bin/gunicorn --workers 3 --timeout 120 --bind 0.0.0.0:8000 config.wsgi:application
 Restart=always
 RestartSec=3
 StandardOutput=append:/var/log/battycoda/gunicorn.log

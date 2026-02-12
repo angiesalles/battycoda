@@ -24,6 +24,7 @@ from .recording import Recording
 from .segmentation import Segment, Segmentation, SegmentationAlgorithm
 from .spectrogram import SpectrogramJob
 from .task import Task, TaskBatch
+from .tus_upload import TusUpload
 
 # Import all models for Django model registration
 from .user import Group, GroupInvitation, GroupMembership, LoginCode, PasswordResetToken, UserProfile

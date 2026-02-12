@@ -12,6 +12,7 @@ import {
   showError,
   showCancelled,
 } from './progress.js';
+import { isTusSupported, createTusUploadHandler } from './tus-handler.js';
 
 /**
  * @typedef {Object} UploadConfig
@@ -126,6 +127,34 @@ export function createUploadHandler(config) {
   }
 
   return { start, abort };
+}
+
+/**
+ * Create an upload handler that automatically chooses TUS for single WAV
+ * uploads and falls back to XHR for batch/ZIP uploads or unsupported browsers.
+ *
+ * @param {UploadConfig} config - Upload configuration (same as createUploadHandler)
+ * @param {Object} inputs - File input elements (from initialization.js)
+ * @param {boolean} isBatchUpload - Whether this is a batch upload
+ * @returns {Object} Upload controller with start() and abort() methods
+ */
+export function createUploadHandlerAuto(config, inputs, isBatchUpload) {
+  // Use TUS for single-file WAV uploads when supported
+  if (
+    !isBatchUpload &&
+    isTusSupported() &&
+    inputs.wavFileInput &&
+    inputs.wavFileInput.files.length === 1
+  ) {
+    const file = inputs.wavFileInput.files[0];
+    return createTusUploadHandler({
+      ...config,
+      file: file,
+    });
+  }
+
+  // Fall back to XHR for batch uploads, ZIP uploads, or unsupported browsers
+  return createUploadHandler(config);
 }
 
 /**
