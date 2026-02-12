@@ -16,7 +16,7 @@ describe('cluster_mapping/drag_drop', () => {
   beforeEach(() => {
     delete window.jQuery;
     delete window.bootstrap;
-    delete window.toastr;
+    delete window.toast;
     document.body.innerHTML = '';
   });
 

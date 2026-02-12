@@ -7,7 +7,6 @@
  * Dependencies:
  * - jQuery (loaded via CDN as window.jQuery)
  * - Bootstrap 4/5 JS (for modals)
- * - Toastr (for notifications, optional)
  *
  * Expected page data (from Django template):
  * - JSON script tag with id="existing-mappings-data" containing mappings array
@@ -112,7 +111,7 @@ export function initClusterMapping(existingMappings) {
     const confidence = parseFloat($('#bulk-mapping-confidence').val()) || 0.7;
 
     if (!callId) {
-      window.toastr.warning('Please select a call type');
+      window.toast.warning('Please select a call type');
       return;
     }
 

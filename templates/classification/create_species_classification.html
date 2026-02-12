@@ -36,7 +36,7 @@
                         
                         <div class="form-group mb-4">
                             <label for="classifier_id">Classifier</label>
-                            <select class="form-control" id="classifier_id" name="classifier_id" required>
+                            <select class="form-select" id="classifier_id" name="classifier_id" required>
                                 <option value="">-- Select Classifier --</option>
                                 {% for classifier in classifiers %}
                                 <option value="{{ classifier.id }}" {% if default_classifier and classifier.id == default_classifier.id %}selected{% endif %}>

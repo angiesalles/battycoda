@@ -58,16 +58,16 @@ export function saveClusterLabel(onSuccess) {
         }
 
         // Show a success message
-        window.toastr.success('Cluster label updated successfully');
+        window.toast.success('Cluster label updated successfully');
 
         // Call the success callback
         if (onSuccess) onSuccess(selectedId);
       } else {
-        window.toastr.error(`Failed to update label: ${data.error}`);
+        window.toast.error(`Failed to update label: ${data.error}`);
       }
     },
     error: function () {
-      window.toastr.error('Failed to update cluster label. Please try again.');
+      window.toast.error('Failed to update cluster label. Please try again.');
     },
     complete: function () {
       saveBtn.html(originalText);

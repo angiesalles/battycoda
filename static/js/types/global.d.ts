@@ -67,34 +67,12 @@ declare namespace bootstrap {
   }
 }
 
-// Toastr notification library
-declare namespace toastr {
-  interface ToastrOptions {
-    closeButton?: boolean;
-    debug?: boolean;
-    newestOnTop?: boolean;
-    progressBar?: boolean;
-    positionClass?: string;
-    preventDuplicates?: boolean;
-    onclick?: (() => void) | null;
-    showDuration?: number;
-    hideDuration?: number;
-    timeOut?: number;
-    extendedTimeOut?: number;
-    showEasing?: string;
-    hideEasing?: string;
-    showMethod?: string;
-    hideMethod?: string;
-  }
-
-  function success(message: string, title?: string, options?: ToastrOptions): void;
-  function info(message: string, title?: string, options?: ToastrOptions): void;
-  function warning(message: string, title?: string, options?: ToastrOptions): void;
-  function error(message: string, title?: string, options?: ToastrOptions): void;
-  function clear(): void;
-  function remove(): void;
-
-  let options: ToastrOptions;
+// Toast notification helper
+interface ToastHelper {
+  success(message: string, title?: string): void;
+  error(message: string, title?: string): void;
+  warning(message: string, title?: string): void;
+  info(message: string, title?: string): void;
 }
 
 // Window extensions for BattyCoda
@@ -102,7 +80,8 @@ interface Window {
   jQuery: JQueryStatic;
   $: JQueryStatic;
   bootstrap: typeof bootstrap;
-  toastr: typeof toastr;
+  toast: ToastHelper;
+  showToast: (message: string, type?: string, options?: { delay?: number; title?: string }) => void;
 
   // Theme URL mapping for dynamic theme loading
   __VITE_THEME_URLS__?: Record<string, string>;

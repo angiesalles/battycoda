@@ -56,7 +56,7 @@ describe('cluster_explorer/data_loader', () => {
 
     // Inject mock jQuery via state (instead of window.jQuery)
     setJQuery(mockJQuery);
-    window.toastr = {
+    window.toast = {
       success: vi.fn(),
       error: vi.fn(),
     };
@@ -152,7 +152,7 @@ describe('cluster_explorer/data_loader', () => {
       const successHandler = mockAjax.lastOptions.success;
       successHandler({ success: true });
 
-      expect(window.toastr.success).toHaveBeenCalledWith('Cluster label updated successfully');
+      expect(window.toast.success).toHaveBeenCalledWith('Cluster label updated successfully');
     });
 
     it('should show error toast on API error response', () => {
@@ -163,7 +163,7 @@ describe('cluster_explorer/data_loader', () => {
       const successHandler = mockAjax.lastOptions.success;
       successHandler({ success: false, error: 'Invalid cluster ID' });
 
-      expect(window.toastr.error).toHaveBeenCalledWith(
+      expect(window.toast.error).toHaveBeenCalledWith(
         'Failed to update label: Invalid cluster ID'
       );
     });
@@ -176,7 +176,7 @@ describe('cluster_explorer/data_loader', () => {
       const errorHandler = mockAjax.lastOptions.error;
       errorHandler();
 
-      expect(window.toastr.error).toHaveBeenCalledWith(
+      expect(window.toast.error).toHaveBeenCalledWith(
         'Failed to update cluster label. Please try again.'
       );
     });

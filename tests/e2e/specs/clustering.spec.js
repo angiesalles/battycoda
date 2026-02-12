@@ -209,7 +209,7 @@ test.describe('Create Clustering Run - Authenticated', () => {
     const featureMethod = page.locator('#feature_method');
 
     // Check that dropdown exists and has expected options
-    // Note: Options may be hidden if using select2, so check they exist rather than visibility
+    // Check that dropdown exists and has expected options
     await expect(featureMethod).toBeVisible();
     await expect(featureMethod.locator('option[value="mfcc"]')).toHaveCount(1);
     await expect(

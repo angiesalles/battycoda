@@ -248,9 +248,8 @@ test.describe('Authentication', () => {
       // Wait for page load
       await page.waitForLoadState('networkidle');
 
-      // Messages are shown via toastr toast notifications
-      // Check for toastr success toast
-      await expect(page.locator('.toast-success, .toastr-success')).toBeVisible(
+      // Messages are shown via Bootstrap toast notifications
+      await expect(page.locator('.toast.text-bg-success, .toast-success')).toBeVisible(
         { timeout: 10000 }
       );
     });
@@ -350,11 +349,11 @@ test.describe('Authentication', () => {
       await page.fill('input[name="identifier"]', 'nonexistent@example.com');
       await page.click('button[type="submit"]');
 
-      // Should redirect to login and show success message via toastr
+      // Should redirect to login and show success message
       await expect(page).toHaveURL(/\/accounts\/login/);
 
-      // Wait for toast to appear (messages use toastr)
-      await expect(page.locator('.toast-success, .toastr-success')).toBeVisible(
+      // Wait for Bootstrap toast to appear
+      await expect(page.locator('.toast.text-bg-success, .toast-success')).toBeVisible(
         { timeout: 10000 }
       );
     });

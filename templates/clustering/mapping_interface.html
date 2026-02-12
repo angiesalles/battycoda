@@ -51,7 +51,7 @@
                                 <div class="clusters-container">
                                     <div class="form-group">
                                         <label for="cluster-sort">Sort By</label>
-                                        <select id="cluster-sort" class="form-control form-control-sm">
+                                        <select id="cluster-sort" class="form-select form-select-sm">
                                             <option value="id">Cluster ID</option>
                                             <option value="size">Size (largest first)</option>
                                             <option value="coherence">Coherence (highest first)</option>
@@ -115,7 +115,7 @@
                             <div class="card-header">
                                 <h4 class="card-title">Species Call Types</h4>
                                 <div class="card-tools">
-                                    <select id="species-filter" class="form-control form-control-sm">
+                                    <select id="species-filter" class="form-select form-select-sm">
                                         <option value="all">All Species</option>
                                         {% for species in available_species %}
                                         <option value="{{ species.id }}">{{ species.name }}</option>
@@ -214,7 +214,7 @@
                 <div class="container-fluid">
                     <div class="row">
                         <div class="col-md-6">
-                            <select id="mapping-call-select" class="form-control"></select>
+                            <select id="mapping-call-select" class="form-select"></select>
                         </div>
                         <div class="col-md-6 text-end">
                             <button type="button" id="create-mapping-btn" class="btn btn-primary">Create Mapping</button>
@@ -240,7 +240,7 @@
                 <p class="text-muted mb-3">Map all selected clusters to a single call type with the same confidence score.</p>
                 <div class="form-group mb-3">
                     <label for="bulk-mapping-call-select">Select Call Type</label>
-                    <select id="bulk-mapping-call-select" class="form-control">
+                    <select id="bulk-mapping-call-select" class="form-select">
                         <option value="">-- Select a call type --</option>
                         {% for species in available_species %}
                         <optgroup label="{{ species.name }}">
@@ -270,8 +270,6 @@
 {% endblock %}
 
 {% block extra_js %}
-<script src="https://cdn.jsdelivr.net/npm/sortablejs@1.14.0/Sortable.min.js"></script>
-
 <!-- Page data for cluster mapping -->
 <div id="page-data"
      data-clustering-run-id="{{ clustering_run.id }}"

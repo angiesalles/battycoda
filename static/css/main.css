@@ -9,12 +9,6 @@
  * dynamically by the theme-switcher.js based on user preference.
  */
 
-/* Stroke-7 icon font */
-@import '../lib/stroke-7/style.css';
-
-/* Main application styles (Maisonnette template) */
-@import './app.css';
-
 /* Theme CSS variables and base styles */
 @import './themes.css';
 

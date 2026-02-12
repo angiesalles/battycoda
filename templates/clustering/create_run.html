@@ -78,7 +78,7 @@
                             <label for="segmentation" class="form-label fw-bold">
                                 Segmentation <span class="text-danger">*</span>
                             </label>
-                            <select class="form-control form-control-lg" id="segmentation" name="segmentation">
+                            <select class="form-select form-select-lg" id="segmentation" name="segmentation">
                                 <option value="">Select a segmentation...</option>
                                 {% for seg in segmentations %}
                                 <option value="{{ seg.id }}">
@@ -98,7 +98,7 @@
                                 <label for="project" class="form-label fw-bold">
                                     Project <span class="text-danger">*</span>
                                 </label>
-                                <select class="form-control form-control-lg" id="project" name="project">
+                                <select class="form-select form-select-lg" id="project" name="project">
                                     <option value="">Select a project...</option>
                                     {% for proj in projects %}
                                     <option value="{{ proj.id }}">
@@ -121,7 +121,7 @@
                                     This project contains multiple species. Clustering different species
                                     together produces meaningless results. Please select one species:
                                 </p>
-                                <select class="form-control form-control-lg" id="species" name="species">
+                                <select class="form-select form-select-lg" id="species" name="species">
                                     <option value="">Select a species...</option>
                                 </select>
                             </div>
@@ -164,7 +164,7 @@
                             <label for="algorithm" class="form-label fw-bold">
                                 Clustering Algorithm <span class="text-danger">*</span>
                             </label>
-                            <select class="form-control form-control-lg" id="algorithm" name="algorithm" required>
+                            <select class="form-select form-select-lg" id="algorithm" name="algorithm" required>
                                 <option value="">Select an algorithm...</option>
                                 <optgroup label="📊 Manual Algorithms (Specify cluster count)">
                                     {% for algo in algorithms %}
@@ -213,7 +213,7 @@
                         
                         <div class="form-group mb-3">
                             <label for="feature_method" class="form-label fw-bold">Feature Extraction Method</label>
-                            <select class="form-control form-control-lg" id="feature_method" name="feature_method">
+                            <select class="form-select form-select-lg" id="feature_method" name="feature_method">
                                 <option value="mfcc" selected>Mel-Frequency Cepstral Coefficients (MFCC)</option>
                                 <option value="mel_spectrogram">Mel Spectrogram</option>
                                 <option value="chroma">Chroma Features</option>

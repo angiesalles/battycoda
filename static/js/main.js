@@ -25,10 +25,13 @@ import './datetime_formatter.js';
 // Theme switcher - allows users to switch between Maisonnette themes
 import './theme-switcher.js';
 
+// Bootstrap toast notifications (exposes window.toast and window.showToast)
+import './utils/toast.js';
+
 // Notifications - handles navbar notification loading and updates
 import './notifications.js';
 
-// Application initialization - App.init(), Select2, toastr, Django messages, management features
+// Application initialization - Django messages, management features
 import './core/app-init.js';
 
 // Bootstrap component auto-initialization (tooltips, popovers)

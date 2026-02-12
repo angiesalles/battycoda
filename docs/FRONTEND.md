@@ -206,11 +206,8 @@ const { recordingId, apiUrl } = getPageData();
 **CDN (External)** - Loaded via CDN in Django templates:
 | Library | Version | Reason |
 |---------|---------|--------|
-| jQuery | 3.3.1 | Deep integration, plugin ecosystem |
-| Bootstrap JS | 5.3.3 | Tied to jQuery, used for modals/dropdowns |
-| Toastr | latest | Simple toast notifications |
-| Select2 | 4.1.0 | jQuery-based select dropdowns |
-| Perfect Scrollbar | 1.5.0 | Minimal usage |
+| jQuery | 3.3.1 | Cluster explorer/mapping modules |
+| Bootstrap JS | 5.3.3 | Modals, dropdowns, toasts |
 
 **Bundled (npm)** - Tree-shaking via Vite:
 | Library | Reason |
@@ -297,7 +294,7 @@ TypeScript is configured in `tsconfig.json` with permissive settings:
 Types are organized in `static/js/types/`:
 ```
 static/js/types/
-├── global.d.ts    # Window extensions, jQuery, Bootstrap, Toastr
+├── global.d.ts    # Window extensions, jQuery, Bootstrap, Toast
 ├── models.d.ts    # Domain model types (Recording, Cluster, etc.)
 ├── api.d.ts       # API response types
 └── index.ts       # Central export point

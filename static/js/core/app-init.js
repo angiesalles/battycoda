@@ -2,10 +2,7 @@
  * Application Initialization
  *
  * This module handles core application initialization including:
- * - Maisonnette App.init()
- * - Select2 initialization on form controls
- * - Toastr notification configuration
- * - Display of Django flash messages
+ * - Display of Django flash messages via Bootstrap toasts
  * - Management features activation handler
  *
  * Configuration is read from data attributes on #app-config element.
@@ -13,36 +10,11 @@
  * @module core/app-init
  */
 
-/**
- * Configure toastr notification options.
- */
-function configureToastr() {
-  if (typeof toastr === 'undefined') {
-    console.warn('Toastr not loaded, skipping configuration');
-    return;
-  }
-
-  toastr.options = {
-    closeButton: true,
-    debug: false,
-    newestOnTop: true,
-    progressBar: true,
-    positionClass: 'toast-top-right',
-    preventDuplicates: false,
-    onclick: null,
-    showDuration: '300',
-    hideDuration: '1000',
-    timeOut: '5000',
-    extendedTimeOut: '1000',
-    showEasing: 'swing',
-    hideEasing: 'linear',
-    showMethod: 'fadeIn',
-    hideMethod: 'fadeOut',
-  };
-}
+import { toast } from '../utils/toast.js';
+import { getCsrfToken } from '../utils/page-data.js';
 
 /**
- * Display Django flash messages using toastr.
+ * Display Django flash messages using Bootstrap toasts.
  *
  * Reads messages from #django-messages script tag (JSON format).
  */
@@ -57,40 +29,12 @@ function displayDjangoMessages() {
     messages.forEach((msg) => {
       const level = msg.level || 'info';
       const text = msg.message || '';
-
-      switch (level) {
-        case 'success':
-          toastr.success(text);
-          break;
-        case 'warning':
-          toastr.warning(text);
-          break;
-        case 'error':
-          toastr.error(text);
-          break;
-        case 'info':
-        default:
-          toastr.info(text);
-          break;
-      }
+      const fn = toast[level] || toast.info;
+      fn(text);
     });
   } catch (e) {
     console.warn('Failed to parse Django messages:', e);
   }
-}
-
-/**
- * Initialize Select2 on all select elements with form-control class.
- */
-function initializeSelect2() {
-  if (typeof $ === 'undefined' || typeof $.fn.select2 === 'undefined') {
-    console.warn('jQuery or Select2 not loaded, skipping initialization');
-    return;
-  }
-
-  $('select.form-control').select2({
-    width: '100%',
-  });
 }
 
 /**
@@ -104,43 +48,42 @@ function setupManagementFeatures() {
   if (!configEl) return;
 
   const updateProfileUrl = configEl.dataset.updateProfileUrl;
-  const csrfToken = configEl.dataset.csrfToken;
   const isAuthenticated = configEl.dataset.userAuthenticated === 'true';
 
   window.activateManagementFeatures = function () {
     if (!isAuthenticated) {
-      toastr.error('You must be logged in to activate management features.');
+      toast.error('You must be logged in to activate management features.');
       return;
     }
 
     if (!updateProfileUrl) {
-      toastr.error('Configuration error: update profile URL not available.');
+      toast.error('Configuration error: update profile URL not available.');
       return;
     }
 
-    $.ajax({
-      url: updateProfileUrl,
-      type: 'POST',
-      data: {
+    fetch(updateProfileUrl, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded',
+        'X-CSRFToken': getCsrfToken(),
+      },
+      body: new URLSearchParams({
         action: 'update_management_features',
         enabled: 'true',
-        csrfmiddlewaretoken: csrfToken,
-      },
-      success: function (response) {
+      }),
+    })
+      .then((r) => r.json())
+      .then((response) => {
         if (response.success) {
-          toastr.success(response.message);
-          // Reload the page to show the new menu items
-          setTimeout(function () {
-            window.location.reload();
-          }, 1000);
+          toast.success(response.message);
+          setTimeout(() => window.location.reload(), 1000);
         } else {
-          toastr.error(response.message);
+          toast.error(response.message);
         }
-      },
-      error: function () {
-        toastr.error('Failed to activate management features. Please try again.');
-      },
-    });
+      })
+      .catch(() => {
+        toast.error('Failed to activate management features. Please try again.');
+      });
   };
 }
 
@@ -148,28 +91,11 @@ function setupManagementFeatures() {
  * Main initialization function.
  */
 function initializeApp() {
-  // Initialize Maisonnette App
-  if (typeof App !== 'undefined' && typeof App.init === 'function') {
-    App.init();
-  }
-
-  // Initialize Select2
-  initializeSelect2();
-
-  // Configure toastr
-  configureToastr();
-
-  // Display Django messages
   displayDjangoMessages();
-
-  // Set up management features handler
   setupManagementFeatures();
 }
 
-// Initialize when DOM is ready (jQuery version for compatibility)
-if (typeof $ !== 'undefined') {
-  $(document).ready(initializeApp);
-} else if (document.readyState === 'loading') {
+if (document.readyState === 'loading') {
   document.addEventListener('DOMContentLoaded', initializeApp);
 } else {
   initializeApp();

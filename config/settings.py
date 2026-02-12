@@ -523,16 +523,16 @@ _CSP_DIRECTIVES = {
     # Scripts: self + CDNs (+ unsafe-inline in non-strict mode)
     "script-src": [
         "'self'",
-        "cdn.jsdelivr.net",  # Bootstrap, Perfect Scrollbar, Select2, Sortable.js
-        "cdnjs.cloudflare.com",  # Font Awesome, Toastr
+        "cdn.jsdelivr.net",  # Bootstrap
+        "cdnjs.cloudflare.com",  # Font Awesome
         "code.jquery.com",  # jQuery
         "js.sentry-cdn.com",  # Sentry error tracking
     ],
     # Styles: self + CDNs (+ unsafe-inline in non-strict mode)
     "style-src": [
         "'self'",
-        "cdn.jsdelivr.net",  # Bootstrap CSS, Perfect Scrollbar CSS, Select2 CSS
-        "cdnjs.cloudflare.com",  # Font Awesome CSS, Toastr CSS
+        "cdn.jsdelivr.net",  # Bootstrap CSS
+        "cdnjs.cloudflare.com",  # Font Awesome CSS
         "fonts.googleapis.com",  # Google Fonts CSS
     ],
     # Images: self + data URIs (for inline images, spectrograms)

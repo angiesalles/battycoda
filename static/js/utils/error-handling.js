@@ -195,13 +195,13 @@ export function showLoading($container, message = 'Loading...') {
 
 /**
  * Create a toast notification for transient errors
- * Uses toastr if available, falls back to console
+ * Uses Bootstrap toast helper if available, falls back to console
  * @param {string} message - Error message
  * @param {string} type - 'error', 'warning', 'success', 'info'
  */
 export function showToast(message, type = 'error') {
-  if (window.toastr && typeof window.toastr[type] === 'function') {
-    window.toastr[type](message);
+  if (window.toast && typeof window.toast[type] === 'function') {
+    window.toast[type](message);
   } else {
     console[type === 'error' ? 'error' : type === 'warning' ? 'warn' : 'log'](
       `[Toast ${type}]`,

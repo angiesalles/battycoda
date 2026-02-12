@@ -197,46 +197,34 @@ export function initFormBehavior() {
  * Check if we need to show a notification about switching batches
  */
 export function checkBatchSwitchNotification() {
-  // Check if toastr is available
-  if (typeof toastr !== 'undefined') {
-    // Configure toastr
-    toastr.options = {
-      closeButton: true,
-      positionClass: 'toast-top-right',
-      preventDuplicates: true,
-      timeOut: '6000',
-      extendedTimeOut: '2000',
-    };
+  // Check if there's batch switch data
+  if (batchSwitchData) {
+    const fromBatchName = batchSwitchData.fromBatchName;
+    const toBatchName = batchSwitchData.toBatchName;
+    const toBatchUrl = batchSwitchData.toBatchUrl;
+    const sameProject = batchSwitchData.sameProject;
+    const projectName = batchSwitchData.projectName;
 
-    // Check if there's batch switch data
-    if (batchSwitchData) {
-      const fromBatchName = batchSwitchData.fromBatchName;
-      const toBatchName = batchSwitchData.toBatchName;
-      const toBatchUrl = batchSwitchData.toBatchUrl;
-      const sameProject = batchSwitchData.sameProject;
-      const projectName = batchSwitchData.projectName;
+    // Validate URL and escape text content for XSS protection
+    const safeUrl = validateUrl(toBatchUrl);
+    const safeFromName = escapeHtml(fromBatchName);
+    const safeToName = escapeHtml(toBatchName);
 
-      // Validate URL and escape text content for XSS protection
-      const safeUrl = validateUrl(toBatchUrl);
-      const safeFromName = escapeHtml(fromBatchName);
-      const safeToName = escapeHtml(toBatchName);
-
-      // Create message with link to batch (only if URL is valid)
-      const batchLink = safeUrl
-        ? `<a href="${safeUrl}" class="text-white text-decoration-underline">view batch</a>`
-        : '';
-      let message = `You completed all tasks in batch "${safeFromName}" and are now working on "${safeToName}"`;
-      if (batchLink) {
-        message += ` (${batchLink})`;
-      }
-
-      // Add project context if switching within same project
-      if (sameProject && projectName) {
-        message += `<br><small>Continuing with project: ${escapeHtml(projectName)}</small>`;
-      }
-
-      // Show success notification
-      toastr.success(message, 'Batch Completed!');
+    // Create message with link to batch (only if URL is valid)
+    const batchLink = safeUrl
+      ? `<a href="${safeUrl}" class="text-decoration-underline">view batch</a>`
+      : '';
+    let message = `You completed all tasks in batch "${safeFromName}" and are now working on "${safeToName}"`;
+    if (batchLink) {
+      message += ` (${batchLink})`;
     }
+
+    // Add project context if switching within same project
+    if (sameProject && projectName) {
+      message += `<br><small>Continuing with project: ${escapeHtml(projectName)}</small>`;
+    }
+
+    // Show success notification
+    window.toast.success(message, 'Batch Completed!');
   }
 }

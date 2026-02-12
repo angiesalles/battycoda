@@ -52,16 +52,10 @@ export default [
         jQuery: 'readonly',
         // D3 (external CDN)
         d3: 'readonly',
-        // Toastr (external CDN)
-        toastr: 'readonly',
-        // Select2 (external CDN)
-        select2: 'readonly',
         // Bootstrap (external CDN)
         bootstrap: 'readonly',
         // Sentry (external CDN)
         Sentry: 'readonly',
-        // Maisonnette App (external script)
-        App: 'readonly',
         // Audio context
         AudioContext: 'readonly',
         webkitAudioContext: 'readonly',

@@ -55,7 +55,7 @@ def get_next_task_from_batch_view(request, batch_id):
         batch_name = batch.name
         messages.info(request, f'No undone tasks found in batch "{batch_name}". All tasks in this batch are completed.')
 
-        # Store completed batch info in session to show toastr notification
+        # Store completed batch info in session to show toast notification
         request.session["batch_completed"] = {"name": batch_name, "id": batch.id}
 
         return redirect("battycoda_app:task_batch_detail", batch_id=batch.id)

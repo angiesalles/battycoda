@@ -47,7 +47,7 @@ function handleCompareClick() {
   const selectedId = getSelectedClusterId();
 
   if (!selectedId) {
-    window.toastr?.warning('Please select a cluster first');
+    window.toast?.warning('Please select a cluster first');
     return;
   }
 

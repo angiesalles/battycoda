@@ -20,9 +20,6 @@
     <!-- Bootstrap 5.3.3 CSS from CDN -->
     <link id="bootstrapCSS" rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
     
-    <!-- Maisonnette Core CSS -->
-    <link id="stroke7CSS" rel="stylesheet" type="text/css" href="{% static 'lib/stroke-7/style.css' %}">
-    <link id="perfectScrollbarCSS" rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/perfect-scrollbar@1.5.0/css/perfect-scrollbar.min.css">
     <!-- Font Awesome from CDN -->
     <link id="fontAwesomeCSS" rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" integrity="sha512-iecdLmaskl7CVkqkXNQ/ZH/XLlvWZOJyj7Yy7tcenmpD1ypASozpmT/E0iPtmFIB46ZmdtAc9eNBvH0H/ZpiBw==" crossorigin="anonymous" referrerpolicy="no-referrer">
     
@@ -30,12 +27,6 @@
     <link id="googleFontsPreconnect1" rel="preconnect" href="https://fonts.googleapis.com">
     <link id="googleFontsPreconnect2" rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link id="googleFonts" href="https://fonts.googleapis.com/css2?family=Open+Sans:ital,wght@0,300;0,400;0,600;0,700;0,800;1,300;1,400;1,600;1,700;1,800&family=Raleway:wght@100;200;300;400;500;600;700;800;900&display=swap" rel="stylesheet">
-    
-    <!-- Toastr CSS -->
-    <link id="toastrCSS" rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css">
-    
-    <!-- Select2 CSS -->
-    <link id="select2CSS" rel="stylesheet" href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css">
     
     <link id="appCSS" rel="stylesheet" type="text/css" href="{% static 'css/app.css' %}">
     
@@ -225,19 +216,11 @@
      hidden></div>
 {% endif %}
 
-<!-- Maisonnette Core JS from CDN -->
+<!-- Core JS from CDN -->
 <script id="jqueryScript" src="https://code.jquery.com/jquery-3.3.1.min.js" integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8=" crossorigin="anonymous"></script>
-
-<!-- Security utilities (escapeHtml, validateUrl) are loaded via Vite bundle in main.js -->
-
-<script id="perfectScrollbarScript" src="https://cdn.jsdelivr.net/npm/perfect-scrollbar@1.5.0/dist/perfect-scrollbar.min.js"></script>
-<script id="toastrScript" src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
-<script id="select2Script" src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
 
 <!-- Bootstrap 5.3.3 JS Bundle (includes Popper) from CDN -->
 <script id="bootstrapScript" src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
-
-<script id="appScript" src="{% static 'js/app.js' %}" type="text/javascript"></script>
 
 <!-- Page data for JavaScript modules (CSRF, notification URLs, etc.) -->
 <div id="page-data"
@@ -266,7 +249,7 @@
      {% endif %}
      hidden></div>
 
-<!-- Django messages for toastr display -->
+<!-- Django messages for Bootstrap toast display -->
 <script id="django-messages" type="application/json">
 {% if messages %}[{% for message in messages %}{"level": "{{ message.tags }}", "message": "{{ message|escapejs }}"}{% if not forloop.last %}, {% endif %}{% endfor %}]{% else %}[]{% endif %}
 </script>

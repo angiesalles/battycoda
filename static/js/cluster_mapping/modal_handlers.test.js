@@ -9,7 +9,7 @@ describe('cluster_mapping/modal_handlers', () => {
   beforeEach(() => {
     delete window.jQuery;
     delete window.bootstrap;
-    delete window.toastr;
+    delete window.toast;
     document.body.innerHTML = '';
   });
 
@@ -66,7 +66,7 @@ describe('cluster_mapping/modal_handlers', () => {
       expect(eventHandlers['#create-mapping-btn:click']).toBeDefined();
     });
 
-    it('should call toastr.error when create button clicked without selection', () => {
+    it('should call toast.error when create button clicked without selection', () => {
       document.body.innerHTML = `
         <div id="clusterPreviewModal"></div>
         <button id="create-mapping-btn"></button>
@@ -86,7 +86,7 @@ describe('cluster_mapping/modal_handlers', () => {
       mockJQuery.fn = {};
       window.jQuery = mockJQuery;
 
-      window.toastr = { error: vi.fn() };
+      window.toast = { error: vi.fn() };
 
       const createMappingFn = vi.fn();
       initializeClusterPreviewModal(createMappingFn);
@@ -94,7 +94,7 @@ describe('cluster_mapping/modal_handlers', () => {
       // Simulate click
       eventHandlers['#create-mapping-btn:click']();
 
-      expect(window.toastr.error).toHaveBeenCalledWith('Please select a call type');
+      expect(window.toast.error).toHaveBeenCalledWith('Please select a call type');
       expect(createMappingFn).not.toHaveBeenCalled();
     });
   });

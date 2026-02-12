@@ -159,7 +159,7 @@ When `DEBUG=true` and `VITE_DEV_MODE=true`, the Vite dev server (localhost:5173)
 Migrated to external files:
 - `static/js/utils/security.js` - `escapeHtml()`, `validateUrl()`
 - `static/js/integrations/sentry-init.js` - Sentry initialization
-- `static/js/core/app-init.js` - Select2, toastr config, Django messages
+- `static/js/core/app-init.js` - Django messages, management features
 - `static/js/utils/bootstrap-init.js` - Auto-initializes tooltips and popovers
 
 Remaining inline scripts:
