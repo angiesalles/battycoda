@@ -327,6 +327,8 @@ def _handle_head(request, upload_id):
 
 def _handle_patch(request, upload_id):
     """PATCH /tus/<uuid> — append a chunk."""
+    from django.db import transaction
+
     # Content-Type must be application/offset+octet-stream
     content_type = request.content_type or ""
     if "application/offset+octet-stream" not in content_type:
@@ -338,38 +340,39 @@ def _handle_patch(request, upload_id):
     except (ValueError, TypeError):
         return _error(400, "Missing or invalid Upload-Offset header")
 
-    # Use select_for_update to prevent race conditions
-    try:
-        tus_upload = TusUpload.objects.select_for_update().get(upload_id=upload_id, user=request.user)
-    except TusUpload.DoesNotExist:
-        return _error(404, "Upload not found")
-
-    # Offset conflict check
-    if client_offset != tus_upload.upload_offset:
-        return _error(409, f"Offset mismatch: server at {tus_upload.upload_offset}, client sent {client_offset}")
-
-    # Read chunk from request body
+    # Read chunk from request body (before transaction to avoid holding lock while reading)
     chunk = request.body
     if not chunk:
         return _error(400, "Empty request body")
 
-    # Verify chunk doesn't exceed remaining space
-    if tus_upload.upload_offset + len(chunk) > tus_upload.upload_length:
-        return _error(413, "Chunk exceeds declared upload length")
+    # Use select_for_update inside atomic() to prevent race conditions
+    with transaction.atomic():
+        try:
+            tus_upload = TusUpload.objects.select_for_update().get(upload_id=upload_id, user=request.user)
+        except TusUpload.DoesNotExist:
+            return _error(404, "Upload not found")
 
-    # Append chunk to temp file
-    try:
-        with open(tus_upload.temp_file_path, "ab") as f:
-            f.write(chunk)
-    except OSError as e:
-        logger.error(f"TUS: failed to write chunk for {upload_id}: {e}")
-        return _error(500, "Failed to write chunk")
+        # Offset conflict check
+        if client_offset != tus_upload.upload_offset:
+            return _error(409, f"Offset mismatch: server at {tus_upload.upload_offset}, client sent {client_offset}")
 
-    # Update offset
-    tus_upload.upload_offset += len(chunk)
-    is_complete = tus_upload.upload_offset >= tus_upload.upload_length
-    tus_upload.is_complete = is_complete
-    tus_upload.save(update_fields=["upload_offset", "is_complete", "updated_at"])
+        # Verify chunk doesn't exceed remaining space
+        if tus_upload.upload_offset + len(chunk) > tus_upload.upload_length:
+            return _error(413, "Chunk exceeds declared upload length")
+
+        # Append chunk to temp file
+        try:
+            with open(tus_upload.temp_file_path, "ab") as f:
+                f.write(chunk)
+        except OSError as e:
+            logger.error(f"TUS: failed to write chunk for {upload_id}: {e}")
+            return _error(500, "Failed to write chunk")
+
+        # Update offset
+        tus_upload.upload_offset += len(chunk)
+        is_complete = tus_upload.upload_offset >= tus_upload.upload_length
+        tus_upload.is_complete = is_complete
+        tus_upload.save(update_fields=["upload_offset", "is_complete", "updated_at"])
 
     resp = HttpResponse(status=204)
     headers = {
