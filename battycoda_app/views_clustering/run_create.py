@@ -130,20 +130,12 @@ def create_clustering_run(request):
             progress=0.0,
         )
 
-        # Submit task
+        # Submit task by name — send_task doesn't require the task to be
+        # imported in the web process, only registered in the worker.
         from celery import current_app
 
         task_name = algorithm.celery_task
-        task_func = current_app.tasks.get(task_name)
-        if not task_func:
-            # Don't silently fall back - this masks configuration errors
-            clustering_run.status = "failed"
-            clustering_run.error_message = f"Celery task '{task_name}' not registered"
-            clustering_run.save()
-            messages.error(request, f"Configuration error: task '{task_name}' not found. Please contact admin.")
-            return redirect("battycoda_app:clustering_run_detail", run_id=clustering_run.id)
-
-        task = task_func.delay(clustering_run.id)
+        task = current_app.send_task(task_name, args=[clustering_run.id])
 
         clustering_run.task_id = task.id
         clustering_run.save()
