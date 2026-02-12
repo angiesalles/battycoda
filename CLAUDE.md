@@ -142,9 +142,10 @@ See [Operations Guide](docs/OPERATIONS.md) for full deployment workflow.
 
 ### Running Tests
 ```bash
-# Python
+# Python (uses --keepdb by default for fast repeat runs)
 python manage.py test
 python manage.py test battycoda_app.tests.TestClassName.test_method_name
+python manage.py test --no-keepdb  # Force fresh DB creation
 
 # JavaScript
 npm test              # Unit tests (watch mode)
@@ -154,6 +155,8 @@ npm run e2e           # E2E tests
 ./lint.sh             # Python
 npm run lint          # JavaScript
 ```
+
+**Test DB reuse:** The custom test runner (`KeepDBTestRunner`) defaults to `--keepdb`, reusing the test database between runs. It automatically detects migration changes and recreates the DB when needed. Use `--no-keepdb` to force a fresh DB.
 
 See [Testing Guide](docs/TESTING.md) for full testing documentation.
 

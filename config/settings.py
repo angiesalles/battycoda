@@ -182,6 +182,10 @@ else:
 # when connections in the pool become stale (e.g., after SSL drops or server restarts)
 CONN_HEALTH_CHECKS = True
 
+# Use custom test runner that defaults to --keepdb for faster repeat runs
+# Override with: python manage.py test --no-keepdb
+TEST_RUNNER = "battycoda_app.tests.runner.KeepDBTestRunner"
+
 # Password validation
 # https://docs.djangoproject.com/en/5.1/ref/settings/#auth-password-validators
 

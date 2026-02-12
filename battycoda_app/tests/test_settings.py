@@ -2,7 +2,6 @@
 Test settings for the Battycoda project.
 """
 
-import tempfile
 from unittest.mock import MagicMock, patch
 
 # Use a fast password hasher for tests (MD5 is ~100x faster than PBKDF2)
@@ -37,17 +36,6 @@ open_file_patch = patch("builtins.open", MagicMock())
 
 # Patch File class
 file_class_patch = patch("django.core.files.File", MagicMock())
-
-# Use an in-memory SQLite database for tests
-DATABASES = {
-    "default": {
-        "ENGINE": "django.db.backends.sqlite3",
-        "NAME": ":memory:",
-    }
-}
-
-# Use a temporary directory for media files during tests
-MEDIA_ROOT = tempfile.mkdtemp()
 
 # Disable Celery tasks during tests
 CELERY_TASK_ALWAYS_EAGER = True
