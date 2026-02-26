@@ -137,9 +137,12 @@ def get_next_task_view(request):
 
 
 @login_required
-def get_last_task_view(request):
+def get_last_task_view(request, current_task_id=None):
     """Get the last task the user worked on (most recently updated) and redirect to it"""
-    task = _filter_by_user_access(Task.objects.all(), request.user).order_by("-updated_at").first()
+    qs = _filter_by_user_access(Task.objects.all(), request.user)
+    if current_task_id is not None:
+        qs = qs.exclude(id=current_task_id)
+    task = qs.order_by("-updated_at").first()
 
     if task:
         # Redirect to the annotation interface with the task ID

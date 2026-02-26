@@ -24,6 +24,7 @@ urlpatterns = [
     path("tasks/relabel-ajax/", views_task_batch.relabel_task_ajax, name="relabel_task_ajax"),
     path("tasks/next/", views_task_navigation.get_next_task_view, name="get_next_task"),
     path("tasks/last/", views_task_navigation.get_last_task_view, name="get_last_task"),
+    path("tasks/last/<int:current_task_id>/", views_task_navigation.get_last_task_view, name="get_last_task_from"),
     path(
         "tasks/<int:current_task_id>/skip-batch/",
         views_task_navigation.skip_to_next_batch_view,
