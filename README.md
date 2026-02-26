@@ -52,6 +52,14 @@ Upload options:
 - **Small batches (~50 files):** Use the batch processing feature
 - **Large batches:** Use the API implementation
 
+### What is API Implementation?
+
+An API (application programming interface) allows software applications to communicate with each other and exchange data and information. For our purposes, this allows BattyCoda and R script to communicate, allowing us to process a large amount of data at once, which would overload the browser software. Important information you will need for API usage includes:
+
+- **API Key:** Can be found under your profile, and can be regenerated at any time
+- **Species Number:** Can be found in the URL of you interest species page
+- **Project Number:** Can be found in the URL of you interest project page
+  
 ## 4. From Upload to Task Batch
 
 The navigation tabs reflect the processing workflow:
@@ -139,7 +147,7 @@ Combine annotation labels with acoustic parameters for analysis. Example code is
 
 **Q: I encountered an error. What should I do?**
 
-A: Please submit an issue report on [GitHub](https://github.com/angiesalles/battycoda/issues). We actively monitor and address reported issues.
+A: Please submit an issue report on [GitHub](https://github.com/angiesalles/battycoda/issues). We actively monitor and address reported issues. You can also join us on the BattyCoda [slack](https://join.slack.com/t/battycodausers/shared_invite/zt-3riuq3nb4-TMGxZYYYrvYrGduyNtWA0Q) to talk to the developers and other users.
 
 **Q: My species doesn't have a documented repertoire. How do I proceed?**
 
