@@ -65,11 +65,21 @@ def recording_list_view(request):
     # Apply task batch filter if provided
     task_filter = request.GET.get("tasks", "")
     if task_filter == "yes":
-        # Has at least one task (via segments)
-        recordings = recordings.filter(segments__tasks__isnull=False).distinct()
+        # Has tasks: either via direct segment->task link or via segmentation->classification_run->task_batch chain
+        from django.db.models import Q
+
+        recordings = recordings.filter(
+            Q(segments__tasks__isnull=False)
+            | Q(segmentations__classification_runs__task_batches__isnull=False)
+        ).distinct()
     elif task_filter == "no":
-        # Has no tasks
-        recordings = recordings.exclude(segments__tasks__isnull=False).distinct()
+        # Has no tasks via either path
+        from django.db.models import Q
+
+        recordings = recordings.exclude(
+            Q(segments__tasks__isnull=False)
+            | Q(segmentations__classification_runs__task_batches__isnull=False)
+        ).distinct()
 
     # Get available projects for the filter dropdown
     if profile.group:
