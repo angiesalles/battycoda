@@ -1,6 +1,6 @@
 # BattyCoda
 
-BattyCoda is a web-based platform for annotating and classifying bat vocalizations. It provides tools for segmenting audio recordings, running machine learning classifiers, and managing collaborative annotation workflows.
+[BattyCoda](https://battycoda.com/welcome/) is a web-based platform for annotating and classifying bat vocalizations. It provides tools for segmenting audio recordings, running machine learning classifiers, and managing collaborative annotation workflows.
 
 ## Table of Contents
 
