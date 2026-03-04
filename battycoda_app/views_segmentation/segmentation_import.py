@@ -2,6 +2,8 @@
 Views for importing segments from external data sources.
 """
 
+import os
+
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.db import transaction
@@ -43,8 +45,6 @@ def upload_pickle_segments_view(request, recording_id):
             # Get recording duration for validation
             recording_duration = None
             if recording.spectrogram_file:
-                import os
-
                 import h5py
                 from django.conf import settings
 

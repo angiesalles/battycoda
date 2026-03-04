@@ -269,7 +269,13 @@ def process_pickle_file(pickle_file, max_duration=None):
     try:
         # Load the pickle file using restricted unpickler for security
         # This prevents arbitrary code execution from malicious pickle files
-        pickle_data = safe_pickle_load(pickle_file)
+        try:
+            pickle_data = safe_pickle_load(pickle_file)
+        except Exception as e:
+            raise ValueError(
+                f"The file '{os.path.basename(filename)}' could not be read. "
+                f"It may be corrupt or not a valid pickle file."
+            ) from e
 
         # Extract onsets and offsets based on data format
         if isinstance(pickle_data, dict):
