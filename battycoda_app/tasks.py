@@ -391,3 +391,111 @@ def remove_duplicate_recordings_task(self, group_id, user_id):
         "total_groups": total_groups,
         "errors": errors,
     }
+
+
+@shared_task
+def create_task_batches_for_species_task(species_id, user_id, group_id, batch_prefix, max_confidence=None):
+    """Create task batches for all pending classification runs of a species (background)."""
+    import traceback
+
+    from django.contrib.auth import get_user_model
+    from django.db import transaction
+
+    from .models.classification import ClassificationRun
+    from .models.notification import UserNotification
+    from .models.organization import Group, Species
+    from .models.task import TaskBatch
+    from .views_classification.task_creation.helpers import create_task_batch_helper
+
+    User = get_user_model()
+
+    try:
+        species = Species.objects.get(id=species_id)
+        user = User.objects.get(id=user_id)
+        group = Group.objects.get(id=group_id) if group_id else None
+    except Exception as e:
+        logger.error(f"Could not find species/user/group for task batch creation: {e}")
+        return {"status": "error", "message": str(e)}
+
+    logger.info(f"Starting task batch creation for species {species.name} (requested by {user.username})")
+
+    batches_created = 0
+    tasks_created = 0
+    total_filtered = 0
+    errors = []
+
+    # Get pending runs using the same logic as the view
+    from django.db.models import Exists, OuterRef
+
+    base_query = ClassificationRun.objects.filter(
+        segmentation__recording__species=species,
+        status="completed",
+    )
+
+    if group:
+        base_query = base_query.filter(segmentation__recording__group=group)
+    else:
+        base_query = base_query.filter(segmentation__recording__created_by=user)
+
+    has_task_batch = TaskBatch.objects.filter(classification_run=OuterRef("pk"))
+    pending_runs = base_query.annotate(has_batch=Exists(has_task_batch)).filter(has_batch=False)
+
+    # Process each run individually (not in one giant transaction)
+    for run in pending_runs.select_related("segmentation__recording"):
+        try:
+            recording = run.segmentation.recording
+            batch_name = f"{batch_prefix} - {recording.name}"
+            description = f"Automatically created from classification run: {run.name}"
+
+            with transaction.atomic():
+                batch, run_tasks_created, run_tasks_filtered = create_task_batch_helper(
+                    run=run,
+                    batch_name=batch_name,
+                    description=description,
+                    created_by=user,
+                    group=group,
+                    max_confidence=max_confidence,
+                )
+
+            if batch is not None:
+                batches_created += 1
+                tasks_created += run_tasks_created
+                total_filtered += run_tasks_filtered
+
+        except Exception as e:
+            error_msg = f"Error creating task batch for run {run.id}: {str(e)}"
+            logger.error(f"{error_msg}\n{traceback.format_exc()}")
+            errors.append(error_msg)
+
+    # Create notification for user
+    try:
+        if batches_created > 0:
+            message = f"Created {batches_created} task batches with {tasks_created} tasks for {species.name}."
+            if total_filtered > 0:
+                message += f" ({total_filtered} high-confidence tasks filtered out)"
+            if errors:
+                message += f" ({len(errors)} errors occurred)"
+        else:
+            message = f"No task batches were created for {species.name}. All segments may already have tasks."
+
+        UserNotification.objects.create(
+            user=user,
+            notification_type="info" if not errors else "warning",
+            title="Task Batch Creation Complete",
+            message=message,
+        )
+    except Exception as e:
+        logger.error(f"Could not create notification: {e}")
+
+    logger.info(
+        f"Task batch creation complete for {species.name}: {batches_created} batches, "
+        f"{tasks_created} tasks, {len(errors)} errors"
+    )
+
+    return {
+        "status": "success" if not errors else "partial",
+        "batches_created": batches_created,
+        "tasks_created": tasks_created,
+        "total_filtered": total_filtered,
+        "errors": errors,
+    }
