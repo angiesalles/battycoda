@@ -355,7 +355,7 @@ def remove_duplicate_recordings_task(self, group_id, user_id):
 
     # Create a notification for the user
     try:
-        from .models.task import UserNotification
+        from .models.notification import UserNotification
 
         if removed_count > 0:
             message = f"Removed {removed_count} duplicate recordings from {total_groups} groups."
