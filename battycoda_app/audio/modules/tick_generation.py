@@ -82,7 +82,7 @@ def get_spectrogram_ticks(task, sample_rate=None, normal_window_size=None, overv
     # Calculate the actual time spans for overview (in ms)
     overview_left_padding = overview_window_size[0]  # Pre-window in ms
     overview_right_padding = overview_window_size[1]  # Post-window in ms
-    overview_total_duration = overview_left_padding + overview_right_padding  # Total window duration in ms
+    overview_total_duration = overview_left_padding + call_duration_ms + overview_right_padding  # Total window duration in ms
 
     # Calculate overview x-axis positions (percentages) based on actual time values
     overview_left_pos = 0  # Left edge
