@@ -18,6 +18,19 @@ class UserProfile(models.Model):
         ("dark", "Dark"),
     )
 
+    # Spectrogram colormap choices
+    COLORMAP_CHOICES = (
+        ("roseus", "Roseus (default)"),
+        ("classic", "Classic (black-green-yellow-red)"),
+        ("viridis", "Viridis"),
+        ("magma", "Magma"),
+        ("inferno", "Inferno"),
+        ("plasma", "Plasma"),
+        ("cividis", "Cividis"),
+        ("hot", "Hot"),
+        ("gray", "Grayscale"),
+    )
+
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name="profile")
     group = models.ForeignKey(
         Group,
@@ -28,6 +41,9 @@ class UserProfile(models.Model):
     )
     # User preferences
     theme = models.CharField(max_length=20, choices=THEME_CHOICES, default="light", help_text="Color theme preference")
+    spectrogram_colormap = models.CharField(
+        max_length=20, choices=COLORMAP_CHOICES, default="roseus", help_text="Colormap for spectrogram display"
+    )
 
     # Activity tracking
     last_activity = models.DateTimeField(

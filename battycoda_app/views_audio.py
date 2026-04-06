@@ -24,7 +24,7 @@ def task_spectrogram_view(request, task_id):
     from django.shortcuts import get_object_or_404
     from PIL import Image
 
-    from .audio.colormaps import ROSEUS_COLORMAP
+    from .audio.colormaps import get_colormap
     from .audio.modules.audio_processing import normal_hwin, overview_hwin
     from .models.recording import Recording
     from .models.task import Task
@@ -106,7 +106,8 @@ def task_spectrogram_view(request, task_id):
         # Vectorized colormap application (replaces slow pixel-by-pixel loop)
         normalized = ((spectrogram_float - spec_min) / spec_range * 255).clip(0, 255).astype(np.uint8)
         flipped = np.flipud(normalized)
-        colormap_array = np.array(ROSEUS_COLORMAP, dtype=np.uint8)
+        colormap_name = getattr(request.user.profile, "spectrogram_colormap", "roseus")
+        colormap_array = np.array(get_colormap(colormap_name), dtype=np.uint8)
         colored = colormap_array[flipped]
         img = Image.fromarray(colored)
 

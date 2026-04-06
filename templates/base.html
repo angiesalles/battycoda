@@ -229,6 +229,7 @@
      data-navbar-notifications-url="{% url 'battycoda_app:get_navbar_notifications' %}"
      data-mark-notification-read-url="{% url 'battycoda_app:mark_notification_read' notification_id=0 %}"
      data-user-authenticated="true"
+     data-spectrogram-colormap="{{ user.profile.spectrogram_colormap|default:'roseus' }}"
      {% else %}
      data-user-authenticated="false"
      {% endif %}

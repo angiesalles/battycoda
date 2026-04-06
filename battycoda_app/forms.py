@@ -56,7 +56,7 @@ class UserLoginForm(AuthenticationForm):
 class UserProfileForm(forms.ModelForm):
     class Meta:
         model = UserProfile
-        fields = ["theme", "profile_image", "management_features_enabled"]
+        fields = ["theme", "spectrogram_colormap", "profile_image", "management_features_enabled"]
 
     def __init__(self, *args, **kwargs):
         # Remove user from kwargs before passing to parent (not needed in this form)
@@ -66,6 +66,10 @@ class UserProfileForm(forms.ModelForm):
         # Add styling to the theme select field
         if "theme" in self.fields:
             self.fields["theme"].widget.attrs.update({"class": "form-control"})
+
+        # Add styling to the colormap select field
+        if "spectrogram_colormap" in self.fields:
+            self.fields["spectrogram_colormap"].widget.attrs.update({"class": "form-control"})
 
         # Add styling to the profile image field
         if "profile_image" in self.fields:

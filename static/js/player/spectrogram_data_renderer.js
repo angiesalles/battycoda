@@ -5,7 +5,7 @@
  */
 
 import { CanvasInteractions } from './canvas_interactions.js';
-import { ROSEUS_COLORMAP } from '../utils/colormaps.js';
+import { getUserColormap } from '../utils/colormaps.js';
 
 export class SpectrogramDataRenderer {
   /**
@@ -29,6 +29,7 @@ export class SpectrogramDataRenderer {
     this.canvas = null;
     this.ctx = null;
     this.spectrogramImage = null; // Pre-rendered image data
+    this.colormap = getUserColormap();
     this.canvasInteractions = new CanvasInteractions(player);
 
     this.setupCanvas();
@@ -282,8 +283,8 @@ export class SpectrogramDataRenderer {
         const rawValue = this.decodeFloat16(this.spectrogramData[dataIndex]);
         const normalizedValue = (rawValue - this.minVal) / this.valueRange;
 
-        // Apply roseus colormap
-        const color = this.applyRoseusColormap(normalizedValue);
+        // Apply colormap
+        const color = this.applyColormap(normalizedValue);
 
         const pixelIndex = (canvasY * this.canvas.width + canvasX) * 4;
         data[pixelIndex] = color.r;
@@ -307,10 +308,10 @@ export class SpectrogramDataRenderer {
     });
   }
 
-  applyRoseusColormap(value) {
+  applyColormap(value) {
     value = Math.max(0, Math.min(1, value));
     const index = Math.floor(value * 255);
-    const color = ROSEUS_COLORMAP[index];
+    const color = this.colormap[index];
 
     return {
       r: color[0],

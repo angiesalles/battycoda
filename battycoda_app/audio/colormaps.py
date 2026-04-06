@@ -15,3 +15,8 @@ with open(_COLORMAP_JSON_PATH) as f:
     _COLORMAPS = json.load(f)
 
 ROSEUS_COLORMAP = _COLORMAPS["roseus"]
+
+
+def get_colormap(name):
+    """Get a colormap by name. Falls back to roseus if the name is unknown."""
+    return _COLORMAPS.get(name, _COLORMAPS["roseus"])

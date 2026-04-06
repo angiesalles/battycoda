@@ -11,6 +11,27 @@
                     <div id="email-update-status" class="mt-2"></div>
                 </div>
 
+                <!-- Spectrogram Colormap Section -->
+                <div class="mb-3">
+                    <label for="id_spectrogram_colormap" class="form-label">Spectrogram Colormap:</label>
+                    <select name="spectrogram_colormap" id="id_spectrogram_colormap" class="form-control">
+                        {% for value, label in profile.COLORMAP_CHOICES %}
+                            <option value="{{ value }}" {% if profile.spectrogram_colormap == value %}selected{% endif %}>{{ label }}</option>
+                        {% endfor %}
+                    </select>
+                    <small class="text-muted d-block mt-1">
+                        Choose the color scheme used for spectrogram displays.
+                    </small>
+
+                    <div class="mt-2">
+                        <button type="button" id="update-colormap-btn" class="btn btn-sm btn-primary">
+                            <i class="fas fa-save me-1"></i> Update Colormap
+                        </button>
+                    </div>
+
+                    <div id="colormap-update-status" class="mt-2"></div>
+                </div>
+
                 <!-- API Key Section -->
                 <div class="mb-3">
                     <label class="form-label">API Key for R Scripts:</label>

@@ -328,6 +328,58 @@ function setupManagementFeaturesUpdate(updateUrl) {
 }
 
 /**
+ * Handle spectrogram colormap update
+ * @param {string} updateUrl - The URL to POST to
+ */
+function setupColormapUpdate(updateUrl) {
+  const updateColormapBtn = document.getElementById('update-colormap-btn');
+  const colormapSelect = document.getElementById('id_spectrogram_colormap');
+  const colormapStatus = document.getElementById('colormap-update-status');
+
+  if (!updateColormapBtn || !colormapSelect) return;
+
+  updateColormapBtn.addEventListener('click', function () {
+    const colormap = colormapSelect.value;
+
+    const formData = new FormData();
+    formData.append('colormap', colormap);
+    formData.append('action', 'update_colormap');
+
+    updateColormapBtn.disabled = true;
+    updateColormapBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i> Updating...';
+
+    fetch(updateUrl, {
+      method: 'POST',
+      headers: {
+        'X-CSRFToken': getCsrfToken(),
+      },
+      body: formData,
+    })
+      .then((response) => response.json())
+      .then((data) => {
+        if (data.success) {
+          showStatus(colormapStatus, data.message + ' Reload pages to see the new colormap.', true);
+          // Update the data attribute so any player opened after this reflects the change
+          const pageData = document.getElementById('page-data');
+          if (pageData) {
+            pageData.dataset.spectrogramColormap = data.colormap;
+          }
+        } else {
+          showStatus(colormapStatus, data.error || data.message || 'An error occurred.', false);
+        }
+      })
+      .catch((error) => {
+        console.error('Error:', error);
+        showStatus(colormapStatus, 'An error occurred while updating the colormap.', false);
+      })
+      .finally(() => {
+        updateColormapBtn.disabled = false;
+        updateColormapBtn.innerHTML = '<i class="fas fa-save me-1"></i> Update Colormap';
+      });
+  });
+}
+
+/**
  * Setup API key copy functionality
  */
 function setupApiKeyCopy() {
@@ -393,6 +445,7 @@ export function initProfile() {
   setupImageRemove(updateUrl);
   setupEmailUpdate(updateUrl);
   setupManagementFeaturesUpdate(updateUrl);
+  setupColormapUpdate(updateUrl);
   setupApiKeyCopy();
 }
 

@@ -158,6 +158,17 @@ def update_profile_ajax(request):
 
             return JsonResponse({"success": True, "message": "Profile image removed successfully", "has_image": False})
 
+        elif action == "update_colormap":
+            colormap = request.POST.get("colormap")
+            valid_colormaps = dict(UserProfile.COLORMAP_CHOICES).keys()
+            if colormap not in valid_colormaps:
+                return JsonResponse({"success": False, "error": "Invalid colormap"})
+            profile.spectrogram_colormap = colormap
+            profile.save(update_fields=["spectrogram_colormap"])
+            return JsonResponse(
+                {"success": True, "message": f"Colormap updated to {colormap}", "colormap": colormap}
+            )
+
         elif action == "update_management_features":
             enabled = request.POST.get("enabled") == "true"
             profile.management_features_enabled = enabled
