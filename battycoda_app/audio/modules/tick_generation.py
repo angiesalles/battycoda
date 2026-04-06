@@ -119,9 +119,9 @@ def get_spectrogram_ticks(task, sample_rate=None, normal_window_size=None, overv
         x_ticks_detail.append({"id": tick_id, "position": position, "value": label, "type": "major"})
 
     # Generate x-axis ticks data for overview using matplotlib's nice tick algorithm
-    # Time range: from -left_padding to right_padding
+    # Time range: from -left_padding to (call_duration + right_padding)
     overview_min_time = -overview_left_padding
-    overview_max_time = overview_right_padding
+    overview_max_time = call_duration_ms + overview_right_padding
 
     # Get nice tick values for the overview range (aim for ~6 ticks)
     nice_ticks_overview_ms = get_nice_ticks(overview_min_time, overview_max_time, num_ticks=6)
