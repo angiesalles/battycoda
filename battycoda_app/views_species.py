@@ -161,13 +161,17 @@ def create_species_view(request):
 
             # Always set group to user's active group
             species.group = request.user.profile.group
-            species.save()
 
-            # Process call types from JSON
-            _sync_calls_from_json(species, request.POST.get("call_types_json", ""))
+            if Species.objects.filter(name=species.name, group=species.group).exists():
+                form.add_error("name", f"A species named '{species.name}' already exists in your group.")
+            else:
+                species.save()
 
-            messages.success(request, "Species created successfully.")
-            return redirect("battycoda_app:species_detail", species_id=species.id)
+                # Process call types from JSON
+                _sync_calls_from_json(species, request.POST.get("call_types_json", ""))
+
+                messages.success(request, "Species created successfully.")
+                return redirect("battycoda_app:species_detail", species_id=species.id)
     else:
         form = SpeciesForm()
 
