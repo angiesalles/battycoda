@@ -50,6 +50,10 @@ def create_demo_recording(user, group, project, species, wav_path):
     with open(wav_path, "rb") as wav_file:
         recording.wav_file.save("bat1_angie_19.wav", File(wav_file), save=True)
 
+    # Mark file_ready so the post_save signal triggers spectrogram generation
+    recording.file_ready = True
+    recording.save()
+
     logger.debug("Created demo recording id=%d", recording.id)
     return recording
 
