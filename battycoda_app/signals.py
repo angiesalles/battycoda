@@ -1,3 +1,4 @@
+from django.db import transaction
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 from django.utils import timezone
@@ -30,8 +31,10 @@ def trigger_audio_info_calculation(sender, instance, **kwargs):
     if not instance.file_ready:
         return
 
-    # Trigger the Celery task
-    calculate_audio_duration.delay(instance.id)
+    # Defer until after the enclosing transaction (if any) commits, so the
+    # Celery worker can find the recording row.
+    recording_id = instance.id
+    transaction.on_commit(lambda: calculate_audio_duration.delay(recording_id))
 
 
 @receiver(post_save, sender=Recording)
@@ -56,10 +59,16 @@ def trigger_spectrogram_generation(sender, instance, **kwargs):
         group=instance.group,
     )
 
-    # Trigger async task
-    result = generate_recording_spectrogram.delay(instance.id)
-    job.celery_task_id = result.id
-    job.save()
+    # Defer until after the enclosing transaction (if any) commits, so the
+    # Celery worker can find the recording row.
+    recording_id = instance.id
+
+    def queue_task():
+        result = generate_recording_spectrogram.delay(recording_id)
+        job.celery_task_id = result.id
+        job.save(update_fields=["celery_task_id"])
+
+    transaction.on_commit(queue_task)
 
 
 @receiver(post_save, sender=Segmentation)

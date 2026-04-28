@@ -23,6 +23,7 @@ def calculate_audio_duration(self, recording_id, retry_count=0):
     from datetime import datetime
 
     import soundfile as sf
+    from celery.exceptions import Retry
     from django.db.utils import OperationalError
 
     from .models.recording import Recording
@@ -116,6 +117,10 @@ def calculate_audio_duration(self, recording_id, retry_count=0):
 
         return True
 
+    except Retry:
+        # self.retry() inside the try block raises Retry — re-raise without
+        # logging at ERROR (which would email admins on every retry attempt).
+        raise
     except Exception as e:
         # Catch any other exceptions and retry
         logger.error(f"Unexpected error processing recording {recording_id}: {str(e)}")
