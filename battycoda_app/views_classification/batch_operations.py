@@ -14,6 +14,7 @@ from battycoda_app.audio.task_modules.queue_processor import queue_classificatio
 from battycoda_app.models import Segment
 from battycoda_app.models.classification import ClassificationRun, Classifier
 from battycoda_app.models.organization import Species
+from battycoda_app.models.segmentation import Segmentation
 
 logger = logging.getLogger(__name__)
 
@@ -190,15 +191,15 @@ def create_classification_for_species_view(request, species_id):
             messages.error(request, msg + ".")
             return _redirect_with_project(request, "battycoda_app:classify_unclassified_segments", project_id)
 
-        # Group segments by recording+segmentation to create one run per segmentation
-        recording_segmentation_map = {}
-        for segment in segments:
-            key = (segment.recording.id, segment.segmentation.id)
-            if key not in recording_segmentation_map:
-                recording_segmentation_map[key] = segment.segmentation
+        # Get unique segmentations (one classification run per segmentation).
+        # Avoid iterating segments in Python — that triggers N+1 queries on
+        # segment.recording / segment.segmentation and OOMs the worker for
+        # species with many unclassified segments.
+        segmentation_ids = segments.values_list("segmentation_id", flat=True).distinct()
+        unique_segmentations = Segmentation.objects.filter(id__in=segmentation_ids).select_related("recording")
 
         run_count = 0
-        for segmentation in recording_segmentation_map.values():
+        for segmentation in unique_segmentations:
             try:
                 run = ClassificationRun.objects.create(
                     name=f"{run_name} - {segmentation.recording.name}",
