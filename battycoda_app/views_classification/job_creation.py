@@ -8,7 +8,8 @@ from django.contrib.auth.decorators import login_required
 from django.shortcuts import get_object_or_404, redirect, render
 
 from battycoda_app.models.classification import Classifier, ClassifierTrainingJob
-from battycoda_app.models.task import TaskBatch
+from battycoda_app.models.organization import Species
+from battycoda_app.models.task import Task, TaskBatch
 
 
 @login_required
@@ -157,3 +158,132 @@ def create_classifier_training_job_view(request, batch_id=None):
     }
 
     return render(request, "classification/select_batch_for_classifier.html", context)
+
+
+@login_required
+def select_species_for_training_view(request):
+    """List species available for training a classifier from all labeled data."""
+    profile = request.user.profile
+    species_list = Species.get_available_for_user(request.user)
+
+    items = []
+    for species in species_list:
+        # Count labeled tasks for this species that belong to accessible batches
+        if profile.group:
+            labeled_count = Task.objects.filter(
+                species=species, is_done=True, label__isnull=False, group=profile.group
+            ).exclude(label="").count()
+            total_count = Task.objects.filter(species=species, group=profile.group).count()
+        else:
+            labeled_count = Task.objects.filter(
+                species=species, is_done=True, label__isnull=False, created_by=request.user
+            ).exclude(label="").count()
+            total_count = Task.objects.filter(species=species, created_by=request.user).count()
+
+        if total_count == 0:
+            continue
+
+        items.append(
+            {
+                "name": species.name,
+                "type_name": "Species",
+                "count": total_count,
+                "labeled_count": labeled_count,
+                "created_at": species.created_at,
+                "detail_url": f"/species/{species.id}/",
+                "action_url": f"/classification/classifiers/create-from-species/{species.id}/",
+                "disabled": labeled_count < 5,
+            }
+        )
+
+    context = {
+        "title": "Train Classifier from Species",
+        "list_title": "Available Species",
+        "action_text": "Train",
+        "action_icon": "brain",
+        "parent_url": "battycoda_app:classifier_list",
+        "parent_name": "Classifiers",
+        "th1": "Species",
+        "th2": "Type",
+        "th3": "Labeled/Total Tasks",
+        "show_count": True,
+        "info_message": "Select a species to train a classifier using all labeled tasks across all task batches for that species.",
+        "empty_message": "No species with labeled tasks found.",
+        "create_url": "battycoda_app:create_task_batch",
+        "items": items,
+    }
+
+    return render(request, "classification/select_batch_for_classifier.html", context)
+
+
+@login_required
+def create_classifier_from_species_view(request, species_id):
+    """Create a classifier training job from all labeled data for a species."""
+    species = get_object_or_404(Species, id=species_id)
+    profile = request.user.profile
+
+    # Permission check
+    if not species.is_system and species.group and species.group != profile.group:
+        messages.error(request, "You don't have permission to train a classifier for this species.")
+        return redirect("battycoda_app:classifier_list")
+
+    # Count labeled tasks
+    if profile.group:
+        labeled_tasks = Task.objects.filter(
+            species=species, is_done=True, label__isnull=False, group=profile.group
+        ).exclude(label="")
+    else:
+        labeled_tasks = Task.objects.filter(
+            species=species, is_done=True, label__isnull=False, created_by=request.user
+        ).exclude(label="")
+
+    labeled_task_count = labeled_tasks.count()
+
+    # Count distinct batches contributing data
+    batch_count = labeled_tasks.values("batch").distinct().count()
+
+    if request.method == "POST":
+        name = request.POST.get("name")
+        description = request.POST.get("description", "")
+        response_format = request.POST.get("response_format", "full_probability")
+        algorithm_type = request.POST.get("algorithm_type", "knn")
+
+        if labeled_task_count < 5:
+            messages.error(request, "At least 5 labeled tasks are required for training.")
+            return redirect("battycoda_app:select_species_for_training", species_id=species_id)
+
+        parameters = {"algorithm_type": algorithm_type, "species_id": species_id}
+
+        try:
+            job = ClassifierTrainingJob.objects.create(
+                name=name or f"Classifier for {species.name}",
+                description=description,
+                task_batch=None,
+                created_by=request.user,
+                group=profile.group,
+                response_format=response_format,
+                parameters=parameters,
+                status="pending",
+                progress=0.0,
+            )
+
+            from battycoda_app.audio.task_modules.training_tasks import train_classifier_from_species
+
+            train_classifier_from_species.delay(job.id, species_id)
+
+            messages.success(request, "Classifier training job created. Training will begin shortly.")
+            return redirect("battycoda_app:classifier_training_job_detail", job_id=job.id)
+
+        except Exception as e:
+            messages.error(request, f"Error creating training job: {str(e)}")
+            return redirect("battycoda_app:select_species_for_training")
+
+    # GET: show the form
+    context = {
+        "species": species,
+        "labeled_task_count": labeled_task_count,
+        "batch_count": batch_count,
+        "response_format_choices": Classifier.RESPONSE_FORMAT_CHOICES,
+    }
+
+    return render(request, "classification/create_classifier_from_species.html", context)

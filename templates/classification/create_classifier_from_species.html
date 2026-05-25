@@ -1,0 +1,124 @@
+{% extends 'base.html' %}
+
+{% block title %}Train Classifier from Species | BattyCoda{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <h1 class="mb-4">Train Classifier from Species</h1>
+
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{% url 'battycoda_app:classification_home' %}">Classification</a></li>
+                    <li class="breadcrumb-item"><a href="{% url 'battycoda_app:classifier_list' %}">Custom Classifiers</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">Train from Species</li>
+                </ol>
+            </nav>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-header">
+                    <h4 class="mb-0">Train a Classifier from All {{ species.name }} Data</h4>
+                </div>
+                <div class="card-body">
+                    {% if labeled_task_count < 5 %}
+                    <div class="alert alert-danger">
+                        <h5 class="alert-heading">Insufficient Training Data</h5>
+                        <p>Only {{ labeled_task_count }} labeled tasks found for {{ species.name }}. At least 5 labeled tasks are required for training a classifier.</p>
+                        <hr>
+                        <p class="mb-0">Label more tasks for this species before training a classifier.</p>
+                    </div>
+                    {% else %}
+                    <form method="post">
+                        {% csrf_token %}
+
+                        <div class="mb-3">
+                            <label for="name" class="form-label">Classifier Name</label>
+                            <input type="text" class="form-control"
+                                   id="name" name="name"
+                                   placeholder="Classifier for {{ species.name }}"
+                                   value="Classifier for {{ species.name }}">
+                            <div class="form-text text-muted">Give your classifier a descriptive name</div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="description" class="form-label">Description</label>
+                            <textarea class="form-control" id="description" name="description" rows="3"
+                                     placeholder="Classifier trained on all labeled data for {{ species.name }}">Classifier trained on {{ labeled_task_count }} labeled tasks for {{ species.name }} from {{ batch_count }} task batch{{ batch_count|pluralize:"es" }}.</textarea>
+                            <div class="form-text text-muted">Provide details about this classifier for future reference</div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="algorithm_type" class="form-label">Algorithm Type</label>
+                            <select class="form-select" id="algorithm_type" name="algorithm_type">
+                                <option value="knn">K-Nearest Neighbors (KNN)</option>
+                                <option value="lda">Linear Discriminant Analysis (LDA)</option>
+                            </select>
+                            <div class="form-text text-muted">
+                                <ul class="mb-0">
+                                    <li><strong>K-Nearest Neighbors (KNN):</strong> Works well with small to medium datasets, fast predictions</li>
+                                    <li><strong>Linear Discriminant Analysis (LDA):</strong> Better for larger datasets, handles class imbalance well</li>
+                                </ul>
+                            </div>
+                        </div>
+
+                        <input type="hidden" name="response_format" value="full_probability">
+
+                        <div class="mb-4">
+                            <h5>Training Data Summary</h5>
+                            <table class="table">
+                                <tr>
+                                    <th>Species</th>
+                                    <td>{{ species.name }}</td>
+                                </tr>
+                                <tr>
+                                    <th>Labeled Tasks</th>
+                                    <td>
+                                        <span class="badge bg-success">{{ labeled_task_count }}</span>
+                                        {% if labeled_task_count < 20 %}
+                                        <span class="badge bg-warning text-dark ms-2">Low</span>
+                                        {% elif labeled_task_count < 50 %}
+                                        <span class="badge bg-info ms-2">Medium</span>
+                                        {% else %}
+                                        <span class="badge bg-success ms-2">Good</span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <th>Task Batches</th>
+                                    <td>{{ batch_count }}</td>
+                                </tr>
+                            </table>
+                        </div>
+
+                        <div class="alert alert-info">
+                            <h5 class="alert-heading">Training Process</h5>
+                            <p>When you start this training job:</p>
+                            <ol class="mb-0">
+                                <li>The system collects all labeled tasks for {{ species.name }} across {{ batch_count }} task batch{{ batch_count|pluralize:"es" }}</li>
+                                <li>Audio segments are extracted from each task's recording</li>
+                                <li>A machine learning model is trained on these features</li>
+                                <li>The model is saved and made available for future classification runs</li>
+                            </ol>
+                        </div>
+
+                        <div class="text-end">
+                            <a href="{% url 'battycoda_app:select_species_for_training' %}" class="btn btn-secondary me-2">
+                                Cancel
+                            </a>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-graduation-cap me-1"></i> Start Training
+                            </button>
+                        </div>
+                    </form>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

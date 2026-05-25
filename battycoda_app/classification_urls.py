@@ -20,7 +20,9 @@ from .views_classification.folder_training import (
 )
 from .views_classification.job_creation import (
     classifier_list_view,
+    create_classifier_from_species_view,
     create_classifier_training_job_view,
+    select_species_for_training_view,
 )
 from .views_classification.job_status import (
     classifier_training_job_detail_view,
@@ -110,6 +112,17 @@ urlpatterns = [
         "classification/classifiers/<int:job_id>/delete/",
         delete_classifier_training_job_view,
         name="delete_classifier_training_job",
+    ),
+    # Species-level training
+    path(
+        "classification/classifiers/create-from-species/",
+        select_species_for_training_view,
+        name="select_species_for_training",
+    ),
+    path(
+        "classification/classifiers/create-from-species/<int:species_id>/",
+        create_classifier_from_species_view,
+        name="create_classifier_from_species",
     ),
     # New cleaner URL patterns for folder training
     path(

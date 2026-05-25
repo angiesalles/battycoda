@@ -237,6 +237,136 @@ def train_classifier_from_folder(self, training_job_id, species_id):
         return _handle_training_error(training_job_id, e, "classifier training from folder")
 
 
+@shared_task(bind=True, name="battycoda_app.audio.task_modules.training_tasks.train_classifier_from_species")
+def train_classifier_from_species(self, training_job_id, species_id):
+    """
+    Train a new classifier from all labeled tasks for a species.
+    Aggregates labeled data across all task batches for the species.
+
+    Args:
+        training_job_id: ID of the ClassifierTrainingJob model
+        species_id: ID of the Species to train on
+
+    Returns:
+        dict: Result of the training process
+    """
+    from ...models.classification import ClassifierTrainingJob
+    from ...models.organization import Species
+    from ...models.task import Task
+
+    temp_dir = None
+
+    try:
+        training_job = ClassifierTrainingJob.objects.get(id=training_job_id)
+        species = Species.objects.get(id=species_id)
+
+        update_classification_run_status(training_job, "in_progress", progress=5)
+
+        # Get all labeled tasks for this species across all batches
+        tasks = (
+            Task.objects.filter(species=species, is_done=True, label__isnull=False)
+            .exclude(label="")
+            .select_related("batch")
+        )
+        total_tasks = tasks.count()
+
+        if total_tasks == 0:
+            error_msg = "No labeled tasks found for this species."
+            update_classification_run_status(training_job, "failed", error_msg)
+            return {"status": "error", "message": error_msg}
+
+        # Set up model path
+        model_path, model_filename = build_model_path(f"species_{species_id}")
+        update_classification_run_status(training_job, "in_progress", progress=10)
+
+        # Extract audio segments to temp directory
+        temp_dir = os.path.join(get_local_tmp(), f"training_{os.path.basename(model_path).split('.')[0]}")
+        os.makedirs(temp_dir, exist_ok=True)
+
+        file_counter = _extract_segments_across_batches(tasks, temp_dir, training_job, total_tasks)
+
+        update_classification_run_status(training_job, "in_progress", progress=50)
+
+        if file_counter <= 1:
+            error_msg = "Failed to extract any valid audio segments for training."
+            update_classification_run_status(training_job, "failed", error_msg)
+            cleanup_temp_dir(temp_dir)
+            return {"status": "error", "message": error_msg}
+
+        # Check R server
+        server_ok, error_msg = check_r_server_and_update_status(training_job)
+        if not server_ok:
+            cleanup_temp_dir(temp_dir)
+            return {"status": "error", "message": error_msg}
+
+        update_classification_run_status(training_job, "in_progress", progress=60)
+
+        # Convert local paths to R server paths (R server runs in Docker with different mount)
+        model_path_for_r = get_r_server_path(model_path)
+        data_folder_for_r = get_r_server_path(temp_dir)
+
+        # Train the model
+        result = train_and_create_classifier(
+            training_job=training_job,
+            model_path=model_path_for_r,
+            model_filename=model_filename,
+            data_folder=data_folder_for_r,
+            species=species,
+            source_task_batch=None,
+            name_suffix=species.name,
+            sample_count=file_counter - 1,
+        )
+
+        cleanup_temp_dir(temp_dir)
+        return result
+
+    except Exception as e:
+        cleanup_temp_dir(temp_dir)
+        return _handle_training_error(training_job_id, e, "classifier training from species")
+
+
+def _extract_segments_across_batches(tasks, temp_dir, training_job, total_tasks):
+    """Extract audio segments from labeled tasks spanning multiple batches."""
+    file_counter = 1
+
+    for i, task in enumerate(tasks):
+        if i % 5 == 0:
+            progress = 10.0 + (40.0 * (i / total_tasks))
+            update_classification_run_status(training_job, "in_progress", progress=min(50.0, progress))
+
+        if not task.label:
+            continue
+
+        try:
+            batch = task.batch
+            if not batch or not batch.wav_file:
+                logger.warning(f"Task {task.id} has no batch or batch has no wav_file")
+                continue
+
+            wav_file_path = batch.wav_file.path
+            if not os.path.exists(wav_file_path):
+                logger.warning(f"WAV file path does not exist: {wav_file_path}")
+                continue
+
+            segment_data, sample_rate = extract_audio_segment(wav_file_path, task.onset, task.offset)
+
+            if segment_data is None or len(segment_data) == 0:
+                logger.warning(f"No audio data extracted for task {task.id}")
+                continue
+
+            output_filename = f"{file_counter}_{task.label}.wav"
+            output_path = os.path.join(temp_dir, output_filename)
+            sf.write(output_path, segment_data, samplerate=sample_rate)
+
+            file_counter += 1
+
+        except Exception as e:
+            logger.warning(f"Error extracting segment for task {task.id}: {str(e)}")
+            continue
+
+    return file_counter
+
+
 def _handle_training_error(training_job_id, exception, context):
     """Handle exceptions during training and update job status."""
     from ...models.classification import ClassifierTrainingJob
