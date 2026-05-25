@@ -183,7 +183,7 @@ def send_training_request(algorithm_type, train_params):
     logger.debug(f"Training parameters: {train_params}")
 
     try:
-        response = requests.post(endpoint, data=train_params, timeout=3600)
+        response = requests.post(endpoint, data=train_params, timeout=14400)
 
         if response.status_code != 200:
             error_msg = f"R server training failed. Status: {response.status_code}, Response: {response.text}"
