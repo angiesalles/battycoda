@@ -35,7 +35,7 @@
                         </tr>
                         <tr>
                             <th>Task Batch</th>
-                            <td>{{ job.task_batch.name }}</td>
+                            <td>{% if job.task_batch %}{{ job.task_batch.name }}{% else %}<em>N/A</em>{% endif %}</td>
                         </tr>
                         <tr>
                             <th>Status</th>

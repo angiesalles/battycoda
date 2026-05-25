@@ -6,6 +6,9 @@
         <a href="{% url 'battycoda_app:create_classifier_from_folder' %}" class="btn btn-success">
             <i class="fas fa-folder me-1"></i> Train from Folder
         </a>
+        <a href="{% url 'battycoda_app:select_species_for_training' %}" class="btn btn-info">
+            <i class="fas fa-dna me-1"></i> Train from Species
+        </a>
     </div>
 </div>
 
@@ -43,6 +46,8 @@
                             <a href="{% url 'battycoda_app:task_batch_detail' batch_id=job.task_batch.id %}">
                                 {{ job.task_batch.name }}
                             </a>
+                            {% elif job.parameters.species_id %}
+                            <em>Species-level training</em>
                             {% else %}
                             <span class="badge bg-secondary">From Folder</span>
                             {% endif %}
