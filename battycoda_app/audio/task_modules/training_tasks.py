@@ -81,12 +81,16 @@ def train_classifier(self, training_job_id):
 
         update_classification_run_status(training_job, "in_progress", progress=60)
 
+        # Convert local paths to R server paths (R server runs in Docker with different mount)
+        model_path_for_r = get_r_server_path(model_path)
+        data_folder_for_r = get_r_server_path(temp_dir)
+
         # Train the model
         result = train_and_create_classifier(
             training_job=training_job,
-            model_path=model_path,
+            model_path=model_path_for_r,
             model_filename=model_filename,
-            data_folder=temp_dir,
+            data_folder=data_folder_for_r,
             species=task_batch.species,
             source_task_batch=task_batch,
             name_suffix=task_batch.name,
