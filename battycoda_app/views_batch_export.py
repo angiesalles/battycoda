@@ -9,6 +9,7 @@ from io import StringIO
 
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
+from django.db.models import Count, Q
 from django.http import HttpResponse
 from django.shortcuts import redirect
 
@@ -44,19 +45,15 @@ def export_completed_batches(request):
         except (ValueError, TypeError):
             pass  # Ignore invalid project IDs
 
-    # Filter for completed batches (all tasks in the batch are done)
-    completed_batches = []
-    for batch in batches:
-        # Count total tasks and completed tasks
-        task_count = Task.objects.filter(batch=batch).count()
-        if task_count == 0:
-            continue  # Skip empty batches
-
-        completed_count = Task.objects.filter(batch=batch, is_done=True).count()
-
-        # Only include batches where all tasks are completed
-        if task_count == completed_count:
-            completed_batches.append(batch)
+    # Filter for completed batches (all tasks in the batch are done).
+    # Annotate counts in a single query instead of two COUNTs per batch.
+    batches = batches.annotate(
+        task_count=Count("tasks"),
+        completed_count=Count("tasks", filter=Q(tasks__is_done=True)),
+    )
+    completed_batches = [
+        batch for batch in batches if batch.task_count > 0 and batch.task_count == batch.completed_count
+    ]
 
     if not completed_batches:
         if project_id:
@@ -75,8 +72,14 @@ def export_completed_batches(request):
         # Build the ZIP file containing CSVs for each batch
         with zipfile.ZipFile(zip_path, "w", zipfile.ZIP_DEFLATED) as zipf:
             for batch in completed_batches:
-                # Get tasks for this batch
-                tasks = Task.objects.filter(batch=batch).order_by("id")
+                # Get tasks for this batch. select_related avoids an N+1 query
+                # storm (species/project/created_by/annotated_by per row) that
+                # could make large exports exceed the gunicorn worker timeout.
+                tasks = (
+                    Task.objects.filter(batch=batch)
+                    .select_related("species", "project", "created_by", "annotated_by")
+                    .order_by("id")
+                )
 
                 # Generate CSV for this batch using the shared utility function
                 csv_content = generate_tasks_csv(tasks)
@@ -121,7 +124,11 @@ def generate_summary_csv(batches):
 
     # Write a row for each batch
     for batch in batches:
-        task_count = Task.objects.filter(batch=batch).count()
+        # task_count is annotated in export_completed_batches; fall back to a
+        # query if a non-annotated batch is ever passed in.
+        task_count = getattr(batch, "task_count", None)
+        if task_count is None:
+            task_count = Task.objects.filter(batch=batch).count()
         writer.writerow(
             [
                 batch.id,

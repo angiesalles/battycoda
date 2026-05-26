@@ -171,6 +171,54 @@ class TaskViewsTest(BattycodaTestCase):
         self.assertEqual(response.context["batch"], self.batch)
         self.assertEqual(len(response.context["tasks"]), 2)
 
+    def test_export_completed_batches_does_not_scale_queries_per_task(self):
+        """Regression guard: the completed-batches export must not run a query
+        per task. A worker timeout was caused by N+1 lazy loads of
+        species/project/created_by/annotated_by while building the CSV."""
+        from django.db import connection
+        from django.test.utils import CaptureQueriesContext
+
+        self.client.login(username="testuser", password="password123")
+        export_url = reverse("battycoda_app:export_completed_batches")
+
+        # Mark the two existing tasks complete so the batch counts as completed.
+        Task.objects.filter(batch=self.batch).update(is_done=True, status="done")
+
+        # Warm-up request so one-time per-session queries don't skew the counts.
+        self.client.get(export_url)
+
+        with CaptureQueriesContext(connection) as ctx_small:
+            response = self.client.get(export_url)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response["Content-Type"], "application/zip")
+        baseline = len(ctx_small.captured_queries)
+
+        # Add many more completed tasks to the same batch.
+        Task.objects.bulk_create(
+            [
+                Task(
+                    wav_file_name="test.wav",
+                    onset=10.0 + i,
+                    offset=11.0 + i,
+                    species=self.species,
+                    project=self.project,
+                    batch=self.batch,
+                    created_by=self.user,
+                    group=self.group,
+                    status="done",
+                    is_done=True,
+                )
+                for i in range(20)
+            ]
+        )
+
+        with CaptureQueriesContext(connection) as ctx_large:
+            response = self.client.get(export_url)
+        self.assertEqual(response.status_code, 200)
+
+        # With select_related, adding 20 tasks must not add ~20 queries.
+        self.assertEqual(len(ctx_large.captured_queries), baseline)
+
 
 class SkipToNextBatchViewTest(BattycodaTestCase):
     """Tests for the skip_to_next_batch_view cycling behavior."""
