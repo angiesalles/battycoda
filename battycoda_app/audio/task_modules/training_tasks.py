@@ -57,7 +57,9 @@ def train_classifier(self, training_job_id):
 
         # Set up model path
         model_path, model_filename = build_model_path(str(task_batch.id))
-        update_classification_run_status(training_job, "in_progress", progress=10)
+        update_classification_run_status(
+            training_job, "in_progress", message=f"Extracting audio from {total_tasks} tasks...", progress=10
+        )
 
         # Extract audio segments to temp directory
         temp_dir = os.path.join(get_local_tmp(), f"training_{os.path.basename(model_path).split('.')[0]}")
@@ -65,7 +67,7 @@ def train_classifier(self, training_job_id):
 
         file_counter = _extract_segments_from_tasks(tasks, task_batch, temp_dir, training_job, total_tasks)
 
-        update_classification_run_status(training_job, "in_progress", progress=50)
+        update_classification_run_status(training_job, "in_progress", progress=55)
 
         if file_counter <= 1:
             error_msg = "Failed to extract any valid audio segments for training."
@@ -79,7 +81,9 @@ def train_classifier(self, training_job_id):
             cleanup_temp_dir(temp_dir)
             return {"status": "error", "message": error_msg}
 
-        update_classification_run_status(training_job, "in_progress", progress=60)
+        update_classification_run_status(
+            training_job, "in_progress", message="Preparing to train model...", progress=60
+        )
 
         # Convert local paths to R server paths (R server runs in Docker with different mount)
         model_path_for_r = get_r_server_path(model_path)
@@ -277,7 +281,9 @@ def train_classifier_from_species(self, training_job_id, species_id):
 
         # Set up model path
         model_path, model_filename = build_model_path(f"species_{species_id}")
-        update_classification_run_status(training_job, "in_progress", progress=10)
+        update_classification_run_status(
+            training_job, "in_progress", message=f"Extracting audio from {total_tasks} tasks...", progress=10
+        )
 
         # Extract audio segments to temp directory
         temp_dir = os.path.join(get_local_tmp(), f"training_{os.path.basename(model_path).split('.')[0]}")
@@ -285,7 +291,7 @@ def train_classifier_from_species(self, training_job_id, species_id):
 
         file_counter = _extract_segments_across_batches(tasks, temp_dir, training_job, total_tasks)
 
-        update_classification_run_status(training_job, "in_progress", progress=50)
+        update_classification_run_status(training_job, "in_progress", progress=55)
 
         if file_counter <= 1:
             error_msg = "Failed to extract any valid audio segments for training."
@@ -299,7 +305,9 @@ def train_classifier_from_species(self, training_job_id, species_id):
             cleanup_temp_dir(temp_dir)
             return {"status": "error", "message": error_msg}
 
-        update_classification_run_status(training_job, "in_progress", progress=60)
+        update_classification_run_status(
+            training_job, "in_progress", message="Preparing to train model...", progress=60
+        )
 
         # Convert local paths to R server paths (R server runs in Docker with different mount)
         model_path_for_r = get_r_server_path(model_path)

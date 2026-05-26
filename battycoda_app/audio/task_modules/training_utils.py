@@ -232,15 +232,17 @@ def train_and_create_classifier(
             if key not in ["algorithm_type", "training_data_folder"]:
                 train_params[key] = value
 
-    update_classification_run_status(training_job, "in_progress", progress=50)
+    update_classification_run_status(
+        training_job, "in_progress", message=f"Training {algorithm_desc} model on R server...", progress=65
+    )
 
-    # Send training request
+    # Send training request (this can take a long time for large datasets)
     success, result = send_training_request(algorithm_type, train_params)
     if not success:
         update_classification_run_status(training_job, "failed", result)
         return {"status": "error", "message": result}
 
-    update_classification_run_status(training_job, "in_progress", progress=80)
+    update_classification_run_status(training_job, "in_progress", message="Processing results...", progress=80)
 
     # Process response
     success, data = process_training_response(result)

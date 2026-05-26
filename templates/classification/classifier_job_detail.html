@@ -57,10 +57,16 @@
                     </div>
                     
                     {% if job.error_message %}
+                    {% if job.status == 'failed' %}
                     <div class="alert alert-danger">
                         <h5 class="alert-heading">Error</h5>
                         <p>{{ job.error_message }}</p>
                     </div>
+                    {% elif job.status == 'in_progress' %}
+                    <div class="alert alert-info">
+                        <i class="fas fa-spinner fa-spin me-2"></i>{{ job.error_message }}
+                    </div>
+                    {% endif %}
                     {% endif %}
                     
                     <table class="table">
