@@ -267,23 +267,36 @@ def train_classifier_from_species(self, training_job_id, species_id):
         update_classification_run_status(training_job, "in_progress", progress=5)
 
         # Get all labeled tasks for this species across all batches
-        tasks = (
+        all_tasks = (
             Task.objects.filter(species=species, is_done=True, label__isnull=False)
             .exclude(label="")
             .select_related("batch")
         )
-        total_tasks = tasks.count()
+        total_available = all_tasks.count()
 
-        if total_tasks == 0:
+        if total_available == 0:
             error_msg = "No labeled tasks found for this species."
             update_classification_run_status(training_job, "failed", error_msg)
             return {"status": "error", "message": error_msg}
 
+        # Cap training data with stratified sampling to keep R server responsive
+        MAX_TRAINING_SAMPLES = 5000
+        if total_available > MAX_TRAINING_SAMPLES:
+            tasks = _stratified_sample(all_tasks, MAX_TRAINING_SAMPLES)
+            sample_msg = f"Sampled {len(tasks)} of {total_available} tasks (stratified by label)"
+            logger.info(sample_msg)
+        else:
+            tasks = list(all_tasks)
+            sample_msg = None
+
+        total_tasks = len(tasks)
+
         # Set up model path
         model_path, model_filename = build_model_path(f"species_{species_id}")
-        update_classification_run_status(
-            training_job, "in_progress", message=f"Extracting audio from {total_tasks} tasks...", progress=10
-        )
+        msg = f"Extracting audio from {total_tasks} tasks..."
+        if sample_msg:
+            msg = f"{sample_msg}. {msg}"
+        update_classification_run_status(training_job, "in_progress", message=msg, progress=10)
 
         # Extract audio segments to temp directory
         temp_dir = os.path.join(get_local_tmp(), f"training_{os.path.basename(model_path).split('.')[0]}")
@@ -331,6 +344,32 @@ def train_classifier_from_species(self, training_job_id, species_id):
     except Exception as e:
         cleanup_temp_dir(temp_dir)
         return _handle_training_error(training_job_id, e, "classifier training from species")
+
+
+def _stratified_sample(tasks_qs, max_samples):
+    """Sample tasks proportionally by label so all call types are represented."""
+    import random
+    from collections import defaultdict
+
+    # Group task IDs by label
+    by_label = defaultdict(list)
+    for task in tasks_qs.values_list("id", "label"):
+        by_label[task[1]].append(task[0])
+
+    total = sum(len(ids) for ids in by_label.values())
+    sampled_ids = []
+
+    for label, ids in by_label.items():
+        # Proportional allocation, but at least 2 per label for train/test split
+        n = max(2, round(len(ids) / total * max_samples))
+        n = min(n, len(ids))
+        sampled_ids.extend(random.sample(ids, n))
+
+    # If we overshot, trim randomly; if under, that's fine
+    if len(sampled_ids) > max_samples:
+        sampled_ids = random.sample(sampled_ids, max_samples)
+
+    return list(tasks_qs.filter(id__in=sampled_ids).select_related("batch"))
 
 
 def _extract_segments_across_batches(tasks, temp_dir, training_job, total_tasks):

@@ -92,6 +92,12 @@
                                     <th>Task Batches</th>
                                     <td>{{ batch_count }}</td>
                                 </tr>
+                                {% if labeled_task_count > 5000 %}
+                                <tr>
+                                    <th>Training Sample</th>
+                                    <td>5,000 tasks (stratified sample from {{ labeled_task_count }})</td>
+                                </tr>
+                                {% endif %}
                             </table>
                         </div>
 
