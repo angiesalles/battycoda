@@ -614,3 +614,32 @@ class ClassificationUtilsTests(ClassificationTestCase):
             _get_model_path(classifier)
 
         self.assertIn("Model file not found", str(context.exception))
+
+
+class SendTrainingRequestTests(ClassificationTestCase):
+    """Tests for R server training request error handling."""
+
+    @patch("battycoda_app.audio.task_modules.classification_utils.requests.post")
+    def test_timeout_raises_rserver_timeout(self, mock_post):
+        """A request timeout must raise RServerTimeout so the caller leaves the
+        temp dir in place (the R server may still be processing it)."""
+        import requests
+
+        from battycoda_app.audio.task_modules.classification_utils import RServerTimeout, send_training_request
+
+        mock_post.side_effect = requests.exceptions.ReadTimeout("read timed out")
+
+        with self.assertRaises(RServerTimeout):
+            send_training_request("knn", {"data_folder": "/tmp/x", "output_model_path": "/tmp/m.RData"})
+
+    @patch("battycoda_app.audio.task_modules.classification_utils.requests.post")
+    def test_non_timeout_error_returns_false(self, mock_post):
+        """Non-timeout communication errors return (False, msg) rather than raising,
+        so normal cleanup still happens."""
+        from battycoda_app.audio.task_modules.classification_utils import send_training_request
+
+        mock_post.side_effect = ConnectionError("connection refused")
+
+        success, message = send_training_request("knn", {"data_folder": "/tmp/x", "output_model_path": "/tmp/m.RData"})
+        self.assertFalse(success)
+        self.assertIn("Error communicating with R server", message)

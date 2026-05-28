@@ -12,7 +12,7 @@ from celery import shared_task
 
 from ...utils_modules.path_utils import get_local_tmp, get_r_server_path
 from .base import extract_audio_segment
-from .classification_utils import update_classification_run_status
+from .classification_utils import RServerTimeout, update_classification_run_status
 from .training_utils import (
     build_model_path,
     check_r_server_and_update_status,
@@ -104,6 +104,11 @@ def train_classifier(self, training_job_id):
         cleanup_temp_dir(temp_dir)
         return result
 
+    except RServerTimeout as e:
+        # R server may still be processing this temp dir; leave it in place so
+        # we don't delete files out from under the running job.
+        logger.warning(f"R server timed out; leaving temp dir {temp_dir} for later cleanup")
+        return _handle_training_error(training_job_id, e, "classifier training (R server timeout)")
     except Exception as e:
         cleanup_temp_dir(temp_dir)
         return _handle_training_error(training_job_id, e, "classifier training")
@@ -341,6 +346,11 @@ def train_classifier_from_species(self, training_job_id, species_id):
         cleanup_temp_dir(temp_dir)
         return result
 
+    except RServerTimeout as e:
+        # R server may still be processing this temp dir; leave it in place so
+        # we don't delete files out from under the running job.
+        logger.warning(f"R server timed out; leaving temp dir {temp_dir} for later cleanup")
+        return _handle_training_error(training_job_id, e, "classifier training from species (R server timeout)")
     except Exception as e:
         cleanup_temp_dir(temp_dir)
         return _handle_training_error(training_job_id, e, "classifier training from species")

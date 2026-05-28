@@ -131,6 +131,45 @@ process_segment <- function(file_path, min_window_length = 50) {
   })
 }
 
+#' Process a single segment with a hard timeout
+#'
+#' Runs process_segment() in a killable forked child so that one pathological
+#' segment cannot hang the entire training run. A single bad clip once wedged
+#' warbleR for 20+ hours, blocking the (single-threaded) R server. The fork can
+#' be SIGKILLed even if the hang is inside non-interruptible C/FFT code;
+#' R.utils::withTimeout inside the child is the graceful primary path.
+#'
+#' @param file_path Full path to the WAV file
+#' @param timeout_sec Seconds to allow before the segment is abandoned
+#' @return Dataframe with extracted features, or NULL on failure/timeout
+process_segment_safe <- function(file_path, timeout_sec = 30) {
+  # Graceful in-child timeout via R.utils if available; the killable fork below
+  # is the hard guarantee, so R.utils is optional (works even if not installed).
+  run_one <- function() {
+    if (requireNamespace("R.utils", quietly = TRUE)) {
+      R.utils::withTimeout(process_segment(file_path), timeout = timeout_sec, onTimeout = "silent")
+    } else {
+      process_segment(file_path)
+    }
+  }
+  job <- parallel::mcparallel(run_one())
+
+  # Wait a little past the in-child timeout, then hard-kill if still wedged.
+  res <- parallel::mccollect(job, wait = FALSE, timeout = timeout_sec + 5)
+
+  if (is.null(res) || length(res) == 0) {
+    tools::pskill(job$pid, tools::SIGKILL)
+    parallel::mccollect(job, wait = FALSE)  # reap the killed child
+    cat(sprintf("TIMEOUT: feature extraction for %s exceeded %ds - skipping file\n",
+                basename(file_path), timeout_sec + 5))
+    return(NULL)
+  }
+
+  # mccollect returns a one-element list keyed by pid; the value may itself be
+  # NULL when process_segment failed legitimately.
+  res[[1]]
+}
+
 #' Process multiple audio segments reliably
 #'
 #' @param file_paths Vector of file paths to process

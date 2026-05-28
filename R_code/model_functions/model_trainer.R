@@ -100,8 +100,9 @@ prepare_training_data <- function(data_folder, test_split = 0.2) {
                        i, num_files, (i/num_files)*100, file_name, success_count, failure_count))
     }
     
-    # Process file using the enhanced process_segment function
-    features <- process_segment(file_path)
+    # Process file with a hard per-file timeout so one pathological segment
+    # cannot hang the whole run (see process_segment_safe).
+    features <- process_segment_safe(file_path)
     
     # Add to results if successful and replace the default selec value with actual label
     if (!is.null(features) && nrow(features) > 0) {

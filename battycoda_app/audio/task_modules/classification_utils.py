@@ -13,6 +13,14 @@ logger = logging.getLogger(__name__)
 # Centralized configuration
 R_SERVER_URL = "http://localhost:8001"
 
+
+class RServerTimeout(Exception):
+    """Raised when an R server request times out.
+
+    Signals that the R server may still be processing the request, so callers
+    must NOT delete the training temp directory out from under it.
+    """
+
 # ---------------------------------------------------------------
 # Common Utility Functions
 # ---------------------------------------------------------------
@@ -192,6 +200,11 @@ def send_training_request(algorithm_type, train_params):
         logger.debug(f"Raw training response text: {response.text[:200]}...")
         return True, response.json()
 
+    except requests.exceptions.Timeout as e:
+        # The R server may still be running this job; do not let callers delete
+        # its temp directory. Surfaced via RServerTimeout so the task can skip
+        # cleanup of the in-use data folder.
+        raise RServerTimeout(f"R server training request timed out: {e}") from e
     except Exception as e:
         return False, f"Error communicating with R server: {str(e)}"
 
