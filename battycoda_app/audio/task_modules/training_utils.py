@@ -169,6 +169,30 @@ def get_algorithm_type(training_job):
     return "knn"
 
 
+def knn_extra_params(training_job, n_samples):
+    """Build KNN training params with a fixed k (mirrors the folder path).
+
+    Passing a fixed k skips the R server's auto-tuning grid search, which fits
+    KNN ~75 times (5x5 grid x 3-fold CV) and is very expensive on large data.
+    Returns an empty dict for non-KNN algorithms.
+
+    Args:
+        training_job: ClassifierTrainingJob instance
+        n_samples: Number of training samples available
+
+    Returns:
+        dict: {"k": <int>} for KNN, otherwise {}
+    """
+    import math
+
+    if get_algorithm_type(training_job).lower() != "knn":
+        return {}
+
+    k = min(int(math.sqrt(n_samples)), n_samples - 1, 20)
+    k = max(k, 3)
+    return {"k": k}
+
+
 def get_algorithm_description(algorithm_type):
     """
     Get human-readable description for algorithm type.

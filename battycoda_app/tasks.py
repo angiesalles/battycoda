@@ -286,6 +286,47 @@ def cleanup_stale_tus_uploads():
     return {"cleaned": count}
 
 
+@shared_task
+def cleanup_stale_classifier_tmp(max_age_hours=6):
+    """Remove stale classification/training temp artifacts left in the tmp dir.
+
+    Per-batch classification cleans up its own temp dir, but a hard-killed worker
+    (OOM, etc.) can leave `batch_*` dirs, `batch_*_features.csv` files, and
+    `training_*` dirs behind. Anything older than max_age_hours is well past any
+    active run and safe to remove.
+    """
+    import glob
+    import os
+    import time
+
+    from .utils_modules.cleanup import safe_cleanup_dir, safe_remove_file
+    from .utils_modules.path_utils import get_local_tmp
+
+    tmp_dir = get_local_tmp()
+    if not os.path.isdir(tmp_dir):
+        return {"cleaned": 0}
+
+    cutoff = time.time() - max_age_hours * 3600
+    cleaned = 0
+
+    for pattern in ("batch_*", "training_*"):
+        for path in glob.glob(os.path.join(tmp_dir, pattern)):
+            try:
+                if os.path.getmtime(path) >= cutoff:
+                    continue  # still recent; may be in use
+            except OSError:
+                continue
+            if os.path.isdir(path):
+                if safe_cleanup_dir(path, "stale classifier temp dir"):
+                    cleaned += 1
+            elif safe_remove_file(path, "stale classifier temp file"):
+                cleaned += 1
+
+    if cleaned:
+        logger.info(f"Cleaned up {cleaned} stale classifier temp artifact(s)")
+    return {"cleaned": cleaned}
+
+
 @shared_task(bind=True)
 def remove_duplicate_recordings_task(self, group_id, user_id):
     """

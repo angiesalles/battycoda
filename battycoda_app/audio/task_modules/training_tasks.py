@@ -17,7 +17,7 @@ from .training_utils import (
     build_model_path,
     check_r_server_and_update_status,
     cleanup_temp_dir,
-    get_algorithm_type,
+    knn_extra_params,
     train_and_create_classifier,
 )
 
@@ -89,7 +89,7 @@ def train_classifier(self, training_job_id):
         model_path_for_r = get_r_server_path(model_path)
         data_folder_for_r = get_r_server_path(temp_dir)
 
-        # Train the model
+        # Train the model (fixed k for KNN skips expensive auto-tuning)
         result = train_and_create_classifier(
             training_job=training_job,
             model_path=model_path_for_r,
@@ -99,6 +99,7 @@ def train_classifier(self, training_job_id):
             source_task_batch=task_batch,
             name_suffix=task_batch.name,
             sample_count=file_counter - 1,
+            extra_params=knn_extra_params(training_job, file_counter - 1),
         )
 
         cleanup_temp_dir(temp_dir)
@@ -217,15 +218,8 @@ def train_classifier_from_folder(self, training_job_id, species_id):
         folder_path_for_r = get_r_server_path(folder_path)
         model_path_for_r = get_r_server_path(model_path)
 
-        # Calculate k value for KNN
-        extra_params = {}
-        algorithm_type = get_algorithm_type(training_job)
-        if algorithm_type.lower() == "knn":
-            import math
-
-            k_value = min(int(math.sqrt(len(wav_files))), len(wav_files) - 1, 20)
-            k_value = max(k_value, 3)
-            extra_params["k"] = k_value
+        # Calculate fixed k value for KNN (skips expensive auto-tuning)
+        extra_params = knn_extra_params(training_job, len(wav_files))
 
         # Train the model
         result = train_and_create_classifier(
@@ -331,7 +325,7 @@ def train_classifier_from_species(self, training_job_id, species_id):
         model_path_for_r = get_r_server_path(model_path)
         data_folder_for_r = get_r_server_path(temp_dir)
 
-        # Train the model
+        # Train the model (fixed k for KNN skips expensive auto-tuning)
         result = train_and_create_classifier(
             training_job=training_job,
             model_path=model_path_for_r,
@@ -341,6 +335,7 @@ def train_classifier_from_species(self, training_job_id, species_id):
             source_task_batch=None,
             name_suffix=species.name,
             sample_count=file_counter - 1,
+            extra_params=knn_extra_params(training_job, file_counter - 1),
         )
 
         cleanup_temp_dir(temp_dir)

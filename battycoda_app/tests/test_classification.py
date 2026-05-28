@@ -643,3 +643,34 @@ class SendTrainingRequestTests(ClassificationTestCase):
         success, message = send_training_request("knn", {"data_folder": "/tmp/x", "output_model_path": "/tmp/m.RData"})
         self.assertFalse(success)
         self.assertIn("Error communicating with R server", message)
+
+
+class KnnExtraParamsTests(ClassificationTestCase):
+    """Verify the fixed-k helper that avoids R's expensive KNN auto-tuning."""
+
+    def _job(self, algorithm_type):
+        job = MagicMock()
+        job.parameters = {"algorithm_type": algorithm_type} if algorithm_type else None
+        return job
+
+    def test_lda_returns_empty(self):
+        from battycoda_app.audio.task_modules.training_utils import knn_extra_params
+
+        self.assertEqual(knn_extra_params(self._job("lda"), 1000), {})
+
+    def test_knn_small_dataset_floors_at_three(self):
+        from battycoda_app.audio.task_modules.training_utils import knn_extra_params
+
+        self.assertEqual(knn_extra_params(self._job("knn"), 10), {"k": 3})
+
+    def test_knn_large_dataset_caps_at_twenty(self):
+        from battycoda_app.audio.task_modules.training_utils import knn_extra_params
+
+        self.assertEqual(knn_extra_params(self._job("knn"), 10000), {"k": 20})
+
+    def test_knn_default_algorithm_is_knn(self):
+        """If parameters is missing, get_algorithm_type defaults to knn."""
+        from battycoda_app.audio.task_modules.training_utils import knn_extra_params
+
+        result = knn_extra_params(self._job(None), 100)
+        self.assertEqual(result, {"k": 10})  # sqrt(100) = 10, within [3, 20]

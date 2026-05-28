@@ -88,6 +88,10 @@ app.conf.beat_schedule = {
         "task": "battycoda_app.tasks.cleanup_stale_tus_uploads",
         "schedule": 3600.0,  # Run every hour
     },
+    "cleanup-stale-classifier-tmp": {
+        "task": "battycoda_app.tasks.cleanup_stale_classifier_tmp",
+        "schedule": 3600.0,  # Run every hour
+    },
 }
 app.conf.timezone = "UTC"
 
