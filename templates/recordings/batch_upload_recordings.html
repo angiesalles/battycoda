@@ -37,6 +37,7 @@
         <div class="card-body">
             <div class="alert alert-info mb-4">
                 <i class="fas fa-info-circle me-2"></i> Upload WAV files as a ZIP archive. If you have pickle files, include them in a separate ZIP archive.
+                Maximum upload size: {{ max_upload_size_mb }} MB total &mdash; split larger datasets across multiple uploads.
             </div>
             
             <form method="post" enctype="multipart/form-data">

@@ -5,6 +5,7 @@ Views for handling batch uploads of recordings.
 import os
 import tempfile
 
+from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import redirect, render
@@ -61,7 +62,11 @@ def batch_upload_recordings_view(request):
     else:
         form = RecordingForm(user=request.user)
 
-    return render(request, "recordings/batch_upload_recordings.html", {"form": form})
+    return render(
+        request,
+        "recordings/batch_upload_recordings.html",
+        {"form": form, "max_upload_size_mb": settings.MAX_UPLOAD_SIZE_MB},
+    )
 
 
 def _process_batch_upload(wav_zip, pickle_zip, metadata, user, profile, split_long_files):
