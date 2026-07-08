@@ -114,6 +114,8 @@ export function createUploadHandler(config) {
 
     // Send the request
     xhr.open('POST', form.action || window.location.href, true);
+    // Identify as AJAX so Django views respond with JSON instead of a redirect
+    xhr.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
     xhr.send(formData);
   }
 

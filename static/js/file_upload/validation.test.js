@@ -3,7 +3,13 @@
  */
 
 import { describe, it, expect } from 'vitest';
-import { isValidWavFile, isValidPickleFile, validateFiles, formatFileSize } from './validation.js';
+import {
+  isValidWavFile,
+  isValidPickleFile,
+  validateFiles,
+  formatFileSize,
+  exceedsMaxUploadSize,
+} from './validation.js';
 
 describe('isValidWavFile', () => {
   it('should accept .wav extension', () => {
@@ -156,6 +162,33 @@ describe('validateFiles', () => {
     expect(result.valid[0].lastModified).toBe(12345);
     expect(result.invalid[0].size).toBe(2000);
     expect(result.invalid[0].lastModified).toBe(67890);
+  });
+});
+
+describe('exceedsMaxUploadSize', () => {
+  const MB = 1024 * 1024;
+
+  it('should return false when under the limit', () => {
+    expect(exceedsMaxUploadSize(500 * MB, 1024)).toBe(false);
+  });
+
+  it('should return false when exactly at the limit', () => {
+    expect(exceedsMaxUploadSize(1024 * MB, 1024)).toBe(false);
+  });
+
+  it('should return true when over the limit', () => {
+    expect(exceedsMaxUploadSize(1024 * MB + 1, 1024)).toBe(true);
+    expect(exceedsMaxUploadSize(2048 * MB, 1024)).toBe(true);
+  });
+
+  it('should be disabled when limit is 0 or missing', () => {
+    expect(exceedsMaxUploadSize(5000 * MB, 0)).toBe(false);
+    expect(exceedsMaxUploadSize(5000 * MB, undefined)).toBe(false);
+    expect(exceedsMaxUploadSize(5000 * MB, NaN)).toBe(false);
+  });
+
+  it('should be disabled for negative limits', () => {
+    expect(exceedsMaxUploadSize(5000 * MB, -1)).toBe(false);
   });
 });
 

@@ -127,6 +127,7 @@ describe('createUploadHandler', () => {
     mockXhr = {
       open: vi.fn(),
       send: vi.fn(),
+      setRequestHeader: vi.fn(),
       abort: vi.fn(),
       readyState: 0,
       status: 200,
@@ -196,6 +197,21 @@ describe('createUploadHandler', () => {
       true
     );
     expect(mockXhr.send).toHaveBeenCalled();
+  });
+
+  it('should identify the request as AJAX via X-Requested-With header', () => {
+    const handler = createUploadHandler({
+      form,
+      progressBar,
+      statusText,
+    });
+
+    handler.start();
+
+    expect(mockXhr.setRequestHeader).toHaveBeenCalledWith(
+      'X-Requested-With',
+      'XMLHttpRequest'
+    );
   });
 
   it('should use window.location.href when form has no action', () => {

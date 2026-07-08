@@ -56,6 +56,17 @@ export function validateFiles(files, validator) {
 }
 
 /**
+ * Check whether the selected files exceed the server upload limit
+ * @param {number} totalBytes - Total size of selected files in bytes
+ * @param {number} maxUploadSizeMb - Server limit in MB (0 or falsy disables the check)
+ * @returns {boolean} True if the limit is exceeded
+ */
+export function exceedsMaxUploadSize(totalBytes, maxUploadSizeMb) {
+  if (!maxUploadSizeMb || maxUploadSizeMb <= 0) return false;
+  return totalBytes > maxUploadSizeMb * 1024 * 1024;
+}
+
+/**
  * Get human-readable file size
  * @param {number} bytes - Size in bytes
  * @returns {string} Formatted size string

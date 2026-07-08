@@ -40,7 +40,7 @@
                 Maximum upload size: {{ max_upload_size_mb }} MB total &mdash; split larger datasets across multiple uploads.
             </div>
             
-            <form method="post" enctype="multipart/form-data">
+            <form method="post" enctype="multipart/form-data" data-max-upload-size-mb="{{ max_upload_size_mb }}">
                 {% csrf_token %}
                 
                 <!-- File Upload Section -->

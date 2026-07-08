@@ -6,12 +6,9 @@
  */
 
 import { setupDropzone } from './dropzone.js';
-import { getFileInfo, updateFileInfoDisplay } from './progress.js';
-import {
-  createUploadHandler,
-  createUploadHandlerAuto,
-  hasRequiredFiles,
-} from './upload-handler.js';
+import { getFileInfo, showError, updateFileInfoDisplay } from './progress.js';
+import { createUploadHandlerAuto, hasRequiredFiles } from './upload-handler.js';
+import { exceedsMaxUploadSize, formatFileSize } from './validation.js';
 
 /**
  * @typedef {Object} FileUploadElements
@@ -144,15 +141,33 @@ export function initFileUpload() {
     elements.cancelButton.addEventListener('click', () => {
       if (uploadHandler) {
         uploadHandler.abort();
+        elements.cancelButton.classList.add('d-none');
       }
     });
   }
+
+  // Server upload limit in MB, provided via data attribute (0 = no check)
+  const maxUploadSizeMb = Number(elements.form.dataset.maxUploadSizeMb) || 0;
 
   // Handle form submission
   elements.form.addEventListener('submit', (e) => {
     // Check if required files are present
     if (!hasRequiredFiles(inputs, isBatchUpload)) {
       // Let normal form submission handle validation errors
+      return;
+    }
+
+    // Reject uploads over the server limit before any bytes are sent
+    const { totalSize } = getFileInfo(inputs, isBatchUpload);
+    if (exceedsMaxUploadSize(totalSize, maxUploadSizeMb)) {
+      e.preventDefault();
+      elements.progressContainer?.classList.remove('d-none');
+      showError(
+        elements.progressBar,
+        elements.statusText,
+        `Selected files total ${formatFileSize(totalSize)}, which exceeds the ` +
+          `${maxUploadSizeMb} MB upload limit. Please split your data into smaller batches.`,
+      );
       return;
     }
 
@@ -171,6 +186,7 @@ export function initFileUpload() {
     );
 
     uploadHandler.start();
+    elements.cancelButton?.classList.remove('d-none');
   });
 
   // Set global flag for other scripts

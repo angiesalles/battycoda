@@ -8,7 +8,9 @@ import tempfile
 from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
+from django.http import JsonResponse
 from django.shortcuts import redirect, render
+from django.urls import reverse
 
 from ..forms import RecordingForm
 from ..models.user import UserProfile
@@ -30,6 +32,8 @@ def batch_upload_recordings_view(request):
         messages.error(request, "You must be assigned to a group to upload recordings")
         return redirect("battycoda_app:recording_list")
 
+    is_ajax = request.headers.get("x-requested-with") == "XMLHttpRequest"
+
     if request.method == "POST":
         form = RecordingForm(request.POST, request.FILES, user=request.user)
 
@@ -47,15 +51,43 @@ def batch_upload_recordings_view(request):
             pickle_zip = request.FILES.get("pickle_zip")
 
             if not wav_zip:
-                messages.error(request, "Please select a ZIP file with WAV recordings to upload")
+                error_msg = "Please select a ZIP file with WAV recordings to upload"
+                if is_ajax:
+                    return JsonResponse({"success": False, "error": error_msg})
+                messages.error(request, error_msg)
                 return redirect("battycoda_app:batch_upload_recordings")
 
             split_long_files = request.POST.get("split_long_files") == "on"
             result = _process_batch_upload(wav_zip, pickle_zip, metadata, request.user, profile, split_long_files)
 
+            if is_ajax:
+                if "error" in result:
+                    return JsonResponse({"success": False, "error": result["error"]})
+                if result["success_count"] == 0 and result["error_count"] > 0:
+                    return JsonResponse(
+                        {
+                            "success": False,
+                            "error": f"Failed to upload {result['error_count']} recordings. See logs for details.",
+                        }
+                    )
+                # Queue messages so they display after the client-side redirect
+                _show_result_messages(request, result)
+                return JsonResponse(
+                    {
+                        "success": True,
+                        "recordings_created": result["success_count"],
+                        "redirect_url": reverse("battycoda_app:recording_list"),
+                    }
+                )
+
             _show_result_messages(request, result)
             return redirect("battycoda_app:recording_list")
         else:
+            if is_ajax:
+                error_msg = "; ".join(
+                    f"{field}: {error}" for field, errors in form.errors.items() for error in errors
+                )
+                return JsonResponse({"success": False, "error": error_msg or "Invalid form submission"})
             for field, errors in form.errors.items():
                 for error in errors:
                     messages.error(request, f"Error in {field}: {error}")
