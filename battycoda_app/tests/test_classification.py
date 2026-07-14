@@ -674,3 +674,69 @@ class KnnExtraParamsTests(ClassificationTestCase):
 
         result = knn_extra_params(self._job(None), 100)
         self.assertEqual(result, {"k": 10})  # sqrt(100) = 10, within [3, 20]
+
+
+class ClassifierTrainingJobDetailTests(ClassificationTestCase):
+    """Regression: the species-training job detail view must show per-label counts,
+    aggregated across all labeled tasks for the species (not just one batch)."""
+
+    def test_species_job_shows_label_distribution(self):
+        from django.contrib.auth.models import User
+        from django.test import Client
+        from django.urls import reverse
+
+        from battycoda_app.models.classification import ClassifierTrainingJob
+        from battycoda_app.models.organization import Project, Species
+        from battycoda_app.models.task import Task, TaskBatch
+        from battycoda_app.models.user import Group, GroupMembership, UserProfile
+
+        user = User.objects.create_user(username="cjdt", email="cjdt@example.com", password="pw")
+        profile = UserProfile.objects.get(user=user)
+        group = Group.objects.create(name="cjdt group")
+        GroupMembership.objects.create(user=user, group=group, is_admin=True)
+        profile.group = group
+        profile.save()
+
+        species = Species.objects.create(name="TestBat", created_by=user, group=group)
+        project = Project.objects.create(name="P", created_by=user, group=group)
+        batch = TaskBatch.objects.create(
+            name="B", created_by=user, wav_file_name="x.wav", species=species, project=project, group=group
+        )
+        # 3 A, 1 B — distribution should be [("A", 3, 75.0), ("B", 1, 25.0)]
+        for label, n in [("A", 3), ("B", 1)]:
+            for i in range(n):
+                Task.objects.create(
+                    wav_file_name="x.wav",
+                    onset=float(i),
+                    offset=float(i) + 0.1,
+                    species=species,
+                    project=project,
+                    batch=batch,
+                    created_by=user,
+                    group=group,
+                    status="done",
+                    is_done=True,
+                    label=label,
+                )
+
+        job = ClassifierTrainingJob.objects.create(
+            name="species-job",
+            task_batch=None,
+            created_by=user,
+            group=group,
+            parameters={"algorithm_type": "knn", "species_id": species.id},
+            status="pending",
+            progress=0.0,
+        )
+
+        client = Client()
+        client.login(username="cjdt", password="pw")
+        response = client.get(reverse("battycoda_app:classifier_training_job_detail", args=[job.id]))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.context["species"], species)
+        dist = response.context["label_distribution"]
+        self.assertEqual([(label, count) for label, count, _ in dist], [("A", 3), ("B", 1)])
+        # Percentages actually computed, not the count-formatted-as-percent bug.
+        self.assertAlmostEqual(dist[0][2], 75.0, places=3)
+        self.assertAlmostEqual(dist[1][2], 25.0, places=3)

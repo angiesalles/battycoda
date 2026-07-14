@@ -106,12 +106,17 @@
             </div>
             
             <!-- Training data summary -->
-            {% if task_batch %}
+            {% if task_batch or species %}
             <div class="card mb-4">
                 <div class="card-header">
                     <h4 class="mb-0">Training Data</h4>
                 </div>
                 <div class="card-body">
+                    {% if species %}
+                    <p><span class="badge bg-secondary">Trained from Species</span> All labeled tasks for <strong>{{ species.name }}</strong> (stratified up to 5000 samples).</p>
+                    {% else %}
+                    <p><span class="badge bg-secondary">Trained from Task Batch</span></p>
+                    {% endif %}
                     <h5>Label Distribution</h5>
                     <p>This classifier was trained using the following distribution of labels:</p>
 
@@ -125,11 +130,11 @@
                                 </tr>
                             </thead>
                             <tbody>
-                                {% for label, count in label_distribution %}
+                                {% for label, count, pct in label_distribution %}
                                 <tr>
                                     <td>{{ label }}</td>
                                     <td>{{ count }}</td>
-                                    <td>{{ count|floatformat:1 }}%</td>
+                                    <td>{{ pct|floatformat:1 }}%</td>
                                 </tr>
                                 {% empty %}
                                 <tr>

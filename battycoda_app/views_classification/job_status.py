@@ -22,26 +22,40 @@ def classifier_training_job_detail_view(request, job_id):
         messages.error(request, "You don't have permission to view this classifier training job.")
         return redirect("battycoda_app:classifier_list")
 
-    # Get labeled tasks from the batch (if training from batch)
+    # Build the labeled-task set the classifier was trained on. For batch jobs
+    # this is the batch; for species jobs we aggregate all labeled tasks for the
+    # species (parameters["species_id"] is set by job_creation.py).
+    from django.db.models import Count
+
+    from battycoda_app.models.organization import Species
+    from battycoda_app.models.task import Task
+
     labeled_tasks = None
-    label_distribution = []
+    species = None
 
     if job.task_batch:
-        labeled_tasks = job.task_batch.tasks.filter(is_done=True, label__isnull=False)
+        labeled_tasks = job.task_batch.tasks.filter(is_done=True, label__isnull=False).exclude(label="")
+    elif job.parameters and job.parameters.get("species_id"):
+        species = Species.objects.filter(id=job.parameters["species_id"]).first()
+        if species:
+            labeled_tasks = (
+                Task.objects.filter(species=species, is_done=True, label__isnull=False)
+                .exclude(label="")
+            )
 
-        # Get labels distribution
-        label_counts = {}
-        for task in labeled_tasks:
-            if task.label not in label_counts:
-                label_counts[task.label] = 0
-            label_counts[task.label] += 1
-
-        # Sort by count descending
-        label_distribution = sorted(label_counts.items(), key=lambda x: x[1], reverse=True)
+    label_distribution = []
+    if labeled_tasks is not None:
+        # Single GROUP BY query (matters for species with tens of thousands of tasks).
+        counts = list(
+            labeled_tasks.values("label").annotate(count=Count("id")).order_by("-count").values_list("label", "count")
+        )
+        total = sum(c for _, c in counts) or 1
+        label_distribution = [(label, count, count * 100.0 / total) for label, count in counts]
 
     context = {
         "job": job,
         "task_batch": job.task_batch,
+        "species": species,
         "labeled_tasks": labeled_tasks,
         "label_distribution": label_distribution,
     }
