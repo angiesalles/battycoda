@@ -125,6 +125,25 @@ class CreateClusteringRunViewTest(BattycodaTestCase):
         response = self.client.get(self.create_clustering_url)
         self.assertEqual(response.status_code, 302)
 
+    def test_create_clustering_run_empty_segmentation_rejected(self):
+        """Creating a single-segmentation run on a segmentation with no segments should error out."""
+        self.client.login(username="testuser", password="password123")
+        response = self.client.post(
+            self.create_clustering_url,
+            {
+                "scope": "segmentation",
+                "segmentation": self.segmentation.id,
+                "algorithm": self.clustering_algorithm.id,
+                "name": "Empty run",
+                "feature_method": "mfcc",
+            },
+            follow=True,
+        )
+        # No run should be created, and the user should see an error message
+        self.assertFalse(ClusteringRun.objects.filter(name="Empty run").exists())
+        messages = [str(m) for m in response.context["messages"]]
+        self.assertIn("The selected segmentation has no segments to cluster", messages)
+
 
 class ClusteringRunDetailViewTest(BattycodaTestCase):
     def setUp(self):

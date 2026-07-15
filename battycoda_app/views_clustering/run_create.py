@@ -112,6 +112,11 @@ def create_clustering_run(request):
 
             segmentation = get_object_or_404(Segmentation, id=segmentation_id)
 
+            # Validation: Segmentation must have at least one segment to cluster
+            if not Segment.objects.filter(segmentation=segmentation).exists():
+                messages.error(request, "The selected segmentation has no segments to cluster")
+                return redirect("battycoda_app:create_clustering_run")
+
         # Create clustering run
         clustering_run = ClusteringRun.objects.create(
             name=name,

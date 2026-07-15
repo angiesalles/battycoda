@@ -875,3 +875,73 @@ class ClusteringPermissionsTest(BattycodaTestCase):
 
         result = check_clustering_permission(request, self.clustering_run)
         self.assertIsNone(result)
+
+
+class ClusteringRunnerEmptyFeaturesTest(BattycodaTestCase):
+    """The base runner must fail gracefully when no segments produce features."""
+
+    def setUp(self):
+        self.user = User.objects.create_user(username="testuser", email="test@example.com", password="password123")
+        self.group = Group.objects.create(name="Test Group", description="Test group")
+        self.species = Species.objects.create(name="Test Species", created_by=self.user, group=self.group)
+        self.project = Project.objects.create(name="Test Project", created_by=self.user, group=self.group)
+        self.seg_algorithm = create_test_segmentation_algorithm(self.group)
+        self.algorithm = ClusteringAlgorithm.objects.create(
+            name="OPTICS Test",
+            algorithm_type="optics",
+            created_by=self.user,
+        )
+        self.recording = Recording.objects.create(
+            name="Test Recording",
+            project=self.project,
+            species=self.species,
+            created_by=self.user,
+            group=self.group,
+        )
+        # Segmentation with NO segments — feature extraction yields an empty array
+        self.segmentation = Segmentation.objects.create(
+            recording=self.recording,
+            algorithm=self.seg_algorithm,
+            status="completed",
+            created_by=self.user,
+        )
+        self.run = ClusteringRun.objects.create(
+            name="Empty Run",
+            scope="segmentation",
+            segmentation=self.segmentation,
+            algorithm=self.algorithm,
+            feature_extraction_method="mfcc",
+            created_by=self.user,
+            group=self.group,
+        )
+
+    def test_run_raises_clear_error_on_empty_features(self):
+        """A run over a segmentation with no segments raises a clear error, not a cryptic sklearn one."""
+        import numpy as np
+
+        from battycoda_app.audio.task_modules.clustering.algorithms.base import BaseClusteringRunner
+
+        class EmptyFeatureRunner(BaseClusteringRunner):
+            """Simulates feature extraction returning nothing (0 segments)."""
+
+            def _extract_features(self):
+                self.segment_ids = []
+                self.segment_metadata = None
+                return np.array([])
+
+            def _run_algorithm(self, features_scaled):  # pragma: no cover - should never be reached
+                raise AssertionError("Clustering should not run with empty features")
+
+            def get_algorithm_name(self):
+                return "Empty"
+
+        runner = EmptyFeatureRunner(self.run.id)
+        with self.assertRaises(ValueError) as ctx:
+            runner.run()
+
+        self.assertIn("No segments available to cluster", str(ctx.exception))
+
+        # Run should be marked failed with the friendly message stored
+        self.run.refresh_from_db()
+        self.assertEqual(self.run.status, "failed")
+        self.assertIn("No segments available to cluster", self.run.error_message)

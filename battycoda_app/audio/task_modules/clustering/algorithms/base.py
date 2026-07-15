@@ -40,6 +40,13 @@ class BaseClusteringRunner:
 
             # Extract and prepare features
             features = self._extract_features()
+
+            if len(self.segment_ids) == 0:
+                raise ValueError(
+                    "No segments available to cluster. The selected segmentation has no segments, "
+                    "or feature extraction failed for all of them."
+                )
+
             self._update_progress(40, message=f"Extracted features from {len(self.segment_ids)} segments")
 
             features_scaled = self._scale_features(features)
