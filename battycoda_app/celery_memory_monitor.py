@@ -23,6 +23,11 @@ MEMORY_THRESHOLD_MB = 1500  # Dump when worker exceeds this
 MEMORY_CRITICAL_MB = 2000  # More detailed dump at this level
 LOG_DIR = "/var/log/battycoda"
 
+# tracemalloc instruments every allocation with a full traceback, which is far
+# too expensive to leave on in a worker process. Keep it off by default; enable
+# it deliberately (CELERY_MEMORY_MONITOR_TRACEMALLOC=1) only for a debug session.
+ENABLE_TRACEMALLOC = os.environ.get("CELERY_MEMORY_MONITOR_TRACEMALLOC", "").lower() in ("1", "true", "yes")
+
 
 class MemoryMonitor:
     def __init__(self):
@@ -38,8 +43,10 @@ class MemoryMonitor:
 
         self.running = True
 
-        # Start tracemalloc for detailed memory tracking
-        if not tracemalloc.is_tracing():
+        # Start tracemalloc only when explicitly enabled — it adds heavy
+        # per-allocation overhead. The dump code below degrades gracefully
+        # when tracemalloc is not tracing.
+        if ENABLE_TRACEMALLOC and not tracemalloc.is_tracing():
             tracemalloc.start(25)  # Keep 25 frames of traceback
             self.tracemalloc_started = True
 
@@ -151,7 +158,7 @@ _monitor = None
 
 
 def start_memory_monitor():
-    """Start the memory monitor. Call this from Celery worker_ready signal."""
+    """Start the memory monitor. Call this from the Celery worker_process_init signal."""
     global _monitor
     if _monitor is None:
         _monitor = MemoryMonitor()

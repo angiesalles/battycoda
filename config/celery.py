@@ -1,7 +1,7 @@
 import os
 
 from celery import Celery
-from celery.signals import beat_init, worker_ready, worker_shutdown
+from celery.signals import beat_init, worker_process_init, worker_process_shutdown
 
 # Set the default Django settings module for the 'celery' program.
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "config.settings")
@@ -34,17 +34,23 @@ def run_backup_on_beat_start(**kwargs):
         logger.error(f"Failed to queue startup backup: {e}")
 
 
-@worker_ready.connect
-def start_memory_monitor_on_worker_ready(**kwargs):
-    """Start memory monitor when Celery worker is ready."""
+# Start the memory monitor inside each prefork child (worker_process_init),
+# NOT in the MainProcess (worker_ready). The MainProcess forks pool workers,
+# and a background thread there makes forked children boot too slowly to send
+# their "UP" handshake in time, causing billiard to SIGKILL and respawn them
+# in a loop. Leaf children never fork further, so running the monitor there is
+# safe — and it watches the processes that actually execute tasks.
+@worker_process_init.connect
+def start_memory_monitor_on_process_init(**kwargs):
+    """Start memory monitor inside each Celery worker child process."""
     from battycoda_app.celery_memory_monitor import start_memory_monitor
 
     start_memory_monitor()
 
 
-@worker_shutdown.connect
-def stop_memory_monitor_on_shutdown(**kwargs):
-    """Stop memory monitor when Celery worker shuts down."""
+@worker_process_shutdown.connect
+def stop_memory_monitor_on_process_shutdown(**kwargs):
+    """Stop memory monitor when a Celery worker child process shuts down."""
     from battycoda_app.celery_memory_monitor import stop_memory_monitor
 
     stop_memory_monitor()
