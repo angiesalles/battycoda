@@ -280,12 +280,19 @@ run.status  # queued, pending, in_progress, completed, failed
 
 ## Common Issues
 
+**Memory context**: Production runs on a t3.large (2 vCPU, 8 GB RAM, **no swap**, EBS-only) — memory spikes become hard kernel OOM kills, not slowdowns. A memory monitor runs inside each Celery worker child and writes dumps to `/var/log/battycoda/memory_dump_*.txt` when a worker exceeds 1500 MB (set `CELERY_MEMORY_MONITOR_TRACEMALLOC=1` for allocation tracebacks; heavy, debug only). The monitor must be started from `worker_process_init`, never `worker_ready` — a thread in the forking MainProcess makes forked pool workers hang on boot.
+
 **Classification runs failing at ~88%**: Memory-related. Check `/var/log/battycoda/` for dumps, R server memory (`ps aux | grep R`).
 
-**Celery OOM killed**:
+**Celery OOM killed**: distinguish two different kill signatures:
 ```bash
+# Kernel OOM kills (real memory exhaustion; check which task was running in celery-error.log)
+sudo dmesg -T | grep -i "killed process"
 sudo journalctl -u battycoda-celery | grep -i oom
 ```
+Repeating `Timed out waiting for UP message ... exited with 'signal 9 (SIGKILL)'` in celery-error.log is NOT the kernel OOM killer — it's billiard killing replacement workers that boot too slowly. Check the MainProcess thread count (`ls /proc/<main_pid>/task/*/comm`): a healthy forking parent has exactly one `celery` thread.
+
+Historical note: spectrogram generation used to peak ~2.4 GB per task on 384 kHz recordings (caused the Jul 2026 OOM incidents); since fixed to ~400 MB via fixed-sample-count chunking (`hdf5_generation_chunked.py`). If OOM recurs, suspect classification/clustering tasks or R first.
 
 **R server not responding**:
 ```bash
