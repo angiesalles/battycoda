@@ -13,6 +13,25 @@ from django.db import DatabaseError
 logger = logging.getLogger(__name__)
 
 
+def _is_valid_hdf5_spectrogram(path):
+    """
+    Check that an existing spectrogram file is complete and readable.
+
+    A worker killed mid-write (e.g. OOM) leaves a truncated .h5 on disk, so a
+    size check is not enough. Attributes are written last, so their presence
+    means the file was fully written.
+    """
+    if not os.path.exists(path) or os.path.getsize(path) == 0:
+        return False
+    try:
+        import h5py
+
+        with h5py.File(path, "r") as f:
+            return "spectrogram" in f and "sample_rate" in f.attrs
+    except OSError:
+        return False
+
+
 def generate_hdf5_spectrogram(recording_id, celery_task_id=None):
     """
     Generate a full HDF5 spectrogram for a recording.
@@ -68,7 +87,7 @@ def generate_hdf5_spectrogram(recording_id, celery_task_id=None):
         os.makedirs(output_dir, exist_ok=True)
         output_path = os.path.join(output_dir, spectrogram_filename)
 
-        if os.path.exists(output_path) and os.path.getsize(output_path) > 0:
+        if _is_valid_hdf5_spectrogram(output_path):
             update_job_progress(100, "completed")
             if job:
                 job.output_file_path = output_path
