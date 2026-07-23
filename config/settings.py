@@ -157,8 +157,12 @@ WSGI_APPLICATION = "config.wsgi.application"
 import dj_database_url
 
 # Parse the production database URL to extract credentials
+# conn_health_checks validates pooled connections before use so stale connections
+# (e.g. after a PostgreSQL restart from unattended-upgrades) reconnect instead of erroring
 _prod_db_config = dj_database_url.config(
-    default="postgres://battycoda:battycoda@localhost:5432/battycoda", conn_max_age=600
+    default="postgres://battycoda:battycoda@localhost:5432/battycoda",
+    conn_max_age=600,
+    conn_health_checks=True,
 )
 
 # Use separate test database for E2E tests to avoid polluting development data
@@ -177,10 +181,6 @@ if DJANGO_TEST_MODE:
 else:
     # Use PostgreSQL exclusively - no fallbacks
     DATABASES = {"default": _prod_db_config}
-
-# Validate database connections before use to prevent "connection already closed" errors
-# when connections in the pool become stale (e.g., after SSL drops or server restarts)
-CONN_HEALTH_CHECKS = True
 
 # Use custom test runner that defaults to --keepdb for faster repeat runs
 # Override with: python manage.py test --no-keepdb
