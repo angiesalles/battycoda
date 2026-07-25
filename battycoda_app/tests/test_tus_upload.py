@@ -1,8 +1,10 @@
 """Tests for TUS resumable upload protocol endpoint."""
 
 import base64
+import io
 import os
 import uuid
+import zipfile
 
 from django.contrib.auth.models import User
 from django.test import Client
@@ -275,6 +277,110 @@ class TusPatchTest(BattycodaTestCase):
 
         # TusUpload record cleaned up
         self.assertFalse(TusUpload.objects.filter(upload_id=self.upload_id).exists())
+
+
+def _make_zip(files):
+    """Return the bytes of an in-memory ZIP built from a {name: bytes} mapping."""
+    buffer = io.BytesIO()
+    with zipfile.ZipFile(buffer, "w") as zf:
+        for name, content in files.items():
+            zf.writestr(name, content)
+    return buffer.getvalue()
+
+
+class TusZipUploadTest(BattycodaTestCase):
+    """A ZIP dropped onto the single-recording upload is unpacked into recordings."""
+
+    def setUp(self):
+        self.client = Client()
+        self.user = User.objects.create_user(username="testuser", email="t@t.com", password="password123")
+        self.profile = UserProfile.objects.get(user=self.user)
+        self.group = Group.objects.create(name="Test Group")
+        GroupMembership.objects.create(user=self.user, group=self.group, is_admin=True)
+        self.profile.group = self.group
+        self.profile.save()
+
+        self.species = Species.objects.create(name="Test Species", group=self.group, created_by=self.user)
+        self.project = Project.objects.create(name="Test Project", group=self.group, created_by=self.user)
+
+    def _create_upload(self, payload):
+        from django.conf import settings
+
+        upload_id = uuid.uuid4()
+        temp_path = os.path.join(settings.TUS_UPLOAD_DIR, f"{upload_id}.part")
+        with open(temp_path, "wb"):
+            pass  # empty; the PATCH writes the content
+
+        TusUpload.objects.create(
+            upload_id=upload_id,
+            upload_length=len(payload),
+            upload_offset=0,
+            temp_file_path=temp_path,
+            filename="Archiv.zip",
+            metadata_json={
+                "name": "Archiv",
+                "species_id": str(self.species.id),
+                "project_id": str(self.project.id),
+                # Skip long-file splitting so the test doesn't depend on parseable audio.
+                "split_long_files": "false",
+            },
+            user=self.user,
+            group=self.group,
+        )
+        return upload_id, temp_path
+
+    def _patch_full(self, upload_id, payload):
+        url = reverse("battycoda_app:tus_upload_chunk", kwargs={"upload_id": upload_id})
+        return self.client.patch(
+            url,
+            data=payload,
+            content_type="application/offset+octet-stream",
+            HTTP_UPLOAD_OFFSET="0",
+        )
+
+    def test_zip_with_wavs_creates_one_recording_per_wav(self):
+        self.client.login(username="testuser", password="password123")
+        payload = _make_zip(
+            {
+                "call_a.wav": b"RIFF....fake-wav-a",
+                "nested/call_b.wav": b"RIFF....fake-wav-b",
+                "__MACOSX/._call_a.wav": b"junk",  # macOS metadata, must be ignored
+                "notes.txt": b"not audio",  # non-wav, must be ignored
+            }
+        )
+        upload_id, temp_path = self._create_upload(payload)
+
+        response = self._patch_full(upload_id, payload)
+
+        self.assertEqual(response.status_code, 204)
+        self.assertIn("X-Redirect-Url", response)
+
+        recordings = Recording.objects.filter(created_by=self.user)
+        self.assertEqual(recordings.count(), 2)
+        self.assertEqual(
+            sorted(recordings.values_list("name", flat=True)),
+            ["call_a", "call_b"],
+        )
+
+        # Upload record and temp file cleaned up regardless of outcome.
+        self.assertFalse(TusUpload.objects.filter(upload_id=upload_id).exists())
+        self.assertFalse(os.path.exists(temp_path))
+
+    def test_zip_without_audio_returns_error_and_creates_nothing(self):
+        self.client.login(username="testuser", password="password123")
+        payload = _make_zip({"readme.txt": b"no audio here", "data.csv": b"1,2,3"})
+        upload_id, temp_path = self._create_upload(payload)
+
+        response = self._patch_full(upload_id, payload)
+
+        self.assertEqual(response.status_code, 400)
+        # Message reaches the browser via both the body and the X-Error header.
+        self.assertIn("does not contain any audio", response["X-Error"])
+        self.assertIn("does not contain any audio", response.json()["error"])
+
+        self.assertEqual(Recording.objects.filter(created_by=self.user).count(), 0)
+        self.assertFalse(TusUpload.objects.filter(upload_id=upload_id).exists())
+        self.assertFalse(os.path.exists(temp_path))
 
 
 class TusDeleteTest(BattycodaTestCase):

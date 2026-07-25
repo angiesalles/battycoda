@@ -8,10 +8,12 @@ Reference: https://tus.io/protocols/resumable-upload
 """
 
 import base64
-import json
 import logging
 import os
+import tempfile
 import uuid
+import zipfile
+from pathlib import Path
 
 from django.conf import settings
 from django.contrib.auth.decorators import login_required
@@ -32,6 +34,14 @@ logger = logging.getLogger(__name__)
 
 TUS_VERSION = "1.0.0"
 TUS_EXTENSIONS = "creation,termination,creation-with-upload"
+
+
+class UploadFinalizeError(Exception):
+    """Raised when a completed upload can't be turned into recordings.
+
+    The message is user-facing and is surfaced to the browser via the X-Error
+    response header so the upload widget can display it.
+    """
 
 
 def _tus_headers(extra=None):
@@ -80,117 +90,138 @@ def _parse_metadata(header_value):
 
 
 def _error(status, message):
-    """Return a JSON error response with TUS headers."""
+    """Return a JSON error response with TUS headers.
+
+    The message is also placed in the X-Error header because tus-js-client only
+    exposes response headers (not the body) to its onError callback.
+    """
     resp = JsonResponse({"error": message}, status=status)
-    return _set_headers(resp, _tus_headers())
+    return _set_headers(resp, _tus_headers({"X-Error": message}))
+
+
+def _save_recording_from_path(wav_path, name, base_kwargs, filename=None):
+    """Create and save a single Recording from a WAV file on disk."""
+    with open(wav_path, "rb") as f:
+        django_file = SimpleUploadedFile(
+            filename or os.path.basename(wav_path), f.read(), content_type="audio/wav"
+        )
+    recording = Recording(name=name, wav_file=django_file, **base_kwargs)
+    recording.save()
+    recording.file_ready = True
+    recording.save(update_fields=["file_ready"])
+    return recording
+
+
+def _create_recordings_from_wav(wav_path, display_name, base_kwargs, split_long_files, filename=None):
+    """Create one or more Recordings from a single WAV file on disk.
+
+    Splits files longer than 60s into 1-minute chunks when ``split_long_files``
+    is set; falls back to a single recording if the duration can't be read or
+    splitting fails.
+    """
+    if split_long_files:
+        try:
+            if get_audio_duration(wav_path) > 60:
+                chunk_paths = split_audio_file(wav_path, chunk_duration_seconds=60)
+                try:
+                    return [
+                        _save_recording_from_path(
+                            chunk_path, f"{display_name} (Part {i + 1}/{len(chunk_paths)})", base_kwargs
+                        )
+                        for i, chunk_path in enumerate(chunk_paths)
+                    ]
+                finally:
+                    for chunk_path in chunk_paths:
+                        safe_remove_file(chunk_path, "audio chunk file")
+        except (IOError, OSError, AudioFileError) as e:
+            logger.debug(f"TUS finalize: split not possible for {wav_path}, single recording: {e}")
+
+    return [_save_recording_from_path(wav_path, display_name, base_kwargs, filename=filename)]
 
 
 def _finalize_upload(tus_upload):
     """Convert a completed TUS upload into one or more Recording objects.
+
+    A plain WAV becomes a single recording (or several, if long-file splitting
+    is enabled). A ZIP archive is unpacked and each contained WAV becomes its
+    own recording. Raises UploadFinalizeError (with a user-facing message) when
+    the upload can't be turned into any recording, e.g. a ZIP with no audio.
 
     Mirrors the logic in create_recording_view for consistency.
     """
     meta = tus_upload.metadata_json or {}
     user = tus_upload.user
     group = tus_upload.group
+    temp_path = tus_upload.temp_file_path
+
+    def cleanup():
+        safe_remove_file(temp_path, "TUS temp file")
+        try:
+            tus_upload.delete()
+        except Exception:
+            pass
 
     # Resolve foreign keys
     try:
         species = Species.objects.get(id=int(meta.get("species_id", 0)))
     except (Species.DoesNotExist, ValueError, TypeError):
         logger.error(f"TUS finalize: invalid species_id in upload {tus_upload.upload_id}")
-        safe_remove_file(tus_upload.temp_file_path, "TUS temp file")
-        tus_upload.delete()
-        return None
+        cleanup()
+        raise UploadFinalizeError("Please choose a valid species before uploading.") from None
 
     try:
         project = Project.objects.get(id=int(meta.get("project_id", 0)))
     except (Project.DoesNotExist, ValueError, TypeError):
         logger.error(f"TUS finalize: invalid project_id in upload {tus_upload.upload_id}")
-        safe_remove_file(tus_upload.temp_file_path, "TUS temp file")
-        tus_upload.delete()
-        return None
+        cleanup()
+        raise UploadFinalizeError("Please choose a valid project before uploading.") from None
 
     recording_name = meta.get("name") or tus_upload.filename or "Untitled"
-    description = meta.get("description", "")
-    recorded_date = meta.get("recorded_date") or None
-    location = meta.get("location", "")
-    equipment = meta.get("equipment", "")
-    environmental_conditions = meta.get("environmental_conditions", "")
     split_long_files = meta.get("split_long_files", "true").lower() in ("true", "on", "1")
 
-    temp_path = tus_upload.temp_file_path
-    recordings_created = []
+    base_kwargs = {
+        "description": meta.get("description", ""),
+        "recorded_date": meta.get("recorded_date") or None,
+        "location": meta.get("location", ""),
+        "equipment": meta.get("equipment", ""),
+        "environmental_conditions": meta.get("environmental_conditions", ""),
+        "species": species,
+        "project": project,
+        "created_by": user,
+        "group": group,
+    }
 
     try:
-        if split_long_files:
-            try:
-                duration = get_audio_duration(temp_path)
-                if duration > 60:
-                    chunk_paths = split_audio_file(temp_path, chunk_duration_seconds=60)
-                    for i, chunk_path in enumerate(chunk_paths):
-                        with open(chunk_path, "rb") as f:
-                            django_file = SimpleUploadedFile(
-                                os.path.basename(chunk_path), f.read(), content_type="audio/wav"
-                            )
-                            recording = Recording(
-                                name=f"{recording_name} (Part {i + 1}/{len(chunk_paths)})",
-                                wav_file=django_file,
-                                description=description,
-                                recorded_date=recorded_date,
-                                location=location,
-                                equipment=equipment,
-                                environmental_conditions=environmental_conditions,
-                                species=species,
-                                project=project,
-                                created_by=user,
-                                group=group,
-                            )
-                            recording.save()
-                            recording.file_ready = True
-                            recording.save(update_fields=["file_ready"])
-                            recordings_created.append(recording)
+        # ZIP archive: extract each contained WAV and create a recording for it.
+        if zipfile.is_zipfile(temp_path):
+            from .views_batch_upload.zip_extraction import extract_wav_files
 
-                    # Clean up chunks
-                    for chunk_path in chunk_paths:
-                        safe_remove_file(chunk_path, "audio chunk file")
+            with tempfile.TemporaryDirectory() as extract_dir:
+                try:
+                    wav_files = extract_wav_files(temp_path, extract_dir)
+                except Exception as e:
+                    logger.error(f"TUS finalize: failed to read ZIP in upload {tus_upload.upload_id}: {e}")
+                    raise UploadFinalizeError(
+                        "The ZIP file could not be read. Please re-create the archive and try again."
+                    ) from e
 
-                    safe_remove_file(temp_path, "TUS temp file")
-                    tus_upload.delete()
-                    return recordings_created
-            except (IOError, OSError, AudioFileError) as e:
-                logger.debug(f"TUS finalize: split not possible, normal processing: {e}")
+                if not wav_files:
+                    raise UploadFinalizeError("The ZIP file does not contain any audio (.wav) files.")
 
-        # Single recording (no split, or split failed, or file <= 60s)
-        with open(temp_path, "rb") as f:
-            django_file = SimpleUploadedFile(tus_upload.filename or "upload.wav", f.read(), content_type="audio/wav")
-            recording = Recording(
-                name=recording_name,
-                wav_file=django_file,
-                description=description,
-                recorded_date=recorded_date,
-                location=location,
-                equipment=equipment,
-                environmental_conditions=environmental_conditions,
-                species=species,
-                project=project,
-                created_by=user,
-                group=group,
-            )
-            recording.save()
-            recording.file_ready = True
-            recording.save(update_fields=["file_ready"])
-            recordings_created.append(recording)
+                recordings_created = []
+                for wav_path in wav_files:
+                    display_name = Path(os.path.basename(wav_path)).stem
+                    recordings_created.extend(
+                        _create_recordings_from_wav(wav_path, display_name, base_kwargs, split_long_files)
+                    )
+                return recordings_created
 
+        # Single WAV file (or several chunks, if long-file splitting applies).
+        return _create_recordings_from_wav(
+            temp_path, recording_name, base_kwargs, split_long_files, filename=tus_upload.filename or "upload.wav"
+        )
     finally:
-        safe_remove_file(temp_path, "TUS temp file")
-        # Delete TusUpload record if it still exists
-        try:
-            tus_upload.delete()
-        except Exception:
-            pass
-
-    return recordings_created
+        cleanup()
 
 
 @csrf_exempt
@@ -295,7 +326,10 @@ def _handle_create(request):
 
     # If upload completed in one shot, finalize
     if tus_upload.is_complete:
-        result = _finalize_upload(tus_upload)
+        try:
+            result = _finalize_upload(tus_upload)
+        except UploadFinalizeError as e:
+            return _error(400, str(e))
         if result:
             # Return redirect info in a custom header
             if len(result) == 1:
@@ -380,7 +414,10 @@ def _handle_patch(request, upload_id):
     }
 
     if is_complete:
-        result = _finalize_upload(tus_upload)
+        try:
+            result = _finalize_upload(tus_upload)
+        except UploadFinalizeError as e:
+            return _error(400, str(e))
         if result:
             if len(result) == 1:
                 headers["X-Recording-Id"] = str(result[0].id)
