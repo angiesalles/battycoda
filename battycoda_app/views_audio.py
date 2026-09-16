@@ -1,11 +1,21 @@
 import logging
+import math
 
 from django.contrib.auth.decorators import login_required
 from django.http import FileResponse, HttpResponse
 
+from .audio.intervals import validate_audio_interval
 from .utils_modules.validation import get_int_param
 
 logger = logging.getLogger(__name__)
+
+
+def _task_interval_error(task, duration=None):
+    try:
+        validate_audio_interval(task.onset, task.offset, duration)
+    except ValueError as e:
+        return HttpResponse(f"Task has invalid audio boundaries: {e}", status=422)
+    return None
 
 
 @login_required
@@ -33,6 +43,10 @@ def task_spectrogram_view(request, task_id):
 
     if task.created_by != request.user and (not request.user.profile.group or task.group != request.user.profile.group):
         return HttpResponse("Permission denied", status=403)
+
+    interval_error = _task_interval_error(task)
+    if interval_error is not None:
+        return interval_error
 
     if not task.batch or not task.batch.wav_file:
         return HttpResponse("Task has no associated audio file", status=404)
@@ -72,6 +86,10 @@ def task_spectrogram_view(request, task_id):
             n_frames = int(f.attrs["n_frames"])
             n_freq_bins = int(f.attrs["n_freq_bins"])
 
+            interval_error = _task_interval_error(task, duration)
+            if interval_error is not None:
+                return interval_error
+
             # Calculate frames per second
             time_per_frame = hop_length / sample_rate
 
@@ -80,7 +98,7 @@ def task_spectrogram_view(request, task_id):
             clamped_end_time = min(duration, end_time)
 
             start_frame = int((clamped_start_time / duration) * n_frames)
-            end_frame = int((clamped_end_time / duration) * n_frames)
+            end_frame = min(n_frames, max(start_frame + 1, math.ceil((clamped_end_time / duration) * n_frames)))
 
             # Extract actual data from recording
             actual_data = f["spectrogram"][:, start_frame:end_frame]
@@ -138,7 +156,7 @@ def task_audio_snippet_view(request, task_id):
     from django.shortcuts import get_object_or_404
 
     from .audio.modules.audio_processing import get_audio_bit, normal_hwin, overview_hwin
-    from .audio.utils import appropriate_file
+    from .audio.utils import appropriate_file, get_audio_duration
     from .models.task import Task
 
     # Get the task
@@ -147,6 +165,10 @@ def task_audio_snippet_view(request, task_id):
     # Check permissions
     if task.created_by != request.user and (not request.user.profile.group or task.group != request.user.profile.group):
         return HttpResponse("Permission denied", status=403)
+
+    interval_error = _task_interval_error(task)
+    if interval_error is not None:
+        return interval_error
 
     # Get the wav file path
     if task.batch and task.batch.wav_file:
@@ -179,12 +201,16 @@ def task_audio_snippet_view(request, task_id):
     }
     cache_path = appropriate_file(wav_path, file_args)
 
-    # Return cached file if it exists
-    if os.path.exists(cache_path) and os.path.getsize(cache_path) > 0:
-        return FileResponse(open(cache_path, "rb"), content_type="audio/wav")
-
     # Generate the audio snippet
     try:
+        interval_error = _task_interval_error(task, get_audio_duration(wav_path))
+        if interval_error is not None:
+            return interval_error
+
+        # Return cached audio only after validating its annotation boundaries.
+        if os.path.exists(cache_path) and os.path.getsize(cache_path) > 0:
+            return FileResponse(open(cache_path, "rb"), content_type="audio/wav")
+
         audio_data, sample_rate, _ = get_audio_bit(wav_path, 0, hwin(), extra_params)
 
         if audio_data is None or len(audio_data) == 0:

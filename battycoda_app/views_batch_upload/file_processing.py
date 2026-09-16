@@ -134,7 +134,8 @@ def create_segmentation_from_pickle(recording, pickle_path, pickle_filename, use
             content_type="application/octet-stream",
         )
 
-        onsets, offsets = process_pickle_file(pickle_file)
+        duration = get_audio_duration(recording.wav_file.path)
+        onsets, offsets = process_pickle_file(pickle_file, max_duration=duration)
 
         segmentation = Segmentation.objects.create(
             recording=recording,

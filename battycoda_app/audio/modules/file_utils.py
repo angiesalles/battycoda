@@ -13,6 +13,8 @@ import numpy as np
 import soundfile as sf
 from django.conf import settings
 
+from ..intervals import validate_audio_interval
+
 # Configure logging
 logger = logging.getLogger(__name__)
 
@@ -311,31 +313,12 @@ def process_pickle_file(pickle_file, max_duration=None):
                 f"In pickle file '{os.path.basename(filename)}': Onsets and offsets lists must have the same length."
             )
 
-        # Validate segments against recording duration if provided
-        if max_duration is not None:
-            for i, (onset, offset) in enumerate(zip(onsets, offsets, strict=True)):
-                # Check if onset is valid
-                if onset < 0:
-                    raise ValueError(
-                        f"Pickle file '{os.path.basename(filename)}': Segment {i + 1} has negative onset ({onset:.3f}s)"
-                    )
-
-                # Check if segment exceeds recording duration
-                if onset >= max_duration:
-                    raise ValueError(
-                        f"Pickle file '{os.path.basename(filename)}': Segment {i + 1} onset ({onset:.3f}s) exceeds recording duration ({max_duration:.3f}s)"
-                    )
-
-                if offset > max_duration:
-                    raise ValueError(
-                        f"Pickle file '{os.path.basename(filename)}': Segment {i + 1} offset ({offset:.3f}s) exceeds recording duration ({max_duration:.3f}s)"
-                    )
-
-                # Check if onset < offset
-                if onset >= offset:
-                    raise ValueError(
-                        f"Pickle file '{os.path.basename(filename)}': Segment {i + 1} has invalid onset >= offset ({onset:.3f}s >= {offset:.3f}s)"
-                    )
+        # Basic validity must also be checked when the caller has no duration yet.
+        for i, (onset, offset) in enumerate(zip(onsets, offsets, strict=True)):
+            try:
+                validate_audio_interval(onset, offset, max_duration)
+            except ValueError as e:
+                raise ValueError(f"Pickle file '{os.path.basename(filename)}': Segment {i + 1}: {e}") from e
 
         return onsets, offsets
 
