@@ -117,7 +117,8 @@ def _process_pickle_segmentation(pickle_file, recording, user):
         pickle_file.seek(0)
 
         # Process the pickle file to extract onsets and offsets
-        onsets, offsets = process_pickle_file(pickle_file)
+        duration = get_audio_duration(recording.wav_file.path)
+        onsets, offsets = process_pickle_file(pickle_file, max_duration=duration)
 
         # Create a new segmentation
         segmentation = Segmentation.objects.create(

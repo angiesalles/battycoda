@@ -14,6 +14,7 @@ from django.test import RequestFactory, SimpleTestCase, override_settings
 from PIL import Image
 
 from battycoda_app.audio.modules.file_utils import process_pickle_file
+from battycoda_app.simple_api.recording_upload import _process_pickle_segmentation
 from battycoda_app.views_audio import task_audio_snippet_view, task_spectrogram_view
 from battycoda_app.views_batch_upload.file_processing import create_segmentation_from_pickle
 
@@ -61,6 +62,22 @@ class BatchImportIntervalTests(SimpleTestCase):
             with patch("battycoda_app.views_batch_upload.file_processing.Segmentation.objects.create") as create:
                 with self.assertRaisesRegex(ValueError, "recording duration"):
                     create_segmentation_from_pickle(recording, str(pickle_path), pickle_path.name, None)
+                create.assert_not_called()
+
+
+class APIImportIntervalTests(SimpleTestCase):
+    def test_out_of_bounds_import_rejected_before_database_writes(self):
+        with tempfile.TemporaryDirectory() as directory:
+            wav_path = Path(directory) / "recording.wav"
+            sf.write(wav_path, np.zeros(8000), 8000)
+            recording = SimpleNamespace(wav_file=SimpleNamespace(path=str(wav_path)), duration=None)
+            with patch("battycoda_app.simple_api.recording_upload.Segmentation.objects.create") as create:
+                for onset, offset in [(0.25, 1.5), (0.024, 15000)]:
+                    with self.subTest(onset=onset, offset=offset):
+                        source = io.BytesIO(pickle.dumps({"onsets": [onset], "offsets": [offset]}))
+                        source.name = "annotations.pickle"
+                        result = _process_pickle_segmentation(source, recording, None)
+                        self.assertIn("recording duration", result["error"])
                 create.assert_not_called()
 
 
