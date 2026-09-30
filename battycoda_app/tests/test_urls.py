@@ -51,6 +51,11 @@ class UrlsTest(BattycodaTestCase):
         """Test that classification URLs resolve."""
         self.assertEqual(reverse("battycoda_app:classification_home"), "/classification/")
 
+    def test_segment_audio_urls_resolve(self):
+        """Segment spectrogram/audio URLs used by clustering explorer."""
+        self.assertEqual(reverse("battycoda_app:segment_spectrogram", args=[42]), "/audio/segment/42/spectrogram/")
+        self.assertEqual(reverse("battycoda_app:segment_audio", args=[42]), "/audio/segment/42/snippet/")
+
 
 class URLEndpointTestCase(BattycodaTestCase):
     """Test that URL endpoints return correct status codes."""

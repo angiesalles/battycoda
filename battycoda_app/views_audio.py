@@ -10,12 +10,110 @@ from .utils_modules.validation import get_int_param
 logger = logging.getLogger(__name__)
 
 
-def _task_interval_error(task, duration=None):
+def _interval_error(onset, offset, duration=None, label="Annotation"):
     try:
-        validate_audio_interval(task.onset, task.offset, duration)
+        validate_audio_interval(onset, offset, duration)
     except ValueError as e:
-        return HttpResponse(f"Task has invalid audio boundaries: {e}", status=422)
+        return HttpResponse(f"{label} has invalid audio boundaries: {e}", status=422)
     return None
+
+
+def _task_interval_error(task, duration=None):
+    return _interval_error(task.onset, task.offset, duration, label="Task")
+
+
+def _user_can_access_group_resource(user, created_by, group):
+    if created_by == user:
+        return True
+    if user.profile.group and group == user.profile.group:
+        return True
+    return False
+
+
+def _render_recording_spectrogram(request, recording, onset, offset, species, log_label):
+    """Render a PNG spectrogram for a time window on a recording."""
+    import io
+    import os
+
+    import h5py
+    import numpy as np
+    from django.conf import settings
+    from PIL import Image
+
+    from .audio.colormaps import get_colormap
+    from .audio.modules.audio_processing import normal_hwin, overview_hwin
+    from .audio.task_modules.spectrogram.utils import ensure_hdf5_exists
+
+    interval_error = _interval_error(onset, offset, label=log_label)
+    if interval_error is not None:
+        return interval_error
+
+    is_overview = request.GET.get("overview", "0") == "1"
+    hwin = overview_hwin(species) if is_overview else normal_hwin(species)
+    start_time = onset - (hwin[0] / 1000)
+    end_time = offset + (hwin[1] / 1000)
+
+    logger.info(f"{log_label}: calling ensure_hdf5_exists for recording {recording.id}")
+    success, error_response = ensure_hdf5_exists(recording, request.user)
+    if not success:
+        logger.error(f"{log_label}: ensure_hdf5_exists failed: {error_response}")
+        return error_response
+
+    logger.info(f"{log_label}: HDF5 exists, loading from {recording.spectrogram_file}")
+    h5_path = os.path.join(settings.MEDIA_ROOT, "spectrograms", "recordings", recording.spectrogram_file)
+
+    with h5py.File(h5_path, "r") as f:
+        sample_rate = float(f.attrs["sample_rate"])
+        n_fft = int(f.attrs.get("n_fft", 512))
+        hop_length = int(f.attrs.get("hop_length", n_fft // 4))
+        duration = float(f.attrs["duration"])
+        n_frames = int(f.attrs["n_frames"])
+        n_freq_bins = int(f.attrs["n_freq_bins"])
+
+        interval_error = _interval_error(onset, offset, duration, label=log_label)
+        if interval_error is not None:
+            return interval_error
+
+        time_per_frame = hop_length / sample_rate
+        clamped_start_time = max(0, start_time)
+        clamped_end_time = min(duration, end_time)
+
+        start_frame = int((clamped_start_time / duration) * n_frames)
+        end_frame = min(n_frames, max(start_frame + 1, math.ceil((clamped_end_time / duration) * n_frames)))
+        actual_data = f["spectrogram"][:, start_frame:end_frame]
+
+        pad_start = int((clamped_start_time - start_time) / time_per_frame) if start_time < 0 else 0
+        pad_end = int((end_time - clamped_end_time) / time_per_frame) if end_time > duration else 0
+
+        if pad_start > 0 or pad_end > 0:
+            total_frames = pad_start + actual_data.shape[1] + pad_end
+            spectrogram_data = np.full((n_freq_bins, total_frames), -80, dtype=np.float16)
+            spectrogram_data[:, pad_start : pad_start + actual_data.shape[1]] = actual_data
+        else:
+            spectrogram_data = actual_data
+
+    spectrogram_float = spectrogram_data.astype(np.float32)
+    if spectrogram_float.size == 0:
+        return HttpResponse("No spectrogram data for this time window", status=404)
+
+    spec_min = spectrogram_float.min()
+    spec_max = spectrogram_float.max()
+    spec_range = spec_max - spec_min if spec_max > spec_min else 1
+
+    normalized = ((spectrogram_float - spec_min) / spec_range * 255).clip(0, 255).astype(np.uint8)
+    flipped = np.flipud(normalized)
+    colormap_name = getattr(request.user.profile, "spectrogram_colormap", "roseus")
+    colormap_array = np.array(get_colormap(colormap_name), dtype=np.uint8)
+    colored = colormap_array[flipped]
+    img = Image.fromarray(colored)
+
+    buf = io.BytesIO()
+    img.save(buf, format="PNG")
+    buf.seek(0)
+    png_data = buf.read()
+    buf.close()
+
+    return HttpResponse(png_data, content_type="image/png")
 
 
 @login_required
@@ -25,43 +123,20 @@ def task_spectrogram_view(request, task_id):
     Optional URL parameters:
     - overview: 1 for overview, 0 for detail (default: 0)
     """
-    import io
-    import os
-
-    import h5py
-    import numpy as np
-    from django.conf import settings
     from django.shortcuts import get_object_or_404
-    from PIL import Image
 
-    from .audio.colormaps import get_colormap
-    from .audio.modules.audio_processing import normal_hwin, overview_hwin
     from .models.recording import Recording
     from .models.task import Task
 
     task = get_object_or_404(Task, id=task_id)
 
-    if task.created_by != request.user and (not request.user.profile.group or task.group != request.user.profile.group):
+    if not _user_can_access_group_resource(request.user, task.created_by, task.group):
         return HttpResponse("Permission denied", status=403)
-
-    interval_error = _task_interval_error(task)
-    if interval_error is not None:
-        return interval_error
 
     if not task.batch or not task.batch.wav_file:
         return HttpResponse("Task has no associated audio file", status=404)
 
-    is_overview = request.GET.get("overview", "0") == "1"
-    hwin = overview_hwin(task.species) if is_overview else normal_hwin(task.species)
-
-    start_time = task.onset - (hwin[0] / 1000)
-    end_time = task.offset + (hwin[1] / 1000)
-
-    # Will be clamped to recording duration later
-
     try:
-        from .audio.task_modules.spectrogram.utils import ensure_hdf5_exists
-
         logger.info(f"Task {task_id}: Looking for recording with wav_file={task.batch.wav_file.name}")
         recording = Recording.all_objects.filter(wav_file=task.batch.wav_file.name).first()
 
@@ -69,77 +144,70 @@ def task_spectrogram_view(request, task_id):
             logger.error(f"Task {task_id}: No recording found")
             return HttpResponse("No recording found for this task", status=404)
 
-        logger.info(f"Task {task_id}: Found recording {recording.id}, calling ensure_hdf5_exists")
-        success, error_response = ensure_hdf5_exists(recording, request.user)
-        if not success:
-            logger.error(f"Task {task_id}: ensure_hdf5_exists failed: {error_response}")
-            return error_response
-
-        logger.info(f"Task {task_id}: HDF5 exists, loading from {recording.spectrogram_file}")
-        h5_path = os.path.join(settings.MEDIA_ROOT, "spectrograms", "recordings", recording.spectrogram_file)
-
-        with h5py.File(h5_path, "r") as f:
-            sample_rate = float(f.attrs["sample_rate"])
-            n_fft = int(f.attrs.get("n_fft", 512))
-            hop_length = int(f.attrs.get("hop_length", n_fft // 4))
-            duration = float(f.attrs["duration"])
-            n_frames = int(f.attrs["n_frames"])
-            n_freq_bins = int(f.attrs["n_freq_bins"])
-
-            interval_error = _task_interval_error(task, duration)
-            if interval_error is not None:
-                return interval_error
-
-            # Calculate frames per second
-            time_per_frame = hop_length / sample_rate
-
-            # Clamp times to valid recording boundaries
-            clamped_start_time = max(0, start_time)
-            clamped_end_time = min(duration, end_time)
-
-            start_frame = int((clamped_start_time / duration) * n_frames)
-            end_frame = min(n_frames, max(start_frame + 1, math.ceil((clamped_end_time / duration) * n_frames)))
-
-            # Extract actual data from recording
-            actual_data = f["spectrogram"][:, start_frame:end_frame]
-
-            # Pad with silence (-80 dB) if window extends beyond recording
-            pad_start = int((clamped_start_time - start_time) / time_per_frame) if start_time < 0 else 0
-            pad_end = int((end_time - clamped_end_time) / time_per_frame) if end_time > duration else 0
-
-            if pad_start > 0 or pad_end > 0:
-                # Calculate total frames based on actual data size + padding to avoid rounding errors
-                total_frames = pad_start + actual_data.shape[1] + pad_end
-                spectrogram_data = np.full((n_freq_bins, total_frames), -80, dtype=np.float16)
-                spectrogram_data[:, pad_start : pad_start + actual_data.shape[1]] = actual_data
-            else:
-                spectrogram_data = actual_data
-
-        spectrogram_float = spectrogram_data.astype(np.float32)
-
-        spec_min = spectrogram_float.min()
-        spec_max = spectrogram_float.max()
-        spec_range = spec_max - spec_min if spec_max > spec_min else 1
-
-        # Vectorized colormap application (replaces slow pixel-by-pixel loop)
-        normalized = ((spectrogram_float - spec_min) / spec_range * 255).clip(0, 255).astype(np.uint8)
-        flipped = np.flipud(normalized)
-        colormap_name = getattr(request.user.profile, "spectrogram_colormap", "roseus")
-        colormap_array = np.array(get_colormap(colormap_name), dtype=np.uint8)
-        colored = colormap_array[flipped]
-        img = Image.fromarray(colored)
-
-        buf = io.BytesIO()
-        img.save(buf, format="PNG")
-        buf.seek(0)
-        png_data = buf.read()
-        buf.close()
-
-        return HttpResponse(png_data, content_type="image/png")
-
+        return _render_recording_spectrogram(
+            request, recording, task.onset, task.offset, task.species, log_label=f"Task {task_id}"
+        )
     except Exception as e:
         logger.exception(f"Task {task_id}: Exception in task_spectrogram_view: {e}")
         return HttpResponse(f"Error: {str(e)}", status=500)
+
+
+@login_required
+def segment_spectrogram_view(request, segment_id):
+    """Spectrogram image for a Segment (used by clustering explorer)."""
+    from django.shortcuts import get_object_or_404
+
+    from .models.segmentation import Segment
+
+    segment = get_object_or_404(Segment.objects.select_related("recording", "recording__species"), id=segment_id)
+    recording = segment.recording
+
+    if not request.user.is_staff and not _user_can_access_group_resource(
+        request.user, recording.created_by, recording.group
+    ):
+        return HttpResponse("Permission denied", status=403)
+
+    if not recording.wav_file:
+        return HttpResponse("Segment has no associated audio file", status=404)
+
+    try:
+        return _render_recording_spectrogram(
+            request,
+            recording,
+            segment.onset,
+            segment.offset,
+            recording.species,
+            log_label=f"Segment {segment_id}",
+        )
+    except Exception as e:
+        logger.exception(f"Segment {segment_id}: Exception in segment_spectrogram_view: {e}")
+        return HttpResponse(f"Error: {str(e)}", status=500)
+
+
+@login_required
+def segment_audio_view(request, segment_id):
+    """WAV snippet for a Segment (used by clustering explorer)."""
+    from django.shortcuts import get_object_or_404
+
+    from .audio.modules.audio_processing import deliverAudioBit
+    from .models.segmentation import Segment
+
+    segment = get_object_or_404(Segment.objects.select_related("recording"), id=segment_id)
+    recording = segment.recording
+
+    if not request.user.is_staff and not _user_can_access_group_resource(
+        request.user, recording.created_by, recording.group
+    ):
+        return HttpResponse("Permission denied", status=403)
+
+    if not recording.wav_file:
+        return HttpResponse("Segment has no associated audio file", status=404)
+
+    interval_error = _interval_error(segment.onset, segment.offset, label="Segment")
+    if interval_error is not None:
+        return interval_error
+
+    return deliverAudioBit(recording.wav_file.path, segment.onset, segment.offset)
 
 
 @login_required

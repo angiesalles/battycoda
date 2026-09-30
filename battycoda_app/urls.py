@@ -17,6 +17,12 @@ urlpatterns = [
     # Audio/spectrogram routes
     path("audio/task/<int:task_id>/snippet/", views_audio.task_audio_snippet_view, name="task_audio_snippet"),
     path("audio/task/<int:task_id>/spectrogram/", views_audio.task_spectrogram_view, name="task_spectrogram"),
+    path("audio/segment/<int:segment_id>/snippet/", views_audio.segment_audio_view, name="segment_audio"),
+    path(
+        "audio/segment/<int:segment_id>/spectrogram/",
+        views_audio.segment_spectrogram_view,
+        name="segment_spectrogram",
+    ),
     path("audio/bit/", views_audio.simple_audio_bit_view, name="simple_audio_bit"),
     # Feature-specific URL modules
     path("", include("battycoda_app.auth_urls")),
