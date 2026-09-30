@@ -133,8 +133,12 @@ def get_cluster_data(request):
     representative_spectrogram_url = None
     representative_audio_url = None
     if cluster.representative_segment:
-        representative_spectrogram_url = reverse("segment_spectrogram", args=[cluster.representative_segment.id])
-        representative_audio_url = reverse("segment_audio", args=[cluster.representative_segment.id])
+        representative_spectrogram_url = reverse(
+            "battycoda_app:segment_spectrogram", args=[cluster.representative_segment.id]
+        )
+        representative_audio_url = reverse(
+            "battycoda_app:segment_audio", args=[cluster.representative_segment.id]
+        )
 
     response_data = {
         "success": True,
@@ -186,8 +190,8 @@ def get_segment_data(request):
         "onset": segment.onset,
         "offset": segment.offset,
         "duration": segment.offset - segment.onset,
-        "spectrogram_url": reverse("segment_spectrogram", args=[segment.id]),
-        "audio_url": reverse("segment_audio", args=[segment.id]),
+        "spectrogram_url": reverse("battycoda_app:segment_spectrogram", args=[segment.id]),
+        "audio_url": reverse("battycoda_app:segment_audio", args=[segment.id]),
     }
 
     return JsonResponse(response_data)

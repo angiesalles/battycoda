@@ -7,7 +7,7 @@ from django.urls import reverse
 from battycoda_app.models import Group, GroupMembership, Recording, Segmentation, UserProfile
 from battycoda_app.models.clustering import Cluster, ClusteringAlgorithm, ClusteringRun
 from battycoda_app.models.organization import Project, Species
-from battycoda_app.models.segmentation import SegmentationAlgorithm
+from battycoda_app.models.segmentation import Segment, SegmentationAlgorithm
 from battycoda_app.tests.test_base import BattycodaTestCase
 
 
@@ -495,12 +495,20 @@ class ClusteringAPIViewTest(BattycodaTestCase):
             created_by=self.user,
         )
 
-        # Create a cluster
+        # Create a cluster with a representative segment (clustering explorer media URLs)
+        self.segment = Segment.objects.create(
+            recording=self.recording,
+            segmentation=self.segmentation,
+            onset=0.1,
+            offset=0.3,
+            created_by=self.user,
+        )
         self.cluster = Cluster.objects.create(
             clustering_run=self.clustering_run,
             cluster_id=0,
             label="Cluster 0",
             size=5,
+            representative_segment=self.segment,
         )
 
     def test_get_cluster_data_authenticated(self):
@@ -513,6 +521,25 @@ class ClusteringAPIViewTest(BattycodaTestCase):
         # Check that we got cluster data (success, cluster_id, label etc)
         self.assertTrue(data.get("success"))
         self.assertIn("cluster_id", data)
+        self.assertEqual(
+            data["representative_spectrogram_url"],
+            reverse("battycoda_app:segment_spectrogram", args=[self.segment.id]),
+        )
+        self.assertEqual(
+            data["representative_audio_url"],
+            reverse("battycoda_app:segment_audio", args=[self.segment.id]),
+        )
+
+    def test_get_segment_data_authenticated(self):
+        """Segment data API returns reverse'd media URLs without NoReverseMatch"""
+        self.client.login(username="testuser", password="password123")
+        url = reverse("battycoda_app:get_segment_data")
+        response = self.client.get(f"{url}?segment_id={self.segment.id}")
+        self.assertEqual(response.status_code, 200)
+        data = response.json()
+        self.assertTrue(data.get("success"))
+        self.assertEqual(data["spectrogram_url"], reverse("battycoda_app:segment_spectrogram", args=[self.segment.id]))
+        self.assertEqual(data["audio_url"], reverse("battycoda_app:segment_audio", args=[self.segment.id]))
 
     def test_get_cluster_data_unauthenticated(self):
         """Unauthenticated users should be redirected"""
